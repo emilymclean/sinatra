@@ -88,7 +88,7 @@ dependencies {
 }
 
 android {
-    namespace = "cl.emilym.betterbuscanberra"
+    namespace = "cl.emilym.sinatra"
     compileSdk = 34
     defaultConfig {
         minSdk = 24

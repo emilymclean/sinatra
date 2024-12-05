@@ -7,10 +7,10 @@ plugins {
 }
 
 android {
-    namespace = "cl.emilym.betterbuscanberra.android"
+    namespace = "cl.emilym.sinatra.android"
     compileSdk = 34
     defaultConfig {
-        applicationId = "cl.emilym.betterbuscanberra.android"
+        applicationId = "cl.emilym.sinatra.android"
         minSdk = 24
         targetSdk = 34
         versionCode = 1

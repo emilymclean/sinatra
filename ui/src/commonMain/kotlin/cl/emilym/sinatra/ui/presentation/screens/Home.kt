@@ -11,8 +11,8 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cafe.adriel.voyager.core.screen.Screen
-import cl.emilym.betterbuscanberra.data.models.Stop
-import cl.emilym.betterbuscanberra.data.repository.StopRepository
+import cl.emilym.sinatra.data.models.Stop
+import cl.emilym.sinatra.data.repository.StopRepository
 import cl.emilym.compose.requeststate.RequestState
 import cl.emilym.compose.requeststate.RequestStateWidget
 import cl.emilym.compose.requeststate.handle
