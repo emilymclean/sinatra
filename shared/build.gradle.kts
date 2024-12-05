@@ -69,6 +69,8 @@ kotlin {
 
             // Emily Components
             implementation(libs.emily.serializable)
+            implementation(libs.emily.units)
+            implementation(libs.emily.requeststate)
 
             // Coil
             implementation(libs.coil.compose)

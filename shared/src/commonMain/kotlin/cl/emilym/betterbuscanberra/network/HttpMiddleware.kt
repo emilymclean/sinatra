@@ -32,6 +32,6 @@ fun gtfsApi(
     ktorfitBuilder: Ktorfit.Builder
 ): GtfsApi {
     return ktorfitBuilder.build {
-        baseUrl("https://emilym.cl/gtfs-api/v1/canberra")
+        baseUrl("https://emilym.cl/gtfs-api/canberra/v1/")
     }.createGtfsApi()
 }

@@ -18,6 +18,7 @@ serializable = "0.1.1"
 kotlin-datetime = "0.6.1"
 coil-compose = "3.0.0-rc01"
 units = "2.0.0"
+requeststate = "2.0.0"
 koin = "4.0.0"
 koin-annotations = "1.4.0"
 kotlinx-serialization = "1.7.3"
@@ -73,6 +74,7 @@ ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "kto
 emily-units = { module = "cl.emilym.compose:units", version.ref = "units" }
 emily-parcelable = { module = "cl.emilym.kmp:parcelable", version.ref = "parcelable" }
 emily-serializable = { module = "cl.emilym.kmp:serializable", version.ref = "serializable" }
+emily-requeststate = { module = "cl.emilym.compose:requeststate", version.ref = "requeststate" }
 
 # Serialization
 kotlinx-serialization-protobuf = { module = "org.jetbrains.kotlinx:kotlinx-serialization-protobuf", version.ref="kotlinx-serialization" }
