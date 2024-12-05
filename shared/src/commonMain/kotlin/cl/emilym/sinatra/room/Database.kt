@@ -38,7 +38,6 @@ abstract class CacheDatabase: RoomDatabase() {
 fun cacheDatabase(builder: RoomDatabase.Builder<CacheDatabase>): CacheDatabase {
     return builder
         .fallbackToDestructiveMigration(true)
-        .fallbackToDestructiveMigrationOnDowngrade(true)
         .setDriver(BundledSQLiteDriver())
         .setQueryCoroutineContext(Dispatchers.IO)
         .build()
