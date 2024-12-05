@@ -14,6 +14,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "MyWayPlusPlus"
+rootProject.name = "Sinatra"
 include(":androidApp")
 include(":shared")

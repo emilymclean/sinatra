@@ -1,0 +1,168 @@
+syntax = "proto2";
+option java_package = "cl.emilym.gtfs";
+
+package gtfs_api;
+
+message StopEndpoint {
+  repeated Stop stop = 1;
+}
+
+message RouteEndpoint {
+  repeated Route route = 1;
+}
+
+message StopDetailEndpoint {
+  required Stop stop = 1;
+  repeated Stop children = 2;
+}
+
+message RouteDetailEndpoint {
+  required Route route = 1;
+}
+
+message ServiceEndpoint {
+  repeated Service service = 1;
+}
+
+message RouteTimetableEndpoint {
+  required string routeId = 1;
+  required string serviceId = 2;
+  repeated RouteTripInformation trips = 3;
+}
+
+message RouteServicesEndpoint {
+  repeated string serviceIds = 1;
+}
+
+message Stop {
+  required string id = 1;
+  optional string parentStation = 5;
+  required string name = 2;
+  required Location location = 3;
+  required StopAccessibility accessibility = 4;
+}
+
+message StopAccessibility {
+  required WheelchairStopAccessibility stopWheelchairAccessible = 1;
+}
+
+enum WheelchairStopAccessibility {
+  WHEELCHAIR_STOP_ACCESSIBILITY_UNKNOWN = 0;
+  WHEELCHAIR_STOP_ACCESSIBILITY_NONE = 1;
+  WHEELCHAIR_STOP_ACCESSIBILITY_PARTIAL = 2;
+  WHEELCHAIR_STOP_ACCESSIBILITY_FULL = 3;
+}
+
+message Route {
+  required string id = 1;
+  required string code = 2;
+  optional string displayCode = 5;
+  optional ColorPair colors = 6;
+  required string name = 3;
+  optional string designation = 7;
+  required RouteType type = 4;
+  optional string realTimeUrl = 8;
+}
+
+message ColorPair {
+  required string color = 1;
+  required string onColor = 2;
+}
+
+enum RouteType {
+  ROUTE_TYPE_UNKNOWN = 0;
+  ROUTE_TYPE_TRAM = 1;
+  ROUTE_TYPE_METRO = 2;
+  ROUTE_TYPE_RAIL = 3;
+  ROUTE_TYPE_BUS = 4;
+  ROUTE_TYPE_FERRY = 5;
+}
+
+message StopTimetable {
+  repeated StopTimetableTime times = 1;
+}
+
+message StopTimetableTime {
+  optional string childStopId = 9;
+  required string routeId = 1;
+  required string routeCode = 2;
+  required string serviceId = 3;
+  required string arrivalTime = 4;
+  required string departureTime = 5;
+  required string heading = 6;
+  required uint32 sequence = 7;
+  required ServiceAccessibility accessibility = 8;
+}
+
+message Service {
+  required string id = 1;
+  repeated TimetableServiceRegular regular = 2;
+  repeated TimetableServiceException exception = 3;
+  optional ServiceAccessibility accessibility = 4;
+}
+
+enum ServiceBikesAllowed {
+  SERVICE_BIKES_ALLOWED_UNKNOWN = 0;
+  SERVICE_BIKES_ALLOWED_ALLOWED = 1;
+  SERVICE_BIKES_ALLOWED_DISALLOWED = 2;
+}
+
+enum ServiceWheelchairAccessible {
+  SERVICE_WHEELCHAIR_ACCESSIBLE_UNKNOWN = 0;
+  SERVICE_WHEELCHAIR_ACCESSIBLE_ACCESSIBLE = 1;
+  SERVICE_WHEELCHAIR_ACCESSIBLE_INACCESSIBLE = 2;
+}
+
+enum MultipleQualifier {
+  MULTIPLE_QUALIFIER_SOME = 0;
+  MULTIPLE_QUALIFIER_ALL = 1;
+}
+
+message ServiceAccessibility {
+  required ServiceBikesAllowed bikesAllowed = 1;
+  optional MultipleQualifier bikesAllowedAppliesToAllTrips = 2;
+  required ServiceWheelchairAccessible wheelchairAccessible = 3;
+  optional MultipleQualifier wheelchairAccessibleAppliesToAllTrips = 4;
+}
+
+message TimetableServiceRegular {
+  required bool monday = 1;
+  required bool tuesday = 2;
+  required bool wednesday = 3;
+  required bool thursday = 4;
+  required bool friday = 5;
+  required bool saturday = 6;
+  required bool sunday = 7;
+  required string startDate = 8;
+  required string endDate = 9;
+  repeated TimetableServiceException exceptions = 10;
+}
+
+enum TimetableServiceExceptionType {
+  TIMETABLE_SERVICE_EXCEPTION_TYPE_ADDED = 1;
+  TIMETABLE_SERVICE_EXCEPTION_TYPE_REMOVED = 2;
+}
+
+message TimetableServiceException {
+  required string date = 1;
+  required TimetableServiceExceptionType type = 2;
+}
+
+message RouteTripInformation {
+  required string startTime = 1;
+  required string endTime = 2;
+  required ServiceAccessibility accessibility = 3;
+  repeated RouteTripStop stops = 4;
+}
+
+message RouteTripStop {
+  required string stopId = 1;
+  required string arrivalTime = 2;
+  required string departureTime = 3;
+  required uint32 sequence = 4;
+}
+
+message Location {
+  required double lat = 1;
+  required double lng = 2;
+}

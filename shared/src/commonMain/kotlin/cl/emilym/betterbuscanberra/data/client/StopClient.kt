@@ -1,33 +1,19 @@
 package cl.emilym.betterbuscanberra.data.client
 
-import cl.emilym.betterbuscanberra.data.models.SearchResultChoice
-import cl.emilym.betterbuscanberra.data.models.StopDetail
+import cl.emilym.betterbuscanberra.data.models.Stop
+import cl.emilym.betterbuscanberra.network.GtfsApi
+import cl.emilym.gtfs.StopEndpoint
 import org.koin.core.annotation.Factory
-
-const val stopPOIClass = "StopLocation"
+import pbandk.decodeFromByteArray
 
 @Factory
 class StopClient(
-    val tripGoApi: TripGoApi
+    private val gtfsApi: GtfsApi
 ) {
 
-    suspend fun findStop(nameOrId: String): List<Stop> {
-        return tripGoApi.search(nameOrId).choices.toStopDetail()
-    }
-
-    private fun List<SearchResultChoice>.toStopDetail(): List<StopDetail> {
-        filter {
-            it.clazz == stopPOIClass
-        }.map {
-            StopDetail(
-                it.stopCode!!,
-                it.name,
-                it.lat,
-                it.lng,
-                it.publicTransportMode!!,
-                it.stopType!!
-            )
-        }
+    suspend fun stops(): List<Stop> {
+        val pbStops = StopEndpoint.decodeFromByteArray(gtfsApi.stops())
+        return pbStops.stop.map { Stop.fromPB(it) }
     }
 
 }

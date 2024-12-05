@@ -1,5 +1,6 @@
 package cl.emilym.betterbuscanberra.network
 
+import de.jensklingenberg.ktorfit.Ktorfit
 import de.jensklingenberg.ktorfit.ktorfitBuilder
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.HttpClientEngine
@@ -24,4 +25,13 @@ fun ktorfitBuilderDependency(
     httpClient: HttpClient
 ) = ktorfitBuilder {
     httpClient(httpClient)
+}
+
+@Factory
+fun gtfsApi(
+    ktorfitBuilder: Ktorfit.Builder
+): GtfsApi {
+    return ktorfitBuilder.build {
+        baseUrl("https://emilym.cl/gtfs-api/v1/canberra")
+    }.createGtfsApi()
 }

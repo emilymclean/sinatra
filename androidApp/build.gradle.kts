@@ -2,6 +2,8 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.kotlinAndroid)
     alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.ktorfit)
 }
 
 android {
@@ -43,4 +45,21 @@ dependencies {
     implementation(libs.compose.material3)
     implementation(libs.androidx.activity.compose)
     debugImplementation(libs.compose.ui.tooling)
+
+    // Koin
+    implementation(libs.koin.core)
+    implementation(libs.koin.compose)
+    implementation(libs.koin.compose.viewmodel)
+    implementation(libs.koin.annotations)
+    implementation(libs.koin.android)
+    ksp(libs.koin.ksp.compiler)
+
+    // Voyager
+    implementation(libs.voyager.navigator)
+    implementation(libs.voyager.koin)
+
+    // Ktor
+    implementation(libs.ktor.ktorfit.lib)
+    implementation(libs.ktor.negotiation)
+    implementation(libs.ktor.serialization.json)
 }

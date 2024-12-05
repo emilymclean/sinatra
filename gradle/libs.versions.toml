@@ -1,6 +1,6 @@
 [versions]
 agp = "8.7.2"
-kotlin = "2.0.0"
+kotlin = "2.0.21"
 compose = "1.5.4"
 compose-material3 = "1.1.2"
 androidx-activityCompose = "1.8.0"
@@ -12,14 +12,18 @@ compose-navigation = "2.8.3"
 compose-viewmodel = "2.8.2"
 compose-adaptive = "1.0.0"
 compose-adaptive-navigation-suite = "1.7.0"
+compose-plugin = "1.6.11"
 parcelable = "0.1.1"
 serializable = "0.1.1"
 kotlin-datetime = "0.6.1"
 coil-compose = "3.0.0-rc01"
 units = "2.0.0"
-
 koin = "4.0.0"
 koin-annotations = "1.4.0"
+kotlinx-serialization = "1.7.3"
+pbandk = "0.16.0"
+voyager = "1.1.0-beta03"
+ksp = "2.0.21-1.0.25"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -70,6 +74,14 @@ emily-units = { module = "cl.emilym.compose:units", version.ref = "units" }
 emily-parcelable = { module = "cl.emilym.kmp:parcelable", version.ref = "parcelable" }
 emily-serializable = { module = "cl.emilym.kmp:serializable", version.ref = "serializable" }
 
+# Serialization
+kotlinx-serialization-protobuf = { module = "org.jetbrains.kotlinx:kotlinx-serialization-protobuf", version.ref="kotlinx-serialization" }
+pbandk = { module = "pro.streem.pbandk:pbandk-runtime", version.ref="pbandk" }
+
+# Voyager
+voyager-navigator = { module = "cafe.adriel.voyager:voyager-navigator", version.ref = "voyager" }
+voyager-koin = { module = "cafe.adriel.voyager:voyager-koin", version.ref = "voyager" }
+
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
 androidLibrary = { id = "com.android.library", version.ref = "agp" }
@@ -78,3 +90,6 @@ kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref =
 kotlinCocoapods = { id = "org.jetbrains.kotlin.native.cocoapods", version.ref = "kotlin" }
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 ktorfit = { id = "de.jensklingenberg.ktorfit", version.ref = "ktorfit"}
+serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin"}
+jetbrainsCompose = { id = "org.jetbrains.compose", version.ref = "compose-plugin" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }

@@ -3,38 +3,23 @@ package cl.emilym.betterbuscanberra.android
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import cl.emilym.betterbuscanberra.Greeting
+import androidx.activity.enableEdgeToEdge
+import cl.emilym.betterbuscanberra.App
+import cl.emilym.betterbuscanberra.presentation.sharedScreenModule
+import cafe.adriel.voyager.core.registry.ScreenRegistry
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent {
-            MyApplicationTheme {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    GreetingView(Greeting().greet())
-                }
-            }
+
+        // We set up the screen registry here so we could potentially launch into a purely android view (i.e if we needed to do something with webview?)
+        ScreenRegistry {
+            sharedScreenModule()
         }
-    }
-}
 
-@Composable
-fun GreetingView(text: String) {
-    Text(text = text)
-}
-
-@Preview
-@Composable
-fun DefaultPreview() {
-    MyApplicationTheme {
-        GreetingView("Hello, Android!")
+        enableEdgeToEdge()
+        setContent {
+            App()
+        }
     }
 }
