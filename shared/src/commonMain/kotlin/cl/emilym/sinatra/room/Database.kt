@@ -9,10 +9,14 @@ import cl.emilym.sinatra.room.dao.RouteDao
 import cl.emilym.sinatra.room.dao.ShaDao
 import cl.emilym.sinatra.room.dao.StopDao
 import cl.emilym.sinatra.room.dao.StopTimetableTimeEntityDao
+import cl.emilym.sinatra.room.dao.TimetableServiceExceptionEntityDao
+import cl.emilym.sinatra.room.dao.TimetableServiceRegularEntityDao
 import cl.emilym.sinatra.room.entities.RouteEntity
 import cl.emilym.sinatra.room.entities.ShaEntity
 import cl.emilym.sinatra.room.entities.StopEntity
 import cl.emilym.sinatra.room.entities.StopTimetableTimeEntity
+import cl.emilym.sinatra.room.entities.TimetableServiceExceptionEntity
+import cl.emilym.sinatra.room.entities.TimetableServiceRegularEntity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import org.koin.core.annotation.Factory
@@ -32,14 +36,18 @@ expect object CacheDatabaseConstructor : RoomDatabaseConstructor<CacheDatabase> 
     ShaEntity::class,
     StopEntity::class,
     StopTimetableTimeEntity::class,
-    RouteEntity::class
-], version = 3)
+    RouteEntity::class,
+    TimetableServiceRegularEntity::class,
+    TimetableServiceExceptionEntity::class
+], version = 4)
 @ConstructedBy(CacheDatabaseConstructor::class)
 abstract class CacheDatabase: RoomDatabase() {
     abstract fun sha(): ShaDao
     abstract fun stop(): StopDao
     abstract fun stopTimetableTime(): StopTimetableTimeEntityDao
     abstract fun route(): RouteDao
+    abstract fun timetableServiceRegularDao(): TimetableServiceRegularEntityDao
+    abstract fun timetableServiceExceptionDao(): TimetableServiceExceptionEntityDao
 }
 
 @Single
@@ -69,4 +77,14 @@ fun stopTimetableTimeDao(db: CacheDatabase): StopTimetableTimeEntityDao {
 @Factory
 fun routeDao(db: CacheDatabase): RouteDao {
     return db.route()
+}
+
+@Factory
+fun timetableServiceRegularDao(db: CacheDatabase): TimetableServiceRegularEntityDao {
+    return db.timetableServiceRegularDao()
+}
+
+@Factory
+fun timetableServiceExceptionDao(db: CacheDatabase): TimetableServiceExceptionEntityDao {
+    return db.timetableServiceExceptionDao()
 }

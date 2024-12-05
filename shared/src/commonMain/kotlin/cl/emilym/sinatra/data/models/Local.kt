@@ -6,6 +6,7 @@ enum class CacheCategory(
 
     STOP("stop"),
     STOP_TIMETABLE("stop-timetable"),
-    ROUTE("route")
+    ROUTE("route"),
+    SERVICE("service")
 
 }
