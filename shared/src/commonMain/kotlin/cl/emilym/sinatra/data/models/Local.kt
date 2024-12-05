@@ -4,6 +4,7 @@ enum class CacheCategory(
     val db: String
 ) {
 
-    STOP("stop")
+    STOP("stop"),
+    STOP_TIMETABLE("stop-timetable")
 
 }

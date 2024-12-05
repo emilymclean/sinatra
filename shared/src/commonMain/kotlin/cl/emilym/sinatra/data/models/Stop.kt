@@ -79,8 +79,8 @@ data class StopTimetableTime(
     val routeId: RouteId,
     val routeCode: RouteCode,
     val serviceId: ServiceId,
-    private val arrivalTime: Duration,
-    private val departureTime: Duration,
+    internal val arrivalTime: Duration,
+    internal val departureTime: Duration,
     val heading: String,
     val sequence: Int
 ) {
