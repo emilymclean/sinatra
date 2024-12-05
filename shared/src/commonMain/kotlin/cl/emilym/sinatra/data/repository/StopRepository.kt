@@ -9,7 +9,8 @@ import org.koin.core.annotation.Factory
 
 @Factory
 class StopRepository(
-    private val stopClient: StopClient
+    private val stopClient: StopClient,
+    private val shaRepository: ShaRepository
 ) {
 
     suspend fun stops(): Cachable<List<Stop>> {

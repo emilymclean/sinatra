@@ -7,6 +7,7 @@ plugins {
     alias(libs.plugins.serialization)
     alias(libs.plugins.ksp)
     alias(libs.plugins.ktorfit)
+    alias(libs.plugins.room)
 }
 
 kotlin {
@@ -22,10 +23,6 @@ kotlin {
     iosX64()
     iosArm64()
     iosSimulatorArm64()
-
-    androidTarget {
-        publishLibraryVariants("release")
-    }
 
     cocoapods {
         summary = "Some description for the Shared Module"
@@ -72,6 +69,10 @@ kotlin {
 
             // Serialization
             implementation(libs.pbandk)
+
+            // Room
+            implementation(libs.room.runtime)
+            implementation(libs.room.driver)
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
@@ -85,6 +86,15 @@ dependencies {
     add("kspIosX64", libs.koin.ksp.compiler)
     add("kspIosArm64", libs.koin.ksp.compiler)
     add("kspIosSimulatorArm64", libs.koin.ksp.compiler)
+
+    add("kspAndroid", libs.room.compiler)
+    add("kspIosX64", libs.room.compiler)
+    add("kspIosArm64", libs.room.compiler)
+    add("kspIosSimulatorArm64", libs.room.compiler)
+}
+
+room {
+    schemaDirectory("$projectDir/schemas")
 }
 
 android {

@@ -1,6 +1,7 @@
 package cl.emilym.sinatra.android
 
 import android.app.Application
+import cl.emilym.sinatra.room.databaseBuilderModule
 import io.github.aakira.napier.DebugAntilog
 import io.github.aakira.napier.Napier
 import org.koin.android.ext.koin.androidContext
@@ -20,6 +21,7 @@ class MainApplication: Application() {
             androidContext(this@MainApplication)
             modules(
                 AppModule().module,
+                databaseBuilderModule,
             )
         }
     }

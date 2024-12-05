@@ -24,10 +24,6 @@ kotlin {
     iosArm64()
     iosSimulatorArm64()
 
-    androidTarget {
-        publishLibraryVariants("release")
-    }
-
     cocoapods {
         summary = "Some description for the Shared Module"
         homepage = "Link to the Shared Module homepage"
