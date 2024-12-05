@@ -135,7 +135,6 @@ message TimetableServiceRegular {
   required bool sunday = 7;
   required string startDate = 8;
   required string endDate = 9;
-  repeated TimetableServiceException exceptions = 10;
 }
 
 enum TimetableServiceExceptionType {

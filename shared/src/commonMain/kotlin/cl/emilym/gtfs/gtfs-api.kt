@@ -912,7 +912,6 @@ public data class TimetableServiceRegular(
     val sunday: Boolean,
     val startDate: String,
     val endDate: String,
-    val exceptions: List<cl.emilym.gtfs.TimetableServiceException> = emptyList(),
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
 ) : pbandk.Message {
     override operator fun plus(other: pbandk.Message?): cl.emilym.gtfs.TimetableServiceRegular = protoMergeImpl(other)
@@ -925,7 +924,7 @@ public data class TimetableServiceRegular(
             fullName = "gtfs_api.TimetableServiceRegular",
             messageClass = cl.emilym.gtfs.TimetableServiceRegular::class,
             messageCompanion = this,
-            fields = buildList(10) {
+            fields = buildList(9) {
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
@@ -1014,16 +1013,6 @@ public data class TimetableServiceRegular(
                         type = pbandk.FieldDescriptor.Type.Primitive.String(hasPresence = true),
                         jsonName = "endDate",
                         value = cl.emilym.gtfs.TimetableServiceRegular::endDate
-                    )
-                )
-                add(
-                    pbandk.FieldDescriptor(
-                        messageDescriptor = this@Companion::descriptor,
-                        name = "exceptions",
-                        number = 10,
-                        type = pbandk.FieldDescriptor.Type.Repeated<cl.emilym.gtfs.TimetableServiceException>(valueType = pbandk.FieldDescriptor.Type.Message(messageCompanion = cl.emilym.gtfs.TimetableServiceException.Companion)),
-                        jsonName = "exceptions",
-                        value = cl.emilym.gtfs.TimetableServiceRegular::exceptions
                     )
                 )
             }
@@ -1713,7 +1702,6 @@ private fun ServiceAccessibility.Companion.decodeWithImpl(u: pbandk.MessageDecod
 
 private fun TimetableServiceRegular.protoMergeImpl(plus: pbandk.Message?): TimetableServiceRegular = (plus as? TimetableServiceRegular)?.let {
     it.copy(
-        exceptions = exceptions + plus.exceptions,
         unknownFields = unknownFields + plus.unknownFields
     )
 } ?: this
@@ -1729,7 +1717,6 @@ private fun TimetableServiceRegular.Companion.decodeWithImpl(u: pbandk.MessageDe
     var sunday: Boolean? = null
     var startDate: String? = null
     var endDate: String? = null
-    var exceptions: pbandk.ListWithSize.Builder<cl.emilym.gtfs.TimetableServiceException>? = null
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
@@ -1742,7 +1729,6 @@ private fun TimetableServiceRegular.Companion.decodeWithImpl(u: pbandk.MessageDe
             7 -> sunday = _fieldValue as Boolean
             8 -> startDate = _fieldValue as String
             9 -> endDate = _fieldValue as String
-            10 -> exceptions = (exceptions ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as kotlin.sequences.Sequence<cl.emilym.gtfs.TimetableServiceException> }
         }
     }
 
@@ -1775,7 +1761,7 @@ private fun TimetableServiceRegular.Companion.decodeWithImpl(u: pbandk.MessageDe
     }
     return TimetableServiceRegular(monday!!, tuesday!!, wednesday!!, thursday!!,
         friday!!, saturday!!, sunday!!, startDate!!,
-        endDate!!, pbandk.ListWithSize.Builder.fixed(exceptions), unknownFields)
+        endDate!!, unknownFields)
 }
 
 private fun TimetableServiceException.protoMergeImpl(plus: pbandk.Message?): TimetableServiceException = (plus as? TimetableServiceException)?.let {

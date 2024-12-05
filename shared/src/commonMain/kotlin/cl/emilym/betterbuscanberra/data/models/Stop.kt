@@ -1,6 +1,9 @@
 package cl.emilym.betterbuscanberra.data.models
 
 import cl.emilym.gtfs.WheelchairStopAccessibility
+import kotlinx.datetime.Instant
+import kotlinx.datetime.LocalDateTime
+import kotlin.time.Duration
 
 data class Stop(
     val id: StopId,
@@ -56,16 +59,52 @@ enum class StopWheelchairAccessibility {
     }
 }
 
-data class Location(
-    val lat: Latitude,
-    val lng: Longitude
+data class StopTimetable(
+    val times: List<StopTimetableTime>
 ) {
 
     companion object {
-        fun fromPB(pb: cl.emilym.gtfs.Location): Location {
-            return Location(
-                pb.lat,
-                pb.lng
+
+        fun fromPB(pb: cl.emilym.gtfs.StopTimetable): StopTimetable {
+            return StopTimetable(
+                pb.times.map { StopTimetableTime.fromPB(it) }
+            )
+        }
+
+    }
+
+}
+
+data class StopTimetableTime(
+    val childStopId: StopId?,
+    val routeId: RouteId,
+    val routeCode: RouteCode,
+    val serviceId: ServiceId,
+    private val arrivalTime: Duration,
+    private val departureTime: Duration,
+    val heading: String,
+    val sequence: Int
+) {
+
+    fun arrivalTime(date: Instant): Instant {
+        return date + arrivalTime
+    }
+
+    fun departureTime(date: Instant): Instant {
+        return date + departureTime
+    }
+
+    companion object {
+        fun fromPB(pb: cl.emilym.gtfs.StopTimetableTime): StopTimetableTime {
+            return StopTimetableTime(
+                pb.childStopId,
+                pb.routeId,
+                pb.routeCode,
+                pb.serviceId,
+                Duration.parseIsoString(pb.arrivalTime),
+                Duration.parseIsoString(pb.departureTime),
+                pb.heading,
+                pb.sequence
             )
         }
     }

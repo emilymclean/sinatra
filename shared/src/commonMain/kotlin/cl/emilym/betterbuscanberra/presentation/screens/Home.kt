@@ -34,7 +34,7 @@ class HomeViewModel(
 
     fun retry() {
         viewModelScope.launch {
-            stops.handle { stopRepository.stops() }
+            stops.handle { stopRepository.stops().item }
         }
     }
 

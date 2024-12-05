@@ -1,11 +1,11 @@
 package cl.emilym.betterbuscanberra.data.models
 
+typealias ShaDigest = String
+
 typealias StopId = String
 typealias RouteId = String
-typealias OperatorId = String
+typealias RouteCode = String
 typealias StopCode = String
-typealias StopName = String
-typealias StopType = String
 typealias ServiceId = String
 typealias ServiceDirection = String
 typealias POIClass = String

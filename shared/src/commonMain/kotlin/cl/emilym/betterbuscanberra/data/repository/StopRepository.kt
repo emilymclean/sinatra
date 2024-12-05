@@ -1,7 +1,10 @@
 package cl.emilym.betterbuscanberra.data.repository
 
 import cl.emilym.betterbuscanberra.data.client.StopClient
+import cl.emilym.betterbuscanberra.data.models.Cachable
 import cl.emilym.betterbuscanberra.data.models.Stop
+import cl.emilym.betterbuscanberra.data.models.StopId
+import cl.emilym.betterbuscanberra.data.models.StopTimetable
 import org.koin.core.annotation.Factory
 
 @Factory
@@ -9,8 +12,12 @@ class StopRepository(
     private val stopClient: StopClient
 ) {
 
-    suspend fun stops(): List<Stop> {
-        return stopClient.stops()
+    suspend fun stops(): Cachable<List<Stop>> {
+        return Cachable.live(stopClient.stops())
+    }
+
+    suspend fun timetable(stopId: StopId): Cachable<StopTimetable> {
+        return Cachable.live(stopClient.timetable(stopId))
     }
 
 }
