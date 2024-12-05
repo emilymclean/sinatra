@@ -1,10 +1,12 @@
 package cl.emilym.sinatra.room.dao
 
+import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
 import cl.emilym.sinatra.room.entities.StopEntity
 import kotlinx.coroutines.flow.Flow
 
+@Dao
 interface StopDao {
 
     @Insert

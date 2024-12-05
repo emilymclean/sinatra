@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
 import org.koin.compose.viewmodel.koinViewModel
+import org.koin.core.KoinApplication.Companion.init
 
 @KoinViewModel
 class HomeViewModel(
@@ -27,6 +28,7 @@ class HomeViewModel(
 ): ViewModel() {
 
     val stops = MutableStateFlow<RequestState<List<Stop>>>(RequestState.Initial())
+    val cached = MutableStateFlow(false)
 
     init {
         retry()
@@ -34,7 +36,11 @@ class HomeViewModel(
 
     fun retry() {
         viewModelScope.launch {
-            stops.handle { stopRepository.stops().item }
+            stops.handle {
+                stopRepository.stops().also {
+                    cached.value = !it.state.live
+                }.item
+            }
         }
     }
 
@@ -49,8 +55,9 @@ class HomeScreen : Screen {
         Scaffold { innerPadding ->
             Column(Modifier.padding(innerPadding)) {
                 val stops by homeViewModel.stops.collectAsState()
+                val cached by homeViewModel.cached.collectAsState()
                 RequestStateWidget(stops) { stops ->
-                    Text("There are ${stops.size} stops, (name of first = ${stops.firstOrNull()?.name})")
+                    Text("There are ${stops.size} stops (cached = ${cached}, name of first = ${stops.firstOrNull()?.name})")
                 }
             }
         }

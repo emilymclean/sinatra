@@ -1,16 +1,10 @@
 package cl.emilym.sinatra.data.repository
 
-import cl.emilym.compose.requeststate.RequestState
-import cl.emilym.sinatra.data.client.EndpointDigestPair
-import cl.emilym.sinatra.data.models.Cachable
 import cl.emilym.sinatra.data.models.CacheCategory
 import cl.emilym.sinatra.data.models.ResourceKey
 import cl.emilym.sinatra.data.models.ShaDigest
 import cl.emilym.sinatra.room.dao.ShaDao
 import cl.emilym.sinatra.room.entities.ShaEntity
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.emitAll
-import kotlinx.coroutines.flow.flow
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import org.koin.core.annotation.Factory
@@ -22,8 +16,15 @@ internal val DEFAULT_EXPIRE_TIME = 24.hours
 sealed interface CacheInformation {
     data object Unavailable: CacheInformation
     data class Available(
+        val digest: ShaDigest,
         val added: Instant
-    ): CacheInformation
+    ): CacheInformation {
+
+        fun expired(expireTime: Duration, now: Instant): Boolean {
+            return (added + expireTime) < now
+        }
+
+    }
 }
 
 @Factory
@@ -45,7 +46,7 @@ class ShaRepository(
 
     suspend fun cached(category: CacheCategory, resource: ResourceKey): CacheInformation {
         return shaDao.shaByTypeAndResource(category.db, resource)?.let {
-            CacheInformation.Available(Instant.fromEpochMilliseconds(it.added))
+            CacheInformation.Available(it.sha, Instant.fromEpochMilliseconds(it.added))
         } ?: CacheInformation.Unavailable
     }
 
