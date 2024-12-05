@@ -54,4 +54,8 @@ class ServicePersistence(
         }
     }
 
+    suspend fun get(serviceIds: List<ServiceId>): List<Service> {
+        return get().filter { it.id in serviceIds }
+    }
+
 }

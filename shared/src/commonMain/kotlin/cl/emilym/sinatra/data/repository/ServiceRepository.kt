@@ -5,10 +5,12 @@ import cl.emilym.sinatra.data.models.Cachable
 import cl.emilym.sinatra.data.models.CacheCategory
 import cl.emilym.sinatra.data.models.ResourceKey
 import cl.emilym.sinatra.data.models.Service
+import cl.emilym.sinatra.data.models.ServiceId
 import cl.emilym.sinatra.data.persistence.ServicePersistence
 import kotlinx.datetime.Clock
 import org.koin.core.annotation.Factory
 
+@Factory
 class ServiceCacheWorker(
     private val serviceClient: ServiceClient,
     private val servicePersistence: ServicePersistence,
@@ -31,9 +33,14 @@ class ServiceCacheWorker(
 
 @Factory
 class ServiceRepository(
-    private val serviceCacheWorker: ServiceCacheWorker
+    private val serviceCacheWorker: ServiceCacheWorker,
+    private val servicePersistence: ServicePersistence
 ) {
 
     suspend fun services() = serviceCacheWorker.get()
+    suspend fun services(ids: List<ServiceId>): Cachable<List<Service>> {
+        val s = serviceCacheWorker.get()
+        return Cachable(servicePersistence.get(ids), s.state)
+    }
 
 }

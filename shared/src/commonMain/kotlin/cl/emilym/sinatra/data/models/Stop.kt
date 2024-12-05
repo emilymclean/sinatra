@@ -79,19 +79,11 @@ data class StopTimetableTime(
     val routeId: RouteId,
     val routeCode: RouteCode,
     val serviceId: ServiceId,
-    internal val arrivalTime: Duration,
-    internal val departureTime: Duration,
+    override val arrivalTime: Time,
+    override val departureTime: Time,
     val heading: String,
     val sequence: Int
-) {
-
-    fun arrivalTime(date: Instant): Instant {
-        return date + arrivalTime
-    }
-
-    fun departureTime(date: Instant): Instant {
-        return date + departureTime
-    }
+): StopTime {
 
     companion object {
         fun fromPB(pb: cl.emilym.gtfs.StopTimetableTime): StopTimetableTime {
@@ -100,8 +92,8 @@ data class StopTimetableTime(
                 pb.routeId,
                 pb.routeCode,
                 pb.serviceId,
-                Duration.parseIsoString(pb.arrivalTime),
-                Duration.parseIsoString(pb.departureTime),
+                parseTime(pb.arrivalTime),
+                parseTime(pb.departureTime),
                 pb.heading,
                 pb.sequence
             )

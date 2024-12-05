@@ -6,12 +6,18 @@ import androidx.room.RoomDatabase
 import androidx.room.RoomDatabaseConstructor
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import cl.emilym.sinatra.room.dao.RouteDao
+import cl.emilym.sinatra.room.dao.RouteServiceEntityDao
+import cl.emilym.sinatra.room.dao.RouteTripInformationEntityDao
+import cl.emilym.sinatra.room.dao.RouteTripStopEntityDao
 import cl.emilym.sinatra.room.dao.ShaDao
 import cl.emilym.sinatra.room.dao.StopDao
 import cl.emilym.sinatra.room.dao.StopTimetableTimeEntityDao
 import cl.emilym.sinatra.room.dao.TimetableServiceExceptionEntityDao
 import cl.emilym.sinatra.room.dao.TimetableServiceRegularEntityDao
 import cl.emilym.sinatra.room.entities.RouteEntity
+import cl.emilym.sinatra.room.entities.RouteServiceEntity
+import cl.emilym.sinatra.room.entities.RouteTripInformationEntity
+import cl.emilym.sinatra.room.entities.RouteTripStopEntity
 import cl.emilym.sinatra.room.entities.ShaEntity
 import cl.emilym.sinatra.room.entities.StopEntity
 import cl.emilym.sinatra.room.entities.StopTimetableTimeEntity
@@ -37,17 +43,23 @@ expect object CacheDatabaseConstructor : RoomDatabaseConstructor<CacheDatabase> 
     StopEntity::class,
     StopTimetableTimeEntity::class,
     RouteEntity::class,
+    RouteServiceEntity::class,
+    RouteTripInformationEntity::class,
+    RouteTripStopEntity::class,
     TimetableServiceRegularEntity::class,
-    TimetableServiceExceptionEntity::class
-], version = 4)
+    TimetableServiceExceptionEntity::class,
+], version = 6)
 @ConstructedBy(CacheDatabaseConstructor::class)
 abstract class CacheDatabase: RoomDatabase() {
     abstract fun sha(): ShaDao
     abstract fun stop(): StopDao
     abstract fun stopTimetableTime(): StopTimetableTimeEntityDao
     abstract fun route(): RouteDao
+    abstract fun routeService(): RouteServiceEntityDao
     abstract fun timetableServiceRegularDao(): TimetableServiceRegularEntityDao
     abstract fun timetableServiceExceptionDao(): TimetableServiceExceptionEntityDao
+    abstract fun routeTripInformationDao(): RouteTripInformationEntityDao
+    abstract fun routeTripStopDao(): RouteTripStopEntityDao
 }
 
 @Single
@@ -80,6 +92,11 @@ fun routeDao(db: CacheDatabase): RouteDao {
 }
 
 @Factory
+fun routeServiceDao(db: CacheDatabase): RouteServiceEntityDao {
+    return db.routeService()
+}
+
+@Factory
 fun timetableServiceRegularDao(db: CacheDatabase): TimetableServiceRegularEntityDao {
     return db.timetableServiceRegularDao()
 }
@@ -87,4 +104,14 @@ fun timetableServiceRegularDao(db: CacheDatabase): TimetableServiceRegularEntity
 @Factory
 fun timetableServiceExceptionDao(db: CacheDatabase): TimetableServiceExceptionEntityDao {
     return db.timetableServiceExceptionDao()
+}
+
+@Factory
+fun routeTripInformationDao(db: CacheDatabase): RouteTripInformationEntityDao {
+    return db.routeTripInformationDao()
+}
+
+@Factory
+fun routeTripStopDao(db: CacheDatabase): RouteTripStopEntityDao {
+    return db.routeTripStopDao()
 }

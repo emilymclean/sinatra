@@ -4,6 +4,8 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import cl.emilym.sinatra.data.models.ResourceKey
 import cl.emilym.sinatra.data.models.StopTimetableTime
+import cl.emilym.sinatra.data.models.time
+import cl.emilym.sinatra.data.models.toLong
 import kotlin.time.Duration.Companion.milliseconds
 
 @Entity
@@ -26,8 +28,8 @@ class StopTimetableTimeEntity(
             routeId,
             routeCode,
             serviceId,
-            arrivalTime.milliseconds,
-            departureTime.milliseconds,
+            arrivalTime.time,
+            departureTime.time,
             heading,
             sequence
         )
@@ -42,8 +44,8 @@ class StopTimetableTimeEntity(
                 stop.routeId,
                 stop.routeCode,
                 stop.serviceId,
-                stop.arrivalTime.inWholeMilliseconds,
-                stop.departureTime.inWholeMilliseconds,
+                stop.arrivalTime.toLong(),
+                stop.departureTime.toLong(),
                 stop.heading,
                 stop.sequence
             )
