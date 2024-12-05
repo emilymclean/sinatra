@@ -5,10 +5,9 @@ plugins {
     alias(libs.plugins.kotlinCocoapods)
     alias(libs.plugins.androidLibrary)
     alias(libs.plugins.serialization)
+    alias(libs.plugins.ksp)
     alias(libs.plugins.jetbrainsCompose)
     alias(libs.plugins.compose.compiler)
-    alias(libs.plugins.ksp)
-    alias(libs.plugins.ktorfit)
 }
 
 kotlin {
@@ -16,7 +15,7 @@ kotlin {
         compilations.all {
             compileTaskProvider.configure {
                 compilerOptions {
-                    jvmTarget.set(JvmTarget.JVM_1_8)
+                    jvmTarget.set(JvmTarget.JVM_11)
                 }
             }
         }
@@ -25,9 +24,13 @@ kotlin {
     iosArm64()
     iosSimulatorArm64()
 
+    androidTarget {
+        publishLibraryVariants("release")
+    }
+
     cocoapods {
-        summary = "Some description for the Ui Module"
-        homepage = "Link to the Ui Module homepage"
+        summary = "Some description for the Shared Module"
+        homepage = "Link to the Shared Module homepage"
         version = "1.0"
         ios.deploymentTarget = "16.0"
         podfile = project.file("../iosApp/Podfile")
@@ -36,13 +39,13 @@ kotlin {
             isStatic = true
         }
     }
-
+    
     sourceSets {
         androidMain.dependencies {
             implementation(libs.koin.android)
         }
         commonMain.dependencies {
-            implementation(projects.shared)
+            implementation(project(":shared"))
 
             // Compose
             implementation(compose.runtime)
@@ -74,11 +77,7 @@ kotlin {
         }
         iosMain.dependencies {
         }
-        commonTest.dependencies {
-            implementation(libs.kotlin.test)
-        }
     }
-    
 }
 
 dependencies {
@@ -89,10 +88,6 @@ dependencies {
     add("kspIosSimulatorArm64", libs.koin.ksp.compiler)
 }
 
-ksp {
-    arg("KOIN_USE_COMPOSE_VIEWMODEL", "true")
-}
-
 android {
     namespace = "cl.emilym.sinatra.ui"
     compileSdk = 34
@@ -100,7 +95,7 @@ android {
         minSdk = 24
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
 }

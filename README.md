@@ -1,1 +1,1 @@
-# MyWay
+# Sinatra

@@ -1,11 +1,11 @@
 Pod::Spec.new do |spec|
     spec.name                     = 'ui'
     spec.version                  = '1.0'
-    spec.homepage                 = 'Link to the Ui Module homepage'
+    spec.homepage                 = 'Link to the Shared Module homepage'
     spec.source                   = { :http=> ''}
     spec.authors                  = ''
     spec.license                  = ''
-    spec.summary                  = 'Some description for the Ui Module'
+    spec.summary                  = 'Some description for the Shared Module'
     spec.vendored_frameworks      = 'build/cocoapods/framework/ui.framework'
     spec.libraries                = 'c++'
     spec.ios.deployment_target    = '16.0'

@@ -14,7 +14,7 @@ kotlin {
         compilations.all {
             compileTaskProvider.configure {
                 compilerOptions {
-                    jvmTarget.set(JvmTarget.JVM_1_8)
+                    jvmTarget.set(JvmTarget.JVM_11)
                 }
             }
         }
@@ -22,6 +22,10 @@ kotlin {
     iosX64()
     iosArm64()
     iosSimulatorArm64()
+
+    androidTarget {
+        publishLibraryVariants("release")
+    }
 
     cocoapods {
         summary = "Some description for the Shared Module"
@@ -72,13 +76,6 @@ kotlin {
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
         }
-        commonTest.dependencies {
-            implementation(libs.kotlin.test)
-        }
-    }
-
-    sourceSets.named("commonMain").configure {
-        kotlin.srcDir("build/generated/ksp/metadata/commonMain/kotlin")
     }
 }
 
@@ -97,7 +94,7 @@ android {
         minSdk = 24
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
 }

@@ -30,17 +30,21 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "11"
+    }
+    buildFeatures {
+        compose = true
     }
 }
 
 dependencies {
-    implementation(projects.shared)
-    implementation(projects.ui)
+    implementation(project(":ui"))
+    implementation(project(":shared"))
+
     implementation(libs.compose.ui)
     implementation(libs.compose.ui.tooling.preview)
     implementation(libs.compose.material3)
@@ -58,9 +62,8 @@ dependencies {
     // Voyager
     implementation(libs.voyager.navigator)
     implementation(libs.voyager.koin)
+}
 
-    // Ktor
-    implementation(libs.ktor.ktorfit.lib)
-    implementation(libs.ktor.negotiation)
-    implementation(libs.ktor.serialization.json)
+ksp {
+    arg("KOIN_CONFIG_CHECK","true")
 }
