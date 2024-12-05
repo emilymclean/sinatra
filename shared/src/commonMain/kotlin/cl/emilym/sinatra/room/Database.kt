@@ -5,9 +5,11 @@ import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.RoomDatabaseConstructor
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
+import cl.emilym.sinatra.room.dao.RouteDao
 import cl.emilym.sinatra.room.dao.ShaDao
 import cl.emilym.sinatra.room.dao.StopDao
 import cl.emilym.sinatra.room.dao.StopTimetableTimeEntityDao
+import cl.emilym.sinatra.room.entities.RouteEntity
 import cl.emilym.sinatra.room.entities.ShaEntity
 import cl.emilym.sinatra.room.entities.StopEntity
 import cl.emilym.sinatra.room.entities.StopTimetableTimeEntity
@@ -29,13 +31,15 @@ expect object CacheDatabaseConstructor : RoomDatabaseConstructor<CacheDatabase> 
 @Database(entities = [
     ShaEntity::class,
     StopEntity::class,
-    StopTimetableTimeEntity::class
+    StopTimetableTimeEntity::class,
+    RouteEntity::class
 ], version = 3)
 @ConstructedBy(CacheDatabaseConstructor::class)
 abstract class CacheDatabase: RoomDatabase() {
     abstract fun sha(): ShaDao
     abstract fun stop(): StopDao
     abstract fun stopTimetableTime(): StopTimetableTimeEntityDao
+    abstract fun route(): RouteDao
 }
 
 @Single
@@ -60,4 +64,9 @@ fun stopDao(db: CacheDatabase): StopDao {
 @Factory
 fun stopTimetableTimeDao(db: CacheDatabase): StopTimetableTimeEntityDao {
     return db.stopTimetableTime()
+}
+
+@Factory
+fun routeDao(db: CacheDatabase): RouteDao {
+    return db.route()
 }
