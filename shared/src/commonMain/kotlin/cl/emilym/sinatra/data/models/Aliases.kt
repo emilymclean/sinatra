@@ -1,6 +1,7 @@
 package cl.emilym.sinatra.data.models
 
 typealias ShaDigest = String
+typealias ResourceKey = String
 
 typealias StopId = String
 typealias RouteId = String

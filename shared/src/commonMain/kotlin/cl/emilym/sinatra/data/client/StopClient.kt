@@ -15,13 +15,13 @@ class StopClient(
 ) {
 
     val stopsEndpointPair by lazy {
-        object : EndpointDigestPair<List<Stop>> {
+        object : EndpointDigestPair<List<Stop>>("stops") {
             override val endpoint = ::stops
             override val digest = ::stopsDigest
         }
     }
 
-    fun timetableEndpointPair(stopId: StopId) = object : EndpointDigestPair<StopTimetable> {
+    fun timetableEndpointPair(stopId: StopId) = object : EndpointDigestPair<StopTimetable>("stop/$stopId/timetable") {
         override val endpoint = suspend { timetable(stopId) }
         override val digest = suspend { timetableDigest(stopId) }
     }

@@ -15,4 +15,5 @@ data class ShaEntity(
     val sha: ShaDigest,
     val type: String,
     val resource: String,
+    val added: Long,
 )

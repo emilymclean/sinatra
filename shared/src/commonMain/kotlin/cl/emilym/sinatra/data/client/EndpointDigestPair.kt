@@ -1,10 +1,13 @@
 package cl.emilym.sinatra.data.client
 
+import cl.emilym.sinatra.data.models.ResourceKey
 import cl.emilym.sinatra.data.models.ShaDigest
 
-interface EndpointDigestPair<T> {
+abstract class EndpointDigestPair<T>(
+    val resource: ResourceKey
+) {
 
-    val endpoint: suspend () -> T
-    val digest: suspend () -> ShaDigest
+    abstract val endpoint: suspend () -> T
+    abstract val digest: suspend () -> ShaDigest
 
 }

@@ -6,6 +6,8 @@ plugins {
     alias(libs.plugins.androidLibrary)
     alias(libs.plugins.serialization)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.jetbrainsCompose)
+    alias(libs.plugins.compose.compiler)
     alias(libs.plugins.ktorfit)
     alias(libs.plugins.room)
 }
@@ -58,6 +60,7 @@ kotlin {
 
             // Emily Components
             implementation(libs.emily.serializable)
+            implementation(libs.emily.requeststate)
 
             // Coil
             implementation(libs.coil.network)

@@ -14,7 +14,7 @@ class ServiceClient(
     private val transportMetadataRepository: TransportMetadataRepository
 ) {
 
-    val servicesEndpointPair = object : EndpointDigestPair<List<Service>> {
+    val servicesEndpointPair = object : EndpointDigestPair<List<Service>>("services") {
         override val endpoint = ::services
         override val digest = ::servicesDigest
     }

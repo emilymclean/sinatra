@@ -6,7 +6,9 @@ import androidx.room.RoomDatabase
 import androidx.room.RoomDatabaseConstructor
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import cl.emilym.sinatra.room.dao.ShaDao
+import cl.emilym.sinatra.room.dao.StopDao
 import cl.emilym.sinatra.room.entities.ShaEntity
+import cl.emilym.sinatra.room.entities.StopEntity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import org.koin.core.annotation.Factory
@@ -22,10 +24,14 @@ expect object CacheDatabaseConstructor : RoomDatabaseConstructor<CacheDatabase> 
     override fun initialize(): CacheDatabase
 }
 
-@Database(entities = [ShaEntity::class], version = 1)
+@Database(entities = [
+    ShaEntity::class,
+    StopEntity::class
+], version = 2)
 @ConstructedBy(CacheDatabaseConstructor::class)
 abstract class CacheDatabase: RoomDatabase() {
     abstract fun sha(): ShaDao
+    abstract fun stop(): StopDao
 }
 
 @Single
@@ -41,4 +47,9 @@ fun cacheDatabase(builder: RoomDatabase.Builder<CacheDatabase>): CacheDatabase {
 @Factory
 fun shaDao(db: CacheDatabase): ShaDao {
     return db.sha()
+}
+
+@Factory
+fun stopDao(db: CacheDatabase): StopDao {
+    return db.stop()
 }

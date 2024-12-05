@@ -1,6 +1,7 @@
 package cl.emilym.sinatra.android
 
 import android.app.Application
+import cl.emilym.sinatra.manualModule
 import cl.emilym.sinatra.room.databaseBuilderModule
 import io.github.aakira.napier.DebugAntilog
 import io.github.aakira.napier.Napier
@@ -22,6 +23,7 @@ class MainApplication: Application() {
             modules(
                 AppModule().module,
                 databaseBuilderModule,
+                manualModule,
             )
         }
     }
