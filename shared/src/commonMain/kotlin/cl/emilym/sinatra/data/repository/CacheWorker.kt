@@ -5,6 +5,7 @@ import cl.emilym.sinatra.data.models.Cachable
 import cl.emilym.sinatra.data.models.CacheCategory
 import cl.emilym.sinatra.data.models.CacheState
 import cl.emilym.sinatra.data.models.ResourceKey
+import cl.emilym.sinatra.data.models.ShaDigest
 import cl.emilym.sinatra.e
 import io.github.aakira.napier.Napier
 import kotlinx.datetime.Clock
@@ -33,9 +34,9 @@ abstract class CacheWorker<T> {
             }
 
             when(info) {
-                is CacheInformation.Unavailable -> return fetch(info, pair, resource)
+                is CacheInformation.Unavailable -> return fetch(digest, info, pair, resource)
                 is CacheInformation.Available -> when {
-                    digest != info.digest -> return fetch(info, pair, resource)
+                    digest != info.digest -> return fetch(digest, info, pair, resource)
                 }
             }
         }
@@ -50,7 +51,8 @@ abstract class CacheWorker<T> {
         }
     }
 
-    private suspend fun fetch(info: CacheInformation, pair: EndpointDigestPair<T>, resource: ResourceKey): Cachable<T> {
+    private suspend fun fetch(digest: ShaDigest, info: CacheInformation, pair: EndpointDigestPair<T>, resource: ResourceKey): Cachable<T> {
+        shaRepository.save(digest, cacheCategory, resource)
         val data = try {
             pair.endpoint()
         } catch (e: Throwable) {

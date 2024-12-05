@@ -5,6 +5,7 @@ import cl.emilym.sinatra.data.models.ResourceKey
 import cl.emilym.sinatra.data.models.ShaDigest
 import cl.emilym.sinatra.room.dao.ShaDao
 import cl.emilym.sinatra.room.entities.ShaEntity
+import io.github.aakira.napier.Napier
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import org.koin.core.annotation.Factory
@@ -45,7 +46,9 @@ class ShaRepository(
     }
 
     suspend fun cached(category: CacheCategory, resource: ResourceKey): CacheInformation {
-        return shaDao.shaByTypeAndResource(category.db, resource)?.let {
+        return shaDao.shaByTypeAndResource(category.db, resource).also {
+            Napier.d("State of sha = ${it} (category = $category, resource = $resource)")
+        }?.let {
             CacheInformation.Available(it.sha, Instant.fromEpochMilliseconds(it.added))
         } ?: CacheInformation.Unavailable
     }
