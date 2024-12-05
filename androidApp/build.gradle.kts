@@ -40,6 +40,7 @@ android {
 
 dependencies {
     implementation(projects.shared)
+    implementation(projects.ui)
     implementation(libs.compose.ui)
     implementation(libs.compose.ui.tooling.preview)
     implementation(libs.compose.material3)

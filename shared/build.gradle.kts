@@ -5,8 +5,6 @@ plugins {
     alias(libs.plugins.kotlinCocoapods)
     alias(libs.plugins.androidLibrary)
     alias(libs.plugins.serialization)
-    alias(libs.plugins.jetbrainsCompose)
-    alias(libs.plugins.compose.compiler)
     alias(libs.plugins.ksp)
     alias(libs.plugins.ktorfit)
 }
@@ -43,19 +41,9 @@ kotlin {
             implementation(libs.koin.android)
         }
         commonMain.dependencies {
-            // Compose
-            implementation(compose.runtime)
-            implementation(compose.foundation)
-            implementation(compose.material3)
-            implementation(compose.ui)
-            implementation(compose.components.resources)
-            implementation(libs.compose.adaptive)
-            implementation(libs.compose.adaptive.layout)
 
             // Koin
             implementation(libs.koin.core)
-            implementation(libs.koin.compose)
-            implementation(libs.koin.compose.viewmodel)
             implementation(libs.koin.annotations)
 
             // Network
@@ -69,11 +57,8 @@ kotlin {
 
             // Emily Components
             implementation(libs.emily.serializable)
-            implementation(libs.emily.units)
-            implementation(libs.emily.requeststate)
 
             // Coil
-            implementation(libs.coil.compose)
             implementation(libs.coil.network)
 
             // Ktor
@@ -82,12 +67,7 @@ kotlin {
             implementation(libs.ktor.serialization.json)
 
             // Serialization
-            implementation(libs.kotlinx.serialization.protobuf)
             implementation(libs.pbandk)
-
-            // Voyager
-            implementation(libs.voyager.navigator)
-            implementation(libs.voyager.koin)
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
@@ -108,10 +88,6 @@ dependencies {
     add("kspIosX64", libs.koin.ksp.compiler)
     add("kspIosArm64", libs.koin.ksp.compiler)
     add("kspIosSimulatorArm64", libs.koin.ksp.compiler)
-}
-
-ksp {
-    arg("KOIN_USE_COMPOSE_VIEWMODEL", "true")
 }
 
 android {

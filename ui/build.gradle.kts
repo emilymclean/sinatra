@@ -39,10 +39,11 @@ kotlin {
 
     sourceSets {
         androidMain.dependencies {
-            implementation(libs.ktor.client.okhttp)
             implementation(libs.koin.android)
         }
         commonMain.dependencies {
+            implementation(projects.shared)
+
             // Compose
             implementation(compose.runtime)
             implementation(compose.foundation)
@@ -58,15 +59,6 @@ kotlin {
             implementation(libs.koin.compose.viewmodel)
             implementation(libs.koin.annotations)
 
-            // Network
-            implementation(libs.ktor.ktorfit.lib)
-            implementation(libs.ktor.negotiation)
-            implementation(libs.ktor.serialization.json)
-
-            // Exposed for convenience
-            api(libs.aakira.napier)
-            api(libs.kotlin.datetime)
-
             // Emily Components
             implementation(libs.emily.serializable)
             implementation(libs.emily.units)
@@ -76,30 +68,17 @@ kotlin {
             implementation(libs.coil.compose)
             implementation(libs.coil.network)
 
-            // Ktor
-            implementation(libs.ktor.ktorfit.lib)
-            implementation(libs.ktor.negotiation)
-            implementation(libs.ktor.serialization.json)
-
-            // Serialization
-            implementation(libs.kotlinx.serialization.protobuf)
-            implementation(libs.pbandk)
-
             // Voyager
             implementation(libs.voyager.navigator)
             implementation(libs.voyager.koin)
         }
         iosMain.dependencies {
-            implementation(libs.ktor.client.darwin)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
         }
     }
-
-    sourceSets.named("commonMain").configure {
-        kotlin.srcDir("build/generated/ksp/metadata/commonMain/kotlin")
-    }
+    
 }
 
 dependencies {

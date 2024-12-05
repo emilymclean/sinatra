@@ -1,6 +1,7 @@
 package cl.emilym.betterbuscanberra.android
 
 import android.app.Application
+import cl.emilym.sinatra.ui.UIModule
 import io.github.aakira.napier.DebugAntilog
 import io.github.aakira.napier.Napier
 import org.koin.android.ext.koin.androidContext
@@ -19,7 +20,8 @@ class MainApplication: Application() {
             androidLogger()
             androidContext(this@MainApplication)
             modules(
-                AppModule().module
+                AppModule().module,
+                UIModule().module
             )
         }
     }
