@@ -21,7 +21,7 @@ fun App() {
         }
 
         SinatraTheme {
-            Navigator(RouteListScreen())
+            Navigator(RootMapScreen())
         }
     }
 }

@@ -22,6 +22,7 @@ import cl.emilym.sinatra.ui.maps.MapsManager
 import cl.emilym.sinatra.ui.maps.MapsManagerSaver
 import cl.emilym.sinatra.ui.maps.MarkerMapObject
 import cl.emilym.sinatra.ui.maps.PolygonMapObject
+import cl.emilym.sinatra.ui.navigation.MapScope
 import cl.emilym.sinatra.ui.presentation.screens.maps.MapSearchScreen
 import cl.emilym.sinatra.ui.toMaps
 import cl.emilym.sinatra.ui.widgets.LocalPopEvent
@@ -67,33 +68,24 @@ actual class RootMapScreen : Screen {
                     zoomControlsEnabled = false
                 )
             ) {
-                for (obj in objects) {
-                    when(obj) {
-                        is MarkerMapObject -> Marker(
-                            state = rememberMarkerState(position = obj.position.toMaps())
-                        )
-                        is LineMapObject -> Polyline(obj.shape.map { it.toMaps() })
-                        is PolygonMapObject -> Polygon(obj.shape.map { it.toMaps() })
-                        else -> Napier.e("Unknown type ${obj::class}")
-                    }
-                }
+                MapScope().Test()
             }
 
-            val coroutineScope = rememberCoroutineScope()
-            CompositionLocalProvider(
-                LocalMapsManager provides mapsManager,
-                LocalPopEvent provides popEffectStore
-            ) {
-                Navigator(
-                    MapSearchScreen(),
-                    onBackPressed = {
-                        coroutineScope.launch {
-                            popEffectStore.emit(it.key)
-                        }
-                        true
-                    }
-                )
-            }
+//            val coroutineScope = rememberCoroutineScope()
+//            CompositionLocalProvider(
+//                LocalMapsManager provides mapsManager,
+//                LocalPopEvent provides popEffectStore
+//            ) {
+//                Navigator(
+//                    MapSearchScreen(),
+//                    onBackPressed = {
+//                        coroutineScope.launch {
+//                            popEffectStore.emit(it.key)
+//                        }
+//                        true
+//                    }
+//                )
+//            }
         }
     }
 }
