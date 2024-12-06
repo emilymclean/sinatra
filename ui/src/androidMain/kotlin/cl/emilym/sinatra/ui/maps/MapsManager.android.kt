@@ -5,54 +5,73 @@ import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.SaverScope
 import cl.emilym.sinatra.data.models.Location
 import cl.emilym.sinatra.ui.presentation.screens.MapStackKey
+import io.github.aakira.napier.Napier
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.getAndUpdate
+import kotlinx.coroutines.flow.map
 import java.io.Serializable
 import java.lang.ref.WeakReference
+import java.util.Map.entry
 
 class MapStackEntry(
     val stackKey: MapStackKey,
-    val objects: MutableMap<MapObjectKey, MapObject>
+    val objects: Map<MapObjectKey, MapObject>
 ): Serializable
 
 actual class MapsManager private constructor(
-    val stack: MutableList<MapStackEntry>
+    stack: List<MapStackEntry>
 ): MapsManagerHandle {
 
-    private val current: MutableMap<MapObjectKey, MapObject>? get() = stack.lastOrNull()?.objects
+    val stack = MutableStateFlow(stack)
+    val objects: Flow<Collection<MapObject>> = this.stack.map { it.lastOrNull()?.objects?.values ?: listOf() }
 
-    private val _objects = MutableStateFlow<Collection<MapObject>>(listOf())
-    val objects: Flow<Collection<MapObject>> = _objects
-
-    private fun update() {
-        _objects.value = current?.values ?: listOf()
+    private fun update(stackKey: MapStackKey, operation: (Map<MapObjectKey, MapObject>) -> Map<MapObjectKey, MapObject>) {
+        stack.getAndUpdate {
+            it.map {
+                when {
+                    it.stackKey == stackKey -> MapStackEntry(
+                        stackKey,
+                        operation(it.objects)
+                    )
+                    else -> it
+                }
+            }
+        }
     }
 
-    private fun entry(stackKey: MapStackKey): MutableMap<MapObjectKey, MapObject>? = stack.firstOrNull {
-        it.stackKey == stackKey
-    }?.objects
-
     override fun add(obj: MapObject, stackKey: MapStackKey) {
-        entry(stackKey)?.set(obj.key, obj)
-        update()
+        update(stackKey) {
+            it + mapOf(
+                obj.key to obj
+            )
+        }
     }
 
     override fun delete(key: MapObjectKey, stackKey: MapStackKey) {
-        entry(stackKey)?.remove(key)
-        update()
+        update(stackKey) {
+            it.filter { it.key == stackKey }
+        }
     }
 
     override fun show(pos: Location, stackKey: MapStackKey) {}
     override fun show(tl: Location, br: Location, stackKey: MapStackKey) {}
 
     actual fun push(key: MapStackKey) {
-        if (stack.any { it.stackKey == key }) return
-        stack.add(MapStackEntry(key, mutableMapOf()))
-        update()
+        stack.getAndUpdate {
+            if (it.any { it.stackKey == key }) return@getAndUpdate it
+            it + MapStackEntry(key, mapOf())
+        }
     }
 
     actual fun pop(key: MapStackKey?) {
-        stack.removeAt(stack.lastIndex)
+        stack.getAndUpdate {
+            when {
+                key != null -> it.filter { it.stackKey == key }
+                else -> it.dropLast(1)
+            }
+        }
     }
 
     actual fun handleFor(key: MapStackKey): MapsHandle {
@@ -79,7 +98,7 @@ class MapsManagerSaver: Saver<MapsManager, List<MapStackEntry>> {
     }
 
     override fun SaverScope.save(value: MapsManager): List<MapStackEntry> {
-        return value.stack
+        return value.stack.value
     }
 }
 

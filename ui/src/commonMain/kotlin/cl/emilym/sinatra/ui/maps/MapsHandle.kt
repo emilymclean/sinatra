@@ -1,9 +1,11 @@
 package cl.emilym.sinatra.ui.maps
 
+import androidx.compose.runtime.Composable
 import cl.emilym.kmp.serializable.Serializable
 import cl.emilym.sinatra.data.models.Location
 import cl.emilym.sinatra.lib.NativeWeakReference
 import cl.emilym.sinatra.ui.presentation.screens.MapStackKey
+import io.github.aakira.napier.Napier
 
 typealias MapObjectKey = String
 
@@ -73,6 +75,7 @@ internal class DefaultMapsHandle(
     }
 
     override fun addMarker(position: Location): MapObjectKey {
+        Napier.d("Creating marker (at location ${position})")
         val marker = MarkerMapObject(
             generateMapObjectKey(),
             position

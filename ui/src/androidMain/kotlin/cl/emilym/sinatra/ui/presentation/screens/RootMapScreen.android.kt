@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -33,6 +34,7 @@ import com.google.maps.android.compose.Polygon
 import com.google.maps.android.compose.Polyline
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberMarkerState
+import io.github.aakira.napier.Napier
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 
@@ -44,6 +46,10 @@ actual class RootMapScreen : Screen {
         val popEffectStore = remember { MutableSharedFlow<ScreenKey>() }
 
         val objects by mapsManager.objects.collectAsState(listOf())
+        LaunchedEffect(objects) {
+            Napier.d("Map object count = ${objects.size} (manager = ${mapsManager})")
+        }
+
         val cameraPositionState = rememberCameraPositionState {
             position = CameraPosition.fromLatLngZoom(canberra.toMaps(), 10f)
         }
@@ -68,6 +74,7 @@ actual class RootMapScreen : Screen {
                         )
                         is LineMapObject -> Polyline(obj.shape.map { it.toMaps() })
                         is PolygonMapObject -> Polygon(obj.shape.map { it.toMaps() })
+                        else -> Napier.e("Unknown type ${obj::class}")
                     }
                 }
             }
