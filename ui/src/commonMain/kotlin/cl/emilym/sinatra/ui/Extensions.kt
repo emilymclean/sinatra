@@ -23,3 +23,4 @@ fun OnColor.color() = when (this) {
 fun ColorPair.color() = color.toColor()
 @Composable
 fun ColorPair.onColor() = onColor.color()
+

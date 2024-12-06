@@ -83,3 +83,4 @@ lint/tmp/
 
 .idea/
 .kotlin/
+secrets.properties

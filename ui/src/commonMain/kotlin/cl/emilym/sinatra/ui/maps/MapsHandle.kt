@@ -1,9 +1,9 @@
-package cl.emilym.sinatra.ui.presentation
+package cl.emilym.sinatra.ui.maps
 
-import androidx.compose.ui.node.WeakReference
-import cafe.adriel.voyager.core.concurrent.ThreadSafeMap
 import cl.emilym.kmp.serializable.Serializable
 import cl.emilym.sinatra.data.models.Location
+import cl.emilym.sinatra.lib.NativeWeakReference
+import cl.emilym.sinatra.ui.presentation.screens.MapStackKey
 
 typealias MapObjectKey = String
 
@@ -41,18 +41,17 @@ class MarkerMapObject(
 
 expect fun generateMapObjectKey(): MapObjectKey
 
-private class DefaultMapsHandle(
-    private val mapsManagerHandle: WeakReference<MapsManagerHandle>
+internal class DefaultMapsHandle(
+    private val mapsManagerHandle: NativeWeakReference<MapsManagerHandle>,
+    private val stackKey: MapStackKey
 ): MapsHandle {
 
-    val items = ThreadSafeMap<MapObjectKey, MapObject>()
-
     override fun showPoint(position: Location) {
-        mapsManagerHandle.get()?.show(position)
+        mapsManagerHandle.get()?.show(position, stackKey)
     }
 
     override fun showArea(topLeft: Location, bottomRight: Location) {
-        mapsManagerHandle.get()?.show(topLeft, bottomRight)
+        mapsManagerHandle.get()?.show(topLeft, bottomRight, stackKey)
     }
 
     override fun addPolygon(shape: List<Location>): MapObjectKey {
@@ -60,9 +59,7 @@ private class DefaultMapsHandle(
             generateMapObjectKey(),
             shape
         )
-
-        items[poly.key] = poly
-        mapsManagerHandle.get()?.add(poly)
+        mapsManagerHandle.get()?.add(poly, stackKey)
         return poly.key
     }
 
@@ -71,9 +68,7 @@ private class DefaultMapsHandle(
             generateMapObjectKey(),
             shape
         )
-
-        items[line.key] = line
-        mapsManagerHandle.get()?.add(line)
+        mapsManagerHandle.get()?.add(line, stackKey)
         return line.key
     }
 
@@ -82,26 +77,12 @@ private class DefaultMapsHandle(
             generateMapObjectKey(),
             position
         )
-
-        items[marker.key] = marker
-        mapsManagerHandle.get()?.add(marker)
+        mapsManagerHandle.get()?.add(marker, stackKey)
         return marker.key
     }
 
     override fun delete(key: MapObjectKey) {
-        items.remove(key)
-        mapsManagerHandle.get()?.delete(key)
+        mapsManagerHandle.get()?.delete(key, stackKey)
     }
 
 }
-
-interface MapsManagerHandle {
-
-    fun add(obj: MapObject)
-    fun delete(key: MapObjectKey)
-    fun show(pos: Location)
-    fun show(tl: Location, br: Location)
-
-}
-
-expect class MapsManager: MapsManagerHandle

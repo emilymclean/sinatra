@@ -99,7 +99,7 @@ room {
 
 android {
     namespace = "cl.emilym.sinatra"
-    compileSdk = 34
+    compileSdk = 35
     defaultConfig {
         minSdk = 24
     }

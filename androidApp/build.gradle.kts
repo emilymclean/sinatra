@@ -4,11 +4,12 @@ plugins {
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.ksp)
     alias(libs.plugins.ktorfit)
+    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
 }
 
 android {
     namespace = "cl.emilym.sinatra.android"
-    compileSdk = 34
+    compileSdk = 35
     defaultConfig {
         applicationId = "cl.emilym.sinatra.android"
         minSdk = 24
@@ -66,4 +67,11 @@ dependencies {
 
 ksp {
     arg("KOIN_CONFIG_CHECK","true")
+}
+
+secrets {
+    propertiesFileName = "secrets.properties"
+    defaultPropertiesFileName = "local.defaults.properties"
+    ignoreList.add("keyToIgnore")
+    ignoreList.add("sdk.*")
 }

@@ -39,6 +39,7 @@ kotlin {
     sourceSets {
         androidMain.dependencies {
             implementation(libs.koin.android)
+            implementation(libs.maps.compose)
         }
         commonMain.dependencies {
             implementation(project(":shared"))
@@ -86,7 +87,7 @@ dependencies {
 
 android {
     namespace = "cl.emilym.sinatra.ui"
-    compileSdk = 34
+    compileSdk = 35
     defaultConfig {
         minSdk = 24
     }

@@ -1,4 +1,4 @@
-package cl.emilym.sinatra.ui.presentation
+package cl.emilym.sinatra.ui.maps
 
 import cl.emilym.sinatra.data.models.Location
 import platform.Foundation.NSUUID
