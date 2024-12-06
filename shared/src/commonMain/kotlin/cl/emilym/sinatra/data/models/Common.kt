@@ -1,5 +1,6 @@
 package cl.emilym.sinatra.data.models
 
+import cl.emilym.kmp.serializable.Serializable
 import kotlinx.datetime.Instant
 import kotlin.time.Duration
 
@@ -19,7 +20,7 @@ interface StopTime {
 data class Location(
     val lat: Latitude,
     val lng: Longitude
-) {
+): Serializable {
 
     companion object {
         fun fromPB(pb: cl.emilym.gtfs.Location): Location {
