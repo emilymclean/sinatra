@@ -11,8 +11,10 @@ import cl.emilym.sinatra.data.models.ServiceId
 import cl.emilym.sinatra.data.models.ShaDigest
 import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.network.GtfsApi
+import org.koin.core.annotation.Factory
 import pbandk.decodeFromByteArray
 
+@Factory
 class RouteClient(
     val gtfsApi: GtfsApi
 ) {

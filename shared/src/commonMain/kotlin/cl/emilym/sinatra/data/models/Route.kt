@@ -9,7 +9,8 @@ data class Route(
     val colors: ColorPair?,
     val name: String,
     val realTimeUrl: String?,
-    val type: RouteType
+    val type: RouteType,
+    val designation: String?
 ) {
 
     companion object {
@@ -21,7 +22,8 @@ data class Route(
                 pb.colors?.let { ColorPair.fromPB(it) },
                 pb.name,
                 pb.realTimeUrl,
-                RouteType.fromPB(pb.type)
+                RouteType.fromPB(pb.type),
+                pb.designation
             )
         }
     }

@@ -1,6 +1,7 @@
 package cl.emilym.sinatra.data.models
 
 import cl.emilym.kmp.serializable.Serializable
+import io.github.aakira.napier.Napier
 import kotlinx.datetime.Instant
 import kotlin.time.Duration
 
@@ -56,7 +57,7 @@ data class ColorPair(
         fun fromPB(pb: cl.emilym.gtfs.ColorPair): ColorPair {
             return ColorPair(
                 pb.color,
-                OnColor.fromPB(pb.color)
+                OnColor.fromPB(pb.onColor)
             )
         }
     }

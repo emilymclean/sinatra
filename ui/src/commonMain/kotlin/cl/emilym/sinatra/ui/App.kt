@@ -1,9 +1,9 @@
 package cl.emilym.sinatra.ui
 
 import androidx.compose.runtime.Composable
-import cafe.adriel.voyager.core.registry.rememberScreen
 import cafe.adriel.voyager.navigator.Navigator
 import cl.emilym.sinatra.ui.presentation.screens.RootMapScreen
+import cl.emilym.sinatra.ui.presentation.screens.maps.RouteListScreen
 import cl.emilym.sinatra.ui.presentation.theme.SinatraTheme
 import coil3.ImageLoader
 import coil3.compose.setSingletonImageLoaderFactory
@@ -21,7 +21,7 @@ fun App() {
         }
 
         SinatraTheme {
-            Navigator(RootMapScreen())
+            Navigator(RouteListScreen())
         }
     }
 }

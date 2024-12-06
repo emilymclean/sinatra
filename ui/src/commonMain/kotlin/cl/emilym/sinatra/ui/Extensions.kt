@@ -7,10 +7,18 @@ import cl.emilym.sinatra.data.models.OnColor
 import cl.emilym.sinatra.data.models.OnColor.DARK
 import cl.emilym.sinatra.data.models.OnColor.LIGHT
 
-@OptIn(ExperimentalStdlibApi::class)
 fun String.toColor(): Color {
-    val h = trimStart { it == '#' }.hexToULong()
-    return Color(h)
+    val trimmed = removePrefix("#")
+    var colorInt = trimmed.toLong(radix = 16)
+    if (trimmed.length == 6) {
+        colorInt = 0x00000000ff000000 or colorInt
+    }
+    return Color(
+        alpha = (colorInt.shr(24) and 0xFF).toInt(),
+        red = (colorInt.shr(16) and 0xFF).toInt(),
+        green = (colorInt.shr(8) and 0xFF).toInt(),
+        blue = (colorInt.shr(0) and 0xFF).toInt()
+    )
 }
 
 @Composable

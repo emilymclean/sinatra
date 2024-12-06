@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.BottomSheetScaffold
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -16,6 +18,8 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import cafe.adriel.voyager.navigator.Navigator
+import cafe.adriel.voyager.navigator.bottomSheet.BottomSheetNavigator
 import cl.emilym.compose.requeststate.RequestState
 import cl.emilym.compose.requeststate.handle
 import cl.emilym.compose.requeststate.unwrap
@@ -54,27 +58,36 @@ class MapSearchViewModel(
 class MapSearchScreen: MapsScreen() {
     override val needsMapHandle: Boolean = true
 
+    @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     override fun MainContent() {
-        val viewModel = koinViewModel<MapSearchViewModel>()
 
-        val stops by viewModel.stops.unwrap(listOf()).collectAsState(listOf())
-        MapObjects {
-            for (stop in stops) {
-                marker(stop.location)
+
+        BottomSheetScaffold(
+            sheetContent = {
+                Navigator(RouteListScreen())
             }
-        }
+        ) {
+            val viewModel = koinViewModel<MapSearchViewModel>()
 
-        Box(Modifier.padding(1.rdp)) {
-            Row(
-                Modifier
-                    .shadow(10.dp, shape = PillShape)
-                    .clip(PillShape)
-                    .background(MaterialTheme.colorScheme.surface)
-                    .fillMaxWidth()
-                    .padding(0.5.rdp)
-            ) {
-                Text("Test")
+            val stops by viewModel.stops.unwrap(listOf()).collectAsState(listOf())
+            MapObjects {
+                for (stop in stops) {
+                    marker(stop.location)
+                }
+            }
+
+            Box(Modifier.padding(1.rdp)) {
+                Row(
+                    Modifier
+                        .shadow(10.dp, shape = PillShape)
+                        .clip(PillShape)
+                        .background(MaterialTheme.colorScheme.surface)
+                        .fillMaxWidth()
+                        .padding(0.5.rdp)
+                ) {
+                    Text("Test")
+                }
             }
         }
     }

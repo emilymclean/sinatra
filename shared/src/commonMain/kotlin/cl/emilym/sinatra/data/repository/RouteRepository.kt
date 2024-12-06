@@ -93,4 +93,8 @@ class RouteRepository(
     suspend fun serviceTimetable(routeId: RouteId, serviceId: ServiceId) =
         routeServiceTimetableCacheWorker.get(routeId, serviceId)
 
+    suspend fun ignoredRoutes(): List<RouteId> {
+        return listOf("NIS", "X1", "X2", "X3", "X4")
+    }
+
 }

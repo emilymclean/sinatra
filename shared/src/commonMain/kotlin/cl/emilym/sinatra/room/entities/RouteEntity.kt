@@ -29,7 +29,8 @@ data class RouteEntity(
     val onColor: String?,
     val name: String,
     val realTimeUrl: String?,
-    val type: String
+    val type: String,
+    val designation: String?
 ) {
 
     fun toModel(): Route {
@@ -42,7 +43,8 @@ data class RouteEntity(
             else null,
             name,
             realTimeUrl,
-            RouteType.valueOf(type)
+            RouteType.valueOf(type),
+            designation
         )
     }
 
@@ -56,7 +58,8 @@ data class RouteEntity(
                 m.colors?.onColor?.name,
                 m.name,
                 m.realTimeUrl,
-                m.type.name
+                m.type.name,
+                m.designation
             )
         }
     }
