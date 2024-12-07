@@ -27,6 +27,7 @@ import cl.emilym.sinatra.domain.CurrentTripForRouteUseCase
 import cl.emilym.sinatra.domain.CurrentTripInformation
 import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
 import cl.emilym.sinatra.ui.navigation.MapScreen
+import cl.emilym.sinatra.ui.widgets.RouteLine
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -92,6 +93,12 @@ class RouteDetailScreen(
 
     @Composable
     fun TripDetails(route: Route, info: RouteTripInformation) {
-        Text("Trip")
+        Column(
+            Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+        ) {
+            RouteLine(route, info.stops.mapNotNull { it.stop })
+        }
     }
 }

@@ -166,12 +166,12 @@ data class RouteTripStopEntityWithStop(
         parentColumn = "stopId",
         entityColumn = "id"
     )
-    val stop: StopEntity
+    val stop: StopEntity?
 ) {
 
     fun toModel(): RouteTripStop {
         return routeTripStop.toModel().copy(
-            stop = stop.toModel()
+            stop = stop?.toModel()
         )
     }
 
