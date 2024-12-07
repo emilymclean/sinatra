@@ -5,21 +5,25 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import cafe.adriel.voyager.navigator.Navigator
 import cl.emilym.compose.requeststate.RequestState
 import cl.emilym.compose.requeststate.handle
 import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.data.repository.StopRepository
 import cl.emilym.sinatra.ui.canberra
+import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
 import cl.emilym.sinatra.ui.navigation.MapScope
 import cl.emilym.sinatra.ui.navigation.MapScreen
 import cl.emilym.sinatra.ui.widgets.PillShape
@@ -74,6 +78,17 @@ class MapSearchScreen: MapScreen {
             canberra.copy(lat = canberra.lat - 0.5, lng = canberra.lng - 0.5),
             canberra.copy(lat = canberra.lat + 0.5, lng = canberra.lng + 0.5)
         ))
+    }
+
+    @OptIn(ExperimentalMaterial3Api::class)
+    @Composable
+    override fun BottomSheetContent() {
+        val bottomSheet = LocalBottomSheetState.current
+        LaunchedEffect(bottomSheet) {
+            bottomSheet.bottomSheetState.partialExpand()
+        }
+
+        Navigator(RouteListScreen())
     }
 
 }

@@ -55,21 +55,18 @@ class RouteListScreen: Screen {
     override fun Content() {
         val viewModel = koinViewModel<RouteListViewModel>()
 
-        Scaffold { innerPadding ->
-            Box(
-                Modifier
-                    .padding(innerPadding)
-                    .fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                val routes by viewModel.routes.collectAsState(RequestState.Initial())
-                RequestStateWidget(routes, { viewModel.retry() }) { routes ->
-                    LazyColumn(
-                        verticalArrangement = Arrangement.spacedBy(0.5.rdp)
-                    ) {
-                        items(routes.size) {
-                            RouteCard(routes[it])
-                        }
+        Box(
+            Modifier
+                .fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            val routes by viewModel.routes.collectAsState(RequestState.Initial())
+            RequestStateWidget(routes, { viewModel.retry() }) { routes ->
+                LazyColumn(
+                    verticalArrangement = Arrangement.spacedBy(0.5.rdp)
+                ) {
+                    items(routes.size) {
+                        RouteCard(routes[it])
                     }
                 }
             }
