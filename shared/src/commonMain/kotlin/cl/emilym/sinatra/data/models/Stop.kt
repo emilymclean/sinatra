@@ -4,6 +4,8 @@ import cl.emilym.gtfs.WheelchairStopAccessibility
 import kotlinx.datetime.Instant
 import kotlin.time.Duration
 
+private val SIMPLE_TERMINATORS = arrayOf(" Platform", " at", " Plt")
+
 data class Stop(
     val id: StopId,
     val parentStation: StopId?,
@@ -22,6 +24,14 @@ data class Stop(
                 StopAccessibility.fromPB(pb.accessibility)
             )
         }
+    }
+
+    val simpleName: String get() {
+        for (t in SIMPLE_TERMINATORS) {
+            if (!name.contains(t)) continue
+            return name.substring(0, name.indexOf(t))
+        }
+        return name
     }
 
 }

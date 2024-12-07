@@ -70,6 +70,7 @@ fun RouteLine(
     route: Route,
     stops: List<Stop>
 ) {
+    if (stops.isEmpty()) return
     val color = route.colors?.color() ?: MaterialTheme.colorScheme.onSurface
     Box(Modifier.horizontalScroll(rememberScrollState())) {
         RouteLine(
@@ -84,7 +85,7 @@ fun RouteLine(
             {
                 for (s in stops) {
                     Text(
-                        s.name,
+                        s.simpleName,
                         style = MaterialTheme.typography.labelMedium,
                         modifier = Modifier.rotate(-80f)
                     )
