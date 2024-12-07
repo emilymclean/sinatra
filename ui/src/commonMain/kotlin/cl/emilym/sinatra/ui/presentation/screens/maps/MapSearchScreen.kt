@@ -5,34 +5,27 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.BottomSheetScaffold
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import cafe.adriel.voyager.navigator.Navigator
-import cafe.adriel.voyager.navigator.bottomSheet.BottomSheetNavigator
 import cl.emilym.compose.requeststate.RequestState
 import cl.emilym.compose.requeststate.handle
-import cl.emilym.compose.requeststate.unwrap
 import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.data.repository.StopRepository
-import cl.emilym.sinatra.ui.maps.MapObjects
-import cl.emilym.sinatra.ui.presentation.screens.MapsScreen
+import cl.emilym.sinatra.ui.canberra
+import cl.emilym.sinatra.ui.navigation.MapScope
+import cl.emilym.sinatra.ui.navigation.MapScreen
 import cl.emilym.sinatra.ui.widgets.PillShape
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
-import org.koin.compose.viewmodel.koinViewModel
 
 @KoinViewModel
 class MapSearchViewModel(
@@ -55,40 +48,32 @@ class MapSearchViewModel(
 
 }
 
-class MapSearchScreen: MapsScreen() {
-    override val needsMapHandle: Boolean = true
+class MapSearchScreen: MapScreen {
 
-    @OptIn(ExperimentalMaterial3Api::class)
     @Composable
-    override fun MainContent() {
-
-
-        BottomSheetScaffold(
-            sheetContent = {
-                Navigator(RouteListScreen())
-            }
-        ) {
-            val viewModel = koinViewModel<MapSearchViewModel>()
-
-            val stops by viewModel.stops.unwrap(listOf()).collectAsState(listOf())
-            MapObjects {
-                for (stop in stops) {
-                    marker(stop.location)
-                }
-            }
-
-            Box(Modifier.padding(1.rdp)) {
-                Row(
-                    Modifier
-                        .shadow(10.dp, shape = PillShape)
-                        .clip(PillShape)
-                        .background(MaterialTheme.colorScheme.surface)
-                        .fillMaxWidth()
-                        .padding(0.5.rdp)
-                ) {
-                    Text("Test")
-                }
+    override fun Content() {
+        Box(Modifier.padding(1.rdp)) {
+            Row(
+                Modifier
+                    .shadow(10.dp, shape = PillShape)
+                    .clip(PillShape)
+                    .background(MaterialTheme.colorScheme.surface)
+                    .fillMaxWidth()
+                    .padding(0.5.rdp)
+            ) {
+                Text("Test")
             }
         }
     }
+
+    @Composable
+    override fun MapScope.MapContent() {
+        Marker(canberra)
+        Marker(canberra.copy(lat = canberra.lat + 0.1))
+        Line(listOf(
+            canberra.copy(lat = canberra.lat - 0.5, lng = canberra.lng - 0.5),
+            canberra.copy(lat = canberra.lat + 0.5, lng = canberra.lng + 0.5)
+        ))
+    }
+
 }
