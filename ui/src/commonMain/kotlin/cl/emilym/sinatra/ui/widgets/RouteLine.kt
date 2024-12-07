@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
@@ -57,23 +58,27 @@ fun RouteLine(
     val color = route.colors?.color() ?: MaterialTheme.colorScheme.onSurface
     Box(
         contentAlignment = Alignment.Center,
-        modifier = Modifier.width(IntrinsicSize.Min)
+        modifier = Modifier
+            .horizontalScroll(rememberScrollState())
+            .width(IntrinsicSize.Max),
     ) {
         Box(Modifier
             .height(0.5.rdp)
+            .padding(horizontal = 1.5.rdp)
             .fillMaxWidth()
             .background(color)
         )
         Row(
-            Modifier.horizontalScroll(rememberScrollState()),
             horizontalArrangement = Arrangement.spacedBy(1.rdp),
         ) {
+            Box {}
             for (i in stops.indices) {
                 RouteNode(
                     i == 0 || i == stops.size - 1,
                     color
                 )
             }
+            Box {}
         }
     }
 }

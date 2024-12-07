@@ -44,17 +44,26 @@ class CurrentTripForRouteUseCase(
         val timetable = activeServices.flatMap { routeRepository.serviceTimetable(routeId, it!!.id) }
         val activeTimetable = timetable.map { it.trips.firstOrNull { it.active(now, startOfDay) } }
 
-        return if (activeTimetable.item != null) {
-            activeTimetable.map { CurrentTripInformation(it!!, route) }
-        } else {
-            timetable.map { it.trips.minByOrNull {
-                val diff = it.startTime(startOfDay) - now
+        fun getClosestTrip(compTime: Instant): RouteTripInformation? {
+            return timetable.item.trips.minByOrNull {
+                val diff = it.startTime(startOfDay) - compTime
                 if (diff.isNegative()) {
                     Duration.INFINITE
                 } else {
                     diff
                 }
-            }.let { CurrentTripInformation(it, route) } }
+            }
+        }
+
+        return if (activeTimetable.item != null) {
+            activeTimetable.map { CurrentTripInformation(it!!, route) }
+        } else {
+            timetable.map {
+                CurrentTripInformation(
+                    getClosestTrip(now) ?: getClosestTrip(startOfDay),
+                    route
+                )
+            }
         }
     }
 

@@ -1,11 +1,14 @@
 package cl.emilym.sinatra.ui.presentation.screens.maps
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -19,6 +22,7 @@ import cafe.adriel.voyager.core.screen.Screen
 import cl.emilym.compose.requeststate.RequestState
 import cl.emilym.compose.requeststate.RequestStateWidget
 import cl.emilym.compose.requeststate.handle
+import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.data.models.Route
 import cl.emilym.sinatra.data.models.RouteId
 import cl.emilym.sinatra.data.models.RouteTripInformation
@@ -96,9 +100,18 @@ class RouteDetailScreen(
         Column(
             Modifier
                 .fillMaxSize()
-                .verticalScroll(rememberScrollState())
+                .verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(1.rdp)
         ) {
+            Box {}
+            Column(Modifier.padding(horizontal = 1.rdp)) {
+                Text(
+                    route.name,
+                    style = MaterialTheme.typography.titleLarge
+                )
+            }
             RouteLine(route, info.stops.mapNotNull { it.stop })
+            Box {}
         }
     }
 }
