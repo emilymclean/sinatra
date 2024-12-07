@@ -39,7 +39,7 @@ class RouteClient(
         }
 
     suspend fun routes(): List<Route> {
-        val pbStops = RouteEndpoint.decodeFromByteArray(gtfsApi.routes())
+        val pbStops = gtfsApi.routes()
         return pbStops.route.map { Route.fromPB(it) }
     }
 
@@ -48,8 +48,8 @@ class RouteClient(
     }
 
     suspend fun routeServices(routeId: RouteId): List<ServiceId> {
-        return RouteServicesEndpoint.decodeFromByteArray(gtfsApi.routeServices(routeId)).serviceIds.apply {
-            Napier.d("Services for route = $routeId")
+        return gtfsApi.routeServices(routeId).serviceIds.apply {
+            Napier.d("Services for route = $this")
         }
     }
 
@@ -58,11 +58,9 @@ class RouteClient(
     }
 
     suspend fun routeServiceTimetable(routeId: RouteId, serviceId: ServiceId): RouteServiceTimetable {
-        val response = gtfsApi.routeServiceTimetable(
+        val pb = gtfsApi.routeServiceTimetable(
             routeId, serviceId
         )
-        Napier.d("Response = ${response}")
-        val pb = RouteTimetableEndpoint.decodeFromByteArray(response)
         Napier.d("Got timetable for ${routeId} and ${serviceId}")
         return RouteServiceTimetable.fromPB(pb)
     }

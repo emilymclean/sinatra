@@ -21,7 +21,7 @@ class ServiceClient(
     }
 
     suspend fun services(): List<Service> {
-        val servicesPB = ServiceEndpoint.decodeFromByteArray(gtfsApi.services())
+        val servicesPB = gtfsApi.services()
         Napier.d("Got services")
         return servicesPB.service.map { Service.fromPB(it, transportMetadataRepository.timeZone()) }
     }
