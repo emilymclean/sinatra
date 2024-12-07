@@ -1,0 +1,4 @@
+<resources>
+    <string name="route_not_found">The requested route could not be found.</string>
+    <string name="trip_not_found">There are currently no trips for the requested route.</string>
+</resources>

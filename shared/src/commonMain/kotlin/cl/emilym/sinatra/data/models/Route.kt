@@ -105,7 +105,8 @@ data class RouteTripStop(
     val stopId: StopId,
     override val arrivalTime: Time,
     override val departureTime: Time,
-    val sequence: Int
+    val sequence: Int,
+    val stop: Stop?
 ): StopTime {
 
     companion object {
@@ -114,7 +115,8 @@ data class RouteTripStop(
                 pb.stopId,
                 parseTime(pb.arrivalTime),
                 parseTime(pb.departureTime),
-                pb.sequence
+                pb.sequence,
+                null
             )
         }
     }

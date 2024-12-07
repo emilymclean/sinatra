@@ -11,6 +11,7 @@ import cl.emilym.sinatra.data.models.ServiceId
 import cl.emilym.sinatra.data.models.ShaDigest
 import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.network.GtfsApi
+import io.github.aakira.napier.Napier
 import org.koin.core.annotation.Factory
 import pbandk.decodeFromByteArray
 
@@ -47,7 +48,9 @@ class RouteClient(
     }
 
     suspend fun routeServices(routeId: RouteId): List<ServiceId> {
-        return RouteServicesEndpoint.decodeFromByteArray(gtfsApi.routeServices(routeId)).serviceIds
+        return RouteServicesEndpoint.decodeFromByteArray(gtfsApi.routeServices(routeId)).serviceIds.apply {
+            Napier.d("Services for route = $routeId")
+        }
     }
 
     suspend fun routeServicesDigest(routeId: RouteId): ShaDigest {
@@ -55,9 +58,12 @@ class RouteClient(
     }
 
     suspend fun routeServiceTimetable(routeId: RouteId, serviceId: ServiceId): RouteServiceTimetable {
-        val pb = RouteTimetableEndpoint.decodeFromByteArray(gtfsApi.routeServiceTimetable(
+        val response = gtfsApi.routeServiceTimetable(
             routeId, serviceId
-        ))
+        )
+        Napier.d("Response = ${response}")
+        val pb = RouteTimetableEndpoint.decodeFromByteArray(response)
+        Napier.d("Got timetable for ${routeId} and ${serviceId}")
         return RouteServiceTimetable.fromPB(pb)
     }
 

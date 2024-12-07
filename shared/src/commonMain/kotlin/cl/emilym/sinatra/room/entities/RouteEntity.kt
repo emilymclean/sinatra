@@ -1,8 +1,10 @@
 package cl.emilym.sinatra.room.entities
 
+import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
+import androidx.room.Relation
 import cl.emilym.sinatra.data.models.ColorPair
 import cl.emilym.sinatra.data.models.OnColor
 import cl.emilym.sinatra.data.models.ResourceKey
@@ -14,6 +16,7 @@ import cl.emilym.sinatra.data.models.RouteTripStop
 import cl.emilym.sinatra.data.models.RouteType
 import cl.emilym.sinatra.data.models.ServiceBikesAllowed
 import cl.emilym.sinatra.data.models.ServiceWheelchairAccessible
+import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.data.models.StopId
 import cl.emilym.sinatra.data.models.Time
 import cl.emilym.sinatra.data.models.time
@@ -136,7 +139,8 @@ data class RouteTripStopEntity(
             stopId,
             arrivalTime.time,
             departureTime.time,
-            sequence
+            sequence,
+            null
         )
     }
 
@@ -154,4 +158,21 @@ data class RouteTripStopEntity(
         }
     }
     
+}
+
+data class RouteTripStopEntityWithStop(
+    @Embedded val routeTripStop: RouteTripStopEntity,
+    @Relation(
+        parentColumn = "stopId",
+        entityColumn = "id"
+    )
+    val stop: StopEntity
+) {
+
+    fun toModel(): RouteTripStop {
+        return routeTripStop.toModel().copy(
+            stop = stop.toModel()
+        )
+    }
+
 }

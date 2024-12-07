@@ -9,6 +9,7 @@ import cl.emilym.sinatra.data.models.RouteId
 import cl.emilym.sinatra.data.models.RouteServiceTimetable
 import cl.emilym.sinatra.data.models.ServiceId
 import cl.emilym.sinatra.data.models.Stop
+import cl.emilym.sinatra.data.models.map
 import cl.emilym.sinatra.data.persistence.RoutePersistence
 import cl.emilym.sinatra.data.persistence.RouteServicePersistence
 import cl.emilym.sinatra.data.persistence.RouteServiceTimetablePersistence
@@ -84,9 +85,14 @@ class RouteRepository(
     private val routeCacheWorker: RoutesCacheWorker,
     private val routeServicesCacheWorker: RouteServicesCacheWorker,
     private val routeServiceTimetableCacheWorker: RouteServiceTimetableCacheWorker,
+    private val routePersistence: RoutePersistence,
 ) {
 
     suspend fun routes() = routeCacheWorker.get()
+    suspend fun route(routeId: RouteId): Cachable<Route?> {
+        val all = routeCacheWorker.get()
+        return all.map { routePersistence.get(routeId) }
+    }
 
     suspend fun servicesForRoute(routeId: RouteId) = routeServicesCacheWorker.get(routeId)
 
