@@ -38,6 +38,7 @@ import cl.emilym.sinatra.ui.color
 import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.max
+import kotlin.math.min
 import kotlin.math.sin
 
 @Composable
@@ -143,27 +144,31 @@ class RouteLineMeasurePolicy(
         val stopText = stopTextMeasurables.map { it.measure(constraints) }
         val stopNode = stopNodeMeasurables.map { it.measure(constraints) }
 
-        val textHeights = stopText.map {
-            abs(it.width * sin(textRotation)) + abs(it.height * cos(textRotation))
-        }
-        val textWidths = stopText.map {
-            abs(it.width * cos(textRotation)) + abs(it.height * sin(textRotation))
-        }
-        val maxTextHeight = textHeights.max()
-        val totalTextWidth = textWidths.sum()
-        val totalNodeWidth = stopNode.fold(0f) { acc, it ->
-            acc + it.width
-        }
-
         val nodeHeight = stopNode[0].height
         val nodeWidth = stopNode[0].width
-        val width = (
-                max(totalTextWidth, totalNodeWidth) +
-                (spaceBetweenNodes * stopNodeMeasurables.lastIndex)
-        ).toInt()
+
+        val originalTextWidths = stopText.map { it.width }
+        val originalTextHeights = stopText.map { it.height }
+        val rotatedTextWidths = stopText.map {
+            abs(it.width * cos(textRotation)) + abs(it.height * sin(textRotation))
+        }
+        val rotatedTextHeights = stopText.map {
+            abs(it.width * sin(textRotation)) + abs(it.height * cos(textRotation))
+        }
+        val maxTextHeight = rotatedTextHeights.max()
+        val totalTextWidth = rotatedTextWidths.sumOf {
+            min(
+                max(it.toInt(), nodeWidth),
+                spaceBetweenNodes + nodeWidth
+            )
+        }
+        val totalNodeWidth = stopNode.sumOf { it.width }
+
+        val width = (max(totalTextWidth, totalNodeWidth + (spaceBetweenNodes * stopNodeMeasurables.lastIndex)))
         val height = (maxTextHeight + stopNode[0].height + spaceBetweenNodeAndText).toInt()
 
-        val line = lineMeasurable.measure(constraints.copy(minWidth = width - (lineOffset * 2), maxWidth = width - (lineOffset * 2)))
+        val lineWidth = (totalNodeWidth + (spaceBetweenNodes * stopNodeMeasurables.lastIndex) - (lineOffset * 2))
+        val line = lineMeasurable.measure(constraints.copy(minWidth = lineWidth, maxWidth = lineWidth))
 
         return layout(width + (horizontalMargin * 2), height) {
             val nodeY = height - (nodeHeight / 2)
@@ -178,8 +183,8 @@ class RouteLineMeasurePolicy(
                     nodeY,
                 )
                 stopText[i].place(
-                    (x + stopText[i].height + (nodeWidth / 2) - textHeights[i] + (stopText[i].width / 2)).toInt(),
-                    (nodeY - (nodeHeight / 2) - spaceBetweenNodeAndText - textHeights[i] + (stopText[i].width / 2)).toInt()
+                    x + ((rotatedTextWidths[i] - stopText[i].width) / 2).toInt(),
+                    height - (nodeHeight * 2) - spaceBetweenNodeAndText - ((rotatedTextHeights[i] - stopText[i].height) / 2).toInt()
                 )
             }
         }
