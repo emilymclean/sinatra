@@ -3,6 +3,7 @@ package cl.emilym.sinatra.ui.presentation.screens.maps
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -29,9 +30,13 @@ import cl.emilym.sinatra.data.models.RouteTripInformation
 import cl.emilym.sinatra.data.repository.RouteRepository
 import cl.emilym.sinatra.domain.CurrentTripForRouteUseCase
 import cl.emilym.sinatra.domain.CurrentTripInformation
+import cl.emilym.sinatra.ui.color
 import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
+import cl.emilym.sinatra.ui.navigation.MapScope
 import cl.emilym.sinatra.ui.navigation.MapScreen
+import cl.emilym.sinatra.ui.presentation.theme.defaultLineColor
 import cl.emilym.sinatra.ui.widgets.RouteLine
+import cl.emilym.sinatra.ui.widgets.RouteRandle
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -101,10 +106,15 @@ class RouteDetailScreen(
             Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(1.rdp)
+            verticalArrangement = Arrangement.spacedBy(0.5.rdp)
         ) {
             Box {}
-            Column(Modifier.padding(horizontal = 1.rdp)) {
+            Row(
+                Modifier.padding(horizontal = 1.rdp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(1.rdp)
+            ) {
+                RouteRandle(route)
                 Text(
                     route.name,
                     style = MaterialTheme.typography.titleLarge
@@ -113,5 +123,22 @@ class RouteDetailScreen(
             RouteLine(route, info.stops.mapNotNull { it.stop })
             Box {}
         }
+    }
+
+    @Composable
+    override fun MapScope.MapContent() {
+        val viewModel = koinViewModel<RouteDetailViewModel>()
+        val tripInformationRS by viewModel.tripInformation.collectAsState(RequestState.Initial())
+        val info = (tripInformationRS as? RequestState.Success)?.value ?: return
+        val route = info.route
+        val stops = info.tripInformation?.stops ?: return
+
+        Line(
+            stops.mapNotNull { it.stop?.location },
+            route.colors?.color() ?: defaultLineColor()
+        )
+//        for (stop in stops) {
+//            Marker(stop.stop?.location ?: continue)
+//        }
     }
 }

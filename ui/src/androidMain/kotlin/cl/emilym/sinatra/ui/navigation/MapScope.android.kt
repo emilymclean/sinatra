@@ -1,6 +1,7 @@
 package cl.emilym.sinatra.ui.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import cl.emilym.sinatra.data.models.Location
 import cl.emilym.sinatra.ui.toMaps
 import com.google.maps.android.compose.GoogleMapComposable
@@ -18,8 +19,11 @@ actual class MapScope {
 
     @Composable
     @GoogleMapComposable
-    actual fun Line(points: List<Location>) {
-        Polyline(points.map { it.toMaps() })
+    actual fun Line(points: List<Location>, color: Color) {
+        Polyline(
+            points.map { it.toMaps() },
+            color = color
+        )
     }
 
 }
