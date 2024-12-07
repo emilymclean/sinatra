@@ -20,6 +20,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.Measurable
@@ -80,7 +81,13 @@ fun RouteLine(
                 }
             },
             {
-                Text(route.name, style = MaterialTheme.typography.labelMedium)
+                for (s in stops) {
+                    Text(
+                        s.name,
+                        style = MaterialTheme.typography.labelMedium,
+                        modifier = Modifier.rotate(-80f)
+                    )
+                }
             },
             {
                 Box(
@@ -115,13 +122,13 @@ internal fun RouteLine(
 }
 
 class RouteLineMeasurePolicy(
-    val horizontalMargin: Int,
-    val spaceBetweenNodes: Int,
-    val spaceBetweenNodeAndText: Int,
+    private val horizontalMargin: Int,
+    private val spaceBetweenNodes: Int,
+    private val spaceBetweenNodeAndText: Int,
     textRotation: Float = -80f,
 ): MultiContentMeasurePolicy {
 
-    val textRotation = textRotation.deg
+    private val textRotation = textRotation.deg
 
     override fun MeasureScope.measure(
         measurables: List<List<Measurable>>,
@@ -136,12 +143,14 @@ class RouteLineMeasurePolicy(
         val stopText = stopTextMeasurables.map { it.measure(constraints) }
         val stopNode = stopNodeMeasurables.map { it.measure(constraints) }
 
-        val maxTextHeight = stopText.maxOf {
+        val textHeights = stopText.map {
             abs(it.width * sin(textRotation)) + abs(it.height * cos(textRotation))
         }
-        val totalTextWidth = stopText.fold(0f) { acc,it ->
-            acc + abs(it.width * cos(textRotation)) + abs(it.height * sin(textRotation))
+        val textWidths = stopText.map {
+            abs(it.width * cos(textRotation)) + abs(it.height * sin(textRotation))
         }
+        val maxTextHeight = textHeights.max()
+        val totalTextWidth = textWidths.sum()
         val totalNodeWidth = stopNode.fold(0f) { acc, it ->
             acc + it.width
         }
@@ -167,6 +176,10 @@ class RouteLineMeasurePolicy(
                 stopNode[i].place(
                     x,
                     nodeY,
+                )
+                stopText[i].place(
+                    (x + stopText[i].height + (nodeWidth / 2) - textHeights[i] + (stopText[i].width / 2)).toInt(),
+                    (nodeY - (nodeHeight / 2) - spaceBetweenNodeAndText - textHeights[i] + (stopText[i].width / 2)).toInt()
                 )
             }
         }
