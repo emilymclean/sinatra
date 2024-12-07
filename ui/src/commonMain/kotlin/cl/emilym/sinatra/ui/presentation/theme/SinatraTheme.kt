@@ -31,7 +31,7 @@ val LightColorScheme = lightColorScheme(
 )
 
 @Composable
-expect fun pickColorScheme(dynamicColor: Boolean = false, darkTheme: Boolean = isSystemInDarkTheme()): ColorScheme
+expect fun pickColorScheme(dynamicColor: Boolean = true, darkTheme: Boolean = isSystemInDarkTheme()): ColorScheme
 
 @Composable
 fun SinatraTheme(

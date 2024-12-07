@@ -34,6 +34,11 @@ data class Location(
 
 }
 
+data class Bounds(
+    val topLeft: Location,
+    val bottomRight: Location,
+)
+
 enum class OnColor {
     DARK, LIGHT;
 

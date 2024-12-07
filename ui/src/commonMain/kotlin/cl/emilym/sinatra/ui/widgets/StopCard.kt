@@ -22,6 +22,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.data.models.Route
+import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.ui.color
 import cl.emilym.sinatra.ui.onColor
 import org.jetbrains.compose.resources.painterResource
@@ -29,40 +30,16 @@ import sinatra.ui.generated.resources.Res
 import sinatra.ui.generated.resources.forward
 
 @Composable
-fun RouteRandle(
-    route: Route,
-    modifier: Modifier = Modifier
-) {
-    val extraModifier = when {
-        route.colors != null -> Modifier
-            .clip(CircleShape)
-            .border(0.15.rdp, Color.White, CircleShape)
-            .background(route.colors!!.color())
-        else -> Modifier
-    }
-    Box(
-        Modifier.size(2.5.rdp).then(extraModifier).padding(0.25.rdp).then(modifier),
-        contentAlignment = Alignment.Center
-    ) {
-        AutoSizeText(
-            route.code,
-            fontWeight = FontWeight.Bold,
-            color = route.colors?.onColor() ?: LocalContentColor.current
-        )
-    }
-}
-
-@Composable
-fun RouteCard(
-    route: Route,
+fun StopCard(
+    stop: Stop,
     modifier: Modifier = Modifier,
     onClick: (() -> Unit)? = null
 ) {
     ListCard(
-        { RouteRandle(route) },
+        {},
         modifier,
-        onClick
+        onClick,
     ) {
-        Text(route.name)
+        Text(stop.name)
     }
 }

@@ -33,7 +33,7 @@ actual fun Map() {
                 zoomControlsEnabled = false
             )
         ) {
-            MapScope().CurrentMapContent()
+            MapScope(cameraPositionState).CurrentMapContent()
         }
     }
 }

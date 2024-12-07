@@ -5,7 +5,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -17,6 +21,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cafe.adriel.voyager.core.screen.Screen
@@ -24,6 +29,7 @@ import cl.emilym.compose.requeststate.RequestState
 import cl.emilym.compose.requeststate.RequestStateWidget
 import cl.emilym.compose.requeststate.handle
 import cl.emilym.compose.units.rdp
+import cl.emilym.sinatra.bounds
 import cl.emilym.sinatra.data.models.Route
 import cl.emilym.sinatra.data.models.RouteId
 import cl.emilym.sinatra.data.models.RouteTripInformation
@@ -37,6 +43,8 @@ import cl.emilym.sinatra.ui.navigation.MapScreen
 import cl.emilym.sinatra.ui.presentation.theme.defaultLineColor
 import cl.emilym.sinatra.ui.widgets.RouteLine
 import cl.emilym.sinatra.ui.widgets.RouteRandle
+import cl.emilym.sinatra.ui.widgets.StopCard
+import cl.emilym.sinatra.ui.widgets.toIntPx
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -102,26 +110,34 @@ class RouteDetailScreen(
 
     @Composable
     fun TripDetails(route: Route, info: RouteTripInformation) {
-        Column(
-            Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(0.5.rdp)
+        LazyColumn(
+            Modifier.fillMaxSize()
         ) {
-            Box {}
-            Row(
-                Modifier.padding(horizontal = 1.rdp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(1.rdp)
-            ) {
-                RouteRandle(route)
-                Text(
-                    route.name,
-                    style = MaterialTheme.typography.titleLarge
+            item { Box(Modifier.height(1.rdp)) }
+            item {
+                Row(
+                    Modifier.padding(horizontal = 1.rdp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(1.rdp)
+                ) {
+                    RouteRandle(route)
+                    Text(
+                        route.name,
+                        style = MaterialTheme.typography.titleLarge
+                    )
+                }
+            }
+            item { Box(Modifier.height(0.5.rdp)) }
+            item { RouteLine(route, info.stops.mapNotNull { it.stop }) }
+            item { Box(Modifier.height(1.rdp)) }
+            items(info.stops.mapNotNull { it.stop }) {
+                StopCard(
+                    it,
+                    Modifier.fillMaxWidth(),
+                    onClick = {}
                 )
             }
-            RouteLine(route, info.stops.mapNotNull { it.stop })
-            Box {}
+            item { Box(Modifier.height(1.rdp)) }
         }
     }
 
@@ -132,6 +148,12 @@ class RouteDetailScreen(
         val info = (tripInformationRS as? RequestState.Success)?.value ?: return
         val route = info.route
         val stops = info.tripInformation?.stops ?: return
+
+        val zoomPadding = with(LocalDensity.current) { 8.rdp.toIntPx() }
+
+        LaunchedEffect(stops) {
+            ZoomToArea(stops.mapNotNull { it.stop?.location }.bounds(), zoomPadding)
+        }
 
         Line(
             stops.mapNotNull { it.stop?.location },
