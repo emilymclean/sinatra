@@ -38,7 +38,7 @@ class UpcomingRoutesForStopUseCase(
         for (time in times) {
             val service = services.item.firstOrNull { it.id == time.serviceId } ?: continue
             if (!service.active(now, scheduleTimeZone)) continue
-            if (time.arrivalTime(now.startOfDay(scheduleTimeZone)) < now) continue
+            if (time.arrivalTime(now.startOfDay(scheduleTimeZone))!! < now) continue
             active.add(time)
             if (active.size == number) break
         }

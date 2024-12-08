@@ -1,14 +1,18 @@
 package cl.emilym.sinatra.network
 
+import cl.emilym.gtfs.RouteCanonicalTimetableEndpoint
 import cl.emilym.gtfs.RouteEndpoint
 import cl.emilym.gtfs.RouteServicesEndpoint
 import cl.emilym.gtfs.RouteTimetableEndpoint
+import cl.emilym.gtfs.RouteTripTimetableEndpoint
 import cl.emilym.gtfs.ServiceEndpoint
 import cl.emilym.gtfs.StopEndpoint
 import cl.emilym.gtfs.StopTimetable
 import cl.emilym.sinatra.data.models.RouteId
+import cl.emilym.sinatra.data.models.RouteServiceCanonicalTimetable
 import cl.emilym.sinatra.data.models.ServiceId
 import cl.emilym.sinatra.data.models.StopId
+import cl.emilym.sinatra.data.models.TripId
 import de.jensklingenberg.ktorfit.http.GET
 import de.jensklingenberg.ktorfit.http.Path
 
@@ -56,6 +60,32 @@ interface GtfsApi {
     suspend fun routeServiceTimetableDigest(
         @Path("routeId") routeId: RouteId,
         @Path("serviceId") serviceId: ServiceId
+    ): String
+
+    @GET("route/{routeId}/service/{serviceId}/canonical.pb")
+    suspend fun routeServiceCanonicalTimetable(
+        @Path("routeId") routeId: RouteId,
+        @Path("serviceId") serviceId: ServiceId
+    ): RouteCanonicalTimetableEndpoint
+
+    @GET("route/{routeId}/service/{serviceId}/canonical.pb.sha")
+    suspend fun routeServiceCanonicalTimetableDigest(
+        @Path("routeId") routeId: RouteId,
+        @Path("serviceId") serviceId: ServiceId
+    ): String
+
+    @GET("route/{routeId}/service/{serviceId}/trip/{tripId}/timetable.pb")
+    suspend fun routeTripTimetable(
+        @Path("routeId") routeId: RouteId,
+        @Path("serviceId") serviceId: ServiceId,
+        @Path("tripId") tripId: TripId
+    ): RouteTripTimetableEndpoint
+
+    @GET("route/{routeId}/service/{serviceId}/trip/{tripId}/timetable.pb.sha")
+    suspend fun routeTripTimetableDigest(
+        @Path("routeId") routeId: RouteId,
+        @Path("serviceId") serviceId: ServiceId,
+        @Path("tripId") tripId: TripId
     ): String
 
     @GET("services.pb")

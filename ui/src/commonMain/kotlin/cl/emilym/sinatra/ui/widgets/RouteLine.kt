@@ -148,8 +148,6 @@ class RouteLineMeasurePolicy(
         val nodeHeight = stopNode[0].height
         val nodeWidth = stopNode[0].width
 
-        val originalTextWidths = stopText.map { it.width }
-        val originalTextHeights = stopText.map { it.height }
         val rotatedTextWidths = stopText.map {
             abs(it.width * cos(textRotation)) + abs(it.height * sin(textRotation))
         }

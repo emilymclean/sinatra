@@ -23,6 +23,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import cafe.adriel.voyager.navigator.LocalNavigator
+import cafe.adriel.voyager.navigator.Navigator
+import cafe.adriel.voyager.navigator.currentOrThrow
 import cl.emilym.compose.errorwidget.ErrorWidget
 import cl.emilym.compose.requeststate.RequestState
 import cl.emilym.compose.requeststate.RequestStateWidget
@@ -96,6 +99,7 @@ class StopDetailScreen(
     override fun BottomSheetContent() {
         val viewModel = koinViewModel<StopDetailViewModel>()
         val bottomSheetState = LocalBottomSheetState.current
+        val navigator = LocalNavigator.currentOrThrow
 
         LaunchedEffect(bottomSheetState) {
             bottomSheetState.bottomSheetState.expand()
@@ -148,7 +152,7 @@ class StopDetailScreen(
                                     }
                                 }
                             }
-                            Upcoming(viewModel, upcoming)
+                            Upcoming(viewModel, upcoming, navigator)
                             item { Box(Modifier.height(1.rdp)) }
                         }
                     }
@@ -159,7 +163,8 @@ class StopDetailScreen(
 
     fun LazyListScope.Upcoming(
         viewModel: StopDetailViewModel,
-        upcoming: RequestState<List<StopTimetableTime>>
+        upcoming: RequestState<List<StopTimetableTime>>,
+        navigator: Navigator
     ) {
         when (upcoming) {
             is RequestState.Initial, is RequestState.Loading -> {
@@ -204,7 +209,10 @@ class StopDetailScreen(
                     UpcomingRouteCard(
                         it,
                         StationTime.Scheduled(it.arrivalTime),
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        onClick = { navigator.push(RouteDetailScreen(
+                            it.routeId, it.serviceId, it.tripId
+                        )) }
                     )
                 }
             }

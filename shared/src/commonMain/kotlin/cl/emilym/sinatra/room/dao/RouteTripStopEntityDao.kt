@@ -17,7 +17,7 @@ interface RouteTripStopEntityDao {
     suspend fun insert(info: List<RouteTripStopEntity>)
 
     @Transaction
-    @Query("SELECT * FROM routeTripStopEntity WHERE routeTripInformationEntityId = :routeTripInformationEntityId")
-    suspend fun get(routeTripInformationEntityId: Long): List<RouteTripStopEntityWithStop>
+    @Query("SELECT * FROM routeTripStopEntity WHERE routeTripInformationEntityId = :routeTripInformationEntityId AND resource = :resource")
+    suspend fun get(routeTripInformationEntityId: Long, resource: ResourceKey): List<RouteTripStopEntityWithStop>
 
 }

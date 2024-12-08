@@ -125,7 +125,7 @@ public data class StopEndpoint(
         override fun decodeWith(u: pbandk.MessageDecoder): cl.emilym.gtfs.StopEndpoint = cl.emilym.gtfs.StopEndpoint.decodeWithImpl(u)
 
         override val descriptor: pbandk.MessageDescriptor<cl.emilym.gtfs.StopEndpoint> = pbandk.MessageDescriptor(
-            fullName = "gtfs_api.StopEndpoint",
+            fullName = "proto.StopEndpoint",
             messageClass = cl.emilym.gtfs.StopEndpoint::class,
             messageCompanion = this,
             fields = buildList(1) {
@@ -157,7 +157,7 @@ public data class RouteEndpoint(
         override fun decodeWith(u: pbandk.MessageDecoder): cl.emilym.gtfs.RouteEndpoint = cl.emilym.gtfs.RouteEndpoint.decodeWithImpl(u)
 
         override val descriptor: pbandk.MessageDescriptor<cl.emilym.gtfs.RouteEndpoint> = pbandk.MessageDescriptor(
-            fullName = "gtfs_api.RouteEndpoint",
+            fullName = "proto.RouteEndpoint",
             messageClass = cl.emilym.gtfs.RouteEndpoint::class,
             messageCompanion = this,
             fields = buildList(1) {
@@ -189,7 +189,7 @@ public data class StopDetailEndpoint(
         override fun decodeWith(u: pbandk.MessageDecoder): cl.emilym.gtfs.StopDetailEndpoint = cl.emilym.gtfs.StopDetailEndpoint.decodeWithImpl(u)
 
         override val descriptor: pbandk.MessageDescriptor<cl.emilym.gtfs.StopDetailEndpoint> = pbandk.MessageDescriptor(
-            fullName = "gtfs_api.StopDetailEndpoint",
+            fullName = "proto.StopDetailEndpoint",
             messageClass = cl.emilym.gtfs.StopDetailEndpoint::class,
             messageCompanion = this,
             fields = buildList(2) {
@@ -230,7 +230,7 @@ public data class RouteDetailEndpoint(
         override fun decodeWith(u: pbandk.MessageDecoder): cl.emilym.gtfs.RouteDetailEndpoint = cl.emilym.gtfs.RouteDetailEndpoint.decodeWithImpl(u)
 
         override val descriptor: pbandk.MessageDescriptor<cl.emilym.gtfs.RouteDetailEndpoint> = pbandk.MessageDescriptor(
-            fullName = "gtfs_api.RouteDetailEndpoint",
+            fullName = "proto.RouteDetailEndpoint",
             messageClass = cl.emilym.gtfs.RouteDetailEndpoint::class,
             messageCompanion = this,
             fields = buildList(1) {
@@ -262,7 +262,7 @@ public data class ServiceEndpoint(
         override fun decodeWith(u: pbandk.MessageDecoder): cl.emilym.gtfs.ServiceEndpoint = cl.emilym.gtfs.ServiceEndpoint.decodeWithImpl(u)
 
         override val descriptor: pbandk.MessageDescriptor<cl.emilym.gtfs.ServiceEndpoint> = pbandk.MessageDescriptor(
-            fullName = "gtfs_api.ServiceEndpoint",
+            fullName = "proto.ServiceEndpoint",
             messageClass = cl.emilym.gtfs.ServiceEndpoint::class,
             messageCompanion = this,
             fields = buildList(1) {
@@ -295,7 +295,7 @@ public data class RouteTimetableEndpoint(
         override fun decodeWith(u: pbandk.MessageDecoder): cl.emilym.gtfs.RouteTimetableEndpoint = cl.emilym.gtfs.RouteTimetableEndpoint.decodeWithImpl(u)
 
         override val descriptor: pbandk.MessageDescriptor<cl.emilym.gtfs.RouteTimetableEndpoint> = pbandk.MessageDescriptor(
-            fullName = "gtfs_api.RouteTimetableEndpoint",
+            fullName = "proto.RouteTimetableEndpoint",
             messageClass = cl.emilym.gtfs.RouteTimetableEndpoint::class,
             messageCompanion = this,
             fields = buildList(3) {
@@ -335,6 +335,123 @@ public data class RouteTimetableEndpoint(
 }
 
 @pbandk.Export
+public data class RouteCanonicalTimetableEndpoint(
+    val routeId: String,
+    val serviceId: String,
+    val trip: cl.emilym.gtfs.RouteTripInformation,
+    override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
+) : pbandk.Message {
+    override operator fun plus(other: pbandk.Message?): cl.emilym.gtfs.RouteCanonicalTimetableEndpoint = protoMergeImpl(other)
+    override val descriptor: pbandk.MessageDescriptor<cl.emilym.gtfs.RouteCanonicalTimetableEndpoint> get() = Companion.descriptor
+    override val protoSize: Int by lazy { super.protoSize }
+    public companion object : pbandk.Message.Companion<cl.emilym.gtfs.RouteCanonicalTimetableEndpoint> {
+        override fun decodeWith(u: pbandk.MessageDecoder): cl.emilym.gtfs.RouteCanonicalTimetableEndpoint = cl.emilym.gtfs.RouteCanonicalTimetableEndpoint.decodeWithImpl(u)
+
+        override val descriptor: pbandk.MessageDescriptor<cl.emilym.gtfs.RouteCanonicalTimetableEndpoint> = pbandk.MessageDescriptor(
+            fullName = "proto.RouteCanonicalTimetableEndpoint",
+            messageClass = cl.emilym.gtfs.RouteCanonicalTimetableEndpoint::class,
+            messageCompanion = this,
+            fields = buildList(3) {
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "routeId",
+                        number = 1,
+                        type = pbandk.FieldDescriptor.Type.Primitive.String(hasPresence = true),
+                        jsonName = "routeId",
+                        value = cl.emilym.gtfs.RouteCanonicalTimetableEndpoint::routeId
+                    )
+                )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "serviceId",
+                        number = 2,
+                        type = pbandk.FieldDescriptor.Type.Primitive.String(hasPresence = true),
+                        jsonName = "serviceId",
+                        value = cl.emilym.gtfs.RouteCanonicalTimetableEndpoint::serviceId
+                    )
+                )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "trip",
+                        number = 3,
+                        type = pbandk.FieldDescriptor.Type.Message(messageCompanion = cl.emilym.gtfs.RouteTripInformation.Companion),
+                        jsonName = "trip",
+                        value = cl.emilym.gtfs.RouteCanonicalTimetableEndpoint::trip
+                    )
+                )
+            }
+        )
+    }
+}
+
+@pbandk.Export
+public data class RouteTripTimetableEndpoint(
+    val routeId: String,
+    val serviceId: String,
+    val tripId: String,
+    val trip: cl.emilym.gtfs.RouteTripInformation,
+    override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
+) : pbandk.Message {
+    override operator fun plus(other: pbandk.Message?): cl.emilym.gtfs.RouteTripTimetableEndpoint = protoMergeImpl(other)
+    override val descriptor: pbandk.MessageDescriptor<cl.emilym.gtfs.RouteTripTimetableEndpoint> get() = Companion.descriptor
+    override val protoSize: Int by lazy { super.protoSize }
+    public companion object : pbandk.Message.Companion<cl.emilym.gtfs.RouteTripTimetableEndpoint> {
+        override fun decodeWith(u: pbandk.MessageDecoder): cl.emilym.gtfs.RouteTripTimetableEndpoint = cl.emilym.gtfs.RouteTripTimetableEndpoint.decodeWithImpl(u)
+
+        override val descriptor: pbandk.MessageDescriptor<cl.emilym.gtfs.RouteTripTimetableEndpoint> = pbandk.MessageDescriptor(
+            fullName = "proto.RouteTripTimetableEndpoint",
+            messageClass = cl.emilym.gtfs.RouteTripTimetableEndpoint::class,
+            messageCompanion = this,
+            fields = buildList(4) {
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "routeId",
+                        number = 1,
+                        type = pbandk.FieldDescriptor.Type.Primitive.String(hasPresence = true),
+                        jsonName = "routeId",
+                        value = cl.emilym.gtfs.RouteTripTimetableEndpoint::routeId
+                    )
+                )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "serviceId",
+                        number = 2,
+                        type = pbandk.FieldDescriptor.Type.Primitive.String(hasPresence = true),
+                        jsonName = "serviceId",
+                        value = cl.emilym.gtfs.RouteTripTimetableEndpoint::serviceId
+                    )
+                )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "tripId",
+                        number = 3,
+                        type = pbandk.FieldDescriptor.Type.Primitive.String(hasPresence = true),
+                        jsonName = "tripId",
+                        value = cl.emilym.gtfs.RouteTripTimetableEndpoint::tripId
+                    )
+                )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "trip",
+                        number = 4,
+                        type = pbandk.FieldDescriptor.Type.Message(messageCompanion = cl.emilym.gtfs.RouteTripInformation.Companion),
+                        jsonName = "trip",
+                        value = cl.emilym.gtfs.RouteTripTimetableEndpoint::trip
+                    )
+                )
+            }
+        )
+    }
+}
+
+@pbandk.Export
 public data class RouteServicesEndpoint(
     val serviceIds: List<String> = emptyList(),
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
@@ -347,7 +464,7 @@ public data class RouteServicesEndpoint(
         override fun decodeWith(u: pbandk.MessageDecoder): cl.emilym.gtfs.RouteServicesEndpoint = cl.emilym.gtfs.RouteServicesEndpoint.decodeWithImpl(u)
 
         override val descriptor: pbandk.MessageDescriptor<cl.emilym.gtfs.RouteServicesEndpoint> = pbandk.MessageDescriptor(
-            fullName = "gtfs_api.RouteServicesEndpoint",
+            fullName = "proto.RouteServicesEndpoint",
             messageClass = cl.emilym.gtfs.RouteServicesEndpoint::class,
             messageCompanion = this,
             fields = buildList(1) {
@@ -382,7 +499,7 @@ public data class Stop(
         override fun decodeWith(u: pbandk.MessageDecoder): cl.emilym.gtfs.Stop = cl.emilym.gtfs.Stop.decodeWithImpl(u)
 
         override val descriptor: pbandk.MessageDescriptor<cl.emilym.gtfs.Stop> = pbandk.MessageDescriptor(
-            fullName = "gtfs_api.Stop",
+            fullName = "proto.Stop",
             messageClass = cl.emilym.gtfs.Stop::class,
             messageCompanion = this,
             fields = buildList(5) {
@@ -453,7 +570,7 @@ public data class StopAccessibility(
         override fun decodeWith(u: pbandk.MessageDecoder): cl.emilym.gtfs.StopAccessibility = cl.emilym.gtfs.StopAccessibility.decodeWithImpl(u)
 
         override val descriptor: pbandk.MessageDescriptor<cl.emilym.gtfs.StopAccessibility> = pbandk.MessageDescriptor(
-            fullName = "gtfs_api.StopAccessibility",
+            fullName = "proto.StopAccessibility",
             messageClass = cl.emilym.gtfs.StopAccessibility::class,
             messageCompanion = this,
             fields = buildList(1) {
@@ -491,7 +608,7 @@ public data class Route(
         override fun decodeWith(u: pbandk.MessageDecoder): cl.emilym.gtfs.Route = cl.emilym.gtfs.Route.decodeWithImpl(u)
 
         override val descriptor: pbandk.MessageDescriptor<cl.emilym.gtfs.Route> = pbandk.MessageDescriptor(
-            fullName = "gtfs_api.Route",
+            fullName = "proto.Route",
             messageClass = cl.emilym.gtfs.Route::class,
             messageCompanion = this,
             fields = buildList(8) {
@@ -593,7 +710,7 @@ public data class ColorPair(
         override fun decodeWith(u: pbandk.MessageDecoder): cl.emilym.gtfs.ColorPair = cl.emilym.gtfs.ColorPair.decodeWithImpl(u)
 
         override val descriptor: pbandk.MessageDescriptor<cl.emilym.gtfs.ColorPair> = pbandk.MessageDescriptor(
-            fullName = "gtfs_api.ColorPair",
+            fullName = "proto.ColorPair",
             messageClass = cl.emilym.gtfs.ColorPair::class,
             messageCompanion = this,
             fields = buildList(2) {
@@ -635,7 +752,7 @@ public data class StopTimetable(
         override fun decodeWith(u: pbandk.MessageDecoder): cl.emilym.gtfs.StopTimetable = cl.emilym.gtfs.StopTimetable.decodeWithImpl(u)
 
         override val descriptor: pbandk.MessageDescriptor<cl.emilym.gtfs.StopTimetable> = pbandk.MessageDescriptor(
-            fullName = "gtfs_api.StopTimetable",
+            fullName = "proto.StopTimetable",
             messageClass = cl.emilym.gtfs.StopTimetable::class,
             messageCompanion = this,
             fields = buildList(1) {
@@ -660,6 +777,7 @@ public data class StopTimetableTime(
     val routeId: String,
     val routeCode: String,
     val serviceId: String,
+    val tripId: String,
     val arrivalTime: String,
     val departureTime: String,
     val heading: String,
@@ -674,10 +792,10 @@ public data class StopTimetableTime(
         override fun decodeWith(u: pbandk.MessageDecoder): cl.emilym.gtfs.StopTimetableTime = cl.emilym.gtfs.StopTimetableTime.decodeWithImpl(u)
 
         override val descriptor: pbandk.MessageDescriptor<cl.emilym.gtfs.StopTimetableTime> = pbandk.MessageDescriptor(
-            fullName = "gtfs_api.StopTimetableTime",
+            fullName = "proto.StopTimetableTime",
             messageClass = cl.emilym.gtfs.StopTimetableTime::class,
             messageCompanion = this,
-            fields = buildList(9) {
+            fields = buildList(10) {
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
@@ -768,6 +886,16 @@ public data class StopTimetableTime(
                         value = cl.emilym.gtfs.StopTimetableTime::childStopId
                     )
                 )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "tripId",
+                        number = 10,
+                        type = pbandk.FieldDescriptor.Type.Primitive.String(hasPresence = true),
+                        jsonName = "tripId",
+                        value = cl.emilym.gtfs.StopTimetableTime::tripId
+                    )
+                )
             }
         )
     }
@@ -788,7 +916,7 @@ public data class Service(
         override fun decodeWith(u: pbandk.MessageDecoder): cl.emilym.gtfs.Service = cl.emilym.gtfs.Service.decodeWithImpl(u)
 
         override val descriptor: pbandk.MessageDescriptor<cl.emilym.gtfs.Service> = pbandk.MessageDescriptor(
-            fullName = "gtfs_api.Service",
+            fullName = "proto.Service",
             messageClass = cl.emilym.gtfs.Service::class,
             messageCompanion = this,
             fields = buildList(4) {
@@ -852,7 +980,7 @@ public data class ServiceAccessibility(
         override fun decodeWith(u: pbandk.MessageDecoder): cl.emilym.gtfs.ServiceAccessibility = cl.emilym.gtfs.ServiceAccessibility.decodeWithImpl(u)
 
         override val descriptor: pbandk.MessageDescriptor<cl.emilym.gtfs.ServiceAccessibility> = pbandk.MessageDescriptor(
-            fullName = "gtfs_api.ServiceAccessibility",
+            fullName = "proto.ServiceAccessibility",
             messageClass = cl.emilym.gtfs.ServiceAccessibility::class,
             messageCompanion = this,
             fields = buildList(4) {
@@ -912,6 +1040,7 @@ public data class TimetableServiceRegular(
     val sunday: Boolean,
     val startDate: String,
     val endDate: String,
+    val exceptions: List<cl.emilym.gtfs.TimetableServiceException> = emptyList(),
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
 ) : pbandk.Message {
     override operator fun plus(other: pbandk.Message?): cl.emilym.gtfs.TimetableServiceRegular = protoMergeImpl(other)
@@ -921,10 +1050,10 @@ public data class TimetableServiceRegular(
         override fun decodeWith(u: pbandk.MessageDecoder): cl.emilym.gtfs.TimetableServiceRegular = cl.emilym.gtfs.TimetableServiceRegular.decodeWithImpl(u)
 
         override val descriptor: pbandk.MessageDescriptor<cl.emilym.gtfs.TimetableServiceRegular> = pbandk.MessageDescriptor(
-            fullName = "gtfs_api.TimetableServiceRegular",
+            fullName = "proto.TimetableServiceRegular",
             messageClass = cl.emilym.gtfs.TimetableServiceRegular::class,
             messageCompanion = this,
-            fields = buildList(9) {
+            fields = buildList(10) {
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
@@ -1015,6 +1144,16 @@ public data class TimetableServiceRegular(
                         value = cl.emilym.gtfs.TimetableServiceRegular::endDate
                     )
                 )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "exceptions",
+                        number = 10,
+                        type = pbandk.FieldDescriptor.Type.Repeated<cl.emilym.gtfs.TimetableServiceException>(valueType = pbandk.FieldDescriptor.Type.Message(messageCompanion = cl.emilym.gtfs.TimetableServiceException.Companion)),
+                        jsonName = "exceptions",
+                        value = cl.emilym.gtfs.TimetableServiceRegular::exceptions
+                    )
+                )
             }
         )
     }
@@ -1033,7 +1172,7 @@ public data class TimetableServiceException(
         override fun decodeWith(u: pbandk.MessageDecoder): cl.emilym.gtfs.TimetableServiceException = cl.emilym.gtfs.TimetableServiceException.decodeWithImpl(u)
 
         override val descriptor: pbandk.MessageDescriptor<cl.emilym.gtfs.TimetableServiceException> = pbandk.MessageDescriptor(
-            fullName = "gtfs_api.TimetableServiceException",
+            fullName = "proto.TimetableServiceException",
             messageClass = cl.emilym.gtfs.TimetableServiceException::class,
             messageCompanion = this,
             fields = buildList(2) {
@@ -1064,8 +1203,8 @@ public data class TimetableServiceException(
 
 @pbandk.Export
 public data class RouteTripInformation(
-    val startTime: String,
-    val endTime: String,
+    val startTime: String? = null,
+    val endTime: String? = null,
     val accessibility: cl.emilym.gtfs.ServiceAccessibility,
     val stops: List<cl.emilym.gtfs.RouteTripStop> = emptyList(),
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
@@ -1077,7 +1216,7 @@ public data class RouteTripInformation(
         override fun decodeWith(u: pbandk.MessageDecoder): cl.emilym.gtfs.RouteTripInformation = cl.emilym.gtfs.RouteTripInformation.decodeWithImpl(u)
 
         override val descriptor: pbandk.MessageDescriptor<cl.emilym.gtfs.RouteTripInformation> = pbandk.MessageDescriptor(
-            fullName = "gtfs_api.RouteTripInformation",
+            fullName = "proto.RouteTripInformation",
             messageClass = cl.emilym.gtfs.RouteTripInformation::class,
             messageCompanion = this,
             fields = buildList(4) {
@@ -1129,8 +1268,8 @@ public data class RouteTripInformation(
 @pbandk.Export
 public data class RouteTripStop(
     val stopId: String,
-    val arrivalTime: String,
-    val departureTime: String,
+    val arrivalTime: String? = null,
+    val departureTime: String? = null,
     val sequence: Int,
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
 ) : pbandk.Message {
@@ -1141,7 +1280,7 @@ public data class RouteTripStop(
         override fun decodeWith(u: pbandk.MessageDecoder): cl.emilym.gtfs.RouteTripStop = cl.emilym.gtfs.RouteTripStop.decodeWithImpl(u)
 
         override val descriptor: pbandk.MessageDescriptor<cl.emilym.gtfs.RouteTripStop> = pbandk.MessageDescriptor(
-            fullName = "gtfs_api.RouteTripStop",
+            fullName = "proto.RouteTripStop",
             messageClass = cl.emilym.gtfs.RouteTripStop::class,
             messageCompanion = this,
             fields = buildList(4) {
@@ -1203,7 +1342,7 @@ public data class Location(
         override fun decodeWith(u: pbandk.MessageDecoder): cl.emilym.gtfs.Location = cl.emilym.gtfs.Location.decodeWithImpl(u)
 
         override val descriptor: pbandk.MessageDescriptor<cl.emilym.gtfs.Location> = pbandk.MessageDescriptor(
-            fullName = "gtfs_api.Location",
+            fullName = "proto.Location",
             messageClass = cl.emilym.gtfs.Location::class,
             messageCompanion = this,
             fields = buildList(2) {
@@ -1381,6 +1520,77 @@ private fun RouteTimetableEndpoint.Companion.decodeWithImpl(u: pbandk.MessageDec
         throw pbandk.InvalidProtocolBufferException.missingRequiredField("serviceId")
     }
     return RouteTimetableEndpoint(routeId!!, serviceId!!, pbandk.ListWithSize.Builder.fixed(trips), unknownFields)
+}
+
+private fun RouteCanonicalTimetableEndpoint.protoMergeImpl(plus: pbandk.Message?): RouteCanonicalTimetableEndpoint = (plus as? RouteCanonicalTimetableEndpoint)?.let {
+    it.copy(
+        trip = trip.plus(plus.trip),
+        unknownFields = unknownFields + plus.unknownFields
+    )
+} ?: this
+
+@Suppress("UNCHECKED_CAST")
+private fun RouteCanonicalTimetableEndpoint.Companion.decodeWithImpl(u: pbandk.MessageDecoder): RouteCanonicalTimetableEndpoint {
+    var routeId: String? = null
+    var serviceId: String? = null
+    var trip: cl.emilym.gtfs.RouteTripInformation? = null
+
+    val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
+        when (_fieldNumber) {
+            1 -> routeId = _fieldValue as String
+            2 -> serviceId = _fieldValue as String
+            3 -> trip = _fieldValue as cl.emilym.gtfs.RouteTripInformation
+        }
+    }
+
+    if (routeId == null) {
+        throw pbandk.InvalidProtocolBufferException.missingRequiredField("routeId")
+    }
+    if (serviceId == null) {
+        throw pbandk.InvalidProtocolBufferException.missingRequiredField("serviceId")
+    }
+    if (trip == null) {
+        throw pbandk.InvalidProtocolBufferException.missingRequiredField("trip")
+    }
+    return RouteCanonicalTimetableEndpoint(routeId!!, serviceId!!, trip!!, unknownFields)
+}
+
+private fun RouteTripTimetableEndpoint.protoMergeImpl(plus: pbandk.Message?): RouteTripTimetableEndpoint = (plus as? RouteTripTimetableEndpoint)?.let {
+    it.copy(
+        trip = trip.plus(plus.trip),
+        unknownFields = unknownFields + plus.unknownFields
+    )
+} ?: this
+
+@Suppress("UNCHECKED_CAST")
+private fun RouteTripTimetableEndpoint.Companion.decodeWithImpl(u: pbandk.MessageDecoder): RouteTripTimetableEndpoint {
+    var routeId: String? = null
+    var serviceId: String? = null
+    var tripId: String? = null
+    var trip: cl.emilym.gtfs.RouteTripInformation? = null
+
+    val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
+        when (_fieldNumber) {
+            1 -> routeId = _fieldValue as String
+            2 -> serviceId = _fieldValue as String
+            3 -> tripId = _fieldValue as String
+            4 -> trip = _fieldValue as cl.emilym.gtfs.RouteTripInformation
+        }
+    }
+
+    if (routeId == null) {
+        throw pbandk.InvalidProtocolBufferException.missingRequiredField("routeId")
+    }
+    if (serviceId == null) {
+        throw pbandk.InvalidProtocolBufferException.missingRequiredField("serviceId")
+    }
+    if (tripId == null) {
+        throw pbandk.InvalidProtocolBufferException.missingRequiredField("tripId")
+    }
+    if (trip == null) {
+        throw pbandk.InvalidProtocolBufferException.missingRequiredField("trip")
+    }
+    return RouteTripTimetableEndpoint(routeId!!, serviceId!!, tripId!!, trip!!, unknownFields)
 }
 
 @pbandk.Export
@@ -1587,6 +1797,7 @@ private fun StopTimetableTime.Companion.decodeWithImpl(u: pbandk.MessageDecoder)
     var routeId: String? = null
     var routeCode: String? = null
     var serviceId: String? = null
+    var tripId: String? = null
     var arrivalTime: String? = null
     var departureTime: String? = null
     var heading: String? = null
@@ -1604,6 +1815,7 @@ private fun StopTimetableTime.Companion.decodeWithImpl(u: pbandk.MessageDecoder)
             7 -> sequence = _fieldValue as Int
             8 -> accessibility = _fieldValue as cl.emilym.gtfs.ServiceAccessibility
             9 -> childStopId = _fieldValue as String
+            10 -> tripId = _fieldValue as String
         }
     }
 
@@ -1615,6 +1827,9 @@ private fun StopTimetableTime.Companion.decodeWithImpl(u: pbandk.MessageDecoder)
     }
     if (serviceId == null) {
         throw pbandk.InvalidProtocolBufferException.missingRequiredField("serviceId")
+    }
+    if (tripId == null) {
+        throw pbandk.InvalidProtocolBufferException.missingRequiredField("tripId")
     }
     if (arrivalTime == null) {
         throw pbandk.InvalidProtocolBufferException.missingRequiredField("arrivalTime")
@@ -1632,8 +1847,8 @@ private fun StopTimetableTime.Companion.decodeWithImpl(u: pbandk.MessageDecoder)
         throw pbandk.InvalidProtocolBufferException.missingRequiredField("accessibility")
     }
     return StopTimetableTime(childStopId, routeId!!, routeCode!!, serviceId!!,
-        arrivalTime!!, departureTime!!, heading!!, sequence!!,
-        accessibility!!, unknownFields)
+        tripId!!, arrivalTime!!, departureTime!!, heading!!,
+        sequence!!, accessibility!!, unknownFields)
 }
 
 private fun Service.protoMergeImpl(plus: pbandk.Message?): Service = (plus as? Service)?.let {
@@ -1702,6 +1917,7 @@ private fun ServiceAccessibility.Companion.decodeWithImpl(u: pbandk.MessageDecod
 
 private fun TimetableServiceRegular.protoMergeImpl(plus: pbandk.Message?): TimetableServiceRegular = (plus as? TimetableServiceRegular)?.let {
     it.copy(
+        exceptions = exceptions + plus.exceptions,
         unknownFields = unknownFields + plus.unknownFields
     )
 } ?: this
@@ -1717,6 +1933,7 @@ private fun TimetableServiceRegular.Companion.decodeWithImpl(u: pbandk.MessageDe
     var sunday: Boolean? = null
     var startDate: String? = null
     var endDate: String? = null
+    var exceptions: pbandk.ListWithSize.Builder<cl.emilym.gtfs.TimetableServiceException>? = null
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
@@ -1729,6 +1946,7 @@ private fun TimetableServiceRegular.Companion.decodeWithImpl(u: pbandk.MessageDe
             7 -> sunday = _fieldValue as Boolean
             8 -> startDate = _fieldValue as String
             9 -> endDate = _fieldValue as String
+            10 -> exceptions = (exceptions ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as kotlin.sequences.Sequence<cl.emilym.gtfs.TimetableServiceException> }
         }
     }
 
@@ -1761,7 +1979,7 @@ private fun TimetableServiceRegular.Companion.decodeWithImpl(u: pbandk.MessageDe
     }
     return TimetableServiceRegular(monday!!, tuesday!!, wednesday!!, thursday!!,
         friday!!, saturday!!, sunday!!, startDate!!,
-        endDate!!, unknownFields)
+        endDate!!, pbandk.ListWithSize.Builder.fixed(exceptions), unknownFields)
 }
 
 private fun TimetableServiceException.protoMergeImpl(plus: pbandk.Message?): TimetableServiceException = (plus as? TimetableServiceException)?.let {
@@ -1793,6 +2011,8 @@ private fun TimetableServiceException.Companion.decodeWithImpl(u: pbandk.Message
 
 private fun RouteTripInformation.protoMergeImpl(plus: pbandk.Message?): RouteTripInformation = (plus as? RouteTripInformation)?.let {
     it.copy(
+        startTime = plus.startTime ?: startTime,
+        endTime = plus.endTime ?: endTime,
         accessibility = accessibility.plus(plus.accessibility),
         stops = stops + plus.stops,
         unknownFields = unknownFields + plus.unknownFields
@@ -1815,20 +2035,16 @@ private fun RouteTripInformation.Companion.decodeWithImpl(u: pbandk.MessageDecod
         }
     }
 
-    if (startTime == null) {
-        throw pbandk.InvalidProtocolBufferException.missingRequiredField("startTime")
-    }
-    if (endTime == null) {
-        throw pbandk.InvalidProtocolBufferException.missingRequiredField("endTime")
-    }
     if (accessibility == null) {
         throw pbandk.InvalidProtocolBufferException.missingRequiredField("accessibility")
     }
-    return RouteTripInformation(startTime!!, endTime!!, accessibility!!, pbandk.ListWithSize.Builder.fixed(stops), unknownFields)
+    return RouteTripInformation(startTime, endTime, accessibility!!, pbandk.ListWithSize.Builder.fixed(stops), unknownFields)
 }
 
 private fun RouteTripStop.protoMergeImpl(plus: pbandk.Message?): RouteTripStop = (plus as? RouteTripStop)?.let {
     it.copy(
+        arrivalTime = plus.arrivalTime ?: arrivalTime,
+        departureTime = plus.departureTime ?: departureTime,
         unknownFields = unknownFields + plus.unknownFields
     )
 } ?: this
@@ -1852,16 +2068,10 @@ private fun RouteTripStop.Companion.decodeWithImpl(u: pbandk.MessageDecoder): Ro
     if (stopId == null) {
         throw pbandk.InvalidProtocolBufferException.missingRequiredField("stopId")
     }
-    if (arrivalTime == null) {
-        throw pbandk.InvalidProtocolBufferException.missingRequiredField("arrivalTime")
-    }
-    if (departureTime == null) {
-        throw pbandk.InvalidProtocolBufferException.missingRequiredField("departureTime")
-    }
     if (sequence == null) {
         throw pbandk.InvalidProtocolBufferException.missingRequiredField("sequence")
     }
-    return RouteTripStop(stopId!!, arrivalTime!!, departureTime!!, sequence!!, unknownFields)
+    return RouteTripStop(stopId!!, arrivalTime, departureTime, sequence!!, unknownFields)
 }
 
 private fun Location.protoMergeImpl(plus: pbandk.Message?): Location = (plus as? Location)?.let {

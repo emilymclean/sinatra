@@ -2,6 +2,7 @@ package cl.emilym.sinatra.ui.presentation.screens.maps
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -31,7 +32,11 @@ import cl.emilym.sinatra.bounds
 import cl.emilym.sinatra.data.models.Route
 import cl.emilym.sinatra.data.models.RouteId
 import cl.emilym.sinatra.data.models.RouteTripInformation
+import cl.emilym.sinatra.data.models.ServiceBikesAllowed
+import cl.emilym.sinatra.data.models.ServiceId
+import cl.emilym.sinatra.data.models.ServiceWheelchairAccessible
 import cl.emilym.sinatra.data.models.StationTime
+import cl.emilym.sinatra.data.models.TripId
 import cl.emilym.sinatra.domain.CurrentTripForRouteUseCase
 import cl.emilym.sinatra.domain.CurrentTripInformation
 import cl.emilym.sinatra.ui.color
@@ -39,9 +44,12 @@ import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
 import cl.emilym.sinatra.ui.navigation.MapScope
 import cl.emilym.sinatra.ui.navigation.MapScreen
 import cl.emilym.sinatra.ui.presentation.theme.defaultLineColor
+import cl.emilym.sinatra.ui.widgets.AccessibilityIconLockup
+import cl.emilym.sinatra.ui.widgets.BikeIcon
 import cl.emilym.sinatra.ui.widgets.RouteLine
 import cl.emilym.sinatra.ui.widgets.RouteRandle
 import cl.emilym.sinatra.ui.widgets.StopCard
+import cl.emilym.sinatra.ui.widgets.WheelchairAccessibleIcon
 import cl.emilym.sinatra.ui.widgets.toIntPx
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -49,6 +57,12 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.android.annotation.KoinViewModel
 import org.koin.compose.viewmodel.koinViewModel
 import sinatra.ui.generated.resources.Res
+import sinatra.ui.generated.resources.route_accessibility_bikes_allowed
+import sinatra.ui.generated.resources.route_accessibility_no_bikes_allowed
+import sinatra.ui.generated.resources.route_accessibility_not_wheelchair_accessible
+import sinatra.ui.generated.resources.route_accessibility_wheelchair_accessible
+import sinatra.ui.generated.resources.stops_title
+import sinatra.ui.generated.resources.accessibility_title
 import sinatra.ui.generated.resources.route_not_found
 import sinatra.ui.generated.resources.trip_not_found
 
@@ -58,10 +72,10 @@ class RouteDetailViewModel(
 ): ViewModel() {
     val tripInformation = MutableStateFlow<RequestState<CurrentTripInformation?>>(RequestState.Initial())
 
-    fun retry(routeId: RouteId) {
+    fun retry(routeId: RouteId, serviceId: ServiceId?, tripId: TripId?) {
         viewModelScope.launch {
             tripInformation.handle {
-                currentTripForRouteUseCase(routeId).item
+                currentTripForRouteUseCase(routeId, serviceId, tripId).item
             }
         }
     }
@@ -69,7 +83,9 @@ class RouteDetailViewModel(
 }
 
 class RouteDetailScreen(
-    private val routeId: RouteId
+    private val routeId: RouteId,
+    private val serviceId: ServiceId? = null,
+    private val tripId: TripId? = null
 ): MapScreen {
 
     @Composable
@@ -85,8 +101,8 @@ class RouteDetailScreen(
             bottomSheetState.bottomSheetState.expand()
         }
 
-        LaunchedEffect(routeId) {
-            viewModel.retry(routeId)
+        LaunchedEffect(routeId, serviceId, tripId) {
+            viewModel.retry(routeId, serviceId, tripId)
         }
 
         val tripInformation by viewModel.tripInformation.collectAsState(RequestState.Initial())
@@ -94,7 +110,7 @@ class RouteDetailScreen(
             Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
-            RequestStateWidget(tripInformation, { viewModel.retry(routeId) }) { tripInformation ->
+            RequestStateWidget(tripInformation, { viewModel.retry(routeId, serviceId, tripId) }) { tripInformation ->
                 when {
                     tripInformation == null -> { Text(stringResource(Res.string.route_not_found)) }
                     tripInformation.tripInformation == null -> { Text(stringResource(Res.string.trip_not_found)) }
@@ -126,14 +142,61 @@ class RouteDetailScreen(
             }
             item { Box(Modifier.height(0.5.rdp)) }
             item { RouteLine(route, info.stops.mapNotNull { it.stop }) }
+            item { Box(Modifier.height(2.rdp)) }
+            item {
+                Row(
+                    Modifier.padding(horizontal = 1.rdp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(1.rdp)
+                ) {
+                    Text(
+                        stringResource(Res.string.accessibility_title),
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                }
+            }
             item { Box(Modifier.height(1.rdp)) }
+            item {
+                Column(Modifier.padding(horizontal = 1.rdp)) {
+                    AccessibilityIconLockup(
+                        {
+                            WheelchairAccessibleIcon(info.accessibility.wheelchairAccessible == ServiceWheelchairAccessible.ACCESSIBLE)
+                        }
+                    ) {
+                        Text(when(info.accessibility.wheelchairAccessible == ServiceWheelchairAccessible.ACCESSIBLE) {
+                            true -> stringResource(Res.string.route_accessibility_wheelchair_accessible)
+                            false -> stringResource(Res.string.route_accessibility_not_wheelchair_accessible)
+                        })
+                    }
+                    AccessibilityIconLockup(
+                        { BikeIcon() }
+                    ) {
+                        Text(when(info.accessibility.bikesAllowed == ServiceBikesAllowed.ALLOWED) {
+                            true -> stringResource(Res.string.route_accessibility_bikes_allowed)
+                            false -> stringResource(Res.string.route_accessibility_no_bikes_allowed)
+                        })
+                    }
+                }
+            }
+            item { Box(Modifier.height(1.rdp)) }
+            item {
+                Row(
+                    Modifier.padding(horizontal = 1.rdp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(1.rdp)
+                ) {
+                    Text(
+                        stringResource(Res.string.stops_title),
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                }
+            }
             items(info.stops) {
                 if (it.stop == null) return@items
                 StopCard(
                     it.stop!!,
-                    StationTime.Scheduled(it.arrivalTime),
+                    it.arrivalTime?.let { StationTime.Scheduled(it) },
                     Modifier.fillMaxWidth(),
-                    serviceAccessibility = info.accessibility,
                     onClick = {
                         navigator.push(StopDetailScreen(
                             it.stopId
@@ -141,7 +204,7 @@ class RouteDetailScreen(
                     }
                 )
             }
-            item { Box(Modifier.height(1.rdp)) }
+            item { Box(Modifier.height(2.rdp)) }
         }
     }
 

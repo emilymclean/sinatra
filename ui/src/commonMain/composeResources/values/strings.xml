@@ -3,6 +3,9 @@
     <string name="stop_not_found">The requested stop could not be found.</string>
     <string name="trip_not_found">There are currently no trips for the requested route.</string>
 
+    <string name="stops_title">Stops</string>
+    <string name="accessibility_title">Accessibility</string>
+
     <string name="scheduled_arrival">Scheduled to arrive at %1$s</string>
     <string name="estimated_arrival">Estimated to arrive at %1$s</string>
 
@@ -12,11 +15,14 @@
 
     <string name="accessibility_wheelchair_accessible">Wheelchair accessible</string>
     <string name="accessibility_not_wheelchair_accessible">Not wheelchair accessible</string>
+    <string name="route_accessibility_wheelchair_accessible">Route is wheelchair accessible</string>
+    <string name="route_accessibility_not_wheelchair_accessible">Route is not wheelchair accessible</string>
     <string name="service_accessibility_some_wheelchair_accessible">Some services are wheelchair accessible</string>
     <string name="service_accessibility_all_wheelchair_accessible">All services are wheelchair accessible</string>
     <string name="service_accessibility_none_wheelchair_accessible">No services are wheelchair accessible</string>
     <string name="service_accessibility_some_bikes_allowed">Bikes are allowed on some services</string>
     <string name="service_accessibility_all_bikes_allowed">Bikes are allowed on all services</string>
     <string name="service_accessibility_none_bikes_allowed">Bikes are allowed on no services</string>
-    <string name="accessibility_bikes_allowed">Bikes allowed</string>
+    <string name="route_accessibility_bikes_allowed">Bikes allowed on route</string>
+    <string name="route_accessibility_no_bikes_allowed">Bikes not allowed on route</string>
 </resources>

@@ -29,7 +29,6 @@ fun StopCard(
     stop: Stop,
     arrival: StationTime?,
     modifier: Modifier = Modifier,
-    serviceAccessibility: ServiceAccessibility? = null,
     onClick: (() -> Unit)? = null
 ) {
     ListCard(

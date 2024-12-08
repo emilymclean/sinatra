@@ -55,6 +55,33 @@ data class RouteServiceTimetable(
             )
         }
     }
+}
+
+data class RouteServiceCanonicalTimetable(
+    val trip: RouteTripInformation
+) {
+
+    companion object {
+        fun fromPB(pb: cl.emilym.gtfs.RouteCanonicalTimetableEndpoint): RouteServiceCanonicalTimetable {
+            return RouteServiceCanonicalTimetable(
+                RouteTripInformation.fromPB(pb.trip)
+            )
+        }
+    }
+
+}
+
+data class RouteTripTimetable(
+    val trip: RouteTripInformation
+) {
+
+    companion object {
+        fun fromPB(pb: cl.emilym.gtfs.RouteTripTimetableEndpoint): RouteTripTimetable {
+            return RouteTripTimetable(
+                RouteTripInformation.fromPB(pb.trip)
+            )
+        }
+    }
 
 }
 
@@ -75,24 +102,27 @@ data class RouteServiceAccessibility(
 }
 
 data class RouteTripInformation(
-    val startTime: Time,
-    val endTime: Time,
+    val startTime: Time?,
+    val endTime: Time?,
     val accessibility: RouteServiceAccessibility,
     val stops: List<RouteTripStop>
 ) {
 
-    fun startTime(startOfDay: Instant) = startTime.forDay(startOfDay)
-    fun endTime(startOfDay: Instant) = endTime.forDay(startOfDay)
+    fun startTime(startOfDay: Instant) = startTime?.forDay(startOfDay)
+    fun endTime(startOfDay: Instant) = endTime?.forDay(startOfDay)
 
-    fun active(current: Instant, startOfDay: Instant): Boolean {
-        return startTime(startOfDay) <= current && endTime(startOfDay) >= current
+    fun active(current: Instant, startOfDay: Instant): Boolean? {
+        val start = startTime(startOfDay)
+        val end = endTime(startOfDay)
+        if (start == null || end == null) return null
+        return start <= current && end >= current
     }
 
     companion object {
         fun fromPB(pb: cl.emilym.gtfs.RouteTripInformation): RouteTripInformation {
             return RouteTripInformation(
-                parseTime(pb.startTime),
-                parseTime(pb.endTime),
+                pb.startTime?.let { parseTime(it) },
+                pb.endTime?.let { parseTime(it) },
                 RouteServiceAccessibility.fromPB(pb.accessibility),
                 pb.stops.map { RouteTripStop.fromPB(it) }
             )
@@ -103,8 +133,8 @@ data class RouteTripInformation(
 
 data class RouteTripStop(
     val stopId: StopId,
-    override val arrivalTime: Time,
-    override val departureTime: Time,
+    override val arrivalTime: Time?,
+    override val departureTime: Time?,
     val sequence: Int,
     val stop: Stop?
 ): StopTime {
@@ -113,8 +143,8 @@ data class RouteTripStop(
         fun fromPB(pb: cl.emilym.gtfs.RouteTripStop): RouteTripStop {
             return RouteTripStop(
                 pb.stopId,
-                parseTime(pb.arrivalTime),
-                parseTime(pb.departureTime),
+                pb.arrivalTime?.let { parseTime(it) },
+                pb.departureTime?.let { parseTime(it) },
                 pb.sequence,
                 null
             )
