@@ -19,4 +19,7 @@ interface RouteDao {
     @Query("SELECT * FROM routeEntity")
     suspend fun get(): List<RouteEntity>
 
+    @Query("SELECT * FROM routeEntity WHERE id = :id")
+    suspend fun get(id: String): RouteEntity?
+
 }

@@ -2,6 +2,7 @@ package cl.emilym.sinatra.ui
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import cl.emilym.compose.requeststate.RequestState
 import cl.emilym.sinatra.data.models.ColorPair
 import cl.emilym.sinatra.data.models.OnColor
 import cl.emilym.sinatra.data.models.OnColor.DARK

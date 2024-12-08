@@ -6,6 +6,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 
 val DarkColorScheme = darkColorScheme(
     primary = Purple80,
@@ -30,7 +31,7 @@ val LightColorScheme = lightColorScheme(
 )
 
 @Composable
-expect fun pickColorScheme(dynamicColor: Boolean = false, darkTheme: Boolean = isSystemInDarkTheme()): ColorScheme
+expect fun pickColorScheme(dynamicColor: Boolean = true, darkTheme: Boolean = isSystemInDarkTheme()): ColorScheme
 
 @Composable
 fun SinatraTheme(
@@ -44,3 +45,6 @@ fun SinatraTheme(
         content = content
     )
 }
+
+@Composable
+fun defaultLineColor(): Color = Color.Black

@@ -7,6 +7,7 @@ import cl.emilym.sinatra.room.dao.RouteTripInformationEntityDao
 import cl.emilym.sinatra.room.dao.RouteTripStopEntityDao
 import cl.emilym.sinatra.room.entities.RouteTripInformationEntity
 import cl.emilym.sinatra.room.entities.RouteTripStopEntity
+import io.github.aakira.napier.Napier
 import org.koin.core.annotation.Factory
 
 @Factory
@@ -34,7 +35,9 @@ class RouteServiceTimetablePersistence(
         for (info in infos) {
             out.add(
                 info.toModel(
-                    routeTripStopEntityDao.get(info.id).map { it.toModel() }
+                    routeTripStopEntityDao.get(info.id).map { it.toModel() }.also {
+                        Napier.d("Stops related to route = ${it.map { it.stopId }}")
+                    }
                 )
             )
         }

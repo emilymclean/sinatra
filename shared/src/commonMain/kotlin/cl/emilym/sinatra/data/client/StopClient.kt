@@ -27,7 +27,7 @@ class StopClient(
     }
 
     suspend fun stops(): List<Stop> {
-        val pbStops = StopEndpoint.decodeFromByteArray(gtfsApi.stops())
+        val pbStops = gtfsApi.stops()
         return pbStops.stop.map { Stop.fromPB(it) }
     }
 
@@ -36,8 +36,7 @@ class StopClient(
     }
 
     suspend fun timetable(stopId: StopId): StopTimetable {
-        val pbTimetable = cl.emilym.gtfs.StopTimetable
-            .decodeFromByteArray(gtfsApi.stopTimetable(stopId))
+        val pbTimetable = gtfsApi.stopTimetable(stopId)
         return StopTimetable.fromPB(pbTimetable)
     }
 

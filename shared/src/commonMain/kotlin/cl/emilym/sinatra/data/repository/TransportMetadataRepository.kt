@@ -17,11 +17,23 @@ class TransportMetadataRepository(
         return TimeZone.of("Australia/Sydney")
     }
 
-    suspend fun startOfToday(): Instant {
+    suspend fun scheduleStartOfDay(): Instant {
         val timeZone = timeZone()
-        val current = clock.now().toLocalDateTime(timeZone)
-        val start = LocalDateTime(current.year, current.month, current.dayOfMonth, 0, 0, 0, 0)
-        return start.toInstant(timeZone)
+        return clock.startOfDay(timeZone)
     }
 
+}
+
+fun Clock.startOfDay(timeZone: TimeZone): Instant {
+    return now().startOfDay(timeZone)
+}
+
+fun Instant.startOfDay(timeZone: TimeZone): Instant {
+    val inTz = toLocalDateTime(timeZone)
+
+    return LocalDateTime(inTz.year, inTz.month, inTz.dayOfMonth, 0, 0, 0, 0).toInstant(timeZone)
+}
+
+fun LocalDateTime.isSameDay(other: LocalDateTime): Boolean {
+    return year == other.year && month == other.month && dayOfMonth == other.dayOfMonth
 }

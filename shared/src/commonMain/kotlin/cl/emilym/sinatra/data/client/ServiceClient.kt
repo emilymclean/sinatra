@@ -5,6 +5,7 @@ import cl.emilym.sinatra.data.models.ShaDigest
 import cl.emilym.sinatra.data.repository.TransportMetadataRepository
 import cl.emilym.sinatra.network.GtfsApi
 import cl.emilym.gtfs.ServiceEndpoint
+import io.github.aakira.napier.Napier
 import org.koin.core.annotation.Factory
 import pbandk.decodeFromByteArray
 
@@ -20,7 +21,8 @@ class ServiceClient(
     }
 
     suspend fun services(): List<Service> {
-        val servicesPB = ServiceEndpoint.decodeFromByteArray(gtfsApi.services())
+        val servicesPB = gtfsApi.services()
+        Napier.d("Got services")
         return servicesPB.service.map { Service.fromPB(it, transportMetadataRepository.timeZone()) }
     }
 

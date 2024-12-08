@@ -9,6 +9,8 @@ import cl.emilym.sinatra.data.models.RouteId
 import cl.emilym.sinatra.data.models.RouteServiceTimetable
 import cl.emilym.sinatra.data.models.ServiceId
 import cl.emilym.sinatra.data.models.Stop
+import cl.emilym.sinatra.data.models.flatMap
+import cl.emilym.sinatra.data.models.map
 import cl.emilym.sinatra.data.persistence.RoutePersistence
 import cl.emilym.sinatra.data.persistence.RouteServicePersistence
 import cl.emilym.sinatra.data.persistence.RouteServiceTimetablePersistence
@@ -83,15 +85,23 @@ class RouteServiceTimetableCacheWorker(
 class RouteRepository(
     private val routeCacheWorker: RoutesCacheWorker,
     private val routeServicesCacheWorker: RouteServicesCacheWorker,
+    private val stopsCacheWorker: StopsCacheWorker,
     private val routeServiceTimetableCacheWorker: RouteServiceTimetableCacheWorker,
+    private val routePersistence: RoutePersistence,
 ) {
 
     suspend fun routes() = routeCacheWorker.get()
+    suspend fun route(routeId: RouteId): Cachable<Route?> {
+        val all = routeCacheWorker.get()
+        return all.map { routePersistence.get(routeId) }
+    }
 
     suspend fun servicesForRoute(routeId: RouteId) = routeServicesCacheWorker.get(routeId)
 
-    suspend fun serviceTimetable(routeId: RouteId, serviceId: ServiceId) =
-        routeServiceTimetableCacheWorker.get(routeId, serviceId)
+    suspend fun serviceTimetable(routeId: RouteId, serviceId: ServiceId): Cachable<RouteServiceTimetable> {
+        val stops = stopsCacheWorker.get()
+        return stops.flatMap { routeServiceTimetableCacheWorker.get(routeId, serviceId) }
+    }
 
     suspend fun ignoredRoutes(): List<RouteId> {
         return listOf("NIS", "X1", "X2", "X3", "X4")
