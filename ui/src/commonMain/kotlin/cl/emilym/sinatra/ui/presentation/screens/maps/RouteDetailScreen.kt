@@ -147,7 +147,8 @@ class RouteDetailScreen(
         val info = (tripInformationRS as? RequestState.Success)?.value ?: return
         val route = info.route
         val stops = info.tripInformation?.stops ?: return
-
+        if (stops.all { it.stop == null }) return
+        
         val zoomPadding = with(LocalDensity.current) { 8.rdp.toIntPx() }
 
         LaunchedEffect(stops) {
