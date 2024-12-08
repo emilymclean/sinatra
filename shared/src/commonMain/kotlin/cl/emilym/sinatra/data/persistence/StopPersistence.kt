@@ -1,6 +1,7 @@
 package cl.emilym.sinatra.data.persistence
 
 import cl.emilym.sinatra.data.models.Stop
+import cl.emilym.sinatra.data.models.StopId
 import cl.emilym.sinatra.room.dao.StopDao
 import cl.emilym.sinatra.room.entities.StopEntity
 import org.koin.core.annotation.Factory
@@ -17,6 +18,10 @@ class StopPersistence(
 
     suspend fun get(): List<Stop> {
         return stopDao.get().map { it.toModel() }
+    }
+
+    suspend fun get(stopId: StopId): Stop? {
+        return stopDao.get(stopId)?.toModel()
     }
 
 }

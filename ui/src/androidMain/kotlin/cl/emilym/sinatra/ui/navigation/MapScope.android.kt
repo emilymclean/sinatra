@@ -60,4 +60,16 @@ actual class MapScope(
         ZoomToArea(bounds.topLeft, bounds.bottomRight, padding)
     }
 
+    actual fun ZoomToPoint(
+        location: Location,
+        zoom: Float
+    ) {
+        CoroutineScope(Dispatchers.Main).launch {
+            cameraPositionState.animate(
+                CameraUpdateFactory.newLatLngZoom(location.toMaps(), zoom)
+            )
+        }
+    }
+
+
 }

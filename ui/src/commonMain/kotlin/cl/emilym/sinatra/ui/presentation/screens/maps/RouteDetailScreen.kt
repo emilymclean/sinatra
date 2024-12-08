@@ -21,6 +21,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import cafe.adriel.voyager.navigator.LocalNavigator
+import cafe.adriel.voyager.navigator.currentOrThrow
 import cl.emilym.compose.requeststate.RequestState
 import cl.emilym.compose.requeststate.RequestStateWidget
 import cl.emilym.compose.requeststate.handle
@@ -54,7 +56,6 @@ import sinatra.ui.generated.resources.trip_not_found
 
 @KoinViewModel
 class RouteDetailViewModel(
-    private val routeRepository: RouteRepository,
     private val currentTripForRouteUseCase: CurrentTripForRouteUseCase
 ): ViewModel() {
     val tripInformation = MutableStateFlow<RequestState<CurrentTripInformation?>>(RequestState.Initial())
@@ -107,6 +108,7 @@ class RouteDetailScreen(
 
     @Composable
     fun TripDetails(route: Route, info: RouteTripInformation) {
+        val navigator = LocalNavigator.currentOrThrow
         LazyColumn(
             Modifier.fillMaxSize()
         ) {
@@ -133,7 +135,11 @@ class RouteDetailScreen(
                     it.stop!!,
                     StationTime.Scheduled(it.arrivalTime),
                     Modifier.fillMaxWidth(),
-                    onClick = {}
+                    onClick = {
+                        navigator.push(StopDetailScreen(
+                            it.stopId
+                        ))
+                    }
                 )
             }
             item { Box(Modifier.height(1.rdp)) }
@@ -148,7 +154,7 @@ class RouteDetailScreen(
         val route = info.route
         val stops = info.tripInformation?.stops ?: return
         if (stops.all { it.stop == null }) return
-        
+
         val zoomPadding = with(LocalDensity.current) { 8.rdp.toIntPx() }
 
         LaunchedEffect(stops) {

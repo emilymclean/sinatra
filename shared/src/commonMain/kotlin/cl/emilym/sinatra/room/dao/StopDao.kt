@@ -21,4 +21,7 @@ interface StopDao {
     @Query("SELECT * FROM stopEntity")
     suspend fun get(): List<StopEntity>
 
+    @Query("SELECT * FROM stopEntity WHERE id = :id")
+    suspend fun get(id: String): StopEntity?
+
 }

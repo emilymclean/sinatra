@@ -12,6 +12,8 @@ expect class MapScope {
 
     fun ZoomToArea(topLeft: Location, bottomRight: Location, padding: Int)
 
+    fun ZoomToPoint(location: Location, zoom: Float = 16f)
+
     @Composable
     fun Marker(location: Location)
 
