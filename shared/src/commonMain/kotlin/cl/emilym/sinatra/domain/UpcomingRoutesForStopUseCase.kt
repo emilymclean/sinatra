@@ -9,8 +9,10 @@ import cl.emilym.sinatra.data.repository.ServiceRepository
 import cl.emilym.sinatra.data.repository.StopRepository
 import cl.emilym.sinatra.data.repository.TransportMetadataRepository
 import cl.emilym.sinatra.data.repository.startOfDay
+import io.github.aakira.napier.Napier
 import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import org.koin.core.annotation.Factory
 
 @Factory
@@ -28,14 +30,15 @@ class UpcomingRoutesForStopUseCase(
         val now = clock.now()
         val scheduleTimeZone = metadataRepository.timeZone()
         val timetable = stopRepository.timetable(stopId)
+        val times = timetable.item.times.sortedBy { it.arrivalTime }
         val services = serviceRepository.services(timetable.item.times.map { it.serviceId }.distinct())
 
         val active = mutableListOf<StopTimetableTime>()
 
-        for (time in timetable.item.times) {
+        for (time in times) {
             val service = services.item.firstOrNull { it.id == time.serviceId } ?: continue
             if (!service.active(now, scheduleTimeZone)) continue
-            if (time.arrivalTime(now.startOfDay(scheduleTimeZone)) > now) continue
+            if (time.arrivalTime(now.startOfDay(scheduleTimeZone)) < now) continue
             active.add(time)
             if (active.size == number) break
         }

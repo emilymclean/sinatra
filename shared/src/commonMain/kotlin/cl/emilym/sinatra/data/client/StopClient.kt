@@ -6,6 +6,7 @@ import cl.emilym.sinatra.data.models.StopId
 import cl.emilym.sinatra.data.models.StopTimetable
 import cl.emilym.sinatra.network.GtfsApi
 import cl.emilym.gtfs.StopEndpoint
+import io.github.aakira.napier.Napier
 import org.koin.core.annotation.Factory
 import pbandk.decodeFromByteArray
 

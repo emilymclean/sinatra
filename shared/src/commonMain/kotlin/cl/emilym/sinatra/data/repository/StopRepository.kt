@@ -7,6 +7,7 @@ import cl.emilym.sinatra.data.models.ResourceKey
 import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.data.models.StopId
 import cl.emilym.sinatra.data.models.StopTimetable
+import cl.emilym.sinatra.data.models.flatMap
 import cl.emilym.sinatra.data.models.map
 import cl.emilym.sinatra.data.persistence.StopPersistence
 import cl.emilym.sinatra.data.persistence.StopTimetablePersistence
@@ -47,12 +48,13 @@ class StopTimetableCacheWorker(
         stopTimetablePersistence.get(resource)
 
     suspend fun get(stopId: StopId): Cachable<StopTimetable> {
-        return run(stopClient.timetableEndpointPair(stopId), "stops")
+        return run(stopClient.timetableEndpointPair(stopId), "stop/${stopId}/timetable")
     }
 }
 
 @Factory
 class StopRepository(
+    private val routesCacheWorker: RoutesCacheWorker,
     private val stopsCacheWorker: StopsCacheWorker,
     private val stopTimetableCacheWorker: StopTimetableCacheWorker,
     private val stopPersistence: StopPersistence
@@ -63,6 +65,9 @@ class StopRepository(
         val all = stopsCacheWorker.get()
         return all.map { stopPersistence.get(stopId) }
     }
-    suspend fun timetable(stopId: StopId) = stopTimetableCacheWorker.get(stopId)
+    suspend fun timetable(stopId: StopId): Cachable<StopTimetable> {
+        val routes = routesCacheWorker.get()
+        return routes.flatMap { stopTimetableCacheWorker.get(stopId) }
+    }
 
 }

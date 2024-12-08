@@ -50,8 +50,10 @@ data class StopAccessibility(
 
 }
 
-enum class StopWheelchairAccessibility {
-    UNKNOWN, NONE, PARTIAL, FULL;
+enum class StopWheelchairAccessibility(
+    val isAccessible: Boolean
+) {
+    UNKNOWN(false), NONE(false), PARTIAL(true), FULL(true);
 
     companion object {
 
@@ -92,7 +94,8 @@ data class StopTimetableTime(
     override val arrivalTime: Time,
     override val departureTime: Time,
     val heading: String,
-    val sequence: Int
+    val sequence: Int,
+    val route: Route?
 ): StopTime {
 
     companion object {
@@ -105,7 +108,8 @@ data class StopTimetableTime(
                 parseTime(pb.arrivalTime),
                 parseTime(pb.departureTime),
                 pb.heading,
-                pb.sequence
+                pb.sequence,
+                null
             )
         }
     }

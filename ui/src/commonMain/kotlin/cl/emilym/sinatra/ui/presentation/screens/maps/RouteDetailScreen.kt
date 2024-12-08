@@ -32,7 +32,6 @@ import cl.emilym.sinatra.data.models.Route
 import cl.emilym.sinatra.data.models.RouteId
 import cl.emilym.sinatra.data.models.RouteTripInformation
 import cl.emilym.sinatra.data.models.StationTime
-import cl.emilym.sinatra.data.repository.RouteRepository
 import cl.emilym.sinatra.domain.CurrentTripForRouteUseCase
 import cl.emilym.sinatra.domain.CurrentTripInformation
 import cl.emilym.sinatra.ui.color
@@ -43,7 +42,6 @@ import cl.emilym.sinatra.ui.presentation.theme.defaultLineColor
 import cl.emilym.sinatra.ui.widgets.RouteLine
 import cl.emilym.sinatra.ui.widgets.RouteRandle
 import cl.emilym.sinatra.ui.widgets.StopCard
-import cl.emilym.sinatra.ui.widgets.format
 import cl.emilym.sinatra.ui.widgets.toIntPx
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -135,6 +133,7 @@ class RouteDetailScreen(
                     it.stop!!,
                     StationTime.Scheduled(it.arrivalTime),
                     Modifier.fillMaxWidth(),
+                    serviceAccessibility = info.accessibility,
                     onClick = {
                         navigator.push(StopDetailScreen(
                             it.stopId

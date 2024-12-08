@@ -35,9 +35,7 @@ class RouteServiceTimetablePersistence(
         for (info in infos) {
             out.add(
                 info.toModel(
-                    routeTripStopEntityDao.get(info.id).map { it.toModel() }.also {
-                        Napier.d("Stops related to route = ${it.map { it.stopId }}")
-                    }
+                    routeTripStopEntityDao.get(info.id).map { it.toModel() }
                 )
             )
         }
