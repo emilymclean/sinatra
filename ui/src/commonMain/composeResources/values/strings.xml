@@ -1,4 +1,7 @@
 <resources>
     <string name="route_not_found">The requested route could not be found.</string>
     <string name="trip_not_found">There are currently no trips for the requested route.</string>
+
+    <string name="scheduled_arrival">Scheduled to arrive at %1$s</string>
+    <string name="estimated_arrival">Estimated to arrive at %1$s</string>
 </resources>

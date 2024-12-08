@@ -111,3 +111,14 @@ data class StopTimetableTime(
     }
 
 }
+
+sealed interface StationTime {
+    val time: Time
+
+    class Scheduled(
+        override val time: Time
+    ): StationTime
+    class Live(
+        override val time: Time
+    ): StationTime
+}

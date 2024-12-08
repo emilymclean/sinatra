@@ -29,7 +29,7 @@ class CurrentTripForRouteUseCase(
 
     suspend operator fun invoke(routeId: RouteId): Cachable<CurrentTripInformation?> {
         val now = clock.now()
-        val startOfDay = transportMetadataRepository.startOfToday()
+        val startOfDay = transportMetadataRepository.scheduleStartOfDay()
 
         val rc = routeRepository.route(routeId)
         val route = rc.item ?: return rc.map { null }
