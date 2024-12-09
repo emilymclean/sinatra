@@ -241,7 +241,7 @@ class RouteDetailScreen(
 
         Line(
             stops.mapNotNull { it.stop?.location },
-            route.colors?.color() ?: defaultLineColor()
+            route.color()
         )
 //        for (stop in stops) {
 //            Marker(stop.stop?.location ?: continue)

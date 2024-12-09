@@ -71,7 +71,7 @@ fun RouteLine(
     stops: List<Stop>
 ) {
     if (stops.isEmpty()) return
-    val color = route.colors?.color() ?: MaterialTheme.colorScheme.onSurface
+    val color = route.color()
     Box(Modifier.horizontalScroll(rememberScrollState())) {
         RouteLine(
             {

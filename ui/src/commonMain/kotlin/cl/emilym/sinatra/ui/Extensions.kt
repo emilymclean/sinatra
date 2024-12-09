@@ -1,5 +1,7 @@
 package cl.emilym.sinatra.ui
 
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import cl.emilym.compose.requeststate.RequestState
@@ -7,6 +9,7 @@ import cl.emilym.sinatra.data.models.ColorPair
 import cl.emilym.sinatra.data.models.OnColor
 import cl.emilym.sinatra.data.models.OnColor.DARK
 import cl.emilym.sinatra.data.models.OnColor.LIGHT
+import cl.emilym.sinatra.data.models.Route
 
 fun String.toColor(): Color {
     val trimmed = removePrefix("#")
@@ -29,7 +32,26 @@ fun OnColor.color() = when (this) {
 }
 
 @Composable
-fun ColorPair.color() = color.toColor()
+fun ColorPair.color(): Color {
+    return color.toColor()
+}
 @Composable
 fun ColorPair.onColor() = onColor.color()
 
+@Composable
+fun Route.color(): Color {
+    return when {
+        code == "8" && isSystemInDarkTheme() -> MaterialTheme.colorScheme.onSurface
+        colors != null -> colors!!.color()
+        else -> MaterialTheme.colorScheme.onSurface
+    }
+}
+
+@Composable
+fun Route.onColor(): Color? {
+    return when {
+        code == "8" && isSystemInDarkTheme() -> MaterialTheme.colorScheme.surface
+        colors != null -> colors!!.onColor()
+        else -> MaterialTheme.colorScheme.surface
+    }
+}

@@ -54,7 +54,6 @@ fun RouteRandle(
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun RouteCard(
     route: Route,
