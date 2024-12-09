@@ -98,7 +98,7 @@ class RouteDetailScreen(
         val bottomSheetState = LocalBottomSheetState.current
 
         LaunchedEffect(bottomSheetState) {
-            bottomSheetState.bottomSheetState.expand()
+            bottomSheetState.bottomSheetState.halfExpand()
         }
 
         LaunchedEffect(routeId, serviceId, tripId) {

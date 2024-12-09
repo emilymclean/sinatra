@@ -10,12 +10,24 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import cl.emilym.compose.units.px
 
+const val DEFAULT_HALF_HEIGHT = 0.66f
+
 interface MapScreen: Screen {
+    val bottomSheetHalfHeight: Float
+        get() = DEFAULT_HALF_HEIGHT
+
     @Composable
     fun BottomSheetContent() {}
 
     @Composable
     fun MapScope.MapContent() {}
+}
+
+@Composable
+fun bottomSheetHalfHeight(): Float {
+    val navigator = LocalNavigator.currentOrThrow
+    val currentScreen = navigator.lastItem
+    return (currentScreen as? MapScreen)?.bottomSheetHalfHeight ?: DEFAULT_HALF_HEIGHT
 }
 
 @Composable

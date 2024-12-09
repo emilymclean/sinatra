@@ -54,6 +54,9 @@ class MapSearchViewModel(
 
 class MapSearchScreen: MapScreen {
 
+    override val bottomSheetHalfHeight: Float
+        get() = 0.25f
+
     @Composable
     override fun Content() {
         Box(Modifier.padding(1.rdp)) {
@@ -80,14 +83,8 @@ class MapSearchScreen: MapScreen {
         ))
     }
 
-    @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     override fun BottomSheetContent() {
-        val bottomSheet = LocalBottomSheetState.current
-        LaunchedEffect(bottomSheet) {
-            bottomSheet.bottomSheetState.partialExpand()
-        }
-
         Navigator(RouteListScreen())
     }
 

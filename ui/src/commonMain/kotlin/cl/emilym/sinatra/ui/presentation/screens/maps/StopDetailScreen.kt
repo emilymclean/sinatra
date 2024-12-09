@@ -102,7 +102,7 @@ class StopDetailScreen(
         val navigator = LocalNavigator.currentOrThrow
 
         LaunchedEffect(bottomSheetState) {
-            bottomSheetState.bottomSheetState.expand()
+            bottomSheetState.bottomSheetState.halfExpand()
         }
 
         LaunchedEffect(stopId) {
