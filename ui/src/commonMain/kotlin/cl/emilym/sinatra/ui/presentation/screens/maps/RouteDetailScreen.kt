@@ -220,7 +220,7 @@ class RouteDetailScreen(
         val zoomPadding = with(LocalDensity.current) { 8.rdp.toIntPx() }
 
         LaunchedEffect(stops) {
-            ZoomToArea(stops.mapNotNull { it.stop?.location }.bounds(), zoomPadding)
+            zoomToArea(stops.mapNotNull { it.stop?.location }.bounds(), zoomPadding)
         }
 
         Line(

@@ -226,7 +226,7 @@ class StopDetailScreen(
         val stop = (stopRS as? RequestState.Success)?.value ?: return
 
         LaunchedEffect(stop.location) {
-            ZoomToPoint(stop.location)
+            zoomToPoint(stop.location)
         }
 
         Marker(stop.location)
