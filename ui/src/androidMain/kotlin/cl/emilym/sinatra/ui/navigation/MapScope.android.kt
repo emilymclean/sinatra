@@ -1,5 +1,6 @@
 package cl.emilym.sinatra.ui.navigation
 
+import android.graphics.Point
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
@@ -19,14 +20,49 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlin.math.pow
 
+data class BoxDescriptor(
+    val topRight: Point,
+    val bottomLeft: Point
+) {
+    val width get() = topRight.x - bottomLeft.x
+    val height get() = bottomLeft.y - topRight.y
+}
+
 actual class MapScope(
     private val cameraPositionState: CameraPositionState,
     private val screenSize: Size,
     private val bottomSheetHalfHeight: Float
 ) {
 
+    private val viewportSize: Size
+        get() = Size(screenSize.width, screenSize.height * (1 - bottomSheetHalfHeight))
+
+    private val screenAspect: Float get() = screenSize.width / screenSize.height
+    private val viewportAspect: Float get() = viewportSize.width / viewportSize.height
+
+    private fun boxOverOther(box: BoxDescriptor, aspect: Float): BoxDescriptor {
+        val width = box.width
+        val height = box.height
+
+        Napier.d("Box = ${box}, width = $width, height = $height")
+
+        if (width > height) {
+            val nHeight = width * aspect
+            return BoxDescriptor(
+                topRight = Point(box.topRight.x, (box.bottomLeft.y + ((height - nHeight) / 2)).toInt()),
+                bottomLeft = Point(box.bottomLeft.x, (box.bottomLeft.y + ((nHeight - height) / 2)).toInt())
+            )
+        } else {
+            val nWidth = height * aspect
+            return BoxDescriptor(
+                topRight = Point((box.bottomLeft.x + ((width - nWidth) / 2)).toInt(), box.topRight.y),
+                bottomLeft = Point((box.bottomLeft.x + ((nWidth - width) / 2)).toInt(), box.bottomLeft.y)
+            )
+        }
+    }
+
     private val moveDownPx: Float
-        get() = ((screenSize.height / 2) - (screenSize.height * (1 - bottomSheetHalfHeight) / 2)) * 4
+        get() = ((screenSize.height / 2) - (viewportSize.height / 2)) * 4
 
     @Composable
     @GoogleMapComposable
@@ -50,11 +86,36 @@ actual class MapScope(
         bottomRight: Location,
         padding: Int
     ) {
+        val original = listOf(topLeft.toMaps(), bottomRight.toMaps()).toBounds()
+        val projection = cameraPositionState.projection ?: let {
+            CoroutineScope(Dispatchers.Main).launch {
+                cameraPositionState.animate(CameraUpdateFactory.newLatLngBounds(
+                    original,
+                    padding
+                ))
+            }
+            return
+        }
+        val viewportBox = boxOverOther(
+            BoxDescriptor(
+                projection.toScreenLocation(original.northeast),
+                projection.toScreenLocation(original.southwest),
+            ),
+            viewportAspect
+        )
+
+        val screenBox = viewportBox.copy(
+            bottomLeft = Point(
+                viewportBox.topRight.x,
+                (viewportBox.topRight.y + (viewportBox.width * screenAspect)).toInt(),
+            )
+        )
+
         CoroutineScope(Dispatchers.Main).launch {
             cameraPositionState.animate(CameraUpdateFactory.newLatLngBounds(
                 LatLngBounds(
-                    LatLng(bottomRight.lat, topLeft.lng),
-                    LatLng(topLeft.lat, bottomRight.lng)
+                    projection.fromScreenLocation(screenBox.topRight),
+                    projection.fromScreenLocation(screenBox.bottomLeft)
                 ),
                 padding
             ))
@@ -71,9 +132,6 @@ actual class MapScope(
     ) {
         val original = location.toMaps()
         val metersPerPx = metersPerPxAtZoom(zoom)
-        Napier.d(
-            "Screen height = ${screenSize.height}, visible height = ${screenSize.height * (1 - bottomSheetHalfHeight)}, moveDownPx = ${moveDownPx}, metersPerPx = ${metersPerPx} at zoom ${zoom}}"
-        )
         CoroutineScope(Dispatchers.Main).launch {
             cameraPositionState.animate(
                 CameraUpdateFactory.newLatLngZoom(original.addMetersLatitude(metersPerPx * -moveDownPx), zoom)
@@ -95,5 +153,14 @@ fun LatLng.addMetersLatitude(meters: Float): LatLng {
     return LatLng(
         latitude + (meters / EARTH_CIRCUMFERENCE) * (180 / Math.PI),
         longitude
+    )
+}
+
+fun List<LatLng>.toBounds(): LatLngBounds {
+    val topLeft = get(0)
+    val bottomRight = get(1)
+    return LatLngBounds(
+        LatLng(bottomRight.latitude, topLeft.longitude),
+        LatLng(topLeft.latitude, bottomRight.longitude)
     )
 }
