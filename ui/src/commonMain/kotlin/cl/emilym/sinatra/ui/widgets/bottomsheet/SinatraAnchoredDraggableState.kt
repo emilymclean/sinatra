@@ -13,7 +13,6 @@ import androidx.compose.foundation.MutatorMutex
 import androidx.compose.foundation.gestures.AnchoredDragScope
 import androidx.compose.foundation.gestures.AnchoredDraggableState
 import androidx.compose.foundation.gestures.DraggableAnchors
-import androidx.compose.foundation.gestures.animateTo
 import androidx.compose.foundation.gestures.snapTo
 import androidx.compose.foundation.layout.offset
 import androidx.compose.runtime.Stable
@@ -42,14 +41,14 @@ private fun Float.coerceToTarget(target: Float): Float {
 }
 
 @OptIn(ExperimentalFoundationApi::class)
-suspend fun <T> StupidAnchoredDraggableState<T>.animateTo(targetValue: T) {
+suspend fun <T> SinatraAnchoredDraggableState<T>.animateTo(targetValue: T) {
     anchoredDrag(targetValue = targetValue) { anchors, latestTarget ->
         animateTo(lastVelocity, this, anchors, latestTarget)
     }
 }
 
 @OptIn(ExperimentalFoundationApi::class)
-suspend fun <T> StupidAnchoredDraggableState<T>.snapTo(targetValue: T) {
+suspend fun <T> SinatraAnchoredDraggableState<T>.snapTo(targetValue: T) {
     anchoredDrag(targetValue = targetValue) { anchors, latestTarget ->
         val targetOffset = anchors.positionOf(latestTarget)
         if (!targetOffset.isNaN()) dragTo(targetOffset)
@@ -57,7 +56,7 @@ suspend fun <T> StupidAnchoredDraggableState<T>.snapTo(targetValue: T) {
 }
 
 @OptIn(ExperimentalFoundationApi::class)
-private suspend fun <T> StupidAnchoredDraggableState<T>.animateTo(
+private suspend fun <T> SinatraAnchoredDraggableState<T>.animateTo(
     velocity: Float,
     anchoredDragScope: AnchoredDragScope,
     anchors: DraggableAnchors<T>,
@@ -80,7 +79,7 @@ private suspend fun <T> StupidAnchoredDraggableState<T>.animateTo(
 }
 
 @ExperimentalFoundationApi
-suspend fun <T> StupidAnchoredDraggableState<T>.animateToWithDecay(
+suspend fun <T> SinatraAnchoredDraggableState<T>.animateToWithDecay(
     targetValue: T,
     velocity: Float,
 ): Float {
@@ -135,7 +134,7 @@ suspend fun <T> StupidAnchoredDraggableState<T>.animateToWithDecay(
 
 @Stable
 @ExperimentalFoundationApi
-class StupidAnchoredDraggableState<T>(
+class SinatraAnchoredDraggableState<T>(
     initialValue: T,
     internal val positionalThreshold: (totalDistance: Float) -> Float,
     internal val velocityThreshold: () -> Float,
@@ -302,7 +301,7 @@ class StupidAnchoredDraggableState<T>(
 
     private var dragTarget: T? by mutableStateOf(null)
 
-    var anchors: DraggableAnchors<T> by mutableStateOf(FuckJetpackDraggableAnchors(mapOf()))
+    var anchors: DraggableAnchors<T> by mutableStateOf(SinatraDraggableAnchors(mapOf()))
         private set
 
     /**
@@ -609,12 +608,12 @@ private suspend fun <I> restartable(inputs: () -> I, block: suspend (I) -> Unit)
             snapshotFlow(inputs)
                 .collect { latestInputs ->
                     previousDrag?.apply {
-                        cancel(StupidAnchoredDragFinishedSignal())
+                        cancel(SinatraAnchoredDragFinishedSignal())
                         join()
                     }
                     previousDrag = launch(start = CoroutineStart.UNDISPATCHED) {
                         block(latestInputs)
-                        this@coroutineScope.cancel(StupidAnchoredDragFinishedSignal())
+                        this@coroutineScope.cancel(SinatraAnchoredDragFinishedSignal())
                     }
                 }
         }
@@ -623,4 +622,4 @@ private suspend fun <I> restartable(inputs: () -> I, block: suspend (I) -> Unit)
     }
 }
 
-private class StupidAnchoredDragFinishedSignal: CancellationException("FUCK")
+private class SinatraAnchoredDragFinishedSignal: CancellationException("IDK")

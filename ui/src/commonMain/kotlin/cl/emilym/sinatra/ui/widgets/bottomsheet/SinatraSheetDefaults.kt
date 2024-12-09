@@ -1,6 +1,5 @@
 package cl.emilym.sinatra.ui.widgets.bottomsheet
 
-import androidx.compose.animation.core.DecayAnimationSpec
 import androidx.compose.animation.core.SpringSpec
 import androidx.compose.animation.core.exponentialDecay
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -22,10 +21,8 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SheetState
-import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.Stable
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
@@ -36,22 +33,17 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.CancellationException
-import org.jetbrains.compose.resources.getString
 import kotlin.jvm.JvmName
 
-// FUCK YOU JETPACK COMPOSE DEVELOPERS
-
-class NotShitSheetState @OptIn(ExperimentalMaterial3Api::class) constructor(
+class SinatraSheetState @OptIn(ExperimentalMaterial3Api::class) constructor(
     val skipPartiallyExpanded: Boolean,
-    initialValue: NotShitSheetValue = NotShitSheetValue.Hidden,
-    confirmValueChange: (NotShitSheetValue) -> Boolean = { true },
+    initialValue: SinatraSheetValue = SinatraSheetValue.Hidden,
+    confirmValueChange: (SinatraSheetValue) -> Boolean = { true },
     val skipHiddenState: Boolean = false,
 ) {
 
@@ -76,21 +68,21 @@ class NotShitSheetState @OptIn(ExperimentalMaterial3Api::class) constructor(
     constructor(
         skipPartiallyExpanded: Boolean,
         density: Density,
-        initialValue: NotShitSheetValue = NotShitSheetValue.Hidden,
-        confirmValueChange: (NotShitSheetValue) -> Boolean = { true },
+        initialValue: SinatraSheetValue = SinatraSheetValue.Hidden,
+        confirmValueChange: (SinatraSheetValue) -> Boolean = { true },
         skipHiddenState: Boolean = false,
     ) : this(skipPartiallyExpanded, initialValue, confirmValueChange, skipHiddenState) {
         this.density = density
     }
     init {
         if (skipPartiallyExpanded) {
-            require(initialValue != NotShitSheetValue.PartiallyExpanded) {
+            require(initialValue != SinatraSheetValue.PartiallyExpanded) {
                 "The initial value must not be set to PartiallyExpanded if skipPartiallyExpanded " +
                         "is set to true."
             }
         }
         if (skipHiddenState) {
-            require(initialValue != NotShitSheetValue.Hidden) {
+            require(initialValue != SinatraSheetValue.Hidden) {
                 "The initial value must not be set to Hidden if skipHiddenState is set to true."
             }
         }
@@ -105,7 +97,7 @@ class NotShitSheetState @OptIn(ExperimentalMaterial3Api::class) constructor(
      */
 
     @OptIn(ExperimentalFoundationApi::class)
-    val currentValue: NotShitSheetValue get() = anchoredDraggableState.currentValue
+    val currentValue: SinatraSheetValue get() = anchoredDraggableState.currentValue
 
     /**
      * The target value of the bottom sheet state.
@@ -115,14 +107,14 @@ class NotShitSheetState @OptIn(ExperimentalMaterial3Api::class) constructor(
      * Finally, if no swipe or animation is in progress, this is the same as the [currentValue].
      */
     @OptIn(ExperimentalFoundationApi::class)
-    val targetValue: NotShitSheetValue get() = anchoredDraggableState.targetValue
+    val targetValue: SinatraSheetValue get() = anchoredDraggableState.targetValue
 
     /**
      * Whether the modal bottom sheet is visible.
      */
     @OptIn(ExperimentalFoundationApi::class)
     val isVisible: Boolean
-        get() = anchoredDraggableState.currentValue != NotShitSheetValue.Hidden
+        get() = anchoredDraggableState.currentValue != SinatraSheetValue.Hidden
 
     /**
      * Require the current offset (in pixels) of the bottom sheet.
@@ -149,18 +141,18 @@ class NotShitSheetState @OptIn(ExperimentalMaterial3Api::class) constructor(
 
     @OptIn(ExperimentalFoundationApi::class)
     val hasExpandedState: Boolean
-        get() = anchoredDraggableState.anchors.hasAnchorFor(NotShitSheetValue.Expanded)
+        get() = anchoredDraggableState.anchors.hasAnchorFor(SinatraSheetValue.Expanded)
 
     @OptIn(ExperimentalFoundationApi::class)
     val hasHalfExpandedState: Boolean
-        get() = anchoredDraggableState.anchors.hasAnchorFor(NotShitSheetValue.HalfExpanded)
+        get() = anchoredDraggableState.anchors.hasAnchorFor(SinatraSheetValue.HalfExpanded)
 
     /**
      * Whether the modal bottom sheet has a partially expanded state defined.
      */
     @OptIn(ExperimentalFoundationApi::class)
     val hasPartiallyExpandedState: Boolean
-        get() = anchoredDraggableState.anchors.hasAnchorFor(NotShitSheetValue.PartiallyExpanded)
+        get() = anchoredDraggableState.anchors.hasAnchorFor(SinatraSheetValue.PartiallyExpanded)
 
     /**
      * Fully expand the bottom sheet with animation and suspend until it is fully expanded or
@@ -170,12 +162,12 @@ class NotShitSheetState @OptIn(ExperimentalMaterial3Api::class) constructor(
      */
     @OptIn(ExperimentalFoundationApi::class)
     suspend fun expand() {
-        anchoredDraggableState.animateTo(NotShitSheetValue.Expanded)
+        anchoredDraggableState.animateTo(SinatraSheetValue.Expanded)
     }
 
     @OptIn(ExperimentalFoundationApi::class)
     suspend fun halfExpand() {
-        anchoredDraggableState.animateTo(NotShitSheetValue.HalfExpanded)
+        anchoredDraggableState.animateTo(SinatraSheetValue.HalfExpanded)
     }
 
     /**
@@ -189,7 +181,7 @@ class NotShitSheetState @OptIn(ExperimentalMaterial3Api::class) constructor(
             "Attempted to animate to partial expanded when skipPartiallyExpanded was enabled. Set" +
                     " skipPartiallyExpanded to false to use this function."
         }
-        animateTo(NotShitSheetValue.PartiallyExpanded)
+        animateTo(SinatraSheetValue.PartiallyExpanded)
     }
 
     /**
@@ -199,8 +191,8 @@ class NotShitSheetState @OptIn(ExperimentalMaterial3Api::class) constructor(
      */
     suspend fun show() {
         val targetValue = when {
-            hasPartiallyExpandedState -> NotShitSheetValue.PartiallyExpanded
-            else -> NotShitSheetValue.Expanded
+            hasPartiallyExpandedState -> SinatraSheetValue.PartiallyExpanded
+            else -> SinatraSheetValue.Expanded
         }
         animateTo(targetValue)
     }
@@ -215,7 +207,7 @@ class NotShitSheetState @OptIn(ExperimentalMaterial3Api::class) constructor(
             "Attempted to animate to hidden when skipHiddenState was enabled. Set skipHiddenState" +
                     " to false to use this function."
         }
-        animateTo(NotShitSheetValue.Hidden)
+        animateTo(SinatraSheetValue.Hidden)
     }
 
     /**
@@ -230,7 +222,7 @@ class NotShitSheetState @OptIn(ExperimentalMaterial3Api::class) constructor(
      */
     @OptIn(ExperimentalFoundationApi::class)
     internal suspend fun animateTo(
-        targetValue: NotShitSheetValue,
+        targetValue: SinatraSheetValue,
         velocity: Float = anchoredDraggableState.lastVelocity
     ) {
         anchoredDraggableState.animateToWithDecay(targetValue, velocity)
@@ -245,7 +237,7 @@ class NotShitSheetState @OptIn(ExperimentalMaterial3Api::class) constructor(
      * @param targetValue The target value of the animation
      */
     @OptIn(ExperimentalFoundationApi::class)
-    internal suspend fun snapTo(targetValue: NotShitSheetValue) {
+    internal suspend fun snapTo(targetValue: SinatraSheetValue) {
         anchoredDraggableState.snapTo(targetValue)
     }
 
@@ -283,12 +275,12 @@ class NotShitSheetState @OptIn(ExperimentalMaterial3Api::class) constructor(
         @OptIn(ExperimentalMaterial3Api::class)
         fun Saver(
             skipPartiallyExpanded: Boolean,
-            confirmValueChange: (NotShitSheetValue) -> Boolean,
+            confirmValueChange: (SinatraSheetValue) -> Boolean,
             density: Density
-        ) = Saver<NotShitSheetState, NotShitSheetValue>(
+        ) = Saver<SinatraSheetState, SinatraSheetValue>(
             save = { it.currentValue },
             restore = { savedValue ->
-                NotShitSheetState(skipPartiallyExpanded, density, savedValue, confirmValueChange)
+                SinatraSheetState(skipPartiallyExpanded, density, savedValue, confirmValueChange)
             }
         )
 
@@ -305,11 +297,11 @@ class NotShitSheetState @OptIn(ExperimentalMaterial3Api::class) constructor(
         @Suppress("Deprecation")
         fun Saver(
             skipPartiallyExpanded: Boolean,
-            confirmValueChange: (NotShitSheetValue) -> Boolean
-        ) = Saver<NotShitSheetState, NotShitSheetValue>(
+            confirmValueChange: (SinatraSheetValue) -> Boolean
+        ) = Saver<SinatraSheetState, SinatraSheetValue>(
             save = { it.currentValue },
             restore = { savedValue ->
-                NotShitSheetState(skipPartiallyExpanded, savedValue, confirmValueChange)
+                SinatraSheetState(skipPartiallyExpanded, savedValue, confirmValueChange)
             }
         )
     }
@@ -318,7 +310,7 @@ class NotShitSheetState @OptIn(ExperimentalMaterial3Api::class) constructor(
 /**
  * Possible values of [SheetState].
  */
-enum class NotShitSheetValue {
+enum class SinatraSheetValue {
     /**
      * The sheet is not visible.
      */
@@ -410,7 +402,7 @@ object BottomSheetDefaults {
 
 @OptIn(ExperimentalFoundationApi::class)
 internal fun ConsumeSwipeWithinBottomSheetBoundsNestedScrollConnection(
-    sheetState: NotShitSheetState,
+    sheetState: SinatraSheetState,
     orientation: Orientation,
     onFling: (velocity: Float) -> Unit
 ): NestedScrollConnection = object : NestedScrollConnection {
@@ -467,23 +459,23 @@ internal fun ConsumeSwipeWithinBottomSheetBoundsNestedScrollConnection(
 
 @Composable
 @ExperimentalMaterial3Api
-internal fun rememberNotShitSheetState(
+internal fun rememberSinatraSheetState(
     skipPartiallyExpanded: Boolean = false,
-    confirmValueChange: (NotShitSheetValue) -> Boolean = { true },
-    initialValue: NotShitSheetValue = NotShitSheetValue.Hidden,
+    confirmValueChange: (SinatraSheetValue) -> Boolean = { true },
+    initialValue: SinatraSheetValue = SinatraSheetValue.Hidden,
     skipHiddenState: Boolean = false,
-): NotShitSheetState {
+): SinatraSheetState {
 
     val density = LocalDensity.current
     return rememberSaveable(
         skipPartiallyExpanded, confirmValueChange,
-        saver = NotShitSheetState.Saver(
+        saver = SinatraSheetState.Saver(
             skipPartiallyExpanded = skipPartiallyExpanded,
             confirmValueChange = confirmValueChange,
             density = density
         )
     ) {
-        NotShitSheetState(
+        SinatraSheetState(
             skipPartiallyExpanded,
             density,
             initialValue,

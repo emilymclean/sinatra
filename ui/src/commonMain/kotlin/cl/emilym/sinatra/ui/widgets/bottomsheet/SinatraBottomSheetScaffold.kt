@@ -10,9 +10,7 @@ import androidx.compose.material3.BottomSheetScaffoldState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SheetState
-import androidx.compose.material3.SheetValue
 import androidx.compose.material3.SheetValue.Expanded
-import androidx.compose.material3.SheetValue.Hidden
 import androidx.compose.material3.SheetValue.PartiallyExpanded
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -30,16 +28,15 @@ import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import cl.emilym.sinatra.ui.widgets.toFloatPx
 import kotlin.math.max
 import kotlin.math.roundToInt
 
 @Composable
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
-fun StupidBottomSheetScaffold(
+fun SinatraBottomSheetScaffold(
     sheetContent: @Composable ColumnScope.() -> Unit,
     modifier: Modifier = Modifier,
-    scaffoldState: StupidBottomSheetScaffoldState = rememberStupidBottomSheetScaffoldState(),
+    scaffoldState: SinatraBottomSheetScaffoldState = rememberSinatraBottomSheetScaffoldState(),
     sheetPeekHeight: Dp = 56.dp,
     sheetHalfHeight: Float = 0.5f,
     sheetMaxWidth: Dp = 640.dp,
@@ -59,7 +56,7 @@ fun StupidBottomSheetScaffold(
     val peekHeightPx = with(LocalDensity.current) {
         sheetPeekHeight.roundToPx()
     }
-    FuckJetpackBottomSheetScaffoldLayout(
+    SinatraBottomSheetScaffoldLayout(
         modifier = modifier,
         topBar = topBar,
         body = content,
@@ -72,24 +69,24 @@ fun StupidBottomSheetScaffold(
         containerColor = containerColor,
         contentColor = contentColor,
         bottomSheet = { layoutHeight ->
-            NotShitBottomSheet(
+            SinatraBottomSheet(
                 state = scaffoldState.bottomSheetState,
                 peekHeight = sheetPeekHeight,
                 sheetMaxWidth = sheetMaxWidth,
                 sheetSwipeEnabled = sheetSwipeEnabled,
                 calculateAnchors = { sheetSize ->
                     val sheetHeight = sheetSize.height
-                    GoddamnDraggableAnchors {
+                    sinatraDraggableAnchors {
                         if (!scaffoldState.bottomSheetState.skipPartiallyExpanded) {
-                            NotShitSheetValue.PartiallyExpanded at (layoutHeight - peekHeightPx).toFloat()
+                            SinatraSheetValue.PartiallyExpanded at (layoutHeight - peekHeightPx).toFloat()
                         }
                         if (sheetHeight != peekHeightPx) {
-                            NotShitSheetValue.Expanded at maxOf(layoutHeight - sheetHeight, 0).toFloat()
+                            SinatraSheetValue.Expanded at maxOf(layoutHeight - sheetHeight, 0).toFloat()
                         }
                         if (!scaffoldState.bottomSheetState.skipHiddenState) {
-                            NotShitSheetValue.Hidden at layoutHeight.toFloat()
+                            SinatraSheetValue.Hidden at layoutHeight.toFloat()
                         }
-                        NotShitSheetValue.HalfExpanded at maxOf(layoutHeight - (sheetHeight * sheetHalfHeight), 0f)
+                        SinatraSheetValue.HalfExpanded at maxOf(layoutHeight - (sheetHeight * sheetHalfHeight), 0f)
                     }
                 },
                 shape = sheetShape,
@@ -105,8 +102,8 @@ fun StupidBottomSheetScaffold(
 }
 
 @Stable
-class StupidBottomSheetScaffoldState(
-    val bottomSheetState: NotShitSheetState,
+class SinatraBottomSheetScaffoldState(
+    val bottomSheetState: SinatraSheetState,
     val snackbarHostState: SnackbarHostState
 )
 
@@ -118,12 +115,12 @@ class StupidBottomSheetScaffoldState(
  * @param snackbarHostState the [SnackbarHostState] used to show snackbars inside the scaffold
  */
 @Composable
-fun rememberStupidBottomSheetScaffoldState(
-    bottomSheetState: NotShitSheetState = rememberNotShitBottomSheetState(),
+fun rememberSinatraBottomSheetScaffoldState(
+    bottomSheetState: SinatraSheetState = rememberSinatraBottomSheetState(),
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() }
-): StupidBottomSheetScaffoldState {
+): SinatraBottomSheetScaffoldState {
     return remember(bottomSheetState, snackbarHostState) {
-        StupidBottomSheetScaffoldState(
+        SinatraBottomSheetScaffoldState(
             bottomSheetState = bottomSheetState,
             snackbarHostState = snackbarHostState
         )
@@ -140,15 +137,15 @@ fun rememberStupidBottomSheetScaffoldState(
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun rememberNotShitBottomSheetState(
-    initialValue: NotShitSheetValue = NotShitSheetValue.PartiallyExpanded,
-    confirmValueChange: (NotShitSheetValue) -> Boolean = { true },
+fun rememberSinatraBottomSheetState(
+    initialValue: SinatraSheetValue = SinatraSheetValue.PartiallyExpanded,
+    confirmValueChange: (SinatraSheetValue) -> Boolean = { true },
     skipHiddenState: Boolean = true,
-) = rememberNotShitSheetState(false, confirmValueChange, initialValue, skipHiddenState)
+) = rememberSinatraSheetState(false, confirmValueChange, initialValue, skipHiddenState)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun FuckJetpackBottomSheetScaffoldLayout(
+private fun SinatraBottomSheetScaffoldLayout(
     modifier: Modifier,
     topBar: @Composable (() -> Unit)?,
     body: @Composable (innerPadding: PaddingValues) -> Unit,
@@ -156,7 +153,7 @@ private fun FuckJetpackBottomSheetScaffoldLayout(
     snackbarHost: @Composable () -> Unit,
     sheetPeekHeight: Dp,
     sheetOffset: () -> Float,
-    sheetState: NotShitSheetState,
+    sheetState: SinatraSheetState,
     containerColor: Color,
     contentColor: Color,
 ) {
@@ -169,18 +166,18 @@ private fun FuckJetpackBottomSheetScaffoldLayout(
         val layoutHeight = constraints.maxHeight
         val looseConstraints = constraints.copy(minWidth = 0, minHeight = 0)
 
-        val sheetPlaceable = subcompose(FuckJetpackBottomSheetScaffoldLayoutSlot.Sheet) {
+        val sheetPlaceable = subcompose(SinatraBottomSheetScaffoldLayoutSlot.Sheet) {
             bottomSheet(layoutHeight)
         }[0].measure(looseConstraints)
 
         val topBarPlaceable = topBar?.let {
-            subcompose(FuckJetpackBottomSheetScaffoldLayoutSlot.TopBar) { topBar() }[0]
+            subcompose(SinatraBottomSheetScaffoldLayoutSlot.TopBar) { topBar() }[0]
                 .measure(looseConstraints)
         }
         val topBarHeight = topBarPlaceable?.height ?: 0
 
         val bodyConstraints = looseConstraints.copy(maxHeight = layoutHeight - topBarHeight)
-        val bodyPlaceable = subcompose(FuckJetpackBottomSheetScaffoldLayoutSlot.Body) {
+        val bodyPlaceable = subcompose(SinatraBottomSheetScaffoldLayoutSlot.Body) {
             Surface(
                 modifier = modifier,
                 color = containerColor,
@@ -188,7 +185,7 @@ private fun FuckJetpackBottomSheetScaffoldLayout(
             ) { body(PaddingValues(bottom = sheetPeekHeight)) }
         }[0].measure(bodyConstraints)
 
-        val snackbarPlaceable = subcompose(FuckJetpackBottomSheetScaffoldLayoutSlot.Snackbar, snackbarHost)[0]
+        val snackbarPlaceable = subcompose(SinatraBottomSheetScaffoldLayoutSlot.Snackbar, snackbarHost)[0]
             .measure(looseConstraints)
 
         layout(layoutWidth, layoutHeight) {
@@ -197,8 +194,8 @@ private fun FuckJetpackBottomSheetScaffoldLayout(
 
             val snackbarOffsetX = (layoutWidth - snackbarPlaceable.width) / 2
             val snackbarOffsetY = when (sheetState.currentValue) {
-                NotShitSheetValue.PartiallyExpanded, NotShitSheetValue.HalfExpanded -> sheetOffsetY - snackbarPlaceable.height
-                NotShitSheetValue.Expanded, NotShitSheetValue.Hidden -> layoutHeight - snackbarPlaceable.height
+                SinatraSheetValue.PartiallyExpanded, SinatraSheetValue.HalfExpanded -> sheetOffsetY - snackbarPlaceable.height
+                SinatraSheetValue.Expanded, SinatraSheetValue.Hidden -> layoutHeight - snackbarPlaceable.height
             }
 
             // Placement order is important for elevation
@@ -210,4 +207,4 @@ private fun FuckJetpackBottomSheetScaffoldLayout(
     }
 }
 
-private enum class FuckJetpackBottomSheetScaffoldLayoutSlot { TopBar, Body, Sheet, Snackbar }
+private enum class SinatraBottomSheetScaffoldLayoutSlot { TopBar, Body, Sheet, Snackbar }

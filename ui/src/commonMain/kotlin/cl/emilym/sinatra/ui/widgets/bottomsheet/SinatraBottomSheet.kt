@@ -28,9 +28,9 @@ import kotlin.math.abs
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
-fun NotShitBottomSheet(
-    state: NotShitSheetState,
-    calculateAnchors: (sheetSize: IntSize) -> DraggableAnchors<NotShitSheetValue>,
+fun SinatraBottomSheet(
+    state: SinatraSheetState,
+    calculateAnchors: (sheetSize: IntSize) -> DraggableAnchors<SinatraSheetValue>,
     peekHeight: Dp,
     sheetMaxWidth: Dp,
     sheetSwipeEnabled: Boolean,
@@ -68,12 +68,12 @@ fun NotShitBottomSheet(
             .onSizeChanged { layoutSize ->
                 val newAnchors = calculateAnchors(layoutSize)
                 val newTarget = when (state.anchoredDraggableState.targetValue) {
-                    NotShitSheetValue.Hidden, NotShitSheetValue.PartiallyExpanded -> NotShitSheetValue.PartiallyExpanded
-                    NotShitSheetValue.Expanded -> {
-                        if (newAnchors.hasAnchorFor(NotShitSheetValue.Expanded)) NotShitSheetValue.Expanded else NotShitSheetValue.PartiallyExpanded
+                    SinatraSheetValue.Hidden, SinatraSheetValue.PartiallyExpanded -> SinatraSheetValue.PartiallyExpanded
+                    SinatraSheetValue.Expanded -> {
+                        if (newAnchors.hasAnchorFor(SinatraSheetValue.Expanded)) SinatraSheetValue.Expanded else SinatraSheetValue.PartiallyExpanded
                     }
-                    NotShitSheetValue.HalfExpanded -> {
-                        if (newAnchors.hasAnchorFor(NotShitSheetValue.HalfExpanded)) NotShitSheetValue.HalfExpanded else NotShitSheetValue.PartiallyExpanded
+                    SinatraSheetValue.HalfExpanded -> {
+                        if (newAnchors.hasAnchorFor(SinatraSheetValue.HalfExpanded)) SinatraSheetValue.HalfExpanded else SinatraSheetValue.PartiallyExpanded
                     }
                 }
                 state.anchoredDraggableState.updateAnchors(newAnchors, newTarget)
@@ -99,14 +99,14 @@ fun NotShitBottomSheet(
 }
 
 @OptIn(ExperimentalFoundationApi::class)
-fun <T : Any> GoddamnDraggableAnchors(
-    builder: FuckingDraggableAnchorsConfig<T>.() -> Unit
-): DraggableAnchors<T> = FuckJetpackDraggableAnchors(
-    FuckingDraggableAnchorsConfig<T>().apply(builder).anchors
+fun <T : Any> sinatraDraggableAnchors(
+    builder: SinatraDraggableAnchorsConfig<T>.() -> Unit
+): DraggableAnchors<T> = SinatraDraggableAnchors(
+    SinatraDraggableAnchorsConfig<T>().apply(builder).anchors
 )
 
 @OptIn(ExperimentalFoundationApi::class)
-class FuckJetpackDraggableAnchors<T>(private val anchors: Map<T, Float>) : DraggableAnchors<T> {
+class SinatraDraggableAnchors<T>(private val anchors: Map<T, Float>) : DraggableAnchors<T> {
 
     override fun positionOf(value: T): Float = anchors[value] ?: Float.NaN
     override fun hasAnchorFor(value: T) = anchors.containsKey(value)
@@ -134,7 +134,7 @@ class FuckJetpackDraggableAnchors<T>(private val anchors: Map<T, Float>) : Dragg
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (other !is FuckJetpackDraggableAnchors<*>) return false
+        if (other !is SinatraDraggableAnchors<*>) return false
 
         return anchors == other.anchors
     }
@@ -150,7 +150,7 @@ class FuckJetpackDraggableAnchors<T>(private val anchors: Map<T, Float>) : Dragg
     override fun toString() = "FuckJetpackDraggableAnchors($anchors)"
 }
 
-class FuckingDraggableAnchorsConfig<T> {
+class SinatraDraggableAnchorsConfig<T> {
 
     val anchors = mutableMapOf<T, Float>()
 

@@ -8,33 +8,23 @@ import androidx.compose.foundation.layout.exclude
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.onConsumedWindowInsetsChanged
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.ScaffoldDefaults
-import androidx.compose.material3.SheetValue
-import androidx.compose.material3.rememberBottomSheetScaffoldState
-import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
-import cafe.adriel.voyager.navigator.CurrentScreen
 import cafe.adriel.voyager.navigator.Navigator
-import cl.emilym.sinatra.ui.canberra
 import cl.emilym.sinatra.ui.navigation.CurrentBottomSheetContent
 import cl.emilym.sinatra.ui.navigation.CurrentMapOverlayContent
 import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
-import cl.emilym.sinatra.ui.navigation.MapScope
 import cl.emilym.sinatra.ui.navigation.bottomSheetHalfHeight
 import cl.emilym.sinatra.ui.presentation.screens.maps.MapSearchScreen
-import cl.emilym.sinatra.ui.widgets.bottomsheet.NotShitSheetValue
-import cl.emilym.sinatra.ui.widgets.bottomsheet.StupidBottomSheetScaffold
-import cl.emilym.sinatra.ui.widgets.bottomsheet.rememberNotShitBottomSheetState
-import cl.emilym.sinatra.ui.widgets.bottomsheet.rememberStupidBottomSheetScaffoldState
+import cl.emilym.sinatra.ui.widgets.bottomsheet.SinatraSheetValue
+import cl.emilym.sinatra.ui.widgets.bottomsheet.SinatraBottomSheetScaffold
+import cl.emilym.sinatra.ui.widgets.bottomsheet.rememberSinatraBottomSheetState
+import cl.emilym.sinatra.ui.widgets.bottomsheet.rememberSinatraBottomSheetScaffoldState
 
 @Composable
 expect fun Map()
@@ -60,15 +50,15 @@ class RootMapScreen: Screen {
     private fun Scaffold(
         content: @Composable () -> Unit
     ) {
-        val sheetState = rememberNotShitBottomSheetState(
-            initialValue = NotShitSheetValue.HalfExpanded,
+        val sheetState = rememberSinatraBottomSheetState(
+            initialValue = SinatraSheetValue.HalfExpanded,
             skipHiddenState = true
         )
-        val state = rememberStupidBottomSheetScaffoldState(
+        val state = rememberSinatraBottomSheetScaffoldState(
             bottomSheetState = sheetState
         )
 
-        StupidBottomSheetScaffold(
+        SinatraBottomSheetScaffold(
             scaffoldState = state,
             sheetContent = {
                 CompositionLocalProvider(LocalBottomSheetState provides state) {
