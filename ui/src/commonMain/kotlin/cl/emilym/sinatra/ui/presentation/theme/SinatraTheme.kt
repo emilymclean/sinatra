@@ -47,4 +47,4 @@ fun SinatraTheme(
 }
 
 @Composable
-fun defaultLineColor(): Color = Color.Black
+fun defaultLineColor(): Color = MaterialTheme.colorScheme.onSurface
