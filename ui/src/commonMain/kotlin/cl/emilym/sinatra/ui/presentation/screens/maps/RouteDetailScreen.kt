@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -20,6 +21,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.style.TextAlign
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cafe.adriel.voyager.core.screen.ScreenKey
@@ -47,6 +49,7 @@ import cl.emilym.sinatra.ui.navigation.MapScreen
 import cl.emilym.sinatra.ui.presentation.theme.defaultLineColor
 import cl.emilym.sinatra.ui.widgets.AccessibilityIconLockup
 import cl.emilym.sinatra.ui.widgets.BikeIcon
+import cl.emilym.sinatra.ui.widgets.NoBusIcon
 import cl.emilym.sinatra.ui.widgets.RouteLine
 import cl.emilym.sinatra.ui.widgets.RouteRandle
 import cl.emilym.sinatra.ui.widgets.StopCard
@@ -66,6 +69,7 @@ import sinatra.ui.generated.resources.stops_title
 import sinatra.ui.generated.resources.accessibility_title
 import sinatra.ui.generated.resources.route_not_found
 import sinatra.ui.generated.resources.trip_not_found
+import sinatra.ui.generated.resources.no_upcoming_vehicles
 
 @KoinViewModel
 class RouteDetailViewModel(
@@ -195,19 +199,25 @@ class RouteDetailScreen(
                     )
                 }
             }
-            items(info.stops) {
-                if (it.stop == null) return@items
-                StopCard(
-                    it.stop!!,
-                    it.arrivalTime?.let { StationTime.Scheduled(it) },
-                    Modifier.fillMaxWidth(),
-                    onClick = {
-                        navigator.push(StopDetailScreen(
-                            it.stopId
-                        ))
-                    }
-                )
+            when {
+                info.stops.isNotEmpty() -> items(info.stops) {
+                    if (it.stop == null) return@items
+                    StopCard(
+                        it.stop!!,
+                        it.arrivalTime?.let { StationTime.Scheduled(it) },
+                        Modifier.fillMaxWidth(),
+                        onClick = {
+                            navigator.push(StopDetailScreen(
+                                it.stopId
+                            ))
+                        }
+                    )
+                }
+                else -> item {
+                    // Handle no stops?
+                }
             }
+
             item { Box(Modifier.height(2.rdp)) }
         }
     }

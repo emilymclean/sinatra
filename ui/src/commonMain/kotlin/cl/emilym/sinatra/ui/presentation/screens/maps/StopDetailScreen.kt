@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
@@ -21,6 +22,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cafe.adriel.voyager.core.screen.ScreenKey
@@ -42,6 +44,7 @@ import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
 import cl.emilym.sinatra.ui.navigation.MapScope
 import cl.emilym.sinatra.ui.navigation.MapScreen
 import cl.emilym.sinatra.ui.widgets.AccessibilityIconLockup
+import cl.emilym.sinatra.ui.widgets.NoBusIcon
 import cl.emilym.sinatra.ui.widgets.UpcomingRouteCard
 import cl.emilym.sinatra.ui.widgets.WheelchairAccessibleIcon
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -54,6 +57,7 @@ import sinatra.ui.generated.resources.stop_not_found
 import sinatra.ui.generated.resources.upcoming_vehicles
 import sinatra.ui.generated.resources.accessibility_wheelchair_accessible
 import sinatra.ui.generated.resources.accessibility_not_wheelchair_accessible
+import sinatra.ui.generated.resources.no_upcoming_vehicles
 
 @KoinViewModel
 class StopDetailViewModel(
@@ -207,15 +211,31 @@ class StopDetailScreen(
                         )
                     }
                 }
-                items(upcoming.value) {
-                    UpcomingRouteCard(
-                        it,
-                        StationTime.Scheduled(it.arrivalTime),
-                        modifier = Modifier.fillMaxWidth(),
-                        onClick = { navigator.push(RouteDetailScreen(
-                            it.routeId, it.serviceId, it.tripId
-                        )) }
-                    )
+                when {
+                    upcoming.value.isNotEmpty() -> items(upcoming.value) {
+                        UpcomingRouteCard(
+                            it,
+                            StationTime.Scheduled(it.arrivalTime),
+                            modifier = Modifier.fillMaxWidth(),
+                            onClick = { navigator.push(RouteDetailScreen(
+                                it.routeId, it.serviceId, it.tripId
+                            )) }
+                        )
+                    }
+                    else -> item {
+                        Box(Modifier.height(1.rdp))
+                        Row(
+                            Modifier.fillMaxWidth().padding(horizontal = 3.rdp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            NoBusIcon(
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                            Box(Modifier.width(0.5.rdp))
+                            Text(stringResource(Res.string.no_upcoming_vehicles), textAlign = TextAlign.Center)
+                        }
+                    }
                 }
             }
         }

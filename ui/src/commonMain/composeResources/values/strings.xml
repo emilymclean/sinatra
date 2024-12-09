@@ -12,6 +12,7 @@
     <string name="route_with_heading">%1$s towards %2$s</string>
     <string name="route_code_name">Route %1$s</string>
     <string name="upcoming_vehicles">Upcoming routes</string>
+    <string name="no_upcoming_vehicles">There a no routes scheduled.</string>
 
     <string name="accessibility_wheelchair_accessible">Wheelchair accessible</string>
     <string name="accessibility_not_wheelchair_accessible">Not wheelchair accessible</string>
