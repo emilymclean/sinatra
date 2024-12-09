@@ -75,12 +75,7 @@ class MapSearchScreen: MapScreen {
 
     @Composable
     override fun MapScope.MapContent() {
-        Marker(canberra)
-        Marker(canberra.copy(lat = canberra.lat + 0.1))
-        Line(listOf(
-            canberra.copy(lat = canberra.lat - 0.5, lng = canberra.lng - 0.5),
-            canberra.copy(lat = canberra.lat + 0.5, lng = canberra.lng + 0.5)
-        ))
+
     }
 
     @Composable

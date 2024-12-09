@@ -23,6 +23,6 @@
     <string name="service_accessibility_some_bikes_allowed">Bikes are allowed on some services</string>
     <string name="service_accessibility_all_bikes_allowed">Bikes are allowed on all services</string>
     <string name="service_accessibility_none_bikes_allowed">Bikes are allowed on no services</string>
-    <string name="route_accessibility_bikes_allowed">Bikes allowed on route</string>
-    <string name="route_accessibility_no_bikes_allowed">Bikes not allowed on route</string>
+    <string name="route_accessibility_bikes_allowed">Bikes are allowed on route</string>
+    <string name="route_accessibility_no_bikes_allowed">Bikes are not allowed on route</string>
 </resources>
