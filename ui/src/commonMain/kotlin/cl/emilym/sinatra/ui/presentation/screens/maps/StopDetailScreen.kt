@@ -23,6 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import cafe.adriel.voyager.core.screen.ScreenKey
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
@@ -90,6 +91,7 @@ class StopDetailViewModel(
 class StopDetailScreen(
     val stopId: StopId
 ): MapScreen {
+    override val key: ScreenKey = "${this::class.qualifiedName!!}/$stopId"
 
     @Composable
     override fun Content() {}

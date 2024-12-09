@@ -19,6 +19,7 @@ import cl.emilym.sinatra.ui.toMaps
 import cl.emilym.sinatra.ui.widgets.screenSize
 import com.google.android.gms.maps.GoogleMapOptions
 import com.google.android.gms.maps.model.CameraPosition
+import com.google.maps.android.compose.ComposeMapColorScheme
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.rememberCameraPositionState
@@ -37,7 +38,6 @@ actual fun Map() {
             cameraPositionState = cameraPositionState,
             googleMapOptionsFactory = {
                 GoogleMapOptions()
-
             },
             uiSettings = MapUiSettings(
                 compassEnabled = false,
@@ -49,7 +49,8 @@ actual fun Map() {
                 windowPadding.calculateTopPadding(),
                 windowPadding.calculateEndPadding(layoutDirection),
                 windowPadding.calculateBottomPadding() + 56.dp
-            )
+            ),
+            mapColorScheme = ComposeMapColorScheme.FOLLOW_SYSTEM
         ) {
             MapScope(
                 cameraPositionState,

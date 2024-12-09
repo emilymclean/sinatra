@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.core.screen.ScreenKey
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import cl.emilym.compose.requeststate.RequestState
@@ -52,6 +53,7 @@ class RouteListViewModel(
 }
 
 class RouteListScreen: Screen {
+    override val key: ScreenKey = "${this::class.qualifiedName!!}"
 
     @Composable
     override fun Content() {

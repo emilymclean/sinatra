@@ -22,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import cafe.adriel.voyager.core.screen.ScreenKey
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import cl.emilym.compose.requeststate.RequestState
@@ -87,6 +88,7 @@ class RouteDetailScreen(
     private val serviceId: ServiceId? = null,
     private val tripId: TripId? = null
 ): MapScreen {
+    override val key: ScreenKey = "${this::class.qualifiedName!!}/$routeId/$serviceId/$tripId"
 
     @Composable
     override fun Content() {}
@@ -141,7 +143,9 @@ class RouteDetailScreen(
                 }
             }
             item { Box(Modifier.height(0.5.rdp)) }
-            item { RouteLine(route, info.stops.mapNotNull { it.stop }) }
+            item { Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                RouteLine(route, info.stops.mapNotNull { it.stop })
+            } }
             item { Box(Modifier.height(2.rdp)) }
             item {
                 Row(

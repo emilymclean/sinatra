@@ -16,6 +16,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import cafe.adriel.voyager.core.screen.ScreenKey
 import cafe.adriel.voyager.navigator.Navigator
 import cl.emilym.compose.requeststate.RequestState
 import cl.emilym.compose.requeststate.handle
@@ -53,6 +54,7 @@ class MapSearchViewModel(
 }
 
 class MapSearchScreen: MapScreen {
+    override val key: ScreenKey = this::class.qualifiedName!!
 
     override val bottomSheetHalfHeight: Float
         get() = 0.25f
