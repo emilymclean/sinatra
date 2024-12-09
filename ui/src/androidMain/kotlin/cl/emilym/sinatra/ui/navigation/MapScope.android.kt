@@ -12,6 +12,7 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.maps.android.compose.CameraPositionState
 import com.google.maps.android.compose.GoogleMapComposable
+import com.google.maps.android.compose.Polygon
 import com.google.maps.android.compose.Polyline
 import com.google.maps.android.compose.rememberMarkerState
 import io.github.aakira.napier.Napier
@@ -26,6 +27,8 @@ data class BoxDescriptor(
 ) {
     val width get() = topRight.x - bottomLeft.x
     val height get() = bottomLeft.y - topRight.y
+
+    val aspect get() = width.toFloat() / height
 }
 
 actual class MapScope(
@@ -41,28 +44,24 @@ actual class MapScope(
     private val viewportAspect: Float get() = viewportSize.width / viewportSize.height
 
     private fun boxOverOther(box: BoxDescriptor, aspect: Float): BoxDescriptor {
-        val width = box.width
-        val height = box.height
+        val boxAspect = box.aspect
+        val width = if (boxAspect > aspect) box.width.toFloat() else (box.height * aspect)
+        val height = if (boxAspect <= aspect) box.height.toFloat() else (box.width / aspect)
 
-        Napier.d("Box = ${box}, width = $width, height = $height")
-
-        if (width > height) {
-            val nHeight = width * aspect
-            return BoxDescriptor(
-                topRight = Point(box.topRight.x, (box.bottomLeft.y + ((height - nHeight) / 2)).toInt()),
-                bottomLeft = Point(box.bottomLeft.x, (box.bottomLeft.y + ((nHeight - height) / 2)).toInt())
+        return BoxDescriptor(
+            topRight = Point(
+                (box.bottomLeft.x + (width / 2) + (box.width / 2)).toInt(),
+                (box.topRight.y - (height / 2) + (box.height / 2)).toInt()
+            ),
+            bottomLeft = Point(
+                (box.bottomLeft.x - (width / 2) + (box.width / 2)).toInt(),
+                (box.topRight.y + (height / 2) + (box.height / 2)).toInt()
             )
-        } else {
-            val nWidth = height * aspect
-            return BoxDescriptor(
-                topRight = Point((box.bottomLeft.x + ((width - nWidth) / 2)).toInt(), box.topRight.y),
-                bottomLeft = Point((box.bottomLeft.x + ((nWidth - width) / 2)).toInt(), box.bottomLeft.y)
-            )
-        }
+        )
     }
 
     private val moveDownPx: Float
-        get() = ((screenSize.height / 2) - (viewportSize.height / 2)) * 4
+        get() = ((screenSize.height / 2) - (viewportSize.height / 2))
 
     @Composable
     @GoogleMapComposable
@@ -81,6 +80,8 @@ actual class MapScope(
         )
     }
 
+
+
     actual fun zoomToArea(
         topLeft: Location,
         bottomRight: Location,
@@ -91,7 +92,7 @@ actual class MapScope(
             CoroutineScope(Dispatchers.Main).launch {
                 cameraPositionState.animate(CameraUpdateFactory.newLatLngBounds(
                     original,
-                    padding
+                    0
                 ))
             }
             return
@@ -106,16 +107,16 @@ actual class MapScope(
 
         val screenBox = viewportBox.copy(
             bottomLeft = Point(
-                viewportBox.topRight.x,
-                (viewportBox.topRight.y + (viewportBox.width * screenAspect)).toInt(),
+                viewportBox.bottomLeft.x,
+                (viewportBox.bottomLeft.y + (viewportBox.width / screenAspect)).toInt(),
             )
         )
 
         CoroutineScope(Dispatchers.Main).launch {
             cameraPositionState.animate(CameraUpdateFactory.newLatLngBounds(
                 LatLngBounds(
-                    projection.fromScreenLocation(screenBox.topRight),
-                    projection.fromScreenLocation(screenBox.bottomLeft)
+                    projection.fromScreenLocation(screenBox.bottomLeft),
+                    projection.fromScreenLocation(screenBox.topRight)
                 ),
                 padding
             ))
@@ -124,6 +125,39 @@ actual class MapScope(
 
     actual fun zoomToArea(bounds: Bounds, padding: Int) {
         zoomToArea(bounds.topLeft, bounds.bottomRight, padding)
+    }
+
+    @Composable
+    @GoogleMapComposable
+    actual fun DebugZoomToArea(bounds: Bounds) {
+//        val original = listOf(bounds.topLeft.toMaps(), bounds.bottomRight.toMaps()).toBounds()
+//        val projection = cameraPositionState.projection ?: return
+//        val viewportBox = boxOverOther(
+//            BoxDescriptor(
+//                projection.toScreenLocation(original.northeast),
+//                projection.toScreenLocation(original.southwest),
+//            ),
+//            viewportAspect
+//        )
+//
+//        val screenBox = viewportBox
+//        val screenBox = viewportBox.copy(
+//            bottomLeft = Point(
+//                viewportBox.bottomLeft.x,
+//                (viewportBox.bottomLeft.y + (viewportBox.width / screenAspect)).toInt(),
+//            )
+//        )
+
+//        val sBTopRight = projection.fromScreenLocation(screenBox.topRight)
+//        val sBBottomLeft = projection.fromScreenLocation(screenBox.bottomLeft)
+//        Polygon(
+//            listOf(
+//                LatLng(sBTopRight.latitude, sBBottomLeft.longitude),
+//                LatLng(sBTopRight.latitude, sBTopRight.longitude),
+//                LatLng(sBBottomLeft.latitude, sBTopRight.longitude),
+//                LatLng(sBBottomLeft.latitude, sBBottomLeft.longitude),
+//            )
+//        )
     }
 
     actual fun zoomToPoint(

@@ -217,11 +217,13 @@ class RouteDetailScreen(
         val stops = info.tripInformation?.stops ?: return
         if (stops.all { it.stop == null }) return
 
-        val zoomPadding = with(LocalDensity.current) { 8.rdp.toIntPx() }
+        val zoomPadding = with(LocalDensity.current) { 4.rdp.toIntPx() }
 
         LaunchedEffect(stops) {
             zoomToArea(stops.mapNotNull { it.stop?.location }.bounds(), zoomPadding)
         }
+
+        DebugZoomToArea(stops.mapNotNull { it.stop?.location }.bounds())
 
         Line(
             stops.mapNotNull { it.stop?.location },

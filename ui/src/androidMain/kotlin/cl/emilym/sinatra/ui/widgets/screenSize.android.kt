@@ -7,6 +7,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 @Composable
-actual fun screenHeight(): Dp = LocalConfiguration.current.screenWidthDp.dp
+actual fun screenWidth(): Dp = LocalConfiguration.current.screenWidthDp.dp
+
 @Composable
-actual fun screenWidth(): Dp = LocalConfiguration.current.screenHeightDp.dp
+actual fun screenHeight(): Dp = LocalConfiguration.current.screenHeightDp.dp
