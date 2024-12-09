@@ -61,7 +61,7 @@ actual class MapScope(
     }
 
     private val moveDownPx: Float
-        get() = ((screenSize.height / 2) - (viewportSize.height / 2))
+        get() = ((screenSize.height / 2) - (viewportSize.height / 2)) * 2
 
     @Composable
     @GoogleMapComposable
