@@ -1,13 +1,16 @@
 package cl.emilym.sinatra.network
 
+import cl.emilym.gtfs.RouteCanonicalTimetableEndpoint
 import cl.emilym.gtfs.RouteDetailEndpoint
 import cl.emilym.gtfs.RouteEndpoint
 import cl.emilym.gtfs.RouteServicesEndpoint
 import cl.emilym.gtfs.RouteTimetableEndpoint
+import cl.emilym.gtfs.RouteTripTimetableEndpoint
 import cl.emilym.gtfs.ServiceEndpoint
 import cl.emilym.gtfs.StopDetailEndpoint
 import cl.emilym.gtfs.StopEndpoint
 import cl.emilym.gtfs.StopTimetable
+import cl.emilym.sinatra.data.models.RouteServiceCanonicalTimetable
 import de.jensklingenberg.ktorfit.Ktorfit
 import de.jensklingenberg.ktorfit.ktorfitBuilder
 import io.ktor.client.HttpClient
@@ -41,6 +44,8 @@ fun protobufResponseConverterFactory(): ProtobufResponseConverterFactory {
             RouteTimetableEndpoint::class to RouteTimetableEndpoint::decodeFromByteArray,
             RouteServicesEndpoint::class to RouteServicesEndpoint::decodeFromByteArray,
             StopTimetable::class to StopTimetable::decodeFromByteArray,
+            RouteCanonicalTimetableEndpoint::class to RouteCanonicalTimetableEndpoint::decodeFromByteArray,
+            RouteTripTimetableEndpoint::class to RouteTripTimetableEndpoint::decodeFromByteArray
         )
     )
 }

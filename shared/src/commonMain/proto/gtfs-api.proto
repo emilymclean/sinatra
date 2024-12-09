@@ -1,7 +1,8 @@
 syntax = "proto2";
+
 option java_package = "cl.emilym.gtfs";
 
-package gtfs_api;
+package proto;
 
 message StopEndpoint {
   repeated Stop stop = 1;
@@ -28,6 +29,19 @@ message RouteTimetableEndpoint {
   required string routeId = 1;
   required string serviceId = 2;
   repeated RouteTripInformation trips = 3;
+}
+
+message RouteCanonicalTimetableEndpoint {
+  required string routeId = 1;
+  required string serviceId = 2;
+  required RouteTripInformation trip = 3;
+}
+
+message RouteTripTimetableEndpoint {
+  required string routeId = 1;
+  required string serviceId = 2;
+  required string tripId = 3;
+  required RouteTripInformation trip = 4;
 }
 
 message RouteServicesEndpoint {
@@ -87,6 +101,7 @@ message StopTimetableTime {
   required string routeId = 1;
   required string routeCode = 2;
   required string serviceId = 3;
+  required string tripId = 10;
   required string arrivalTime = 4;
   required string departureTime = 5;
   required string heading = 6;
@@ -135,6 +150,7 @@ message TimetableServiceRegular {
   required bool sunday = 7;
   required string startDate = 8;
   required string endDate = 9;
+  repeated TimetableServiceException exceptions = 10;
 }
 
 enum TimetableServiceExceptionType {
@@ -148,16 +164,16 @@ message TimetableServiceException {
 }
 
 message RouteTripInformation {
-  required string startTime = 1;
-  required string endTime = 2;
+  optional string startTime = 1;
+  optional string endTime = 2;
   required ServiceAccessibility accessibility = 3;
   repeated RouteTripStop stops = 4;
 }
 
 message RouteTripStop {
   required string stopId = 1;
-  required string arrivalTime = 2;
-  required string departureTime = 3;
+  optional string arrivalTime = 2;
+  optional string departureTime = 3;
   required uint32 sequence = 4;
 }
 

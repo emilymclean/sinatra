@@ -80,16 +80,16 @@ data class RouteServiceEntity(
 data class RouteTripInformationEntity(
     @PrimaryKey(autoGenerate = true) val id: Long,
     val resource: String,
-    val startTime: Long,
-    val endTime: Long,
+    val startTime: Long?,
+    val endTime: Long?,
     val bikesAllowed: String,
     val wheelchairAccessible: String
 ) {
 
     fun toModel(stops: List<RouteTripStop>): RouteTripInformation {
         return RouteTripInformation(
-            startTime.milliseconds,
-            endTime.milliseconds,
+            startTime?.milliseconds,
+            endTime?.milliseconds,
             RouteServiceAccessibility(
                 ServiceBikesAllowed.valueOf(bikesAllowed),
                 ServiceWheelchairAccessible.valueOf(wheelchairAccessible)
@@ -103,8 +103,8 @@ data class RouteTripInformationEntity(
             return RouteTripInformationEntity(
                 0,
                 resource,
-                m.startTime.toLong(),
-                m.endTime.toLong(),
+                m.startTime?.toLong(),
+                m.endTime?.toLong(),
                 m.accessibility.bikesAllowed.name,
                 m.accessibility.wheelchairAccessible.name
             )
@@ -129,16 +129,16 @@ data class RouteTripStopEntity(
     val routeTripInformationEntityId: Long,
     val resource: ResourceKey,
     val stopId: StopId,
-    val arrivalTime: Long,
-    val departureTime: Long,
+    val arrivalTime: Long?,
+    val departureTime: Long?,
     val sequence: Int
 ) {
 
     fun toModel(): RouteTripStop {
         return RouteTripStop(
             stopId,
-            arrivalTime.time,
-            departureTime.time,
+            arrivalTime?.time,
+            departureTime?.time,
             sequence,
             null
         )
@@ -151,8 +151,8 @@ data class RouteTripStopEntity(
                 parentId,
                 resource,
                 m.stopId,
-                m.arrivalTime.toLong(),
-                m.departureTime.toLong(),
+                m.arrivalTime?.toLong(),
+                m.departureTime?.toLong(),
                 m.sequence
             )
         }

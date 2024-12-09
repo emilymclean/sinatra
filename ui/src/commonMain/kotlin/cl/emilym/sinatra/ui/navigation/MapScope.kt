@@ -8,9 +8,14 @@ import cl.emilym.sinatra.ui.presentation.theme.defaultLineColor
 
 expect class MapScope {
 
-    fun ZoomToArea(bounds: Bounds, padding: Int)
+    fun zoomToArea(bounds: Bounds, padding: Int)
 
-    fun ZoomToArea(topLeft: Location, bottomRight: Location, padding: Int)
+    fun zoomToArea(topLeft: Location, bottomRight: Location, padding: Int)
+
+    @Composable
+    fun DebugZoomToArea(bounds: Bounds)
+
+    fun zoomToPoint(location: Location, zoom: Float = 16f)
 
     @Composable
     fun Marker(location: Location)

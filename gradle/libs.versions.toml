@@ -20,6 +20,7 @@ kotlin-datetime = "0.6.1"
 coil-compose = "3.0.0-rc01"
 units = "2.0.0"
 requeststate = "2.0.0"
+errorwidget = "2.0.0"
 koin = "4.0.0"
 koin-annotations = "1.4.0"
 kotlinx-serialization = "1.7.3"
@@ -85,6 +86,7 @@ emily-units = { module = "cl.emilym.compose:units", version.ref = "units" }
 emily-parcelable = { module = "cl.emilym.kmp:parcelable", version.ref = "parcelable" }
 emily-serializable = { module = "cl.emilym.kmp:serializable", version.ref = "serializable" }
 emily-requeststate = { module = "cl.emilym.compose:requeststate", version.ref = "requeststate" }
+emily-errorwidget = { module = "cl.emilym.compose:errorwidget", version.ref = "errorwidget" }
 
 # Serialization
 kotlinx-serialization-protobuf = { module = "org.jetbrains.kotlinx:kotlinx-serialization-protobuf", version.ref="kotlinx-serialization" }

@@ -6,15 +6,15 @@ import kotlinx.datetime.Instant
 import kotlin.time.Duration
 
 interface StopTime {
-    val arrivalTime: Time
-    val departureTime: Time
+    val arrivalTime: Time?
+    val departureTime: Time?
 
-    fun arrivalTime(startOfDay: Instant): Instant {
-        return arrivalTime.forDay(startOfDay)
+    fun arrivalTime(startOfDay: Instant): Instant? {
+        return arrivalTime?.forDay(startOfDay)
     }
 
-    fun departureTime(startOfDay: Instant): Instant {
-        return departureTime.forDay(startOfDay)
+    fun departureTime(startOfDay: Instant): Instant? {
+        return departureTime?.forDay(startOfDay)
     }
 }
 

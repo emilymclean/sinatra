@@ -7,7 +7,9 @@ import androidx.compose.ui.Modifier
 import cl.emilym.sinatra.ui.canberra
 import cl.emilym.sinatra.ui.navigation.CurrentMapContent
 import cl.emilym.sinatra.ui.navigation.MapScope
+import cl.emilym.sinatra.ui.navigation.bottomSheetHalfHeight
 import cl.emilym.sinatra.ui.toMaps
+import cl.emilym.sinatra.ui.widgets.screenSize
 import com.google.android.gms.maps.GoogleMapOptions
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.maps.android.compose.GoogleMap
@@ -26,6 +28,7 @@ actual fun Map() {
             cameraPositionState = cameraPositionState,
             googleMapOptionsFactory = {
                 GoogleMapOptions()
+
             },
             uiSettings = MapUiSettings(
                 compassEnabled = false,
@@ -33,7 +36,13 @@ actual fun Map() {
                 zoomControlsEnabled = false
             )
         ) {
-            MapScope(cameraPositionState).CurrentMapContent()
+
+
+            MapScope(
+                cameraPositionState,
+                screenSize(),
+                bottomSheetHalfHeight()
+            ).CurrentMapContent()
         }
     }
 }

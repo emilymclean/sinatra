@@ -3,10 +3,10 @@ package cl.emilym.sinatra.room.dao
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
+import androidx.room.Transaction
 import cl.emilym.sinatra.data.models.ResourceKey
-import cl.emilym.sinatra.room.entities.StopEntity
+import cl.emilym.sinatra.room.entities.StopTimetableTimeEntityWithRouteEntity
 import cl.emilym.sinatra.room.entities.StopTimetableTimeEntity
-import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface StopTimetableTimeEntityDao {
@@ -17,7 +17,8 @@ interface StopTimetableTimeEntityDao {
     @Query("DELETE FROM stopTimetableTimeEntity WHERE resource = :resource")
     suspend fun clear(resource: ResourceKey)
 
+    @Transaction
     @Query("SELECT * FROM stopTimetableTimeEntity WHERE resource = :resource")
-    suspend fun get(resource: ResourceKey): List<StopTimetableTimeEntity>
+    suspend fun get(resource: ResourceKey): List<StopTimetableTimeEntityWithRouteEntity>
 
 }

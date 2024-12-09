@@ -6,14 +6,19 @@ import cl.emilym.sinatra.data.models.CacheCategory
 import cl.emilym.sinatra.data.models.ResourceKey
 import cl.emilym.sinatra.data.models.Route
 import cl.emilym.sinatra.data.models.RouteId
+import cl.emilym.sinatra.data.models.RouteServiceCanonicalTimetable
 import cl.emilym.sinatra.data.models.RouteServiceTimetable
+import cl.emilym.sinatra.data.models.RouteTripTimetable
 import cl.emilym.sinatra.data.models.ServiceId
 import cl.emilym.sinatra.data.models.Stop
+import cl.emilym.sinatra.data.models.TripId
 import cl.emilym.sinatra.data.models.flatMap
 import cl.emilym.sinatra.data.models.map
 import cl.emilym.sinatra.data.persistence.RoutePersistence
+import cl.emilym.sinatra.data.persistence.RouteServiceCanonicalTimetablePersistence
 import cl.emilym.sinatra.data.persistence.RouteServicePersistence
 import cl.emilym.sinatra.data.persistence.RouteServiceTimetablePersistence
+import cl.emilym.sinatra.data.persistence.RouteTripTimetablePersistence
 import kotlinx.datetime.Clock
 import org.koin.core.annotation.Factory
 
@@ -82,11 +87,61 @@ class RouteServiceTimetableCacheWorker(
 }
 
 @Factory
+class RouteServiceCanonicalTimetableCacheWorker(
+    private val routeClient: RouteClient,
+    private val routeServiceCanonicalTimetablePersistence: RouteServiceCanonicalTimetablePersistence,
+    override val shaRepository: ShaRepository,
+    override val clock: Clock,
+): CacheWorker<RouteServiceCanonicalTimetable>() {
+
+    override val cacheCategory = CacheCategory.ROUTE_SERVICE_CANONICAL_TIMETABLE
+
+    override suspend fun saveToPersistence(data: RouteServiceCanonicalTimetable, resource: ResourceKey) =
+        routeServiceCanonicalTimetablePersistence.save(data, resource)
+
+    override suspend fun getFromPersistence(resource: ResourceKey) =
+        routeServiceCanonicalTimetablePersistence.get(resource)!!
+
+    suspend fun get(routeId: RouteId, serviceId: ServiceId): Cachable<RouteServiceCanonicalTimetable> {
+        return run(
+            routeClient.routeServiceCanonicalTimetableEndpointPair(routeId, serviceId),
+            "route/${routeId}/service/${serviceId}/canonical"
+        )
+    }
+}
+
+@Factory
+class RouteTripTimetableCacheWorker(
+    private val routeClient: RouteClient,
+    private val routeTripTimetablePersistence: RouteTripTimetablePersistence,
+    override val shaRepository: ShaRepository,
+    override val clock: Clock,
+): CacheWorker<RouteTripTimetable>() {
+
+    override val cacheCategory = CacheCategory.ROUTE_TRIP_TIMETABLE
+
+    override suspend fun saveToPersistence(data: RouteTripTimetable, resource: ResourceKey) =
+        routeTripTimetablePersistence.save(data, resource)
+
+    override suspend fun getFromPersistence(resource: ResourceKey) =
+        routeTripTimetablePersistence.get(resource)!!
+
+    suspend fun get(routeId: RouteId, serviceId: ServiceId, tripId: TripId): Cachable<RouteTripTimetable> {
+        return run(
+            routeClient.routeTripTimetableEndpointPair(routeId, serviceId, tripId),
+            "route/${routeId}/service/${serviceId}/trip/${tripId}/timetable"
+        )
+    }
+}
+
+@Factory
 class RouteRepository(
     private val routeCacheWorker: RoutesCacheWorker,
     private val routeServicesCacheWorker: RouteServicesCacheWorker,
     private val stopsCacheWorker: StopsCacheWorker,
     private val routeServiceTimetableCacheWorker: RouteServiceTimetableCacheWorker,
+    private val routeServiceCanonicalTimetableCacheWorker: RouteServiceCanonicalTimetableCacheWorker,
+    private val routeTripTimetableCacheWorker: RouteTripTimetableCacheWorker,
     private val routePersistence: RoutePersistence,
 ) {
 
@@ -101,6 +156,16 @@ class RouteRepository(
     suspend fun serviceTimetable(routeId: RouteId, serviceId: ServiceId): Cachable<RouteServiceTimetable> {
         val stops = stopsCacheWorker.get()
         return stops.flatMap { routeServiceTimetableCacheWorker.get(routeId, serviceId) }
+    }
+
+    suspend fun canonicalServiceTimetable(routeId: RouteId, serviceId: ServiceId): Cachable<RouteServiceCanonicalTimetable> {
+        val stops = stopsCacheWorker.get()
+        return stops.flatMap { routeServiceCanonicalTimetableCacheWorker.get(routeId, serviceId) }
+    }
+
+    suspend fun tripTimetable(routeId: RouteId, serviceId: ServiceId, tripId: TripId): Cachable<RouteTripTimetable> {
+        val stops = stopsCacheWorker.get()
+        return stops.flatMap { routeTripTimetableCacheWorker.get(routeId, serviceId, tripId) }
     }
 
     suspend fun ignoredRoutes(): List<RouteId> {

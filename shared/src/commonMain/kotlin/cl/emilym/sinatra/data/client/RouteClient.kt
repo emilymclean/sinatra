@@ -6,10 +6,13 @@ import cl.emilym.gtfs.RouteTimetableEndpoint
 import cl.emilym.gtfs.StopEndpoint
 import cl.emilym.sinatra.data.models.Route
 import cl.emilym.sinatra.data.models.RouteId
+import cl.emilym.sinatra.data.models.RouteServiceCanonicalTimetable
 import cl.emilym.sinatra.data.models.RouteServiceTimetable
+import cl.emilym.sinatra.data.models.RouteTripTimetable
 import cl.emilym.sinatra.data.models.ServiceId
 import cl.emilym.sinatra.data.models.ShaDigest
 import cl.emilym.sinatra.data.models.Stop
+import cl.emilym.sinatra.data.models.TripId
 import cl.emilym.sinatra.network.GtfsApi
 import io.github.aakira.napier.Napier
 import org.koin.core.annotation.Factory
@@ -38,6 +41,18 @@ class RouteClient(
             override val digest = suspend { routeServiceTimetableDigest(routeId, serviceId) }
         }
 
+    fun routeServiceCanonicalTimetableEndpointPair(routeId: RouteId, serviceId: ServiceId) =
+        object : EndpointDigestPair<RouteServiceCanonicalTimetable>() {
+            override val endpoint = suspend { routeServiceCanonicalTimetable(routeId, serviceId) }
+            override val digest = suspend { routeServiceCanonicalTimetableDigest(routeId, serviceId) }
+        }
+
+    fun routeTripTimetableEndpointPair(routeId: RouteId, serviceId: ServiceId, tripId: TripId) =
+        object : EndpointDigestPair<RouteTripTimetable>() {
+            override val endpoint = suspend { routeTripTimetable(routeId, serviceId, tripId) }
+            override val digest = suspend { routeTripTimetableDigest(routeId, serviceId, tripId) }
+        }
+
     suspend fun routes(): List<Route> {
         val pbStops = gtfsApi.routes()
         return pbStops.route.map { Route.fromPB(it) }
@@ -61,12 +76,33 @@ class RouteClient(
         val pb = gtfsApi.routeServiceTimetable(
             routeId, serviceId
         )
-        Napier.d("Got timetable for ${routeId} and ${serviceId}")
         return RouteServiceTimetable.fromPB(pb)
     }
 
     suspend fun routeServiceTimetableDigest(routeId: RouteId, serviceId: ServiceId): ShaDigest {
         return gtfsApi.routeServiceTimetableDigest(routeId, serviceId)
+    }
+
+    suspend fun routeServiceCanonicalTimetable(routeId: RouteId, serviceId: ServiceId): RouteServiceCanonicalTimetable {
+        val pb = gtfsApi.routeServiceCanonicalTimetable(
+            routeId, serviceId
+        )
+        return RouteServiceCanonicalTimetable.fromPB(pb)
+    }
+
+    suspend fun routeServiceCanonicalTimetableDigest(routeId: RouteId, serviceId: ServiceId): ShaDigest {
+        return gtfsApi.routeServiceCanonicalTimetableDigest(routeId, serviceId)
+    }
+
+    suspend fun routeTripTimetable(routeId: RouteId, serviceId: ServiceId, tripId: TripId): RouteTripTimetable {
+        val pb = gtfsApi.routeTripTimetable(
+            routeId, serviceId, tripId
+        )
+        return RouteTripTimetable.fromPB(pb)
+    }
+
+    suspend fun routeTripTimetableDigest(routeId: RouteId, serviceId: ServiceId, tripId: TripId): ShaDigest {
+        return gtfsApi.routeTripTimetableDigest(routeId, serviceId, tripId)
     }
 
 }

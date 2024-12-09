@@ -54,6 +54,9 @@ class MapSearchViewModel(
 
 class MapSearchScreen: MapScreen {
 
+    override val bottomSheetHalfHeight: Float
+        get() = 0.25f
+
     @Composable
     override fun Content() {
         Box(Modifier.padding(1.rdp)) {
@@ -72,22 +75,11 @@ class MapSearchScreen: MapScreen {
 
     @Composable
     override fun MapScope.MapContent() {
-        Marker(canberra)
-        Marker(canberra.copy(lat = canberra.lat + 0.1))
-        Line(listOf(
-            canberra.copy(lat = canberra.lat - 0.5, lng = canberra.lng - 0.5),
-            canberra.copy(lat = canberra.lat + 0.5, lng = canberra.lng + 0.5)
-        ))
+
     }
 
-    @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     override fun BottomSheetContent() {
-        val bottomSheet = LocalBottomSheetState.current
-        LaunchedEffect(bottomSheet) {
-            bottomSheet.bottomSheetState.partialExpand()
-        }
-
         Navigator(RouteListScreen())
     }
 

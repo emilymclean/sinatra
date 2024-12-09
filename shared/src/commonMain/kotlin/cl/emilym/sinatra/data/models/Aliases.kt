@@ -11,6 +11,7 @@ typealias StopId = String
 typealias RouteId = String
 typealias RouteCode = String
 typealias ServiceId = String
+typealias TripId = String
 typealias Latitude = Double
 typealias Longitude = Double
 

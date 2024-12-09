@@ -4,6 +4,8 @@ import cl.emilym.sinatra.data.models.Cachable
 import cl.emilym.sinatra.data.models.Route
 import cl.emilym.sinatra.data.models.RouteId
 import cl.emilym.sinatra.data.models.RouteTripInformation
+import cl.emilym.sinatra.data.models.ServiceId
+import cl.emilym.sinatra.data.models.TripId
 import cl.emilym.sinatra.data.models.flatMap
 import cl.emilym.sinatra.data.models.map
 import cl.emilym.sinatra.data.repository.RouteRepository
@@ -27,43 +29,40 @@ class CurrentTripForRouteUseCase(
     private val clock: Clock
 ) {
 
-    suspend operator fun invoke(routeId: RouteId): Cachable<CurrentTripInformation?> {
+    suspend operator fun invoke(
+        routeId: RouteId,
+        serviceId: ServiceId? = null,
+        tripId: TripId? = null
+    ): Cachable<CurrentTripInformation?> {
         val now = clock.now()
-        val startOfDay = transportMetadataRepository.scheduleStartOfDay()
 
         val rc = routeRepository.route(routeId)
         val route = rc.item ?: return rc.map { null }
-        val services = routeRepository.servicesForRoute(routeId).flatMap {
-            serviceRepository.services(it)
-        }
-        val activeServices = services.map {
-            it.firstOrNull { it.active(now, transportMetadataRepository.timeZone()) }
+
+        val activeServices = if (serviceId == null) {
+            val services = routeRepository.servicesForRoute(routeId).flatMap {
+                serviceRepository.services(it)
+            }
+            services.map {
+                it.firstOrNull { it.active(now, transportMetadataRepository.timeZone()) }
+            }
+        } else {
+            serviceRepository.services(listOf(serviceId)).map { it.firstOrNull() }
         }
         if (activeServices.item == null) return activeServices.map { null }
 
-        val timetable = activeServices.flatMap { routeRepository.serviceTimetable(routeId, it!!.id) }
-        val activeTimetable = timetable.map { it.trips.firstOrNull { it.active(now, startOfDay) } }
-
-        fun getClosestTrip(compTime: Instant): RouteTripInformation? {
-            return timetable.item.trips.minByOrNull {
-                val diff = it.startTime(startOfDay) - compTime
-                if (diff.isNegative()) {
-                    Duration.INFINITE
-                } else {
-                    diff
-                }
-            }
-        }
-
-        return if (activeTimetable.item != null) {
-            activeTimetable.map { CurrentTripInformation(it!!, route) }
+        if (tripId == null) {
+            val timetable = activeServices.flatMap { routeRepository.canonicalServiceTimetable(routeId, it!!.id) }
+            return timetable.map { CurrentTripInformation(it.trip, route) }
         } else {
-            timetable.map {
-                CurrentTripInformation(
-                    getClosestTrip(now) ?: getClosestTrip(startOfDay),
-                    route
+            val timetable = activeServices.flatMap {
+                routeRepository.tripTimetable(
+                    routeId,
+                    it!!.id,
+                    tripId
                 )
             }
+            return timetable.map { CurrentTripInformation(it.trip, route) }
         }
     }
 

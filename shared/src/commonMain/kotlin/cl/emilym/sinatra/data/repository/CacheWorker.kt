@@ -59,7 +59,8 @@ abstract class CacheWorker<T> {
             return failure(info, e, resource)
         }
         saveToPersistence(data, resource)
-        return Cachable.live(data)
+        // We get from persistence anyway to ensure any joined tables are included
+        return Cachable.live(getFromPersistence(resource))
     }
 
     private suspend fun failure(info: CacheInformation, e: Throwable, resource: ResourceKey): Cachable<T> {

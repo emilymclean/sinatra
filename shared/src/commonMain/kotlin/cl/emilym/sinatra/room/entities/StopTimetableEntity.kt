@@ -1,12 +1,13 @@
 package cl.emilym.sinatra.room.entities
 
+import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import androidx.room.Relation
 import cl.emilym.sinatra.data.models.ResourceKey
 import cl.emilym.sinatra.data.models.StopTimetableTime
 import cl.emilym.sinatra.data.models.time
 import cl.emilym.sinatra.data.models.toLong
-import kotlin.time.Duration.Companion.milliseconds
 
 @Entity
 class StopTimetableTimeEntity(
@@ -16,6 +17,7 @@ class StopTimetableTimeEntity(
     val routeId: String,
     val routeCode: String,
     val serviceId: String,
+    val tripId: String,
     val arrivalTime: Long,
     val departureTime: Long,
     val heading: String,
@@ -28,10 +30,12 @@ class StopTimetableTimeEntity(
             routeId,
             routeCode,
             serviceId,
+            tripId,
             arrivalTime.time,
             departureTime.time,
             heading,
-            sequence
+            sequence,
+            null
         )
     }
 
@@ -44,12 +48,30 @@ class StopTimetableTimeEntity(
                 stop.routeId,
                 stop.routeCode,
                 stop.serviceId,
+                stop.tripId,
                 stop.arrivalTime.toLong(),
                 stop.departureTime.toLong(),
                 stop.heading,
                 stop.sequence
             )
         }
+    }
+
+}
+
+class StopTimetableTimeEntityWithRouteEntity(
+    @Embedded val stopTimetableTimeEntity: StopTimetableTimeEntity,
+    @Relation(
+        parentColumn = "routeId",
+        entityColumn = "id"
+    )
+    val route: RouteEntity?
+) {
+
+    fun toModel(): StopTimetableTime {
+        return stopTimetableTimeEntity.toModel().copy(
+            route = route?.toModel()
+        )
     }
 
 }
