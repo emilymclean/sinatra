@@ -22,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.Measurable
 import androidx.compose.ui.layout.MeasureResult
@@ -32,14 +33,18 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.data.models.Route
+import cl.emilym.sinatra.data.models.StationTime
 import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.deg
 import cl.emilym.sinatra.ui.color
+import io.github.aakira.napier.Napier
 import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.sin
+
+const val PASSED_ALPHA = 0.5f
 
 @Composable
 fun RouteNode(
@@ -68,9 +73,19 @@ fun RouteNode(
 @Composable
 fun RouteLine(
     route: Route,
-    stops: List<Stop>
+    stops: List<Stop>,
+    arrivalTime: List<StationTime>? = null
 ) {
     if (stops.isEmpty()) return
+    val progress = when {
+        arrivalTime == null -> -1
+        else -> {
+            val now = LocalClock.current.now()
+            arrivalTime.indexOfFirst { it.time.toTodayInstant() > now }
+        }
+    }
+    Napier.d("Progress along line = $progress (times = $arrivalTime)")
+
     val color = route.color()
     Box(Modifier.horizontalScroll(rememberScrollState())) {
         RouteLine(
@@ -78,26 +93,44 @@ fun RouteLine(
                 for (i in stops.indices) {
                     RouteNode(
                         i == 0 || i == stops.size - 1,
-                        color
+                        when {
+                            i >= progress -> color
+                            else -> color.copy(PASSED_ALPHA)
+                                .compositeOver(MaterialTheme.colorScheme.surface)
+                        }
                     )
                 }
             },
             {
-                for (s in stops) {
+                for (i in stops.indices) {
+                    val stop = stops[i]
                     Text(
-                        s.simpleName,
+                        stop.simpleName,
                         style = MaterialTheme.typography.labelMedium,
+                        color = when {
+                            i >= progress -> MaterialTheme.colorScheme.onSurface
+                            else -> MaterialTheme.colorScheme.onSurface.copy(alpha = PASSED_ALPHA)
+                                .compositeOver(MaterialTheme.colorScheme.surface)
+                        },
                         modifier = Modifier.rotate(-80f)
                     )
                 }
             },
             {
-                Box(
-                    Modifier
-                        .background(color)
-                        .height(0.5.rdp)
-                        .fillMaxWidth()
-                )
+                for (i in stops.indices - 2) {
+                    Box(
+                        Modifier
+                            .background(
+                                when {
+                                    i >= progress -> color
+                                    else -> color.copy(alpha = PASSED_ALPHA)
+                                        .compositeOver(MaterialTheme.colorScheme.surface)
+                                }
+                            )
+                            .height(0.5.rdp)
+                            .fillMaxWidth()
+                    )
+                }
             }
         )
     }
@@ -140,7 +173,7 @@ class RouteLineMeasurePolicy(
 
         val stopNodeMeasurables = measurables[0]
         val stopTextMeasurables = measurables[1]
-        val lineMeasurable = measurables[2][0]
+        val lineMeasurables = measurables[2]
 
         val stopText = stopTextMeasurables.map { it.measure(constraints) }
         val stopNode = stopNodeMeasurables.map { it.measure(constraints) }
@@ -166,17 +199,21 @@ class RouteLineMeasurePolicy(
         val width = (max(totalTextWidth, totalNodeWidth + (spaceBetweenNodes * stopNodeMeasurables.lastIndex)))
         val height = (maxTextHeight + stopNode[0].height + spaceBetweenNodeAndText).toInt()
 
-        val lineWidth = (totalNodeWidth + (spaceBetweenNodes * stopNodeMeasurables.lastIndex) - (lineOffset * 2))
-        val line = lineMeasurable.measure(constraints.copy(minWidth = lineWidth, maxWidth = lineWidth))
+        val lineWidth = ((stopNode[0].width * 2) + spaceBetweenNodes - (lineOffset * 2))
+        val lines = lineMeasurables.map { it.measure(constraints.copy(minWidth = lineWidth, maxWidth = lineWidth)) }
 
         return layout(width + (horizontalMargin * 2), height) {
             val nodeY = height - (nodeHeight / 2)
-            line.place(horizontalMargin + lineOffset, nodeY + (line.height/2))
             for (i in stopNode.indices) {
                 val x = when {
                     i == 0 -> horizontalMargin
                     else -> i * (nodeWidth + spaceBetweenNodes) + horizontalMargin
                 }
+                if (i < stopNode.lastIndex) {
+                    val line = lines[i]
+                    line.place(lineOffset + x, nodeY + (line.height / 2))
+                }
+
                 stopNode[i].place(
                     x,
                     nodeY,

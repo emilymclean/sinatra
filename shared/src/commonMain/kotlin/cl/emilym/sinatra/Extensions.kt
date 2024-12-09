@@ -21,3 +21,10 @@ fun List<Location>.bounds(): Bounds {
         Location(lats.min(), lngs.max())
     )
 }
+
+fun <T> List<T>?.nullIfEmpty(): List<T>? {
+    return when {
+        this.isNullOrEmpty() -> null
+        else -> this
+    }
+}

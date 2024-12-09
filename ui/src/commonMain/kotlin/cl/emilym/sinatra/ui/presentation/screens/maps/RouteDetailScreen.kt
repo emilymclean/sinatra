@@ -42,6 +42,7 @@ import cl.emilym.sinatra.data.models.StationTime
 import cl.emilym.sinatra.data.models.TripId
 import cl.emilym.sinatra.domain.CurrentTripForRouteUseCase
 import cl.emilym.sinatra.domain.CurrentTripInformation
+import cl.emilym.sinatra.nullIfEmpty
 import cl.emilym.sinatra.ui.color
 import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
 import cl.emilym.sinatra.ui.navigation.MapScope
@@ -148,7 +149,11 @@ class RouteDetailScreen(
             }
             item { Box(Modifier.height(0.5.rdp)) }
             item { Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                RouteLine(route, info.stops.mapNotNull { it.stop })
+                RouteLine(
+                    route,
+                    info.stops.mapNotNull { it.stop },
+                    info.stops.mapNotNull { it.arrivalTime?.let { StationTime.Scheduled(it) } }.nullIfEmpty()
+                )
             } }
             item { Box(Modifier.height(2.rdp)) }
             item {
