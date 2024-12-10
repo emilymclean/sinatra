@@ -11,6 +11,9 @@ import cl.emilym.sinatra.data.models.OnColor.DARK
 import cl.emilym.sinatra.data.models.OnColor.LIGHT
 import cl.emilym.sinatra.data.models.Route
 import cl.emilym.sinatra.data.models.RouteTripStop
+import cl.emilym.sinatra.data.models.StationTime
+import cl.emilym.sinatra.data.models.TimetableStationTime
+import cl.emilym.sinatra.data.models.forDay
 import cl.emilym.sinatra.ui.widgets.LocalClock
 import cl.emilym.sinatra.ui.widgets.toTodayInstant
 import kotlinx.datetime.Clock
@@ -61,14 +64,21 @@ fun Route.onColor(): Color? {
     }
 }
 
-@Composable
-fun List<RouteTripStop>.current(): List<RouteTripStop> {
-    val now = LocalClock.current.now()
-    return filter { it.departureTime != null }.filter { it.departureTime!!.toTodayInstant() > now }
+fun List<RouteTripStop>.current(
+    now: Instant,
+    startOfDay: Instant
+): List<RouteTripStop> {
+    return filter { it.departureTime != null }.filter { it.departureTime!!.forDay(startOfDay) > now }
+}
+
+fun List<RouteTripStop>.past(
+    now: Instant,
+    startOfDay: Instant
+): List<RouteTripStop> {
+    return filter { it.departureTime != null }.filter { it.departureTime!!.forDay(startOfDay) < now }
 }
 
 @Composable
-fun List<RouteTripStop>.past(): List<RouteTripStop> {
-    val now = LocalClock.current.now()
-    return filter { it.departureTime != null }.filter { it.departureTime!!.toTodayInstant() < now }
+fun List<TimetableStationTime>.asInstants(): List<Instant> {
+    return flatMap { it.times.map { it.time.toTodayInstant() } }
 }

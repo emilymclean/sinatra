@@ -4,6 +4,8 @@
     <string name="trip_not_found">There are currently no trips for the requested route.</string>
 
     <string name="stops_title">Stops</string>
+    <string name="current_stops_title">Upcoming stops</string>
+    <string name="past_stops_title">Past stops</string>
     <string name="accessibility_title">Accessibility</string>
 
     <string name="scheduled_arrival">Scheduled to arrive at %1$s</string>

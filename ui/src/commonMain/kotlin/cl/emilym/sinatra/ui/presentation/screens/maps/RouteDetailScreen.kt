@@ -10,14 +10,18 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,6 +31,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cafe.adriel.voyager.core.screen.ScreenKey
 import cafe.adriel.voyager.navigator.LocalNavigator
+import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import cl.emilym.compose.requeststate.RequestState
 import cl.emilym.compose.requeststate.RequestStateWidget
@@ -36,26 +41,36 @@ import cl.emilym.sinatra.bounds
 import cl.emilym.sinatra.data.models.Route
 import cl.emilym.sinatra.data.models.RouteId
 import cl.emilym.sinatra.data.models.RouteTripInformation
+import cl.emilym.sinatra.data.models.RouteTripStop
 import cl.emilym.sinatra.data.models.ServiceBikesAllowed
 import cl.emilym.sinatra.data.models.ServiceId
 import cl.emilym.sinatra.data.models.ServiceWheelchairAccessible
 import cl.emilym.sinatra.data.models.StationTime
 import cl.emilym.sinatra.data.models.TripId
+import cl.emilym.sinatra.data.repository.startOfDay
 import cl.emilym.sinatra.domain.CurrentTripForRouteUseCase
 import cl.emilym.sinatra.domain.CurrentTripInformation
 import cl.emilym.sinatra.nullIfEmpty
+import cl.emilym.sinatra.ui.asInstants
 import cl.emilym.sinatra.ui.color
+import cl.emilym.sinatra.ui.current
 import cl.emilym.sinatra.ui.maps.routeStopMarkerIcon
 import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
 import cl.emilym.sinatra.ui.navigation.MapScope
 import cl.emilym.sinatra.ui.navigation.MapScreen
+import cl.emilym.sinatra.ui.past
 import cl.emilym.sinatra.ui.presentation.theme.defaultLineColor
 import cl.emilym.sinatra.ui.widgets.AccessibilityIconLockup
 import cl.emilym.sinatra.ui.widgets.BikeIcon
+import cl.emilym.sinatra.ui.widgets.LocalClock
+import cl.emilym.sinatra.ui.widgets.LocalScheduleTimeZone
 import cl.emilym.sinatra.ui.widgets.NoBusIcon
+import cl.emilym.sinatra.ui.widgets.RecomposeOnInstants
 import cl.emilym.sinatra.ui.widgets.RouteLine
 import cl.emilym.sinatra.ui.widgets.RouteRandle
+import cl.emilym.sinatra.ui.widgets.SpecificRecomposeOnInstants
 import cl.emilym.sinatra.ui.widgets.StopCard
+import cl.emilym.sinatra.ui.widgets.Subheading
 import cl.emilym.sinatra.ui.widgets.WheelchairAccessibleIcon
 import cl.emilym.sinatra.ui.widgets.toIntPx
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -69,11 +84,12 @@ import sinatra.ui.generated.resources.route_accessibility_no_bikes_allowed
 import sinatra.ui.generated.resources.route_accessibility_not_wheelchair_accessible
 import sinatra.ui.generated.resources.route_accessibility_wheelchair_accessible
 import sinatra.ui.generated.resources.stops_title
+import sinatra.ui.generated.resources.current_stops_title
+import sinatra.ui.generated.resources.past_stops_title
 import sinatra.ui.generated.resources.accessibility_title
 import sinatra.ui.generated.resources.route_not_found
 import sinatra.ui.generated.resources.trip_not_found
 import sinatra.ui.generated.resources.route_heading
-import sinatra.ui.generated.resources.no_upcoming_vehicles
 
 @KoinViewModel
 class RouteDetailViewModel(
@@ -124,15 +140,48 @@ class RouteDetailScreen(
                 when {
                     tripInformation == null -> { Text(stringResource(Res.string.route_not_found)) }
                     tripInformation.tripInformation == null -> { Text(stringResource(Res.string.trip_not_found)) }
-                    else -> TripDetails(tripInformation.route, tripInformation.tripInformation!!)
+                    else -> {
+                        val info = tripInformation.tripInformation!!
+                        val triggers = info.stationTimes?.asInstants()
+                        when {
+                            triggers != null -> {
+                                SpecificRecomposeOnInstants(triggers) { trigger ->
+                                    TripDetails(tripInformation.route, info, trigger)
+                                }
+                            }
+                            else -> {
+                                TripDetails(tripInformation.route, info, null)
+                            }
+                        }
+                    }
                 }
             }
         }
     }
 
     @Composable
-    fun TripDetails(route: Route, info: RouteTripInformation) {
+    fun TripDetails(route: Route, info: RouteTripInformation, trigger: Int?) {
         val navigator = LocalNavigator.currentOrThrow
+        val clock = LocalClock.current
+        val timeZone = LocalScheduleTimeZone.current
+
+        val current = if (trigger != null) {
+            remember(trigger) {
+                val now = clock.now()
+                info.stops.current(now, now.startOfDay(timeZone)).nullIfEmpty()
+            }
+        } else {
+            info.stops
+        }
+        val past = if (trigger != null) {
+            remember(trigger) {
+                val now = clock.now()
+                info.stops.past(now, now.startOfDay(timeZone)).nullIfEmpty()?.reversed()
+            }
+        } else {
+            null
+        }
+
         LazyColumn(
             Modifier.fillMaxSize()
         ) {
@@ -168,16 +217,7 @@ class RouteDetailScreen(
             } }
             item { Box(Modifier.height(2.rdp)) }
             item {
-                Row(
-                    Modifier.padding(horizontal = 1.rdp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(1.rdp)
-                ) {
-                    Text(
-                        stringResource(Res.string.accessibility_title),
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                }
+                Subheading(stringResource(Res.string.accessibility_title))
             }
             item { Box(Modifier.height(1.rdp)) }
             item {
@@ -203,38 +243,42 @@ class RouteDetailScreen(
                 }
             }
             item { Box(Modifier.height(1.rdp)) }
-            item {
-                Row(
-                    Modifier.padding(horizontal = 1.rdp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(1.rdp)
-                ) {
-                    Text(
-                        stringResource(Res.string.stops_title),
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                }
-            }
             when {
-                info.stops.isNotEmpty() -> items(info.stops) {
-                    if (it.stop == null) return@items
-                    StopCard(
-                        it.stop!!,
-                        it.arrivalTime?.let { StationTime.Scheduled(it) },
-                        Modifier.fillMaxWidth(),
-                        onClick = {
-                            navigator.push(StopDetailScreen(
-                                it.stopId
-                            ))
-                        }
-                    )
+                trigger == null -> {
+                    item { Subheading(stringResource(Res.string.stops_title)) }
+                    Cards(navigator, current ?: listOf())
                 }
-                else -> item {
-                    // Handle no stops?
+                else -> {
+                    if (current != null) {
+                        item { Subheading(stringResource(Res.string.current_stops_title)) }
+                        Cards(navigator, current ?: listOf())
+                    }
+                    if (past != null) {
+                        item { Subheading(stringResource(Res.string.past_stops_title)) }
+                        Cards(navigator, past ?: listOf())
+                    }
                 }
             }
-
             item { Box(Modifier.height(2.rdp)) }
+        }
+    }
+
+    private fun LazyListScope.Cards(
+        navigator: Navigator,
+        stops: List<RouteTripStop>
+    ) {
+        items(stops) {
+            if (it.stop == null) return@items
+            StopCard(
+                it.stop!!,
+                it.arrivalTime?.let { StationTime.Scheduled(it) },
+                Modifier.fillMaxWidth(),
+                onClick = {
+                    navigator.push(StopDetailScreen(
+                        it.stopId
+                    ))
+                }
+            )
         }
     }
 

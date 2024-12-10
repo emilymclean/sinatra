@@ -13,7 +13,7 @@ import kotlinx.datetime.Instant
 import kotlin.time.Duration
 
 @Composable
-fun RecomposeOnInstants(instants: List<Instant>, content: @Composable () -> Unit) {
+fun SpecificRecomposeOnInstants(instants: List<Instant>, content: @Composable (Int) -> Unit) {
     val sortedInstants by remember(instants) { derivedStateOf { instants.distinct().sorted() } }
     var trigger by remember { mutableStateOf(0) }
     val clock = LocalClock.current
@@ -28,8 +28,15 @@ fun RecomposeOnInstants(instants: List<Instant>, content: @Composable () -> Unit
             }
         }
     }
-    
-    key(trigger) {
-        content()
+
+    content(trigger)
+}
+
+@Composable
+fun RecomposeOnInstants(instants: List<Instant>, content: @Composable () -> Unit) {
+    SpecificRecomposeOnInstants(instants) { trigger ->
+        key(trigger) {
+            content()
+        }
     }
 }
