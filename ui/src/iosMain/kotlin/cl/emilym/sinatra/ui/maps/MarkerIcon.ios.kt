@@ -18,3 +18,11 @@ private val default = object : MarkerIcon {
 actual fun circularIcon(color: Color, borderColor: Color, size: Dp): MarkerIcon {
     return default
 }
+
+@Composable
+actual fun spotMarkerIcon(
+    tint: Color,
+    size: Dp
+): MarkerIcon {
+    return default
+}

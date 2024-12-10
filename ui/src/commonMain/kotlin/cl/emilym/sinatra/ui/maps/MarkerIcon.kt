@@ -3,9 +3,11 @@ package cl.emilym.sinatra.ui.maps
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import cl.emilym.sinatra.data.models.Route
+import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.ui.color
 
 
@@ -19,11 +21,25 @@ expect interface MarkerIcon {
 }
 
 @Composable
+expect fun spotMarkerIcon(
+    tint: Color,
+    size: Dp = 30.dp
+): MarkerIcon
+
+@Composable
 expect fun circularIcon(
     color: Color = MaterialTheme.colorScheme.primary,
     borderColor: Color = MaterialTheme.colorScheme.surface,
     size: Dp = 20.dp
 ): MarkerIcon
+
+@Composable
+fun stopMarkerIcon(stop: Stop): MarkerIcon {
+    return spotMarkerIcon(MaterialTheme.colorScheme.primary
+        .copy(alpha = 0.5f)
+        .compositeOver(MaterialTheme.colorScheme.onSurface)
+    )
+}
 
 @Composable
 fun routeStopMarkerIcon(route: Route): MarkerIcon {

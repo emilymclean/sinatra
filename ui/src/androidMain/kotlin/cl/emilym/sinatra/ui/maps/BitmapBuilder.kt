@@ -5,12 +5,14 @@ import android.graphics.Bitmap.Config
 import android.graphics.Bitmap.createBitmap
 import android.graphics.Canvas
 import android.graphics.Paint
+import android.graphics.drawable.Drawable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
+import kotlin.math.roundToInt
 
 fun bitmapDescriptorBuilder(
     width: Dp,
@@ -76,6 +78,22 @@ fun Canvas.rectangle(color: Color, x: Number, y: Number, width: Number, height: 
 
 fun Canvas.rectangle(paint: Paint, x: Number, y: Number, width: Number, height: Number) {
     drawRect(x.toFloat(), y.toFloat(), (x.toFloat()) + (width.toFloat()), (y.toFloat()) + (height.toFloat()), paint)
+}
+
+fun Canvas.drawable(drawable: Drawable, x: Number, y: Number, width: Number, height: Number) {
+    val x = x.toFloat().roundToInt()
+    val y = y.toFloat().roundToInt()
+    val width = width.toFloat().roundToInt()
+    val height = height.toFloat().roundToInt()
+    drawable.apply {
+        setBounds(
+            x,
+            y,
+            x + width,
+            y + height,
+        )
+        draw(this@drawable)
+    }
 }
 
 fun paint(color: Color, init: Paint.() -> Unit = {}): Paint {

@@ -40,6 +40,7 @@ import cl.emilym.sinatra.data.models.StopTimetableTime
 import cl.emilym.sinatra.data.repository.StopRepository
 import cl.emilym.sinatra.domain.UpcomingRoutesForStopUseCase
 import cl.emilym.sinatra.ui.maps.circularIcon
+import cl.emilym.sinatra.ui.maps.stopMarkerIcon
 import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
 import cl.emilym.sinatra.ui.navigation.MapScope
 import cl.emilym.sinatra.ui.navigation.MapScreen
@@ -252,6 +253,6 @@ class StopDetailScreen(
             zoomToPoint(stop.location)
         }
 
-        Marker(stop.location, circularIcon())
+        Marker(stop.location, stopMarkerIcon(stop))
     }
 }
