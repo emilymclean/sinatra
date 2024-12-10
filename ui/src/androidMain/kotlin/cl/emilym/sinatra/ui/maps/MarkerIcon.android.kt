@@ -32,11 +32,11 @@ class MarkerIconBuilder(
 }
 
 @Composable
-actual fun circularIcon(color: Color, borderColor: Color, size: Dp): MarkerIcon {
+actual fun circularIcon(color: Color, borderColor: Color, size: Dp, borderWidth: Dp): MarkerIcon {
     val markerCirclePadding = (minimumTouchTarget - size) / 2
     val totalMarkerCircleSize = minimumTouchTarget
 
-    val halfBorderSize = 2.dp.toIntPx() / 2
+    val halfBorderSize = borderWidth.toIntPx() / 2
     val canvasSize = totalMarkerCircleSize.toIntPx()
     val markerPadding = markerCirclePadding.toIntPx()
     val markerRadius = (size / 2).toIntPx()

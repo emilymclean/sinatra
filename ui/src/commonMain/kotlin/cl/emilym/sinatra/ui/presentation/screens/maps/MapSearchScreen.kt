@@ -28,10 +28,10 @@ import cl.emilym.compose.requeststate.handle
 import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.data.repository.StopRepository
-import cl.emilym.sinatra.ui.maps.stopMarkerIcon
 import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
 import cl.emilym.sinatra.ui.navigation.MapScope
 import cl.emilym.sinatra.ui.navigation.MapScreen
+import cl.emilym.sinatra.ui.navigation.NativeMapScope
 import cl.emilym.sinatra.ui.widgets.LocalMapControl
 import cl.emilym.sinatra.ui.widgets.MyLocationIcon
 import cl.emilym.sinatra.ui.widgets.PillShape
@@ -128,19 +128,11 @@ class MapSearchScreen: MapScreen {
     @Composable
     override fun MapScope.MapContent() {
         val viewModel = koinViewModel<MapSearchViewModel>()
-        val navigator = LocalNavigator.currentOrThrow
         val stopsRS by viewModel.stops.collectAsState(RequestState.Initial())
         val stops = (stopsRS as? RequestState.Success)?.value ?: return
 
-        for (stop in stops.filter { it.parentStation == null }) {
-            Marker(
-                stop.location,
-                icon = stopMarkerIcon(stop),
-                zoomThreshold = 14f,
-                onClick = {
-                    navigator.push(StopDetailScreen(stop.id))
-                }
-            )
+        Native {
+            MapSearchScreenMapNative(stops.filter { it.parentStation == null })
         }
     }
 
@@ -150,3 +142,6 @@ class MapSearchScreen: MapScreen {
     }
 
 }
+
+@Composable
+expect fun NativeMapScope.MapSearchScreenMapNative(stops: List<Stop>)

@@ -31,8 +31,11 @@ actual class MapScope: MapControl {
     actual fun Marker(
         location: Location,
         icon: MarkerIcon?,
+        zoomThreshold: Float?,
         onClick: (() -> Unit)?
     ) {
     }
 
 }
+
+actual class NativeMapScope

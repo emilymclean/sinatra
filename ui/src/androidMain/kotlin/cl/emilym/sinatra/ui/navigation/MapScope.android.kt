@@ -74,7 +74,8 @@ actual class MapScope(
             onClick = onClick?.let { {
                 onClick()
                 true
-            } } ?: { false }
+            } } ?: { false },
+            visible = zoomThreshold == null || cameraPositionState.position.zoom >= zoomThreshold
         )
     }
 
@@ -146,8 +147,17 @@ actual class MapScope(
         }
     }
 
+    @Composable
+    @GoogleMapComposable
+    actual fun Native(init: @GoogleMapComposable @Composable NativeMapScope.() -> Unit) {
+        NativeMapScope(cameraPositionState).init()
+    }
 
 }
+
+actual class NativeMapScope(
+    val cameraPositionState: CameraPositionState
+)
 
 const val EARTH_CIRCUMFERENCE = 6378137
 

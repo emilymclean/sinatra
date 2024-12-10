@@ -15,6 +15,8 @@ interface MapControl {
     fun zoomToPoint(location: Location, zoom: Float = 16f)
 }
 
+expect class NativeMapScope
+
 expect class MapScope: MapControl {
 
     override fun zoomToArea(bounds: Bounds, padding: Int)
@@ -31,5 +33,8 @@ expect class MapScope: MapControl {
         points: List<Location>,
         color: Color = defaultLineColor()
     )
+
+    @Composable
+    fun Native(init: @Composable NativeMapScope.() -> Unit)
 
 }
