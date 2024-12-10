@@ -11,6 +11,7 @@ import androidx.compose.runtime.setValue
 import kotlinx.coroutines.delay
 import kotlinx.datetime.Instant
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 
 @Composable
 fun SpecificRecomposeOnInstants(instants: List<Instant>, content: @Composable (Int) -> Unit) {
@@ -21,7 +22,7 @@ fun SpecificRecomposeOnInstants(instants: List<Instant>, content: @Composable (I
     LaunchedEffect(sortedInstants) {
         for (instant in sortedInstants) {
             val now = clock.now()
-            val delayDuration = (instant - now)
+            val delayDuration = (instant - now + 2.seconds)
             if (delayDuration > Duration.ZERO) {
                 delay(delayDuration)
                 trigger++
