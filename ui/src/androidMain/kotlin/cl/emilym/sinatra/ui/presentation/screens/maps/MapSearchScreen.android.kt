@@ -27,15 +27,16 @@ actual fun NativeMapScope.MapSearchScreenMapNative(
 
     val visible = remember(cameraPositionState.position.zoom) { cameraPositionState.position.zoom >= 14f }
     for (i in stops.indices) {
+        val stop = stops[i]
         Marker(
             markerStates[i],
             icon = bitmapDescriptor,
             anchor = anchor,
             onClick = {
-                navigator.push(StopDetailScreen(stops[i].id))
+                navigator.push(StopDetailScreen(stop.id))
                 true
             },
-            visible = visible
+            visible = visible || stop.important
         )
     }
 }

@@ -11,7 +11,7 @@ data class Stop(
     val parentStation: StopId?,
     val name: String,
     val location: Location,
-    val accessibility: StopAccessibility
+    val accessibility: StopAccessibility,
 ) {
 
     companion object {
@@ -32,6 +32,10 @@ data class Stop(
             return name.substring(0, name.indexOf(t))
         }
         return name
+    }
+
+    val important: Boolean by lazy {
+        id in listOf("GGN", "MCK", "MPN", "NLR", "WSN", "SFD", "EPC", "PLP", "SWN", "DKN", "MCR", "IPA", "ELA", "ALG")
     }
 
 }
