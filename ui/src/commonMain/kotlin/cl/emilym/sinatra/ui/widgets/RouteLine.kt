@@ -77,6 +77,21 @@ fun RouteLine(
     arrivalTime: List<StationTime>? = null
 ) {
     if (stops.isEmpty()) return
+    if (arrivalTime == null) {
+        _RouteLine(route, stops, arrivalTime)
+    } else {
+        RecomposeOnInstants(arrivalTime.map { it.time.toTodayInstant() }) {
+            _RouteLine(route, stops, arrivalTime)
+        }
+    }
+}
+
+@Composable
+private fun _RouteLine(
+    route: Route,
+    stops: List<Stop>,
+    arrivalTime: List<StationTime>? = null
+) {
     val progress = when {
         arrivalTime == null -> -1
         else -> {
