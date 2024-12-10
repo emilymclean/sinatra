@@ -2,20 +2,21 @@ package cl.emilym.sinatra.ui.navigation
 
 import android.graphics.Point
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import cl.emilym.sinatra.data.models.Bounds
 import cl.emilym.sinatra.data.models.Location
+import cl.emilym.sinatra.ui.maps.MarkerIcon
+import cl.emilym.sinatra.ui.maps.toMaps
 import cl.emilym.sinatra.ui.toMaps
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.maps.android.compose.CameraPositionState
 import com.google.maps.android.compose.GoogleMapComposable
-import com.google.maps.android.compose.Polygon
 import com.google.maps.android.compose.Polyline
 import com.google.maps.android.compose.rememberMarkerState
-import io.github.aakira.napier.Napier
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -65,9 +66,11 @@ actual class MapScope(
 
     @Composable
     @GoogleMapComposable
-    actual fun Marker(location: Location) {
+    actual fun Marker(location: Location, icon: MarkerIcon?) {
         com.google.maps.android.compose.Marker(
-            rememberMarkerState(position = location.toMaps())
+            rememberMarkerState(position = location.toMaps()),
+            icon = icon?.bitmapDescriptor,
+            anchor = icon?.anchor?.toMaps() ?: Offset(0.5f, 1.0f)
         )
     }
 

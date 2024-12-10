@@ -18,6 +18,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
@@ -44,6 +45,7 @@ import cl.emilym.sinatra.domain.CurrentTripForRouteUseCase
 import cl.emilym.sinatra.domain.CurrentTripInformation
 import cl.emilym.sinatra.nullIfEmpty
 import cl.emilym.sinatra.ui.color
+import cl.emilym.sinatra.ui.maps.routeStopMarkerIcon
 import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
 import cl.emilym.sinatra.ui.navigation.MapScope
 import cl.emilym.sinatra.ui.navigation.MapScreen
@@ -248,8 +250,12 @@ class RouteDetailScreen(
             stops.mapNotNull { it.stop?.location },
             route.color()
         )
-//        for (stop in stops) {
-//            Marker(stop.stop?.location ?: continue)
-//        }
+        val icon = routeStopMarkerIcon(route)
+        for (stop in stops) {
+            Marker(
+                stop.stop?.location ?: continue,
+                icon
+            )
+        }
     }
 }

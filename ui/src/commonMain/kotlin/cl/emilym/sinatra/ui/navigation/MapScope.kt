@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import cl.emilym.sinatra.data.models.Bounds
 import cl.emilym.sinatra.data.models.Location
+import cl.emilym.sinatra.ui.maps.MarkerIcon
 import cl.emilym.sinatra.ui.presentation.theme.defaultLineColor
 
 expect class MapScope {
@@ -18,7 +19,7 @@ expect class MapScope {
     fun zoomToPoint(location: Location, zoom: Float = 16f)
 
     @Composable
-    fun Marker(location: Location)
+    fun Marker(location: Location, icon: MarkerIcon? = null)
 
     @Composable
     fun Line(
