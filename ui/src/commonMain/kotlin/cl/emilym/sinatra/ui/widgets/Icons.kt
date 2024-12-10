@@ -11,6 +11,7 @@ import sinatra.ui.generated.resources.accessible
 import sinatra.ui.generated.resources.not_accessible
 import sinatra.ui.generated.resources.bike
 import sinatra.ui.generated.resources.no_routes
+import sinatra.ui.generated.resources.my_location
 
 @Composable
 fun AccessibleIcon(
@@ -71,6 +72,19 @@ fun NoBusIcon(
     Icon(
         painterResource(Res.drawable.no_routes),
         contentDescription = "A bus with a strike through it",
+        modifier = modifier,
+        tint = tint
+    )
+}
+
+@Composable
+fun MyLocationIcon(
+    modifier: Modifier = Modifier,
+    tint: Color = LocalContentColor.current
+) {
+    Icon(
+        painterResource(Res.drawable.my_location),
+        contentDescription = "A crosshair",
         modifier = modifier,
         tint = tint
     )

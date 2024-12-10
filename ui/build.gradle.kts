@@ -53,6 +53,7 @@ kotlin {
             implementation(compose.components.resources)
             implementation(libs.compose.adaptive)
             implementation(libs.compose.adaptive.layout)
+            implementation(libs.compose.constraintlayout)
 
             // Koin
             implementation(libs.koin.core)
@@ -69,6 +70,10 @@ kotlin {
             // Coil
             implementation(libs.coil.compose)
             implementation(libs.coil.network)
+
+            // Location
+            implementation(libs.moko.permissions)
+            implementation(libs.moko.permissions)
 
             // Voyager
             implementation(libs.voyager.navigator)

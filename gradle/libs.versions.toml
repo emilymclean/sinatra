@@ -35,6 +35,9 @@ appcompat = "1.7.0"
 material = "1.12.0"
 room = "2.7.0-alpha11"
 sqlite = "2.5.0-alpha11"
+mokoPermissions = "0.18.1"
+kmmLocation = "0.2.4"
+constraintlayout = "0.4.0"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -51,6 +54,7 @@ compose-adaptive-layout = { group = "org.jetbrains.compose.material3.adaptive", 
 compose-adaptive-navigation = { group = "org.jetbrains.compose.material3.adaptive", name = "adaptive-navigation", version.ref = "compose-adaptive" }
 compose-adaptive-navigation-suite = { group = "org.jetbrains.compose.material3", name = "material3-adaptive-navigation-suite", version.ref = "compose-adaptive-navigation-suite" }
 compose-viewmodel = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "compose-viewmodel" }
+compose-constraintlayout = { module = "tech.annexflow.compose:constraintlayout-compose-multiplatform", version.ref = "constraintlayout" }
 
 # Misc
 aakira-napier = { module = "io.github.aakira:napier", version.ref = "aakira-napier" }
@@ -63,8 +67,7 @@ coil-network = { module = "io.coil-kt.coil3:coil-network-ktor2", version.ref = "
 
 # Moko
 maps-compose = { module = "com.google.maps.android:maps-compose", version.ref = "mapsCompose" }
-moko-maps = { module = "dev.icerock.moko:maps", version.ref = "moko-maps" }
-moko-maps-google = { module = "dev.icerock.moko:maps-google", version.ref = "moko-maps" }
+moko-permissions = { module = "dev.icerock.moko:permissions-compose", version.ref = "mokoPermissions" }
 
 # Koin
 koin-core = { group = "io.insert-koin", name = "koin-core", version.ref = "koin" }
