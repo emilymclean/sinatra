@@ -40,6 +40,7 @@ import cl.emilym.sinatra.data.models.StopId
 import cl.emilym.sinatra.data.models.StopTimetableTime
 import cl.emilym.sinatra.data.repository.StopRepository
 import cl.emilym.sinatra.domain.UpcomingRoutesForStopUseCase
+import cl.emilym.sinatra.ui.maps.stopMarkerIcon
 import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
 import cl.emilym.sinatra.ui.navigation.MapScope
 import cl.emilym.sinatra.ui.navigation.MapScreen
@@ -47,7 +48,9 @@ import cl.emilym.sinatra.ui.widgets.AccessibilityIconLockup
 import cl.emilym.sinatra.ui.widgets.NoBusIcon
 import cl.emilym.sinatra.ui.widgets.UpcomingRouteCard
 import cl.emilym.sinatra.ui.widgets.WheelchairAccessibleIcon
+import cl.emilym.sinatra.ui.widgets.handleFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.koin.android.annotation.KoinViewModel
@@ -84,8 +87,8 @@ class StopDetailViewModel(
 
     fun retryUpcoming(stopId: StopId) {
         viewModelScope.launch {
-            upcoming.handle {
-                upcomingRoutesForStopUseCase(stopId).item
+            upcoming.handleFlow {
+                upcomingRoutesForStopUseCase(stopId).map { it.item }
             }
         }
     }
@@ -100,7 +103,6 @@ class StopDetailScreen(
     @Composable
     override fun Content() {}
 
-    @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     override fun BottomSheetContent() {
         val viewModel = koinViewModel<StopDetailViewModel>()
@@ -251,6 +253,6 @@ class StopDetailScreen(
             zoomToPoint(stop.location)
         }
 
-        Marker(stop.location)
+        Marker(stop.location, stopMarkerIcon())
     }
 }

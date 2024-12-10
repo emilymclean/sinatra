@@ -10,10 +10,14 @@ import cl.emilym.sinatra.data.repository.StopRepository
 import cl.emilym.sinatra.data.repository.TransportMetadataRepository
 import cl.emilym.sinatra.data.repository.startOfDay
 import io.github.aakira.napier.Napier
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import org.koin.core.annotation.Factory
+import kotlin.time.Duration.Companion.minutes
 
 @Factory
 class UpcomingRoutesForStopUseCase(
@@ -23,27 +27,33 @@ class UpcomingRoutesForStopUseCase(
     private val metadataRepository: TransportMetadataRepository
 ) {
 
-    suspend operator fun invoke(
+    operator fun invoke(
         stopId: StopId,
         number: Int = 10
-    ): Cachable<List<StopTimetableTime>> {
-        val now = clock.now()
-        val scheduleTimeZone = metadataRepository.timeZone()
-        val timetable = stopRepository.timetable(stopId)
-        val times = timetable.item.times.sortedBy { it.arrivalTime }
-        val services = serviceRepository.services(timetable.item.times.map { it.serviceId }.distinct())
+    ): Flow<Cachable<List<StopTimetableTime>>> {
+        return flow {
+            val scheduleTimeZone = metadataRepository.timeZone()
+            val timetable = stopRepository.timetable(stopId)
+            val times = timetable.item.times.sortedBy { it.arrivalTime }
+            val services = serviceRepository.services(timetable.item.times.map { it.serviceId }.distinct())
 
-        val active = mutableListOf<StopTimetableTime>()
+            while (true) {
+                val now = clock.now()
+                val active = mutableListOf<StopTimetableTime>()
+                for (time in times) {
+                    val service = services.item.firstOrNull { it.id == time.serviceId } ?: continue
+                    if (!service.active(now, scheduleTimeZone)) continue
+                    if (time.arrivalTime(now.startOfDay(scheduleTimeZone))!! < now) continue
+                    active.add(time)
+                    if (active.size == number) break
+                }
 
-        for (time in times) {
-            val service = services.item.firstOrNull { it.id == time.serviceId } ?: continue
-            if (!service.active(now, scheduleTimeZone)) continue
-            if (time.arrivalTime(now.startOfDay(scheduleTimeZone))!! < now) continue
-            active.add(time)
-            if (active.size == number) break
+                emit(timetable.flatMap { services.map { active } })
+                delay(1.minutes)
+            }
         }
 
-        return timetable.flatMap { services.map { active } }
+
     }
 
 }

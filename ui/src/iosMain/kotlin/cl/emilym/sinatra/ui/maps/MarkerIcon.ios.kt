@@ -2,9 +2,8 @@ package cl.emilym.sinatra.ui.maps
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.Dp
 import cl.emilym.sinatra.data.models.Route
-import cl.emilym.sinatra.data.models.Stop
-import org.koin.core.annotation.Factory
 
 actual interface MarkerIcon {
     actual val anchor: MarkerIconOffset
@@ -16,7 +15,7 @@ private val default = object : MarkerIcon {
 }
 
 @Composable
-actual fun stopMarkerIcon(color: Color): MarkerIcon {
+actual fun stopMarkerIcon(color: Color, size: Dp): MarkerIcon {
     return default
 }
 

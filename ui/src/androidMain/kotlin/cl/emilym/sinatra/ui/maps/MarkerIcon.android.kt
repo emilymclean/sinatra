@@ -5,10 +5,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.data.models.Route
 import cl.emilym.sinatra.ui.color
+import cl.emilym.sinatra.ui.minimumTouchTarget
 import cl.emilym.sinatra.ui.widgets.toFloatPx
 import cl.emilym.sinatra.ui.widgets.toIntPx
 import com.google.android.gms.maps.model.BitmapDescriptor
@@ -31,13 +33,15 @@ class MarkerIconBuilder(
 }
 
 @Composable
-actual fun stopMarkerIcon(color: Color): MarkerIcon {
+actual fun stopMarkerIcon(color: Color, size: Dp): MarkerIcon {
+    val markerCirclePadding = (minimumTouchTarget - size) / 2
+    val totalMarkerCircleSize = minimumTouchTarget
+
     val surfaceColor = MaterialTheme.colorScheme.surface
     val halfBorderSize = 2.dp.toIntPx() / 2
     val canvasSize = totalMarkerCircleSize.toIntPx()
     val markerPadding = markerCirclePadding.toIntPx()
-    val markerRadius = (markerCircleSize / 2).toIntPx()
-    Napier.d("padding = $markerPadding (original = $markerCirclePadding), canvasSize = $canvasSize (original = $totalMarkerCircleSize), markerRadius = $markerRadius (original = ${markerCircleSize / 2})")
+    val markerRadius = (size / 2).toIntPx()
     return MarkerIconBuilder(
         factory = {
             bitmapDescriptorBuilder(
@@ -57,5 +61,5 @@ actual fun stopMarkerIcon(color: Color): MarkerIcon {
 
 @Composable
 actual fun routeStopMarkerIcon(route: Route): MarkerIcon {
-    return stopMarkerIcon(route.color())
+    return stopMarkerIcon(route.color(), 8.dp)
 }
