@@ -84,6 +84,13 @@ data class StopTimetable(
 
     }
 
+    val stationTimes: List<TimetableStationTime> get() = times.map {
+            TimetableStationTime(
+                StationTime.Scheduled(it.arrivalTime),
+                StationTime.Scheduled(it.departureTime),
+            )
+        }
+
 }
 
 data class StopTimetableTime(
@@ -127,4 +134,13 @@ sealed interface StationTime {
     class Live(
         override val time: Time
     ): StationTime
+}
+
+class TimetableStationTime(
+    val arrival: StationTime,
+    val departure: StationTime
+) {
+
+    val times: List<StationTime> get() = listOf(arrival, departure)
+
 }

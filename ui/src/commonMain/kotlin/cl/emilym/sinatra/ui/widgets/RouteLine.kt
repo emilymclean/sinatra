@@ -35,6 +35,7 @@ import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.data.models.Route
 import cl.emilym.sinatra.data.models.StationTime
 import cl.emilym.sinatra.data.models.Stop
+import cl.emilym.sinatra.data.models.TimetableStationTime
 import cl.emilym.sinatra.deg
 import cl.emilym.sinatra.ui.color
 import io.github.aakira.napier.Napier
@@ -74,14 +75,14 @@ fun RouteNode(
 fun RouteLine(
     route: Route,
     stops: List<Stop>,
-    arrivalTime: List<StationTime>? = null
+    timetable: List<TimetableStationTime>? = null
 ) {
     if (stops.isEmpty()) return
-    if (arrivalTime == null) {
-        _RouteLine(route, stops, arrivalTime)
+    if (timetable == null) {
+        _RouteLine(route, stops, timetable)
     } else {
-        RecomposeOnInstants(arrivalTime.map { it.time.toTodayInstant() }) {
-            _RouteLine(route, stops, arrivalTime)
+        RecomposeOnInstants(timetable.flatMap { it.times.map { it.time.toTodayInstant() } }) {
+            _RouteLine(route, stops, timetable)
         }
     }
 }
@@ -90,16 +91,24 @@ fun RouteLine(
 private fun _RouteLine(
     route: Route,
     stops: List<Stop>,
-    arrivalTime: List<StationTime>? = null
+    timetable: List<TimetableStationTime>? = null
 ) {
-    val progress = when {
-        arrivalTime == null -> -1
+    val arrivalProgress = when {
+        timetable == null -> -1
         else -> {
             val now = LocalClock.current.now()
-            arrivalTime.indexOfFirst { it.time.toTodayInstant() > now }
+            val first = timetable.indexOfFirst { it.arrival.time.toTodayInstant() > now }
+            if (first < 0) Int.MAX_VALUE else first
         }
     }
-    Napier.d("Progress along line = $progress (times = $arrivalTime)")
+    val departureProgress = when {
+        timetable == null -> -1
+        else -> {
+            val now = LocalClock.current.now()
+            val first = timetable.indexOfFirst { it.departure.time.toTodayInstant() > now }
+            if (first < 0) Int.MAX_VALUE else first
+        }
+    }
 
     val color = route.color()
     Box(Modifier.horizontalScroll(rememberScrollState())) {
@@ -109,7 +118,7 @@ private fun _RouteLine(
                     RouteNode(
                         i == 0 || i == stops.size - 1,
                         when {
-                            i >= progress -> color
+                            i >= departureProgress -> color
                             else -> color.copy(PASSED_ALPHA)
                                 .compositeOver(MaterialTheme.colorScheme.surface)
                         }
@@ -123,7 +132,7 @@ private fun _RouteLine(
                         stop.simpleName,
                         style = MaterialTheme.typography.labelMedium,
                         color = when {
-                            i >= progress -> MaterialTheme.colorScheme.onSurface
+                            i >= departureProgress -> MaterialTheme.colorScheme.onSurface
                             else -> MaterialTheme.colorScheme.onSurface.copy(alpha = PASSED_ALPHA)
                                 .compositeOver(MaterialTheme.colorScheme.surface)
                         },
@@ -137,7 +146,7 @@ private fun _RouteLine(
                         Modifier
                             .background(
                                 when {
-                                    i >= progress -> color
+                                    i >= arrivalProgress -> color
                                     else -> color.copy(alpha = PASSED_ALPHA)
                                         .compositeOver(MaterialTheme.colorScheme.surface)
                                 }

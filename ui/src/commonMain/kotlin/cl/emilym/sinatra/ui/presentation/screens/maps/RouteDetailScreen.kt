@@ -163,7 +163,7 @@ class RouteDetailScreen(
                 RouteLine(
                     route,
                     info.stops.mapNotNull { it.stop },
-                    info.stops.mapNotNull { it.arrivalTime?.let { StationTime.Scheduled(it) } }.nullIfEmpty()
+                    info.stops.mapNotNull { it.stationTime }.nullIfEmpty()
                 )
             } }
             item { Box(Modifier.height(2.rdp)) }

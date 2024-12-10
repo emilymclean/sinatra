@@ -10,6 +10,11 @@ import cl.emilym.sinatra.data.models.OnColor
 import cl.emilym.sinatra.data.models.OnColor.DARK
 import cl.emilym.sinatra.data.models.OnColor.LIGHT
 import cl.emilym.sinatra.data.models.Route
+import cl.emilym.sinatra.data.models.RouteTripStop
+import cl.emilym.sinatra.ui.widgets.LocalClock
+import cl.emilym.sinatra.ui.widgets.toTodayInstant
+import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 
 fun String.toColor(): Color {
     val trimmed = removePrefix("#")
@@ -54,4 +59,16 @@ fun Route.onColor(): Color? {
         colors != null -> colors!!.onColor()
         else -> MaterialTheme.colorScheme.surface
     }
+}
+
+@Composable
+fun List<RouteTripStop>.current(): List<RouteTripStop> {
+    val now = LocalClock.current.now()
+    return filter { it.departureTime != null }.filter { it.departureTime!!.toTodayInstant() > now }
+}
+
+@Composable
+fun List<RouteTripStop>.past(): List<RouteTripStop> {
+    val now = LocalClock.current.now()
+    return filter { it.departureTime != null }.filter { it.departureTime!!.toTodayInstant() < now }
 }

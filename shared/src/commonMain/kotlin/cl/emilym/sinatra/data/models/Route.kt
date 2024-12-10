@@ -1,6 +1,8 @@
 package cl.emilym.sinatra.data.models
 
+import cl.emilym.sinatra.nullIfEmpty
 import kotlinx.datetime.Instant
+import kotlin.text.Typography.times
 
 data class Route(
     val id: RouteId,
@@ -131,6 +133,10 @@ data class RouteTripInformation(
         }
     }
 
+    val stationTimes: List<TimetableStationTime>? get() = stops.mapNotNull {
+        it.stationTime
+    }.nullIfEmpty()
+
 }
 
 data class RouteTripStop(
@@ -151,6 +157,14 @@ data class RouteTripStop(
                 null
             )
         }
+    }
+
+    val stationTime: TimetableStationTime? get() = when {
+        arrivalTime != null && departureTime != null -> TimetableStationTime(
+            StationTime.Scheduled(arrivalTime),
+            StationTime.Scheduled(departureTime),
+        )
+        else -> null
     }
 
 }
