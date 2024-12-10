@@ -72,7 +72,7 @@ data class RouteServiceCanonicalTimetable(
 }
 
 data class RouteTripTimetable(
-    val trip: RouteTripInformation
+    val trip: RouteTripInformation,
 ) {
 
     companion object {
@@ -105,6 +105,7 @@ data class RouteTripInformation(
     val startTime: Time?,
     val endTime: Time?,
     val accessibility: RouteServiceAccessibility,
+    val heading: String?,
     val stops: List<RouteTripStop>
 ) {
 
@@ -124,6 +125,7 @@ data class RouteTripInformation(
                 pb.startTime?.let { parseTime(it) },
                 pb.endTime?.let { parseTime(it) },
                 RouteServiceAccessibility.fromPB(pb.accessibility),
+                pb.heading,
                 pb.stops.map { RouteTripStop.fromPB(it) }
             )
         }

@@ -83,7 +83,8 @@ data class RouteTripInformationEntity(
     val startTime: Long?,
     val endTime: Long?,
     val bikesAllowed: String,
-    val wheelchairAccessible: String
+    val wheelchairAccessible: String,
+    val heading: String?
 ) {
 
     fun toModel(stops: List<RouteTripStop>): RouteTripInformation {
@@ -94,7 +95,8 @@ data class RouteTripInformationEntity(
                 ServiceBikesAllowed.valueOf(bikesAllowed),
                 ServiceWheelchairAccessible.valueOf(wheelchairAccessible)
             ),
-            stops
+            heading,
+            stops,
         )
     }
 
@@ -106,7 +108,8 @@ data class RouteTripInformationEntity(
                 m.startTime?.toLong(),
                 m.endTime?.toLong(),
                 m.accessibility.bikesAllowed.name,
-                m.accessibility.wheelchairAccessible.name
+                m.accessibility.wheelchairAccessible.name,
+                m.heading
             )
         }
     }

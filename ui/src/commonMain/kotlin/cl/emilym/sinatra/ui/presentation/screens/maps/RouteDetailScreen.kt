@@ -72,6 +72,7 @@ import sinatra.ui.generated.resources.stops_title
 import sinatra.ui.generated.resources.accessibility_title
 import sinatra.ui.generated.resources.route_not_found
 import sinatra.ui.generated.resources.trip_not_found
+import sinatra.ui.generated.resources.route_heading
 import sinatra.ui.generated.resources.no_upcoming_vehicles
 
 @KoinViewModel
@@ -143,10 +144,18 @@ class RouteDetailScreen(
                     horizontalArrangement = Arrangement.spacedBy(1.rdp)
                 ) {
                     RouteRandle(route)
-                    Text(
-                        route.name,
-                        style = MaterialTheme.typography.titleLarge
-                    )
+                    Column {
+                        Text(
+                            route.name,
+                            style = MaterialTheme.typography.titleLarge
+                        )
+                        info.heading?.let {
+                            Text(
+                                stringResource(Res.string.route_heading, it),
+                                style = MaterialTheme.typography.titleMedium
+                            )
+                        }
+                    }
                 }
             }
             item { Box(Modifier.height(0.5.rdp)) }

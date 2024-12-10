@@ -48,7 +48,7 @@ expect object CacheDatabaseConstructor : RoomDatabaseConstructor<CacheDatabase> 
     RouteTripStopEntity::class,
     TimetableServiceRegularEntity::class,
     TimetableServiceExceptionEntity::class,
-], version = 8)
+], version = 9)
 @ConstructedBy(CacheDatabaseConstructor::class)
 abstract class CacheDatabase: RoomDatabase() {
     abstract fun sha(): ShaDao

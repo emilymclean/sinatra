@@ -22,6 +22,14 @@ fun List<Location>.bounds(): Bounds {
     )
 }
 
+fun <T> T?.nullIf(condition: (T) -> Boolean): T? {
+    return when {
+        this == null -> null
+        condition(this) -> null
+        else -> this
+    }
+}
+
 fun <T> List<T>?.nullIfEmpty(): List<T>? {
     return when {
         this.isNullOrEmpty() -> null

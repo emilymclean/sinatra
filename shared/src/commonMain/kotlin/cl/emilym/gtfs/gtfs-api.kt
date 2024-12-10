@@ -1207,6 +1207,7 @@ public data class RouteTripInformation(
     val endTime: String? = null,
     val accessibility: cl.emilym.gtfs.ServiceAccessibility,
     val stops: List<cl.emilym.gtfs.RouteTripStop> = emptyList(),
+    val heading: String? = null,
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
 ) : pbandk.Message {
     override operator fun plus(other: pbandk.Message?): cl.emilym.gtfs.RouteTripInformation = protoMergeImpl(other)
@@ -1219,7 +1220,7 @@ public data class RouteTripInformation(
             fullName = "proto.RouteTripInformation",
             messageClass = cl.emilym.gtfs.RouteTripInformation::class,
             messageCompanion = this,
-            fields = buildList(4) {
+            fields = buildList(5) {
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
@@ -1258,6 +1259,16 @@ public data class RouteTripInformation(
                         type = pbandk.FieldDescriptor.Type.Repeated<cl.emilym.gtfs.RouteTripStop>(valueType = pbandk.FieldDescriptor.Type.Message(messageCompanion = cl.emilym.gtfs.RouteTripStop.Companion)),
                         jsonName = "stops",
                         value = cl.emilym.gtfs.RouteTripInformation::stops
+                    )
+                )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "heading",
+                        number = 5,
+                        type = pbandk.FieldDescriptor.Type.Primitive.String(hasPresence = true),
+                        jsonName = "heading",
+                        value = cl.emilym.gtfs.RouteTripInformation::heading
                     )
                 )
             }
@@ -2015,6 +2026,7 @@ private fun RouteTripInformation.protoMergeImpl(plus: pbandk.Message?): RouteTri
         endTime = plus.endTime ?: endTime,
         accessibility = accessibility.plus(plus.accessibility),
         stops = stops + plus.stops,
+        heading = plus.heading ?: heading,
         unknownFields = unknownFields + plus.unknownFields
     )
 } ?: this
@@ -2025,6 +2037,7 @@ private fun RouteTripInformation.Companion.decodeWithImpl(u: pbandk.MessageDecod
     var endTime: String? = null
     var accessibility: cl.emilym.gtfs.ServiceAccessibility? = null
     var stops: pbandk.ListWithSize.Builder<cl.emilym.gtfs.RouteTripStop>? = null
+    var heading: String? = null
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
@@ -2032,13 +2045,15 @@ private fun RouteTripInformation.Companion.decodeWithImpl(u: pbandk.MessageDecod
             2 -> endTime = _fieldValue as String
             3 -> accessibility = _fieldValue as cl.emilym.gtfs.ServiceAccessibility
             4 -> stops = (stops ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as kotlin.sequences.Sequence<cl.emilym.gtfs.RouteTripStop> }
+            5 -> heading = _fieldValue as String
         }
     }
 
     if (accessibility == null) {
         throw pbandk.InvalidProtocolBufferException.missingRequiredField("accessibility")
     }
-    return RouteTripInformation(startTime, endTime, accessibility!!, pbandk.ListWithSize.Builder.fixed(stops), unknownFields)
+    return RouteTripInformation(startTime, endTime, accessibility!!, pbandk.ListWithSize.Builder.fixed(stops),
+        heading, unknownFields)
 }
 
 private fun RouteTripStop.protoMergeImpl(plus: pbandk.Message?): RouteTripStop = (plus as? RouteTripStop)?.let {

@@ -7,7 +7,9 @@ import org.koin.android.ext.koin.androidContext
 import org.koin.core.module.Module
 import org.koin.dsl.module
 
-inline fun <reified T: RoomDatabase> createDatabaseBuilder(context: Context, name: String): RoomDatabase.Builder<T> {
+inline fun <reified T: RoomDatabase> createDatabaseBuilder(
+    context: Context, name: String
+): RoomDatabase.Builder<T> {
     val appContext = context.applicationContext
     val dbFile = appContext.getDatabasePath("${name}.db")
     return Room.databaseBuilder<T>(
