@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.ui.canberra
+import cl.emilym.sinatra.ui.maps.currentLocationIcon
 import cl.emilym.sinatra.ui.navigation.CurrentMapContent
 import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
 import cl.emilym.sinatra.ui.navigation.MapControl
@@ -28,6 +29,7 @@ import cl.emilym.sinatra.ui.navigation.bottomSheetHalfHeight
 import cl.emilym.sinatra.ui.toMaps
 import cl.emilym.sinatra.ui.widgets.LocalPermissionState
 import cl.emilym.sinatra.ui.widgets.MyLocationIcon
+import cl.emilym.sinatra.ui.widgets.currentLocation
 import cl.emilym.sinatra.ui.widgets.screenSize
 import com.google.android.gms.maps.GoogleMapOptions
 import com.google.android.gms.maps.model.CameraPosition
@@ -43,6 +45,7 @@ actual fun Map(content: @Composable MapControl.(@Composable () -> Unit) -> Unit)
     }
     val windowPadding = ScaffoldDefaults.contentWindowInsets.asPaddingValues()
     val layoutDirection = LocalLayoutDirection.current
+    val currentLocation = currentLocation()
 
     val scope = MapScope(
         cameraPositionState,
@@ -69,7 +72,12 @@ actual fun Map(content: @Composable MapControl.(@Composable () -> Unit) -> Unit)
             ),
             mapColorScheme = ComposeMapColorScheme.FOLLOW_SYSTEM
         ) {
-            scope.CurrentMapContent()
+            scope.apply {
+                CurrentMapContent()
+                currentLocation?.let {
+                    Marker(it, currentLocationIcon())
+                }
+            }
         }
     }
 }

@@ -6,8 +6,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import cl.emilym.sinatra.data.models.Route
-import cl.emilym.sinatra.data.models.Stop
-import cl.emilym.sinatra.ui.minimumTouchTarget
+import cl.emilym.sinatra.ui.color
 
 
 data class MarkerIconOffset(
@@ -20,10 +19,20 @@ expect interface MarkerIcon {
 }
 
 @Composable
-expect fun stopMarkerIcon(
+expect fun circularIcon(
     color: Color = MaterialTheme.colorScheme.primary,
+    borderColor: Color = MaterialTheme.colorScheme.surface,
     size: Dp = 20.dp
 ): MarkerIcon
 
 @Composable
-expect fun routeStopMarkerIcon(route: Route): MarkerIcon
+fun routeStopMarkerIcon(route: Route): MarkerIcon {
+    return circularIcon(route.color(), size = 8.dp)
+}
+
+@Composable
+fun currentLocationIcon(): MarkerIcon {
+    return circularIcon(
+        MaterialTheme.colorScheme.primary,
+    )
+}

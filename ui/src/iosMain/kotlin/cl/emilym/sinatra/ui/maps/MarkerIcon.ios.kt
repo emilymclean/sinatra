@@ -15,11 +15,6 @@ private val default = object : MarkerIcon {
 }
 
 @Composable
-actual fun stopMarkerIcon(color: Color, size: Dp): MarkerIcon {
-    return default
-}
-
-@Composable
-actual fun routeStopMarkerIcon(route: Route): MarkerIcon {
+actual fun circularIcon(color: Color, borderColor: Color, size: Dp): MarkerIcon {
     return default
 }
