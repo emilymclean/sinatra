@@ -66,11 +66,15 @@ actual class MapScope(
 
     @Composable
     @GoogleMapComposable
-    actual fun Marker(location: Location, icon: MarkerIcon?) {
+    actual fun Marker(location: Location, icon: MarkerIcon?, onClick: (() -> Unit)?) {
         com.google.maps.android.compose.Marker(
             rememberMarkerState(position = location.toMaps()),
             icon = icon?.bitmapDescriptor,
-            anchor = icon?.anchor?.toMaps() ?: Offset(0.5f, 1.0f)
+            anchor = icon?.anchor?.toMaps() ?: Offset(0.5f, 1.0f),
+            onClick = onClick?.let { {
+                onClick()
+                true
+            } } ?: { false }
         )
     }
 
@@ -128,39 +132,6 @@ actual class MapScope(
 
     actual fun zoomToArea(bounds: Bounds, padding: Int) {
         zoomToArea(bounds.topLeft, bounds.bottomRight, padding)
-    }
-
-    @Composable
-    @GoogleMapComposable
-    actual fun DebugZoomToArea(bounds: Bounds) {
-//        val original = listOf(bounds.topLeft.toMaps(), bounds.bottomRight.toMaps()).toBounds()
-//        val projection = cameraPositionState.projection ?: return
-//        val viewportBox = boxOverOther(
-//            BoxDescriptor(
-//                projection.toScreenLocation(original.northeast),
-//                projection.toScreenLocation(original.southwest),
-//            ),
-//            viewportAspect
-//        )
-//
-//        val screenBox = viewportBox
-//        val screenBox = viewportBox.copy(
-//            bottomLeft = Point(
-//                viewportBox.bottomLeft.x,
-//                (viewportBox.bottomLeft.y + (viewportBox.width / screenAspect)).toInt(),
-//            )
-//        )
-
-//        val sBTopRight = projection.fromScreenLocation(screenBox.topRight)
-//        val sBBottomLeft = projection.fromScreenLocation(screenBox.bottomLeft)
-//        Polygon(
-//            listOf(
-//                LatLng(sBTopRight.latitude, sBBottomLeft.longitude),
-//                LatLng(sBTopRight.latitude, sBTopRight.longitude),
-//                LatLng(sBBottomLeft.latitude, sBTopRight.longitude),
-//                LatLng(sBBottomLeft.latitude, sBBottomLeft.longitude),
-//            )
-//        )
     }
 
     actual fun zoomToPoint(

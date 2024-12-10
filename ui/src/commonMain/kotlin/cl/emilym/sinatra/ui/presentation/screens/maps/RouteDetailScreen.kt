@@ -297,8 +297,6 @@ class RouteDetailScreen(
             zoomToArea(stops.mapNotNull { it.stop?.location }.bounds(), zoomPadding)
         }
 
-        DebugZoomToArea(stops.mapNotNull { it.stop?.location }.bounds())
-
         Line(
             stops.mapNotNull { it.stop?.location },
             route.color()
