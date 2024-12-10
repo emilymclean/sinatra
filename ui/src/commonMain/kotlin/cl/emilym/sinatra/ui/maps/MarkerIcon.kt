@@ -23,6 +23,7 @@ expect interface MarkerIcon {
 @Composable
 expect fun spotMarkerIcon(
     tint: Color,
+    borderColor: Color = MaterialTheme.colorScheme.surface,
     size: Dp = 30.dp
 ): MarkerIcon
 

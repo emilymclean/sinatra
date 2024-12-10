@@ -1,5 +1,6 @@
 package cl.emilym.sinatra.ui.maps
 
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -59,19 +60,32 @@ actual fun circularIcon(color: Color, borderColor: Color, size: Dp): MarkerIcon 
 @Composable
 actual fun spotMarkerIcon(
     tint: Color,
+    borderColor: Color,
     size: Dp
 ): MarkerIcon {
     val sizePx = size.toIntPx()
-    val drawable = DrawableCompat.wrap(
+    val borderSize = 4.dp.toIntPx()
+    val overDrawable = DrawableCompat.wrap(
         ContextCompat.getDrawable(LocalContext.current, R.drawable.spot_marker)!!
     ).apply {
         setTint(tint.toArgb())
+    }
+    val borderDrawable = DrawableCompat.wrap(
+        ContextCompat.getDrawable(LocalContext.current, R.drawable.spot_marker)!!
+    ).apply {
+        setTint(borderColor.toArgb())
     }
 
     return MarkerIconBuilder(
         factory = {
             bitmapDescriptorBuilder(sizePx, sizePx) {
-                drawable(drawable, 0, 0, sizePx, sizePx)
+                drawable(borderDrawable, 0, 0, sizePx, sizePx)
+                drawable(
+                    overDrawable,
+                    borderSize, borderSize,
+                    sizePx - (borderSize * 2),
+                    sizePx - (borderSize * 2),
+                )
             }
         },
         anchor = MarkerIconOffset(0.5f, 1f)

@@ -66,7 +66,7 @@ actual class MapScope(
 
     @Composable
     @GoogleMapComposable
-    actual fun Marker(location: Location, icon: MarkerIcon?, onClick: (() -> Unit)?) {
+    actual fun Marker(location: Location, icon: MarkerIcon?, zoomThreshold: Float?, onClick: (() -> Unit)?) {
         com.google.maps.android.compose.Marker(
             rememberMarkerState(position = location.toMaps()),
             icon = icon?.bitmapDescriptor,
@@ -86,8 +86,6 @@ actual class MapScope(
             color = color
         )
     }
-
-
 
     actual override fun zoomToArea(
         topLeft: Location,

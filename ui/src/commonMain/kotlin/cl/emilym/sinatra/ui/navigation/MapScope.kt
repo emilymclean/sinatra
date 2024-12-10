@@ -24,7 +24,7 @@ expect class MapScope: MapControl {
     override fun zoomToPoint(location: Location, zoom: Float)
 
     @Composable
-    fun Marker(location: Location, icon: MarkerIcon? = null, onClick: (() -> Unit)? = null)
+    fun Marker(location: Location, icon: MarkerIcon? = null, zoomThreshold: Float? = null, onClick: (() -> Unit)? = null)
 
     @Composable
     fun Line(

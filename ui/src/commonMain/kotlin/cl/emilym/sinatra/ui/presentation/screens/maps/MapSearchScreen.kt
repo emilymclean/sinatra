@@ -9,6 +9,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
@@ -18,12 +20,15 @@ import androidx.constraintlayout.compose.Dimension
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cafe.adriel.voyager.core.screen.ScreenKey
+import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.Navigator
+import cafe.adriel.voyager.navigator.currentOrThrow
 import cl.emilym.compose.requeststate.RequestState
 import cl.emilym.compose.requeststate.handle
 import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.data.repository.StopRepository
+import cl.emilym.sinatra.ui.maps.stopMarkerIcon
 import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
 import cl.emilym.sinatra.ui.navigation.MapScope
 import cl.emilym.sinatra.ui.navigation.MapScreen
@@ -122,6 +127,21 @@ class MapSearchScreen: MapScreen {
 
     @Composable
     override fun MapScope.MapContent() {
+        val viewModel = koinViewModel<MapSearchViewModel>()
+        val navigator = LocalNavigator.currentOrThrow
+        val stopsRS by viewModel.stops.collectAsState(RequestState.Initial())
+        val stops = (stopsRS as? RequestState.Success)?.value ?: return
+
+        for (stop in stops.filter { it.parentStation == null }) {
+            Marker(
+                stop.location,
+                icon = stopMarkerIcon(stop),
+                zoomThreshold = 14f,
+                onClick = {
+                    navigator.push(StopDetailScreen(stop.id))
+                }
+            )
+        }
     }
 
     @Composable

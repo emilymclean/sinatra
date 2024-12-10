@@ -22,6 +22,7 @@ actual fun circularIcon(color: Color, borderColor: Color, size: Dp): MarkerIcon 
 @Composable
 actual fun spotMarkerIcon(
     tint: Color,
+    borderColor: Color,
     size: Dp
 ): MarkerIcon {
     return default
