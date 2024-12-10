@@ -41,6 +41,7 @@ kotlin {
             implementation(libs.koin.android)
             implementation(libs.maps.compose)
             implementation(libs.androidx.activity.compose)
+            implementation(libs.play.services.location)
         }
         commonMain.dependencies {
             implementation(project(":shared"))

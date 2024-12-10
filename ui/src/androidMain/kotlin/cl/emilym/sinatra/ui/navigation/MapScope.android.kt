@@ -36,7 +36,7 @@ actual class MapScope(
     private val cameraPositionState: CameraPositionState,
     private val screenSize: Size,
     private val bottomSheetHalfHeight: Float
-) {
+): MapControl {
 
     private val viewportSize: Size
         get() = Size(screenSize.width, screenSize.height * (1 - bottomSheetHalfHeight))
@@ -89,7 +89,7 @@ actual class MapScope(
 
 
 
-    actual fun zoomToArea(
+    actual override fun zoomToArea(
         topLeft: Location,
         bottomRight: Location,
         padding: Int
@@ -130,11 +130,11 @@ actual class MapScope(
         }
     }
 
-    actual fun zoomToArea(bounds: Bounds, padding: Int) {
+    actual override fun zoomToArea(bounds: Bounds, padding: Int) {
         zoomToArea(bounds.topLeft, bounds.bottomRight, padding)
     }
 
-    actual fun zoomToPoint(
+    actual override fun zoomToPoint(
         location: Location,
         zoom: Float
     ) {

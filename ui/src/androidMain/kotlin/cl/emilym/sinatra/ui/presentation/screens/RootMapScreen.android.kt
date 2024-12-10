@@ -22,6 +22,7 @@ import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.ui.canberra
 import cl.emilym.sinatra.ui.navigation.CurrentMapContent
 import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
+import cl.emilym.sinatra.ui.navigation.MapControl
 import cl.emilym.sinatra.ui.navigation.MapScope
 import cl.emilym.sinatra.ui.navigation.bottomSheetHalfHeight
 import cl.emilym.sinatra.ui.toMaps
@@ -36,14 +37,19 @@ import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.rememberCameraPositionState
 
 @Composable
-actual fun Map(overlay: @Composable MapScope.() -> Unit) {
+actual fun Map(content: @Composable MapControl.(@Composable () -> Unit) -> Unit) {
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(canberra.toMaps(), 10f)
     }
     val windowPadding = ScaffoldDefaults.contentWindowInsets.asPaddingValues()
     val layoutDirection = LocalLayoutDirection.current
 
-    Box {
+    val scope = MapScope(
+        cameraPositionState,
+        screenSize(),
+        bottomSheetHalfHeight()
+    )
+    scope.content {
         GoogleMap(
             modifier = Modifier.fillMaxSize(),
             cameraPositionState = cameraPositionState,
@@ -63,12 +69,7 @@ actual fun Map(overlay: @Composable MapScope.() -> Unit) {
             ),
             mapColorScheme = ComposeMapColorScheme.FOLLOW_SYSTEM
         ) {
-            MapScope(
-                cameraPositionState,
-                screenSize(),
-                bottomSheetHalfHeight()
-            ).CurrentMapContent()
+            scope.CurrentMapContent()
         }
-
     }
 }

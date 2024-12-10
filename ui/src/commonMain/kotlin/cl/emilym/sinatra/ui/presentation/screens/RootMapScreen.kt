@@ -7,9 +7,11 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.exclude
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.onConsumedWindowInsetsChanged
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContent
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.ScaffoldDefaults
@@ -29,21 +31,29 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.internal.BackHandler
 import cl.emilym.compose.units.rdp
+import cl.emilym.sinatra.data.models.Location
 import cl.emilym.sinatra.e
+import cl.emilym.sinatra.ui.maps.LocationProvider
 import cl.emilym.sinatra.ui.navigation.CurrentBottomSheetContent
 import cl.emilym.sinatra.ui.navigation.CurrentMapOverlayContent
 import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
+import cl.emilym.sinatra.ui.navigation.MapControl
 import cl.emilym.sinatra.ui.navigation.MapScope
 import cl.emilym.sinatra.ui.navigation.bottomSheetHalfHeight
 import cl.emilym.sinatra.ui.presentation.screens.maps.MapSearchScreen
+import cl.emilym.sinatra.ui.widgets.LocalMapControl
 import cl.emilym.sinatra.ui.widgets.LocalPermissionState
 import cl.emilym.sinatra.ui.widgets.MyLocationIcon
 import cl.emilym.sinatra.ui.widgets.PermissionState
 import cl.emilym.sinatra.ui.widgets.SinatraBackHandler
 import cl.emilym.sinatra.ui.widgets.bottomsheet.SinatraSheetValue
 import cl.emilym.sinatra.ui.widgets.bottomsheet.SinatraBottomSheetScaffold
+import cl.emilym.sinatra.ui.widgets.bottomsheet.SinatraBottomSheetScaffoldState
+import cl.emilym.sinatra.ui.widgets.bottomsheet.SinatraSheetState
 import cl.emilym.sinatra.ui.widgets.bottomsheet.rememberSinatraBottomSheetState
 import cl.emilym.sinatra.ui.widgets.bottomsheet.rememberSinatraBottomSheetScaffoldState
+import cl.emilym.sinatra.ui.widgets.screenHeight
+import cl.emilym.sinatra.ui.widgets.screenSize
 import dev.icerock.moko.permissions.Permission
 import dev.icerock.moko.permissions.PermissionsController
 import dev.icerock.moko.permissions.compose.BindEffect
@@ -52,7 +62,12 @@ import dev.icerock.moko.permissions.compose.rememberPermissionsControllerFactory
 import io.github.aakira.napier.Napier
 import io.ktor.http.ParametersBuilder
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.flatMapConcat
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
 import org.koin.compose.viewmodel.koinViewModel
@@ -61,7 +76,8 @@ import org.koin.core.parameter.ParametersHolder
 
 @KoinViewModel
 class MapViewModel(
-    private val permissionsController: PermissionsController
+    private val permissionsController: PermissionsController,
+    val locationProvider: LocationProvider,
 ): ViewModel() {
 
     val hasLocationPermission = MutableStateFlow(false)
@@ -74,6 +90,7 @@ class MapViewModel(
         viewModelScope.launch {
             hasLocationPermission.value = if (!permissionsController.isPermissionGranted(Permission.LOCATION)) {
                 try {
+                    Napier.d("Requesting location permission")
                     permissionsController.providePermission(Permission.LOCATION)
                     true
                 } catch (e: Exception) {
@@ -81,7 +98,12 @@ class MapViewModel(
                     false
                 }
             } else {
+                Napier.d("Already have location permission, proceeding")
                 true
+            }.also {
+                if (it) {
+                    locationProvider.setHasLocationPermission()
+                }
             }
         }
     }
@@ -89,7 +111,7 @@ class MapViewModel(
 }
 
 @Composable
-expect fun Map(overlay: @Composable MapScope.() -> Unit)
+expect fun Map(content: @Composable MapControl.(@Composable () -> Unit) -> Unit)
 
 class RootMapScreen: Screen {
 
@@ -104,73 +126,50 @@ class RootMapScreen: Screen {
             mutableListOf(permissionsController)
         ) }
 
-        val hasLocationPermission by viewModel.hasLocationPermission.collectAsState(false)
+        val sheetState = rememberSinatraBottomSheetState(
+            initialValue = SinatraSheetValue.HalfExpanded,
+            skipHiddenState = true
+        )
+        val scaffoldState = rememberSinatraBottomSheetScaffoldState(
+            bottomSheetState = sheetState
+        )
 
-        CompositionLocalProvider(
-            LocalPermissionState provides PermissionState(hasLocationPermission)
+        Navigator(
+            MapSearchScreen()
         ) {
-            Navigator(
-                MapSearchScreen()
-            ) {
-                Scaffold {
-                    Box(Modifier.fillMaxSize()) {
-                        Map {
-                            MapControls()
+            Map { map ->
+                CompositionLocalProvider(
+                    LocalMapControl provides this,
+                    LocalBottomSheetState provides scaffoldState
+                ) {
+                    Scaffold(scaffoldState) {
+                        Box(Modifier.fillMaxSize()) {
+                            map()
+                            MapOverlay()
                         }
-                        MapOverlay()
                     }
                 }
             }
-        }
-    }
 
-    @Composable
-    private fun MapScope.MapControls() {
-        ConstraintLayout(
-            Modifier
-                .fillMaxSize()
-                .padding(WindowInsets.safeContent.asPaddingValues())
-        ) {
-            val hasLocationPermission = LocalPermissionState.current.hasLocationPermission
-            val (locationPermissionButtonRef) = createRefs()
-
-            val padding = 1.rdp
-
-            if (hasLocationPermission) {
-                FloatingActionButton(
-                    onClick = {},
-                    modifier = Modifier.constrainAs(locationPermissionButtonRef) {
-                        end.linkTo(parent.end, padding)
-                        bottom.linkTo(parent.bottom, 56.dp)
-                    }
-                ) { MyLocationIcon() }
-            }
         }
     }
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     private fun Scaffold(
+        scaffoldState: SinatraBottomSheetScaffoldState,
         content: @Composable () -> Unit
     ) {
-        val sheetState = rememberSinatraBottomSheetState(
-            initialValue = SinatraSheetValue.HalfExpanded,
-            skipHiddenState = true
-        )
-        val state = rememberSinatraBottomSheetScaffoldState(
-            bottomSheetState = sheetState
-        )
-
         SinatraBottomSheetScaffold(
-            scaffoldState = state,
+            scaffoldState = scaffoldState,
             sheetContent = {
                 val coroutineScope = rememberCoroutineScope()
-                SinatraBackHandler(state.bottomSheetState.targetValue == SinatraSheetValue.Expanded) {
+                SinatraBackHandler(scaffoldState.bottomSheetState.targetValue == SinatraSheetValue.Expanded) {
                     coroutineScope.launch {
-                        state.bottomSheetState.halfExpand()
+                        scaffoldState.bottomSheetState.halfExpand()
                     }
                 }
-                CompositionLocalProvider(LocalBottomSheetState provides state) {
+                CompositionLocalProvider(LocalBottomSheetState provides scaffoldState) {
                     CurrentBottomSheetContent()
                 }
             },

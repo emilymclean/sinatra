@@ -7,13 +7,21 @@ import cl.emilym.sinatra.data.models.Location
 import cl.emilym.sinatra.ui.maps.MarkerIcon
 import cl.emilym.sinatra.ui.presentation.theme.defaultLineColor
 
-expect class MapScope {
-
+interface MapControl {
     fun zoomToArea(bounds: Bounds, padding: Int)
 
     fun zoomToArea(topLeft: Location, bottomRight: Location, padding: Int)
 
     fun zoomToPoint(location: Location, zoom: Float = 16f)
+}
+
+expect class MapScope: MapControl {
+
+    override fun zoomToArea(bounds: Bounds, padding: Int)
+
+    override fun zoomToArea(topLeft: Location, bottomRight: Location, padding: Int)
+
+    override fun zoomToPoint(location: Location, zoom: Float)
 
     @Composable
     fun Marker(location: Location, icon: MarkerIcon? = null, onClick: (() -> Unit)? = null)
