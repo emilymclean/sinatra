@@ -97,8 +97,7 @@ private fun _RouteLine(
         timetable == null -> -1
         else -> {
             val now = LocalClock.current.now()
-            val first = timetable.sortedBy { it.arrival.time }
-                .indexOfFirst { it.arrival.time.toTodayInstant() > now }
+            val first = timetable.indexOfFirst { it.arrival.time.toTodayInstant() > now }
             if (first < 0) Int.MAX_VALUE else first
         }
     }
@@ -106,8 +105,7 @@ private fun _RouteLine(
         timetable == null -> -1
         else -> {
             val now = LocalClock.current.now()
-            val first = timetable.sortedBy { it.departure.time }
-                .indexOfFirst { it.departure.time.toTodayInstant() > now }
+            val first = timetable.indexOfFirst { it.departure.time.toTodayInstant() > now }
             if (first < 0) Int.MAX_VALUE else first
         }
     }
@@ -143,7 +141,7 @@ private fun _RouteLine(
                 }
             },
             {
-                for (i in stops.indices - 2) {
+                for (i in stops.indices - 1) {
                     Box(
                         Modifier
                             .background(
