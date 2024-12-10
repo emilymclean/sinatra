@@ -1,26 +1,83 @@
 package cl.emilym.sinatra.ui.navigation
 
+import android.content.Context
 import android.graphics.Point
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import cl.emilym.sinatra.data.models.Bounds
 import cl.emilym.sinatra.data.models.Location
 import cl.emilym.sinatra.ui.maps.MarkerIcon
 import cl.emilym.sinatra.ui.maps.toMaps
 import cl.emilym.sinatra.ui.toMaps
 import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
+import com.google.android.gms.maps.model.MarkerOptions
+import com.google.maps.android.clustering.Cluster
+import com.google.maps.android.clustering.ClusterItem
+import com.google.maps.android.clustering.ClusterManager
+import com.google.maps.android.clustering.view.DefaultClusterRenderer
 import com.google.maps.android.compose.CameraPositionState
 import com.google.maps.android.compose.GoogleMapComposable
+import com.google.maps.android.compose.MapsComposeExperimentalApi
 import com.google.maps.android.compose.Polyline
+import com.google.maps.android.compose.clustering.Clustering
 import com.google.maps.android.compose.rememberMarkerState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlin.math.pow
+
+data class GoogleMapsClusterItem<T>(
+    val position: Location,
+    val data: T
+): ClusterItem {
+
+    override fun getPosition(): LatLng = position.toMaps()
+    override fun getTitle(): String? = null
+    override fun getSnippet(): String? = null
+    override fun getZIndex(): Float? = null
+
+    fun toMultiplatform(): MapClusterItem<T> {
+        return MapClusterItem(position, data)
+    }
+
+    companion object {
+
+        fun <T> fromMultiplatform(item: MapClusterItem<T>): GoogleMapsClusterItem<T> {
+            return GoogleMapsClusterItem(item.location, item.data)
+        }
+
+    }
+
+}
+
+class MapIconRenderer<T>(
+    context: Context,
+    map: GoogleMap,
+    clusterManager: ClusterManager<GoogleMapsClusterItem<T>>,
+    private val singleMarkerIcon: (item: MapClusterItem<T>) -> MarkerIcon,
+    private val clusterMarkerIcon: (items: List<MapClusterItem<T>>) -> MarkerIcon,
+): DefaultClusterRenderer<GoogleMapsClusterItem<T>>(context, map, clusterManager) {
+
+    override fun onBeforeClusterItemRendered(
+        item: GoogleMapsClusterItem<T>,
+        markerOptions: MarkerOptions
+    ) {
+        super.onBeforeClusterItemRendered(item, markerOptions)
+    }
+
+    override fun onBeforeClusterRendered(
+        cluster: Cluster<GoogleMapsClusterItem<T>>,
+        markerOptions: MarkerOptions
+    ) {
+        super.onBeforeClusterRendered(cluster, markerOptions)
+    }
+}
 
 data class BoxDescriptor(
     val topRight: Point,
@@ -126,41 +183,27 @@ actual class MapScope(
         }
     }
 
-    actual fun zoomToArea(bounds: Bounds, padding: Int) {
-        zoomToArea(bounds.topLeft, bounds.bottomRight, padding)
-    }
-
+    @OptIn(MapsComposeExperimentalApi::class)
     @Composable
     @GoogleMapComposable
-    actual fun DebugZoomToArea(bounds: Bounds) {
-//        val original = listOf(bounds.topLeft.toMaps(), bounds.bottomRight.toMaps()).toBounds()
-//        val projection = cameraPositionState.projection ?: return
-//        val viewportBox = boxOverOther(
-//            BoxDescriptor(
-//                projection.toScreenLocation(original.northeast),
-//                projection.toScreenLocation(original.southwest),
-//            ),
-//            viewportAspect
-//        )
-//
-//        val screenBox = viewportBox
-//        val screenBox = viewportBox.copy(
-//            bottomLeft = Point(
-//                viewportBox.bottomLeft.x,
-//                (viewportBox.bottomLeft.y + (viewportBox.width / screenAspect)).toInt(),
-//            )
-//        )
+    actual fun <T> Cluster(
+        items: List<MapClusterItem<T>>,
+        singleMarkerIcon: (item: MapClusterItem<T>) -> MarkerIcon,
+        clusterMarkerIcon: (items: List<MapClusterItem<T>>) -> MarkerIcon
+    ) {
+        Clustering(
+            items.map { GoogleMapsClusterItem.fromMultiplatform(it) },
+            onClusterItemClick = {
+                false
+            },
+            onClusterManager = { clusterManager ->
+                (clusterManager.renderer as DefaultClusterRenderer<ClusterItem<T>>).minClusterSize = 2
+            },
+        )
+    }
 
-//        val sBTopRight = projection.fromScreenLocation(screenBox.topRight)
-//        val sBBottomLeft = projection.fromScreenLocation(screenBox.bottomLeft)
-//        Polygon(
-//            listOf(
-//                LatLng(sBTopRight.latitude, sBBottomLeft.longitude),
-//                LatLng(sBTopRight.latitude, sBTopRight.longitude),
-//                LatLng(sBBottomLeft.latitude, sBTopRight.longitude),
-//                LatLng(sBBottomLeft.latitude, sBBottomLeft.longitude),
-//            )
-//        )
+    actual fun zoomToArea(bounds: Bounds, padding: Int) {
+        zoomToArea(bounds.topLeft, bounds.bottomRight, padding)
     }
 
     actual fun zoomToPoint(

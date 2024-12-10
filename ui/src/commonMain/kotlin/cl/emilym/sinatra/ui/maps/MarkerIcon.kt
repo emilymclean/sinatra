@@ -6,8 +6,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import cl.emilym.sinatra.data.models.Route
-import cl.emilym.sinatra.data.models.Stop
-import cl.emilym.sinatra.ui.minimumTouchTarget
 
 
 data class MarkerIconOffset(

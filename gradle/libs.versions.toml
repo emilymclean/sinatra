@@ -4,7 +4,7 @@ kotlin = "2.0.21"
 compose = "1.5.4"
 compose-material3 = "1.1.2"
 androidx-activityCompose = "1.8.0"
-mapsCompose = "6.2.1"
+mapsCompose = "6.4.0"
 moko-maps = "0.6.0"
 aakira-napier = "2.7.1"
 ktorfit = "2.1.0"
@@ -61,10 +61,9 @@ kotlin-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.r
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil-compose" }
 coil-network = { module = "io.coil-kt.coil3:coil-network-ktor2", version.ref = "coil-compose" }
 
-# Moko
+# Maps
 maps-compose = { module = "com.google.maps.android:maps-compose", version.ref = "mapsCompose" }
-moko-maps = { module = "dev.icerock.moko:maps", version.ref = "moko-maps" }
-moko-maps-google = { module = "dev.icerock.moko:maps-google", version.ref = "moko-maps" }
+maps-compose-utils = { module = "com.google.maps.android:maps-compose-utils", version.ref = "mapsCompose" }
 
 # Koin
 koin-core = { group = "io.insert-koin", name = "koin-core", version.ref = "koin" }

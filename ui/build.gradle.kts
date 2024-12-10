@@ -40,6 +40,7 @@ kotlin {
         androidMain.dependencies {
             implementation(libs.koin.android)
             implementation(libs.maps.compose)
+            implementation(libs.maps.compose.utils)
             implementation(libs.androidx.activity.compose)
         }
         commonMain.dependencies {
