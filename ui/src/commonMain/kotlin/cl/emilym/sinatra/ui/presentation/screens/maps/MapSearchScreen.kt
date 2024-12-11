@@ -62,6 +62,7 @@ import cl.emilym.sinatra.ui.widgets.bottomsheet.SinatraSheetValue
 import cl.emilym.sinatra.ui.widgets.currentLocation
 import cl.emilym.sinatra.ui.widgets.handleFlow
 import cl.emilym.sinatra.ui.widgets.screenHeight
+import cl.emilym.sinatra.ui.widgets.viewportHeight
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
@@ -189,7 +190,7 @@ class MapSearchScreen: MapScreen {
 
         ConstraintLayout(Modifier.fillMaxSize()) {
             val padding = 1.rdp
-            val halfScreen = screenHeight() * bottomSheetHalfHeight
+            val halfScreen = viewportHeight() * bottomSheetHalfHeight - 16.dp
             val (expandOffsetRef, searchButtonRef, locationButtonRef) = createRefs()
 //            val actionBarrier = createTopBarrier(searchButtonRef, expandOffsetRef)
 
@@ -243,7 +244,7 @@ class MapSearchScreen: MapScreen {
         val viewModel = koinViewModel<MapSearchViewModel>()
         val state by viewModel.state.collectAsState(MapSearchState.Browse)
 
-        Box(modifier = Modifier.heightIn(min = screenHeight() * 0.5f)) {
+        Box(modifier = Modifier.heightIn(min = viewportHeight() * 0.5f)) {
             when (state) {
                 is MapSearchState.Browse -> BrowseContent()
                 is MapSearchState.Search -> SearchContent(
@@ -299,7 +300,7 @@ class MapSearchScreen: MapScreen {
         }
 
         val query by viewModel.query.collectAsState()
-        LazyColumn(Modifier.fillMaxWidth().heightIn(min = screenHeight() * 1.2f)) {
+        LazyColumn(Modifier.fillMaxWidth().heightIn(min = viewportHeight())) {
             item {
                 Box(Modifier.padding(1.rdp))
             }
