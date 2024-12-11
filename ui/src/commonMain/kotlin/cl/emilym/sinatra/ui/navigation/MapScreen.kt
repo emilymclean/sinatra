@@ -9,6 +9,8 @@ import cafe.adriel.voyager.navigator.CurrentScreen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import cl.emilym.compose.units.px
+import cl.emilym.sinatra.ui.maps.CameraState
+import cl.emilym.sinatra.ui.maps.MapItem
 
 const val DEFAULT_HALF_HEIGHT = 0.66f
 
@@ -20,7 +22,7 @@ interface MapScreen: Screen {
     fun BottomSheetContent() {}
 
     @Composable
-    fun MapScope.MapContent() {}
+    fun mapItems(): List<MapItem> = listOf()
 }
 
 @Composable
@@ -56,4 +58,10 @@ fun CurrentBottomSheetContent() {
 }
 
 @Composable
-expect fun MapScope.CurrentMapContent()
+fun currentMapItems(): List<MapItem> {
+    val navigator = LocalNavigator.currentOrThrow
+    val currentScreen = navigator.lastItem
+    val mapScreen = (currentScreen as? MapScreen) ?: return listOf()
+
+    return mapScreen.mapItems()
+}

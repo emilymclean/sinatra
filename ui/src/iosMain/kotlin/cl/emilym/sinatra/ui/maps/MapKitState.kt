@@ -5,15 +5,13 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
-import cl.emilym.sinatra.data.models.Location
+import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.ui.canberra
 import cl.emilym.sinatra.ui.canberraZoom
 import kotlinx.cinterop.CValue
 import kotlinx.cinterop.ExperimentalForeignApi
-import platform.CoreLocation.CLLocation
 import platform.CoreLocation.CLLocationCoordinate2D
 import platform.CoreLocation.CLLocationCoordinate2DMake
-import platform.CoreLocation.CLLocationDegrees
 import platform.MapKit.MKCoordinateRegion
 import platform.MapKit.MKCoordinateRegionMake
 import platform.MapKit.MKCoordinateSpan
@@ -21,7 +19,7 @@ import platform.MapKit.MKCoordinateSpanMake
 import kotlin.math.pow
 
 @OptIn(ExperimentalForeignApi::class)
-fun Location.toMaps(): CValue<CLLocationCoordinate2D> {
+fun MapLocation.toMaps(): CValue<CLLocationCoordinate2D> {
     return CLLocationCoordinate2DMake(
         latitude = lat,
         longitude = lng
@@ -38,7 +36,7 @@ fun Float.toCoordinateSpan(): CValue<MKCoordinateSpan> {
 }
 
 class MapKitState @OptIn(ExperimentalForeignApi::class) constructor(
-    val coordinate: MutableState<Location> = mutableStateOf(canberra),
+    val coordinate: MutableState<MapLocation> = mutableStateOf(canberra),
     val zoom: MutableState<Float> = mutableStateOf(canberraZoom)
 ) {
 
@@ -52,7 +50,7 @@ class MapKitState @OptIn(ExperimentalForeignApi::class) constructor(
 }
 
 class MapKitSavedState(
-    val coordinate: Location,
+    val coordinate: MapLocation,
     val zoom: Float
 )
 
@@ -66,7 +64,7 @@ inline fun rememberMapKitState(
 
 
 @OptIn(ExperimentalForeignApi::class)
-fun createRegion(location: Location, zoom: Float): CValue<MKCoordinateRegion> {
+fun createRegion(location: MapLocation, zoom: Float): CValue<MKCoordinateRegion> {
     return MKCoordinateRegionMake(
         centerCoordinate = location.toMaps(),
         span = zoom.toCoordinateSpan()

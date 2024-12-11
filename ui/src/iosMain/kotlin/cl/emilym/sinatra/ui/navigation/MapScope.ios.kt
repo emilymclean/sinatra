@@ -2,8 +2,7 @@ package cl.emilym.sinatra.ui.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
-import cl.emilym.sinatra.data.models.Bounds
-import cl.emilym.sinatra.data.models.Location
+import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.ui.maps.MapKitState
 import cl.emilym.sinatra.ui.maps.MarkerIcon
 
@@ -14,14 +13,14 @@ actual class MapScope(
 
     @Composable
     actual fun Line(
-        points: List<Location>,
+        points: List<MapLocation>,
         color: Color
     ) {
     }
 
     @Composable
     actual fun Marker(
-        location: Location,
+        location: MapLocation,
         icon: MarkerIcon?,
         zoomThreshold: Float?,
         onClick: (() -> Unit)?

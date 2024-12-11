@@ -5,7 +5,7 @@ import android.os.Looper
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
-import cl.emilym.sinatra.data.models.Location
+import cl.emilym.sinatra.data.models.MapLocation
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
@@ -20,7 +20,7 @@ import java.util.concurrent.TimeUnit
 
 @SuppressLint("MissingPermission")
 @Composable
-internal actual fun platformCurrentLocation(): Flow<Location?> {
+internal actual fun platformCurrentLocation(): Flow<MapLocation?> {
     val context = LocalContext.current
     val fusedLocationClient = remember(context) { LocationServices.getFusedLocationProviderClient(context) }
 
@@ -40,7 +40,7 @@ internal actual fun platformCurrentLocation(): Flow<Location?> {
                 Napier.d("Location result = ${result.lastLocation}")
                 result.lastLocation?.let {
                     launch {
-                        send(Location(it.latitude, it.longitude))
+                        send(MapLocation(it.latitude, it.longitude))
                     }
                 }
             }

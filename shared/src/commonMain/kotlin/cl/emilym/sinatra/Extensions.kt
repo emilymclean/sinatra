@@ -1,12 +1,8 @@
 package cl.emilym.sinatra
 
-import cl.emilym.sinatra.data.models.Bounds
-import cl.emilym.sinatra.data.models.Location
-import cl.emilym.sinatra.data.models.RouteTripStop
-import cl.emilym.sinatra.data.models.Stop
+import cl.emilym.sinatra.data.models.MapRegion
+import cl.emilym.sinatra.data.models.MapLocation
 import io.github.aakira.napier.Napier
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
 
 fun Napier.e(throwable: Throwable) {
     e(throwable.message ?: "Exception", throwable)
@@ -15,13 +11,13 @@ fun Napier.e(throwable: Throwable) {
 val Float.deg
     get() = this * 0.01745f
 
-fun List<Location>.bounds(): Bounds {
+fun List<MapLocation>.bounds(): MapRegion {
     val lats = map { it.lat }
     val lngs = map { it.lng }
 
-    return Bounds(
-        Location(lats.max(), lngs.min()),
-        Location(lats.min(), lngs.max())
+    return MapRegion(
+        MapLocation(lats.max(), lngs.min()),
+        MapLocation(lats.min(), lngs.max())
     )
 }
 

@@ -14,6 +14,7 @@ typealias ServiceId = String
 typealias TripId = String
 typealias Latitude = Double
 typealias Longitude = Double
+typealias Pixel = Int
 
 typealias Time = Duration
 

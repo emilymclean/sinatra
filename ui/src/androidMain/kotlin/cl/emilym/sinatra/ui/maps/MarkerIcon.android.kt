@@ -1,6 +1,5 @@
 package cl.emilym.sinatra.ui.maps
 
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -20,7 +19,7 @@ actual interface MarkerIcon {
     actual val anchor: MarkerIconOffset
 }
 
-fun MarkerIconOffset.toMaps(): Offset {
+fun MarkerIconOffset.toNative(): Offset {
     return Offset(x, y)
 }
 
@@ -30,6 +29,8 @@ class MarkerIconBuilder(
 ): MarkerIcon {
     override val bitmapDescriptor by lazy { factory() }
 }
+
+val defaultMarkerOffset = MarkerIconOffset(0.5f, 1f)
 
 @Composable
 actual fun circularIcon(color: Color, borderColor: Color, size: Dp, borderWidth: Dp): MarkerIcon {

@@ -1,9 +1,7 @@
 package cl.emilym.sinatra.data.models
 
 import cl.emilym.kmp.serializable.Serializable
-import io.github.aakira.napier.Napier
 import kotlinx.datetime.Instant
-import kotlin.time.Duration
 
 interface StopTime {
     val arrivalTime: Time?
@@ -17,27 +15,6 @@ interface StopTime {
         return departureTime?.forDay(startOfDay)
     }
 }
-
-data class Location(
-    val lat: Latitude,
-    val lng: Longitude
-): Serializable {
-
-    companion object {
-        fun fromPB(pb: cl.emilym.gtfs.Location): Location {
-            return Location(
-                pb.lat,
-                pb.lng
-            )
-        }
-    }
-
-}
-
-data class Bounds(
-    val topLeft: Location,
-    val bottomRight: Location,
-)
 
 enum class OnColor {
     DARK, LIGHT;

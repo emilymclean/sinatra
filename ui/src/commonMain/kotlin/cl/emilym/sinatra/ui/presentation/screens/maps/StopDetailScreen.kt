@@ -39,13 +39,15 @@ import cl.emilym.sinatra.data.repository.FavouriteRepository
 import cl.emilym.sinatra.data.repository.RecentVisitRepository
 import cl.emilym.sinatra.data.repository.StopRepository
 import cl.emilym.sinatra.domain.UpcomingRoutesForStopUseCase
+import cl.emilym.sinatra.ui.maps.MapItem
+import cl.emilym.sinatra.ui.maps.MarkerItem
 import cl.emilym.sinatra.ui.maps.stopMarkerIcon
 import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
-import cl.emilym.sinatra.ui.navigation.MapScope
 import cl.emilym.sinatra.ui.navigation.MapScreen
 import cl.emilym.sinatra.ui.widgets.AccessibilityIconLockup
 import cl.emilym.sinatra.ui.widgets.FavouriteButton
 import cl.emilym.sinatra.ui.widgets.ListHint
+import cl.emilym.sinatra.ui.widgets.LocalMapControl
 import cl.emilym.sinatra.ui.widgets.NoBusIcon
 import cl.emilym.sinatra.ui.widgets.SheetIosBackButton
 import cl.emilym.sinatra.ui.widgets.UpcomingRouteCard
@@ -127,6 +129,7 @@ class StopDetailScreen(
         val viewModel = koinViewModel<StopDetailViewModel>()
         val bottomSheetState = LocalBottomSheetState.current
         val navigator = LocalNavigator.currentOrThrow
+        val mapControl = LocalMapControl.current
 
         LaunchedEffect(bottomSheetState) {
             bottomSheetState.bottomSheetState.halfExpand()
@@ -148,6 +151,10 @@ class StopDetailScreen(
                         Text(stringResource(Res.string.stop_not_found))
                     }
                     else -> {
+                        LaunchedEffect(stop.location) {
+                            mapControl.zoomToPoint(stop.location)
+                        }
+
                         LazyColumn(
                             Modifier.fillMaxSize(),
                             verticalArrangement = Arrangement.spacedBy(1.rdp)
@@ -264,15 +271,11 @@ class StopDetailScreen(
     }
 
     @Composable
-    override fun MapScope.MapContent() {
+    override fun mapItems(): List<MapItem> {
         val viewModel = koinViewModel<StopDetailViewModel>()
         val stopRS by viewModel.stop.collectAsState(RequestState.Initial())
-        val stop = (stopRS as? RequestState.Success)?.value ?: return
+        val stop = (stopRS as? RequestState.Success)?.value ?: return listOf()
 
-        LaunchedEffect(stop.location) {
-            zoomToPoint(stop.location)
-        }
-
-        Marker(stop.location, stopMarkerIcon(stop))
+        return listOf(MarkerItem(stop.location, stopMarkerIcon(stop)))
     }
 }

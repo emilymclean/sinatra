@@ -1,6 +1,5 @@
 package cl.emilym.sinatra.ui.presentation.screens.maps
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,10 +23,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.FocusRequester.Companion.createRefs
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -35,7 +31,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cafe.adriel.voyager.core.screen.ScreenKey
 import cafe.adriel.voyager.navigator.LocalNavigator
-import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import cl.emilym.compose.requeststate.RequestState
 import cl.emilym.compose.requeststate.RequestStateWidget
@@ -47,17 +42,17 @@ import cl.emilym.sinatra.data.repository.RecentVisitRepository
 import cl.emilym.sinatra.data.repository.StopRepository
 import cl.emilym.sinatra.domain.search.RouteStopSearchUseCase
 import cl.emilym.sinatra.domain.search.SearchResult
+import cl.emilym.sinatra.ui.maps.LocalCameraState
+import cl.emilym.sinatra.ui.maps.MapItem
+import cl.emilym.sinatra.ui.maps.MarkerItem
+import cl.emilym.sinatra.ui.maps.stopMarkerIcon
 import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
-import cl.emilym.sinatra.ui.navigation.MapScope
 import cl.emilym.sinatra.ui.navigation.MapScreen
-import cl.emilym.sinatra.ui.navigation.NativeMapScope
 import cl.emilym.sinatra.ui.widgets.IosBackButton
 import cl.emilym.sinatra.ui.widgets.ListHint
 import cl.emilym.sinatra.ui.widgets.LocalMapControl
 import cl.emilym.sinatra.ui.widgets.MyLocationIcon
-import cl.emilym.sinatra.ui.widgets.NoBusIcon
 import cl.emilym.sinatra.ui.widgets.NoResultsIcon
-import cl.emilym.sinatra.ui.widgets.PillShape
 import cl.emilym.sinatra.ui.widgets.RouteCard
 import cl.emilym.sinatra.ui.widgets.SearchIcon
 import cl.emilym.sinatra.ui.widgets.SinatraBackHandler
@@ -68,7 +63,6 @@ import cl.emilym.sinatra.ui.widgets.createRequestStateFlowFlow
 import cl.emilym.sinatra.ui.widgets.currentLocation
 import cl.emilym.sinatra.ui.widgets.handleFlow
 import cl.emilym.sinatra.ui.widgets.handleFlowProperly
-import cl.emilym.sinatra.ui.widgets.screenHeight
 import cl.emilym.sinatra.ui.widgets.viewportHeight
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -76,19 +70,15 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.emitAll
-import kotlinx.coroutines.flow.flatMapConcat
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.koin.android.annotation.KoinViewModel
 import org.koin.compose.viewmodel.koinViewModel
-import org.koin.core.KoinApplication.Companion.init
 import sinatra.ui.generated.resources.Res
-import sinatra.ui.generated.resources.no_upcoming_vehicles
 import sinatra.ui.generated.resources.search_hint
 import sinatra.ui.generated.resources.no_search_results
 import sinatra.ui.generated.resources.search_recently_viewed
@@ -246,14 +236,26 @@ class MapSearchScreen: MapScreen {
     }
 
     @Composable
-    override fun MapScope.MapContent() {
+    override fun mapItems(): List<MapItem> {
         val viewModel = koinViewModel<MapSearchViewModel>()
         val stopsRS by viewModel.stops.collectAsState(RequestState.Initial())
-        val stops = (stopsRS as? RequestState.Success)?.value ?: return
+        val cameraState = LocalCameraState.current
+        val icon = stopMarkerIcon()
 
-        Native {
-            MapSearchScreenMapNative(stops.filter { it.parentStation == null })
+        val stops = (stopsRS as? RequestState.Success)?.value ?: return listOf()
+
+        val markers = stops.map {
+            it.important to MarkerItem(
+                it.location,
+                icon = icon,
+                visible = true,
+                id = it.id
+            )
         }
+
+        val visible = remember(cameraState.zoom) { cameraState.zoom >= 14f }
+
+        return markers.filter { it.first || visible }.map { it.second }
     }
 
     @Composable
@@ -443,6 +445,3 @@ class MapSearchScreen: MapScreen {
     }
 
 }
-
-@Composable
-expect fun NativeMapScope.MapSearchScreenMapNative(stops: List<Stop>)

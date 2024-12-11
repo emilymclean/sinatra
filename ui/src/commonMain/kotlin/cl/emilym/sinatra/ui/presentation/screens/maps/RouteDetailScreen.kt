@@ -8,26 +8,19 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.text.style.TextAlign
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cafe.adriel.voyager.core.screen.ScreenKey
@@ -57,22 +50,19 @@ import cl.emilym.sinatra.nullIfEmpty
 import cl.emilym.sinatra.ui.asInstants
 import cl.emilym.sinatra.ui.color
 import cl.emilym.sinatra.ui.current
+import cl.emilym.sinatra.ui.maps.LineItem
+import cl.emilym.sinatra.ui.maps.MapItem
+import cl.emilym.sinatra.ui.maps.MarkerItem
 import cl.emilym.sinatra.ui.maps.routeStopMarkerIcon
-import cl.emilym.sinatra.ui.minimumTouchTarget
 import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
-import cl.emilym.sinatra.ui.navigation.MapScope
 import cl.emilym.sinatra.ui.navigation.MapScreen
 import cl.emilym.sinatra.ui.past
-import cl.emilym.sinatra.ui.presentation.theme.defaultLineColor
 import cl.emilym.sinatra.ui.widgets.AccessibilityIconLockup
 import cl.emilym.sinatra.ui.widgets.BikeIcon
 import cl.emilym.sinatra.ui.widgets.FavouriteButton
-import cl.emilym.sinatra.ui.widgets.FavouriteIcon
-import cl.emilym.sinatra.ui.widgets.IosBackButton
 import cl.emilym.sinatra.ui.widgets.LocalClock
+import cl.emilym.sinatra.ui.widgets.LocalMapControl
 import cl.emilym.sinatra.ui.widgets.LocalScheduleTimeZone
-import cl.emilym.sinatra.ui.widgets.NoBusIcon
-import cl.emilym.sinatra.ui.widgets.RecomposeOnInstants
 import cl.emilym.sinatra.ui.widgets.RouteLine
 import cl.emilym.sinatra.ui.widgets.RouteRandle
 import cl.emilym.sinatra.ui.widgets.SheetIosBackButton
@@ -81,9 +71,7 @@ import cl.emilym.sinatra.ui.widgets.StopCard
 import cl.emilym.sinatra.ui.widgets.Subheading
 import cl.emilym.sinatra.ui.widgets.WheelchairAccessibleIcon
 import cl.emilym.sinatra.ui.widgets.toIntPx
-import io.github.aakira.napier.Napier
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
@@ -200,6 +188,7 @@ class RouteDetailScreen(
         val navigator = LocalNavigator.currentOrThrow
         val clock = LocalClock.current
         val timeZone = LocalScheduleTimeZone.current
+        val mapControl = LocalMapControl.current
 
         val current = if (trigger != null) {
             remember(trigger) {
@@ -216,6 +205,11 @@ class RouteDetailScreen(
             }
         } else {
             null
+        }
+
+        val zoomPadding = 4.rdp.toIntPx()
+        LaunchedEffect(info.stops) {
+            mapControl.zoomToArea(info.stops.mapNotNull { it.stop?.location }.bounds(), zoomPadding)
         }
 
         LazyColumn(
@@ -322,30 +316,26 @@ class RouteDetailScreen(
     }
 
     @Composable
-    override fun MapScope.MapContent() {
+    override fun mapItems(): List<MapItem> {
         val viewModel = koinViewModel<RouteDetailViewModel>()
         val tripInformationRS by viewModel.tripInformation.collectAsState(RequestState.Initial())
-        val info = (tripInformationRS as? RequestState.Success)?.value ?: return
+        val info = (tripInformationRS as? RequestState.Success)?.value ?: return listOf()
         val route = info.route
-        val stops = info.tripInformation?.stops ?: return
-        if (stops.all { it.stop == null }) return
-
-        val zoomPadding = with(LocalDensity.current) { 4.rdp.toIntPx() }
-
-        LaunchedEffect(stops) {
-            zoomToArea(stops.mapNotNull { it.stop?.location }.bounds(), zoomPadding)
-        }
-
-        Line(
-            stops.mapNotNull { it.stop?.location },
-            route.color()
-        )
         val icon = routeStopMarkerIcon(route)
-        for (stop in stops) {
-            Marker(
-                stop.stop?.location ?: continue,
+        val stops = info.tripInformation?.stops ?: return listOf()
+        if (stops.all { it.stop == null }) return listOf()
+
+        return listOf(
+            LineItem(
+                stops.mapNotNull { it.stop?.location },
+                route.color()
+            )
+        ) + stops.mapNotNull {
+            MarkerItem(
+                it.stop?.location ?: return@mapNotNull null,
                 icon
             )
         }
     }
+
 }

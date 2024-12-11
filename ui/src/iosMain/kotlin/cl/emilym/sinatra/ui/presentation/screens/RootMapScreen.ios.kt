@@ -6,15 +6,11 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.UIKitView
-import cafe.adriel.voyager.core.screen.Screen
-import cl.emilym.sinatra.data.models.Bounds
-import cl.emilym.sinatra.data.models.Location
-import cl.emilym.sinatra.ui.canberra
-import cl.emilym.sinatra.ui.canberraZoom
+import cl.emilym.sinatra.data.models.MapRegion
+import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.ui.maps.createRegion
 import cl.emilym.sinatra.ui.maps.currentLocationIcon
 import cl.emilym.sinatra.ui.maps.rememberMapKitState
-import cl.emilym.sinatra.ui.maps.toMaps
 import cl.emilym.sinatra.ui.navigation.CurrentMapContent
 import cl.emilym.sinatra.ui.navigation.MapControl
 import cl.emilym.sinatra.ui.navigation.MapScope
@@ -30,11 +26,11 @@ actual fun Map(content: @Composable MapControl.(@Composable () -> Unit) -> Unit)
     val state = rememberMapKitState {}
 
     val control = object : MapControl {
-        override fun zoomToArea(bounds: Bounds, padding: Int) {}
+        override fun zoomToArea(bounds: MapRegion, padding: Int) {}
 
-        override fun zoomToArea(topLeft: Location, bottomRight: Location, padding: Int) {}
+        override fun zoomToArea(topLeft: MapLocation, bottomRight: MapLocation, padding: Int) {}
 
-        override fun zoomToPoint(location: Location, zoom: Float) {
+        override fun zoomToPoint(location: MapLocation, zoom: Float) {
             state.coordinate.value = location
             state.zoom.value = zoom
         }
