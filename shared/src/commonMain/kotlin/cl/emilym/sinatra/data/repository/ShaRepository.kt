@@ -28,6 +28,11 @@ sealed interface CacheInformation {
     }
 }
 
+data class CachedResource(
+    val resource: ResourceKey,
+    val added: Instant
+)
+
 @Factory
 class ShaRepository(
     private val shaDao: ShaDao,
@@ -52,4 +57,18 @@ class ShaRepository(
             CacheInformation.Available(it.sha, Instant.fromEpochMilliseconds(it.added))
         } ?: CacheInformation.Unavailable
     }
+
+    suspend fun cached(category: CacheCategory): List<CachedResource> {
+        return shaDao.shaByType(category.db).map {
+            CachedResource(
+                it.resource,
+                Instant.fromEpochMilliseconds(it.added)
+            )
+        }
+    }
+
+    suspend fun remove(category: CacheCategory, resource: ResourceKey) {
+        shaDao.deleteByTypeAndResource(category.db, resource)
+    }
+
 }

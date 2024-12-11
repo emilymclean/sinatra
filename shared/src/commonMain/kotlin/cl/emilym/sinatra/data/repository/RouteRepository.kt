@@ -135,6 +135,69 @@ class RouteTripTimetableCacheWorker(
 }
 
 @Factory
+class RouteCleanupWorker(
+    private val routePersistence: RoutePersistence,
+    override val shaRepository: ShaRepository,
+    override val clock: Clock
+): CleanupWorker() {
+
+    override val cacheCategory: CacheCategory = CacheCategory.ROUTE
+    override suspend fun delete(resource: ResourceKey) = routePersistence.clear()
+
+}
+
+@Factory
+class RouteServicesCleanupWorker(
+    private val routeServicePersistence: RouteServicePersistence,
+    override val shaRepository: ShaRepository,
+    override val clock: Clock
+): CleanupWorker() {
+
+    override val cacheCategory: CacheCategory = CacheCategory.ROUTE_SERVICE
+    override suspend fun delete(resource: ResourceKey) = routeServicePersistence.clear(resource)
+
+}
+
+@Factory
+class RouteServiceTimetableCleanupWorker(
+    private val routeServiceTimetablePersistence: RouteServiceTimetablePersistence,
+    override val shaRepository: ShaRepository,
+    override val clock: Clock
+): CleanupWorker() {
+
+    override val cacheCategory: CacheCategory = CacheCategory.ROUTE_SERVICE_TIMETABLE
+    override suspend fun delete(resource: ResourceKey) =
+        routeServiceTimetablePersistence.clear(resource)
+
+}
+
+@Factory
+class RouteServiceCanonicalTimetableCleanupWorker(
+    private val routeServiceTimetablePersistence: RouteServiceCanonicalTimetablePersistence,
+    override val shaRepository: ShaRepository,
+    override val clock: Clock
+): CleanupWorker() {
+
+    override val cacheCategory: CacheCategory = CacheCategory.ROUTE_SERVICE_CANONICAL_TIMETABLE
+    override suspend fun delete(resource: ResourceKey) =
+        routeServiceTimetablePersistence.clear(resource)
+
+}
+
+@Factory
+class RouteTripTimetableCleanupWorker(
+    private val routeServiceTimetablePersistence: RouteTripTimetablePersistence,
+    override val shaRepository: ShaRepository,
+    override val clock: Clock
+): CleanupWorker() {
+
+    override val cacheCategory: CacheCategory = CacheCategory.ROUTE_TRIP_TIMETABLE
+    override suspend fun delete(resource: ResourceKey) =
+        routeServiceTimetablePersistence.clear(resource)
+
+}
+
+@Factory
 class RouteRepository(
     private val routeCacheWorker: RoutesCacheWorker,
     private val routeServicesCacheWorker: RouteServicesCacheWorker,
@@ -142,6 +205,11 @@ class RouteRepository(
     private val routeServiceTimetableCacheWorker: RouteServiceTimetableCacheWorker,
     private val routeServiceCanonicalTimetableCacheWorker: RouteServiceCanonicalTimetableCacheWorker,
     private val routeTripTimetableCacheWorker: RouteTripTimetableCacheWorker,
+    private val routeCleanupWorker: RouteCleanupWorker,
+    private val routeServicesCleanupWorker: RouteServicesCleanupWorker,
+    private val routeServiceTimetableCleanupWorker: RouteServiceTimetableCleanupWorker,
+    private val routeServiceCanonicalTimetableCleanupWorker: RouteServiceCanonicalTimetableCleanupWorker,
+    private val routeTripTimetableCleanupWorker: RouteTripTimetableCleanupWorker,
     private val routePersistence: RoutePersistence,
 ) {
 
@@ -174,6 +242,14 @@ class RouteRepository(
 
     suspend fun removedRoutes(): List<RouteId> {
         return listOf("NIS")
+    }
+
+    suspend fun cleanup() {
+        routeCleanupWorker()
+        routeServicesCleanupWorker()
+        routeServiceTimetableCleanupWorker()
+        routeServiceCanonicalTimetableCleanupWorker()
+        routeTripTimetableCleanupWorker()
     }
 
 }

@@ -29,28 +29,31 @@ import org.koin.core.annotation.Factory
 import org.koin.core.annotation.Single
 import org.koin.core.module.Module
 
-const val cacheDatabaseName = "cache"
+const val appDatabaseName = "app"
 
 expect val databaseBuilderModule: Module
 
 @Suppress("NO_ACTUAL_FOR_EXPECT")
-expect object CacheDatabaseConstructor : RoomDatabaseConstructor<CacheDatabase> {
-    override fun initialize(): CacheDatabase
+expect object AppDatabaseConstructor : RoomDatabaseConstructor<AppDatabase> {
+    override fun initialize(): AppDatabase
 }
 
-@Database(entities = [
-    ShaEntity::class,
-    StopEntity::class,
-    StopTimetableTimeEntity::class,
-    RouteEntity::class,
-    RouteServiceEntity::class,
-    RouteTripInformationEntity::class,
-    RouteTripStopEntity::class,
-    TimetableServiceRegularEntity::class,
-    TimetableServiceExceptionEntity::class,
-], version = 9)
-@ConstructedBy(CacheDatabaseConstructor::class)
-abstract class CacheDatabase: RoomDatabase() {
+@Database(entities =
+    [
+        ShaEntity::class,
+        StopEntity::class,
+        StopTimetableTimeEntity::class,
+        RouteEntity::class,
+        RouteServiceEntity::class,
+        RouteTripInformationEntity::class,
+        RouteTripStopEntity::class,
+        TimetableServiceRegularEntity::class,
+        TimetableServiceExceptionEntity::class,
+    ],
+    version = 9
+)
+@ConstructedBy(AppDatabaseConstructor::class)
+abstract class AppDatabase: RoomDatabase() {
     abstract fun sha(): ShaDao
     abstract fun stop(): StopDao
     abstract fun stopTimetableTime(): StopTimetableTimeEntityDao
@@ -63,7 +66,7 @@ abstract class CacheDatabase: RoomDatabase() {
 }
 
 @Single
-fun cacheDatabase(builder: RoomDatabase.Builder<CacheDatabase>): CacheDatabase {
+fun appDatabase(builder: RoomDatabase.Builder<AppDatabase>): AppDatabase {
     return builder
         .fallbackToDestructiveMigration(true)
         .setDriver(BundledSQLiteDriver())
@@ -72,46 +75,46 @@ fun cacheDatabase(builder: RoomDatabase.Builder<CacheDatabase>): CacheDatabase {
 }
 
 @Factory
-fun shaDao(db: CacheDatabase): ShaDao {
+fun shaDao(db: AppDatabase): ShaDao {
     return db.sha()
 }
 
 @Factory
-fun stopDao(db: CacheDatabase): StopDao {
+fun stopDao(db: AppDatabase): StopDao {
     return db.stop()
 }
 
 @Factory
-fun stopTimetableTimeDao(db: CacheDatabase): StopTimetableTimeEntityDao {
+fun stopTimetableTimeDao(db: AppDatabase): StopTimetableTimeEntityDao {
     return db.stopTimetableTime()
 }
 
 @Factory
-fun routeDao(db: CacheDatabase): RouteDao {
+fun routeDao(db: AppDatabase): RouteDao {
     return db.route()
 }
 
 @Factory
-fun routeServiceDao(db: CacheDatabase): RouteServiceEntityDao {
+fun routeServiceDao(db: AppDatabase): RouteServiceEntityDao {
     return db.routeService()
 }
 
 @Factory
-fun timetableServiceRegularDao(db: CacheDatabase): TimetableServiceRegularEntityDao {
+fun timetableServiceRegularDao(db: AppDatabase): TimetableServiceRegularEntityDao {
     return db.timetableServiceRegularDao()
 }
 
 @Factory
-fun timetableServiceExceptionDao(db: CacheDatabase): TimetableServiceExceptionEntityDao {
+fun timetableServiceExceptionDao(db: AppDatabase): TimetableServiceExceptionEntityDao {
     return db.timetableServiceExceptionDao()
 }
 
 @Factory
-fun routeTripInformationDao(db: CacheDatabase): RouteTripInformationEntityDao {
+fun routeTripInformationDao(db: AppDatabase): RouteTripInformationEntityDao {
     return db.routeTripInformationDao()
 }
 
 @Factory
-fun routeTripStopDao(db: CacheDatabase): RouteTripStopEntityDao {
+fun routeTripStopDao(db: AppDatabase): RouteTripStopEntityDao {
     return db.routeTripStopDao()
 }

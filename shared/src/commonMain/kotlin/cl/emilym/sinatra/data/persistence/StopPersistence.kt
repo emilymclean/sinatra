@@ -24,4 +24,8 @@ class StopPersistence(
         return stopDao.get(stopId)?.toModel()
     }
 
+    suspend fun clear() {
+        stopDao.clear()
+    }
+
 }

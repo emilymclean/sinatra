@@ -6,6 +6,7 @@ import cl.emilym.sinatra.data.models.CacheCategory
 import cl.emilym.sinatra.data.models.ResourceKey
 import cl.emilym.sinatra.data.models.Service
 import cl.emilym.sinatra.data.models.ServiceId
+import cl.emilym.sinatra.data.persistence.RouteTripTimetablePersistence
 import cl.emilym.sinatra.data.persistence.ServicePersistence
 import kotlinx.datetime.Clock
 import org.koin.core.annotation.Factory
@@ -32,8 +33,22 @@ class ServiceCacheWorker(
 }
 
 @Factory
+class ServiceCleanupWorker(
+    private val servicePersistence: ServicePersistence,
+    override val shaRepository: ShaRepository,
+    override val clock: Clock
+): CleanupWorker() {
+
+    override val cacheCategory: CacheCategory = CacheCategory.SERVICE
+    override suspend fun delete(resource: ResourceKey) =
+        servicePersistence.clear()
+
+}
+
+@Factory
 class ServiceRepository(
     private val serviceCacheWorker: ServiceCacheWorker,
+    private val serviceCleanupWorker: ServiceCleanupWorker,
     private val servicePersistence: ServicePersistence
 ) {
 
@@ -41,6 +56,10 @@ class ServiceRepository(
     suspend fun services(ids: List<ServiceId>): Cachable<List<Service>> {
         val s = serviceCacheWorker.get()
         return Cachable(servicePersistence.get(ids), s.state)
+    }
+
+    suspend fun cleanup() {
+        serviceCleanupWorker()
     }
 
 }

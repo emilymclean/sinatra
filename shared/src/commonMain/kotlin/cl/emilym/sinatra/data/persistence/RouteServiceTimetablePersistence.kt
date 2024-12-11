@@ -42,6 +42,10 @@ class RouteTripInformationPersistence(
 
         return out
     }
+
+    suspend fun clear(resource: ResourceKey) {
+        routeTripInformationEntityDao.clear(resource)
+    }
 }
 
 @Factory
@@ -55,6 +59,10 @@ class RouteServiceTimetablePersistence(
 
     suspend fun get(resource: ResourceKey): RouteServiceTimetable {
         return RouteServiceTimetable(routeTripInformationPersistence.get(resource))
+    }
+
+    suspend fun clear(resource: ResourceKey) {
+        routeTripInformationPersistence.clear(resource)
     }
 
 }
@@ -72,6 +80,10 @@ class RouteServiceCanonicalTimetablePersistence(
         return routeTripInformationPersistence.get(resource).firstOrNull()?.let { RouteServiceCanonicalTimetable(it) }
     }
 
+    suspend fun clear(resource: ResourceKey) {
+        routeTripInformationPersistence.clear(resource)
+    }
+
 }
 
 @Factory
@@ -85,6 +97,10 @@ class RouteTripTimetablePersistence(
 
     suspend fun get(resource: ResourceKey): RouteTripTimetable? {
         return routeTripInformationPersistence.get(resource).firstOrNull()?.let { RouteTripTimetable(it) }
+    }
+
+    suspend fun clear(resource: ResourceKey) {
+        routeTripInformationPersistence.clear(resource)
     }
 
 }

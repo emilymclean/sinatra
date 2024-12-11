@@ -58,4 +58,9 @@ class ServicePersistence(
         return get().filter { it.id in serviceIds }
     }
 
+    suspend fun clear() {
+        timetableServiceRegularEntityDao.clear()
+        timetableServiceExceptionEntityDao.clear()
+    }
+
 }
