@@ -219,20 +219,20 @@ class MapSearchScreen: MapScreen {
                 Modifier.padding(1.rdp),
                 verticalArrangement = Arrangement.spacedBy(1.rdp)
             ) {
-//                currentLocation?.let {
-//                    FloatingActionButton(
-//                        onClick = {
-//                            mapControl.zoomToPoint(it)
-//                        }
-//                    ) { MyLocationIcon() }
-//                }
-//                if (state !is MapSearchState.Search) {
-//                    FloatingActionButton(
-//                        onClick = {
-//                            viewModel.openSearch()
-//                        },
-//                    ) { SearchIcon() }
-//                }
+                currentLocation?.let {
+                    FloatingActionButton(
+                        onClick = {
+                            mapControl.zoomToPoint(it)
+                        }
+                    ) { MyLocationIcon() }
+                }
+                if (state !is MapSearchState.Search) {
+                    FloatingActionButton(
+                        onClick = {
+                            viewModel.openSearch()
+                        },
+                    ) { SearchIcon() }
+                }
                 val sheetValue = LocalBottomSheetState.current.bottomSheetState.currentValue
                 Box(Modifier.height(
                     when(sheetValue) {
