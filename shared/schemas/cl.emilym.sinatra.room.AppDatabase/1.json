@@ -1,8 +1,8 @@
 {
   "formatVersion": 1,
   "database": {
-    "version": 6,
-    "identityHash": "7f79b28bfd55d60a75b96184bbbf1d2e",
+    "version": 1,
+    "identityHash": "127891509d0ef6cb2af8a377afd35e02",
     "entities": [
       {
         "tableName": "ShaEntity",
@@ -95,7 +95,7 @@
       },
       {
         "tableName": "StopTimetableTimeEntity",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `resource` TEXT NOT NULL, `childStopId` TEXT, `routeId` TEXT NOT NULL, `routeCode` TEXT NOT NULL, `serviceId` TEXT NOT NULL, `arrivalTime` INTEGER NOT NULL, `departureTime` INTEGER NOT NULL, `heading` TEXT NOT NULL, `sequence` INTEGER NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `resource` TEXT NOT NULL, `childStopId` TEXT, `routeId` TEXT NOT NULL, `routeCode` TEXT NOT NULL, `serviceId` TEXT NOT NULL, `tripId` TEXT NOT NULL, `arrivalTime` INTEGER NOT NULL, `departureTime` INTEGER NOT NULL, `heading` TEXT NOT NULL, `sequence` INTEGER NOT NULL)",
         "fields": [
           {
             "fieldPath": "id",
@@ -133,6 +133,12 @@
             "notNull": true
           },
           {
+            "fieldPath": "tripId",
+            "columnName": "tripId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
             "fieldPath": "arrivalTime",
             "columnName": "arrivalTime",
             "affinity": "INTEGER",
@@ -166,7 +172,7 @@
       },
       {
         "tableName": "RouteEntity",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `code` TEXT NOT NULL, `displayCode` TEXT NOT NULL, `color` TEXT, `onColor` TEXT, `name` TEXT NOT NULL, `realTimeUrl` TEXT, `type` TEXT NOT NULL, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `code` TEXT NOT NULL, `displayCode` TEXT NOT NULL, `color` TEXT, `onColor` TEXT, `name` TEXT NOT NULL, `realTimeUrl` TEXT, `type` TEXT NOT NULL, `designation` TEXT, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -212,6 +218,11 @@
             "columnName": "type",
             "affinity": "TEXT",
             "notNull": true
+          },
+          {
+            "fieldPath": "designation",
+            "columnName": "designation",
+            "affinity": "TEXT"
           }
         ],
         "primaryKey": {
@@ -253,7 +264,7 @@
       },
       {
         "tableName": "RouteTripInformationEntity",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `resource` TEXT NOT NULL, `startTime` INTEGER NOT NULL, `endTime` INTEGER NOT NULL, `bikesAllowed` TEXT NOT NULL, `wheelchairAccessible` TEXT NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `resource` TEXT NOT NULL, `startTime` INTEGER, `endTime` INTEGER, `bikesAllowed` TEXT NOT NULL, `wheelchairAccessible` TEXT NOT NULL, `heading` TEXT)",
         "fields": [
           {
             "fieldPath": "id",
@@ -270,14 +281,12 @@
           {
             "fieldPath": "startTime",
             "columnName": "startTime",
-            "affinity": "INTEGER",
-            "notNull": true
+            "affinity": "INTEGER"
           },
           {
             "fieldPath": "endTime",
             "columnName": "endTime",
-            "affinity": "INTEGER",
-            "notNull": true
+            "affinity": "INTEGER"
           },
           {
             "fieldPath": "bikesAllowed",
@@ -290,6 +299,11 @@
             "columnName": "wheelchairAccessible",
             "affinity": "TEXT",
             "notNull": true
+          },
+          {
+            "fieldPath": "heading",
+            "columnName": "heading",
+            "affinity": "TEXT"
           }
         ],
         "primaryKey": {
@@ -301,7 +315,7 @@
       },
       {
         "tableName": "RouteTripStopEntity",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `routeTripInformationEntityId` INTEGER NOT NULL, `resource` TEXT NOT NULL, `stopId` TEXT NOT NULL, `arrivalTime` INTEGER NOT NULL, `departureTime` INTEGER NOT NULL, `sequence` INTEGER NOT NULL, FOREIGN KEY(`routeTripInformationEntityId`) REFERENCES `RouteTripInformationEntity`(`id`) ON UPDATE CASCADE ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `routeTripInformationEntityId` INTEGER NOT NULL, `resource` TEXT NOT NULL, `stopId` TEXT NOT NULL, `arrivalTime` INTEGER, `departureTime` INTEGER, `sequence` INTEGER NOT NULL, FOREIGN KEY(`routeTripInformationEntityId`) REFERENCES `RouteTripInformationEntity`(`id`) ON UPDATE CASCADE ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "id",
@@ -330,14 +344,12 @@
           {
             "fieldPath": "arrivalTime",
             "columnName": "arrivalTime",
-            "affinity": "INTEGER",
-            "notNull": true
+            "affinity": "INTEGER"
           },
           {
             "fieldPath": "departureTime",
             "columnName": "departureTime",
-            "affinity": "INTEGER",
-            "notNull": true
+            "affinity": "INTEGER"
           },
           {
             "fieldPath": "sequence",
@@ -479,11 +491,79 @@
             "id"
           ]
         }
+      },
+      {
+        "tableName": "FavouriteEntity",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `type` TEXT NOT NULL, `routeId` TEXT, `stopId` TEXT)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "type",
+            "columnName": "type",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "routeId",
+            "columnName": "routeId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "stopId",
+            "columnName": "stopId",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "RecentVisitEntity",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `type` TEXT NOT NULL, `routeId` TEXT, `stopId` TEXT)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "type",
+            "columnName": "type",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "routeId",
+            "columnName": "routeId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "stopId",
+            "columnName": "stopId",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        }
       }
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '7f79b28bfd55d60a75b96184bbbf1d2e')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '127891509d0ef6cb2af8a377afd35e02')"
     ]
   }
 }

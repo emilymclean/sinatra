@@ -51,6 +51,7 @@ import cl.emilym.sinatra.data.models.ServiceWheelchairAccessible
 import cl.emilym.sinatra.data.models.StationTime
 import cl.emilym.sinatra.data.models.TripId
 import cl.emilym.sinatra.data.repository.FavouriteRepository
+import cl.emilym.sinatra.data.repository.RecentVisitRepository
 import cl.emilym.sinatra.data.repository.startOfDay
 import cl.emilym.sinatra.domain.CurrentTripForRouteUseCase
 import cl.emilym.sinatra.domain.CurrentTripInformation
@@ -104,7 +105,8 @@ import sinatra.ui.generated.resources.route_heading
 @KoinViewModel
 class RouteDetailViewModel(
     private val currentTripForRouteUseCase: CurrentTripForRouteUseCase,
-    private val favouriteRepository: FavouriteRepository
+    private val favouriteRepository: FavouriteRepository,
+    private val recentVisitRepository: RecentVisitRepository
 ): ViewModel() {
 
     val tripInformation = MutableStateFlow<RequestState<CurrentTripInformation?>>(RequestState.Initial())
@@ -113,6 +115,9 @@ class RouteDetailViewModel(
     fun init(routeId: RouteId) {
         viewModelScope.launch {
             favourited.emitAll(favouriteRepository.routeIsFavourited(routeId))
+        }
+        viewModelScope.launch {
+            recentVisitRepository.addRouteVisit(routeId)
         }
     }
 

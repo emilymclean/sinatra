@@ -19,7 +19,7 @@ fun <T> createRequestStateFlow(): MutableStateFlow<RequestState<T>> {
 
 suspend fun <T> MutableStateFlow<Flow<RequestState<T>>>.handleFlowProperly(
     hideLoading: Boolean = false,
-    operation: () -> Flow<T>
+    operation: suspend () -> Flow<T>
 ) {
     if (!hideLoading) emit(flowOf(RequestState.Loading()))
     emit(

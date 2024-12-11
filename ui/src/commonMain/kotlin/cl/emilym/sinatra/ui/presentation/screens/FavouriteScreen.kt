@@ -10,7 +10,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -33,9 +32,7 @@ import cl.emilym.sinatra.ui.widgets.createRequestStateFlowFlow
 import cl.emilym.sinatra.ui.widgets.handleFlowProperly
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
@@ -95,19 +92,19 @@ class FavouriteScreen: Screen {
                     LazyColumn(Modifier.fillMaxSize()) {
                         items(favourites) {
                             when (it) {
-                                is Favourite.FavouriteStop -> StopCard(
+                                is Favourite.Stop -> StopCard(
                                     it.stop,
                                     onClick = {
                                         navigator.push(StopDetailScreen(it.stop.id))
                                     }
                                 )
-                                is Favourite.FavouriteRoute -> RouteCard(
+                                is Favourite.Route -> RouteCard(
                                     it.route,
                                     onClick = {
                                         navigator.push(RouteDetailScreen(it.route.id))
                                     }
                                 )
-                                is Favourite.FavouriteStopOnRoute -> StopCard(
+                                is Favourite.StopOnRoute -> StopCard(
                                     it.stop,
                                     onClick = {
                                         navigator.push(StopDetailScreen(it.stop.id))

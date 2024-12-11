@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
@@ -21,7 +20,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextAlign
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cafe.adriel.voyager.core.screen.ScreenKey
@@ -33,16 +31,14 @@ import cl.emilym.compose.requeststate.RequestState
 import cl.emilym.compose.requeststate.RequestStateWidget
 import cl.emilym.compose.requeststate.handle
 import cl.emilym.compose.units.rdp
-import cl.emilym.sinatra.data.models.Favourite
-import cl.emilym.sinatra.data.models.RouteId
 import cl.emilym.sinatra.data.models.StationTime
 import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.data.models.StopId
 import cl.emilym.sinatra.data.models.StopTimetableTime
 import cl.emilym.sinatra.data.repository.FavouriteRepository
+import cl.emilym.sinatra.data.repository.RecentVisitRepository
 import cl.emilym.sinatra.data.repository.StopRepository
 import cl.emilym.sinatra.domain.UpcomingRoutesForStopUseCase
-import cl.emilym.sinatra.ui.maps.circularIcon
 import cl.emilym.sinatra.ui.maps.stopMarkerIcon
 import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
 import cl.emilym.sinatra.ui.navigation.MapScope
@@ -72,19 +68,23 @@ import sinatra.ui.generated.resources.no_upcoming_vehicles
 class StopDetailViewModel(
     private val stopRepository: StopRepository,
     private val upcomingRoutesForStopUseCase: UpcomingRoutesForStopUseCase,
-    private val favouriteRepository: FavouriteRepository
+    private val favouriteRepository: FavouriteRepository,
+    private val recentVisitRepository: RecentVisitRepository
 ): ViewModel() {
 
     val favourited = MutableStateFlow(false)
     val stop = MutableStateFlow<RequestState<Stop?>>(RequestState.Initial())
     val upcoming = MutableStateFlow<RequestState<List<StopTimetableTime>>>(RequestState.Initial())
 
-    fun load(stopId: StopId) {
+    fun init(stopId: StopId) {
         retryStop(stopId)
         retryUpcoming(stopId)
 
         viewModelScope.launch {
             favourited.emitAll(favouriteRepository.stopIsFavourited(stopId))
+        }
+        viewModelScope.launch {
+            recentVisitRepository.addStopVisit(stopId)
         }
     }
 
@@ -132,7 +132,7 @@ class StopDetailScreen(
         }
 
         LaunchedEffect(stopId) {
-            viewModel.load(stopId)
+            viewModel.init(stopId)
         }
 
         val stop by viewModel.stop.collectAsState(RequestState.Initial())

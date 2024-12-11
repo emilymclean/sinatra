@@ -6,7 +6,9 @@ import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.RoomDatabaseConstructor
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
+import cl.emilym.sinatra.data.persistence.RecentVisitPersistence
 import cl.emilym.sinatra.room.dao.FavouriteDao
+import cl.emilym.sinatra.room.dao.RecentVisitDao
 import cl.emilym.sinatra.room.dao.RouteDao
 import cl.emilym.sinatra.room.dao.RouteServiceEntityDao
 import cl.emilym.sinatra.room.dao.RouteTripInformationEntityDao
@@ -17,6 +19,7 @@ import cl.emilym.sinatra.room.dao.StopTimetableTimeEntityDao
 import cl.emilym.sinatra.room.dao.TimetableServiceExceptionEntityDao
 import cl.emilym.sinatra.room.dao.TimetableServiceRegularEntityDao
 import cl.emilym.sinatra.room.entities.FavouriteEntity
+import cl.emilym.sinatra.room.entities.RecentVisitEntity
 import cl.emilym.sinatra.room.entities.RouteEntity
 import cl.emilym.sinatra.room.entities.RouteServiceEntity
 import cl.emilym.sinatra.room.entities.RouteTripInformationEntity
@@ -53,10 +56,11 @@ expect object AppDatabaseConstructor : RoomDatabaseConstructor<AppDatabase> {
         TimetableServiceRegularEntity::class,
         TimetableServiceExceptionEntity::class,
         FavouriteEntity::class,
+        RecentVisitEntity::class
     ],
     autoMigrations = [
     ],
-    version = 9
+    version = 1
 )
 @ConstructedBy(AppDatabaseConstructor::class)
 abstract class AppDatabase: RoomDatabase() {
@@ -70,6 +74,7 @@ abstract class AppDatabase: RoomDatabase() {
     abstract fun routeTripInformationDao(): RouteTripInformationEntityDao
     abstract fun routeTripStopDao(): RouteTripStopEntityDao
     abstract fun favouriteDao(): FavouriteDao
+    abstract fun recentVisitDao(): RecentVisitDao
 }
 
 @Single
@@ -129,4 +134,9 @@ fun routeTripStopDao(db: AppDatabase): RouteTripStopEntityDao {
 @Factory
 fun favouriteDao(db: AppDatabase): FavouriteDao {
     return db.favouriteDao()
+}
+
+@Factory
+fun recentVisitDao(db: AppDatabase): RecentVisitDao {
+    return db.recentVisitDao()
 }

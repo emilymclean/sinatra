@@ -5,7 +5,6 @@ import cl.emilym.sinatra.data.models.RouteId
 import cl.emilym.sinatra.data.models.StopId
 import cl.emilym.sinatra.room.dao.FavouriteDao
 import cl.emilym.sinatra.room.entities.FavouriteEntity
-import io.github.aakira.napier.Napier
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import org.koin.core.annotation.Factory
@@ -16,9 +15,9 @@ enum class FavouriteType {
     companion object {
         fun fromFavourite(favourite: Favourite): FavouriteType {
             return when (favourite) {
-                is Favourite.FavouriteRoute -> ROUTE
-                is Favourite.FavouriteStop -> STOP
-                is Favourite.FavouriteStopOnRoute -> STOP_ON_ROUTE
+                is Favourite.Route -> ROUTE
+                is Favourite.Stop -> STOP
+                is Favourite.StopOnRoute -> STOP_ON_ROUTE
             }
         }
     }
@@ -75,12 +74,12 @@ class FavouritePersistence(
             it.sortedByDescending { it.favourite.id }.mapNotNull {
                 val type = FavouriteType.valueOf(it.favourite.type)
                 when (type) {
-                    FavouriteType.ROUTE -> it.route?.let { Favourite.FavouriteRoute(it.toModel()) }
-                    FavouriteType.STOP -> it.stop?.let { Favourite.FavouriteStop(it.toModel()) }
+                    FavouriteType.ROUTE -> it.route?.let { Favourite.Route(it.toModel()) }
+                    FavouriteType.STOP -> it.stop?.let { Favourite.Stop(it.toModel()) }
                     FavouriteType.STOP_ON_ROUTE ->
                         it.stop?.let { stop ->
                             it.route?.let { route ->
-                                Favourite.FavouriteStopOnRoute(stop.toModel(), route.toModel())
+                                Favourite.StopOnRoute(stop.toModel(), route.toModel())
                             }
                         }
                 }
@@ -100,14 +99,14 @@ class FavouritePersistence(
     }
 
     private val Favourite.routeId: RouteId? get() = when (this) {
-        is Favourite.FavouriteRoute -> route.id
-        is Favourite.FavouriteStopOnRoute -> route.id
+        is Favourite.Route -> route.id
+        is Favourite.StopOnRoute -> route.id
         else -> null
     }
 
     private val Favourite.stopId: StopId? get() = when (this) {
-        is Favourite.FavouriteStop -> stop.id
-        is Favourite.FavouriteStopOnRoute -> stop.id
+        is Favourite.Stop -> stop.id
+        is Favourite.StopOnRoute -> stop.id
         else -> null
     }
 
