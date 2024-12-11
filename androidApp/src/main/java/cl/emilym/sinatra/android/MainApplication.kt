@@ -24,7 +24,9 @@ class MainApplication: Application() {
                 AppModule().module,
                 databaseBuilderModule,
                 manualModule,
+                versionInformationModule
             )
         }
     }
+
 }
