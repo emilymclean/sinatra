@@ -4,21 +4,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import cl.emilym.sinatra.data.models.Bounds
 import cl.emilym.sinatra.data.models.Location
+import cl.emilym.sinatra.ui.maps.MapKitState
 import cl.emilym.sinatra.ui.maps.MarkerIcon
 
-actual class MapScope: MapControl {
-    actual override fun zoomToArea(bounds: Bounds, padding: Int) {
-    }
-
-    actual override fun zoomToArea(
-        topLeft: Location,
-        bottomRight: Location,
-        padding: Int
-    ) {
-    }
-
-    actual override fun zoomToPoint(location: Location, zoom: Float) {
-    }
+actual class MapScope(
+    val mapState: MapKitState,
+    val mapControl: MapControl,
+): MapControl by mapControl {
 
     @Composable
     actual fun Line(

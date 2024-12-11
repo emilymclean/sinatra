@@ -1,6 +1,13 @@
 package cl.emilym.sinatra.ui.maps
 
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.Saver
+import androidx.compose.runtime.saveable.rememberSaveable
 import cl.emilym.sinatra.data.models.Location
+import cl.emilym.sinatra.ui.canberra
+import cl.emilym.sinatra.ui.canberraZoom
 import kotlinx.cinterop.CValue
 import kotlinx.cinterop.ExperimentalForeignApi
 import platform.CoreLocation.CLLocation
@@ -31,8 +38,32 @@ fun Float.toCoordinateSpan(): CValue<MKCoordinateSpan> {
 }
 
 class MapKitState @OptIn(ExperimentalForeignApi::class) constructor(
-    val coordinate: CValue<CLLocationCoordinate2D>
+    val coordinate: MutableState<Location> = mutableStateOf(canberra),
+    val zoom: MutableState<Float> = mutableStateOf(canberraZoom)
+) {
+
+    companion object {
+        public val Saver: Saver<MapKitState, MapKitSavedState> = Saver(
+            save = { MapKitSavedState(it.coordinate.value, it.zoom.value) },
+            restore = { MapKitState(mutableStateOf(it.coordinate), mutableStateOf(it.zoom)) }
+        )
+    }
+
+}
+
+class MapKitSavedState(
+    val coordinate: Location,
+    val zoom: Float
 )
+
+@Composable
+inline fun rememberMapKitState(
+    key: String? = null,
+    crossinline init: MapKitState.() -> Unit = {}
+): MapKitState = rememberSaveable(key = key, saver = MapKitState.Saver) {
+    MapKitState().apply(init)
+}
+
 
 @OptIn(ExperimentalForeignApi::class)
 fun createRegion(location: Location, zoom: Float): CValue<MKCoordinateRegion> {
