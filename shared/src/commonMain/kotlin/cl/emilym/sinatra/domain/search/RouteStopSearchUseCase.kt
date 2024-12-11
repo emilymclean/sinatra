@@ -5,11 +5,15 @@ import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.data.repository.RouteRepository
 import cl.emilym.sinatra.data.repository.StopRepository
 import cl.emilym.sinatra.domain.Tokenizer
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 import org.koin.core.annotation.Factory
+import kotlin.math.max
 
 sealed interface SearchResult {
     data class RouteResult(val route: Route): SearchResult
@@ -36,10 +40,18 @@ class RouteStopSearchUseCase(
     suspend operator fun invoke(query: String): List<SearchResult> {
         val tokens = tokenizer.tokenize(query)
         val space = get()
-        return routeTypeSearcher(tokens, space.routes).map {
-            SearchResult.RouteResult(it)
-        } + stopTypeSearcher(tokens, space.stops).map {
-            SearchResult.StopResult(it)
+        val results = withContext(Dispatchers.IO) {
+            listOf(
+                routeTypeSearcher(tokens, space.routes),
+                stopTypeSearcher(tokens, space.stops)
+            ).flatten()
+        }
+        return results.sortedBy { it.score }.mapNotNull {
+            when (it.result) {
+                is Route -> SearchResult.RouteResult(it.result)
+                is Stop -> SearchResult.StopResult(it.result)
+                else -> null
+            }
         }
     }
 
@@ -56,15 +68,56 @@ class RouteStopSearchUseCase(
 
 }
 
+data class RankableResult<T>(
+    val result: T,
+    val score: Double
+)
+
 abstract class TypeSearcher<T> {
 
     protected abstract fun fields(t: T): List<String>
-    operator fun invoke(tokens: List<String>, space: List<T>): List<T> {
-        return space.filter {
-            val match = fields(it).map { it.lowercase() }
-            tokens.all { t ->
-                match.any { m -> t in m  }
+
+    operator fun invoke(tokens: List<String>, space: List<T>): List<RankableResult<T>> {
+        return space.mapNotNull {
+            match(tokens, it)
+        }
+    }
+
+    private fun exclusiveMatch(tokens: List<String>, field: String): List<String> {
+        val matches = mutableListOf<String>()
+        val remainingField = StringBuilder(field)
+        val sortedTokens = tokens.sortedByDescending { it.length }
+
+        for (token in sortedTokens) {
+            val index = remainingField.indexOf(token)
+            if (index == -1) continue
+            matches.add(token)
+            for (i in index until (index + token.length)) {
+                remainingField[i] = '\u0000'
             }
+        }
+
+        return matches
+    }
+
+    private fun matchScore(matchingTokens: List<String>, field: String): Double {
+        return matchingTokens.sumOf { it.length }.toDouble() / field.length.toDouble()
+    }
+
+    private fun match(tokens: List<String>, item: T): RankableResult<T>? {
+        val fields = fields(item).map { it.lowercase() }
+        val matchedTokens = mutableSetOf<String>()
+        var highestScore = 0.0
+        for (field in fields) {
+            val matches = exclusiveMatch(tokens, field)
+            matchedTokens.addAll(matches)
+            highestScore = max(highestScore, matchScore(matches, field))
+        }
+
+        return when {
+            matchedTokens.size != tokens.size -> null
+            highestScore == 0.0 -> null
+            else -> RankableResult(item, highestScore)
         }
     }
 
