@@ -51,6 +51,7 @@ import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
 import cl.emilym.sinatra.ui.navigation.MapScope
 import cl.emilym.sinatra.ui.navigation.MapScreen
 import cl.emilym.sinatra.ui.navigation.NativeMapScope
+import cl.emilym.sinatra.ui.widgets.IosBackButton
 import cl.emilym.sinatra.ui.widgets.ListHint
 import cl.emilym.sinatra.ui.widgets.LocalMapControl
 import cl.emilym.sinatra.ui.widgets.MyLocationIcon
@@ -323,27 +324,34 @@ class MapSearchScreen: MapScreen {
                 Box(Modifier.padding(1.rdp))
             }
             item {
-                TextField(
-                    query ?: "",
-                    { viewModel.search(it) },
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 1.rdp).focusRequester(focusRequester),
-                    maxLines = 1,
-                    singleLine = true,
-                    shape = MaterialTheme.shapes.large,
-                    leadingIcon = {
-                        SearchIcon(
-                            tint = MaterialTheme.colorScheme.primary
+                Row(
+                    Modifier.fillMaxWidth().padding(horizontal = 1.rdp),
+                    horizontalArrangement = Arrangement.spacedBy(1.rdp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    IosBackButton { viewModel.openBrowse() }
+                    TextField(
+                        query ?: "",
+                        { viewModel.search(it) },
+                        modifier = Modifier.fillMaxWidth().focusRequester(focusRequester),
+                        maxLines = 1,
+                        singleLine = true,
+                        shape = MaterialTheme.shapes.large,
+                        leadingIcon = {
+                            SearchIcon(
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        },
+                        placeholder = {
+                            Text(stringResource(Res.string.search_hint))
+                        },
+                        colors = TextFieldDefaults.colors(
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent,
+                            disabledIndicatorColor = Color.Transparent
                         )
-                    },
-                    placeholder = {
-                        Text(stringResource(Res.string.search_hint))
-                    },
-                    colors = TextFieldDefaults.colors(
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent,
-                        disabledIndicatorColor = Color.Transparent
                     )
-                )
+                }
                 LaunchedEffect(Unit) {
                     focusRequester.requestFocus()
                 }
