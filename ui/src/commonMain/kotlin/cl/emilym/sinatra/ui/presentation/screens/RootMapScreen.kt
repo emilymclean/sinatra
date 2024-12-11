@@ -56,6 +56,38 @@ class RootMapScreen: Screen {
 
     @Composable
     override fun Content() {
+        val sheetState = rememberSinatraBottomSheetState(
+            initialValue = SinatraSheetValue.HalfExpanded,
+            skipHiddenState = true
+        )
+        val scaffoldState = rememberSinatraBottomSheetScaffoldState(
+            bottomSheetState = sheetState
+        )
+        Scaffold {
+            if (isCurrentMapScreen()) {
+                Map { map ->
+                    CompositionLocalProvider(
+                        LocalMapControl provides this,
+                        LocalBottomSheetState provides scaffoldState
+                    ) {
+                        BottomSheet(scaffoldState) {
+                            Box(Modifier.fillMaxSize()) {
+                                map()
+                                MapOverlay()
+                            }
+                        }
+                    }
+                }
+            } else {
+                CurrentScreen()
+            }
+        }
+    }
+
+    @Composable
+    fun Scaffold(
+        content: @Composable () -> Unit
+    ) {
         Navigator(
             MapSearchScreen()
         ) { navigator ->
@@ -88,7 +120,7 @@ class RootMapScreen: Screen {
                 WindowWidthSizeClass.COMPACT -> {
                     Column(Modifier.fillMaxSize()) {
                         Box(Modifier.weight(1f)) {
-                            RealContent()
+                            content()
                         }
                         NavigationBar {
                             for (item in items) {
@@ -109,7 +141,7 @@ class RootMapScreen: Screen {
                             }
                         }
                         Box(Modifier.weight(1f)) {
-                            RealContent()
+                            content()
                         }
                     }
                 }
@@ -117,35 +149,6 @@ class RootMapScreen: Screen {
         }
     }
 
-    @Composable
-    fun RealContent() {
-        val sheetState = rememberSinatraBottomSheetState(
-            initialValue = SinatraSheetValue.HalfExpanded,
-            skipHiddenState = true
-        )
-        val scaffoldState = rememberSinatraBottomSheetScaffoldState(
-            bottomSheetState = sheetState
-        )
-        if (isCurrentMapScreen()) {
-            Map { map ->
-                CompositionLocalProvider(
-                    LocalMapControl provides this,
-                    LocalBottomSheetState provides scaffoldState
-                ) {
-                    BottomSheet(scaffoldState) {
-                        Box(Modifier.fillMaxSize()) {
-                            map()
-                            MapOverlay()
-                        }
-                    }
-                }
-            }
-        } else {
-            CurrentScreen()
-        }
-    }
-
-    @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     private fun BottomSheet(
         scaffoldState: SinatraBottomSheetScaffoldState,
