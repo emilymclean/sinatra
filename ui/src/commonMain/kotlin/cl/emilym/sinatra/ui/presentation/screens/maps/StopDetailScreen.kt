@@ -45,6 +45,7 @@ import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
 import cl.emilym.sinatra.ui.navigation.MapScope
 import cl.emilym.sinatra.ui.navigation.MapScreen
 import cl.emilym.sinatra.ui.widgets.AccessibilityIconLockup
+import cl.emilym.sinatra.ui.widgets.ListHint
 import cl.emilym.sinatra.ui.widgets.NoBusIcon
 import cl.emilym.sinatra.ui.widgets.UpcomingRouteCard
 import cl.emilym.sinatra.ui.widgets.WheelchairAccessibleIcon
@@ -226,16 +227,12 @@ class StopDetailScreen(
                     }
                     else -> item {
                         Box(Modifier.height(1.rdp))
-                        Row(
-                            Modifier.fillMaxWidth().padding(horizontal = 3.rdp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center
+                        ListHint(
+                            stringResource(Res.string.no_upcoming_vehicles)
                         ) {
                             NoBusIcon(
                                 tint = MaterialTheme.colorScheme.primary
                             )
-                            Box(Modifier.width(0.5.rdp))
-                            Text(stringResource(Res.string.no_upcoming_vehicles), textAlign = TextAlign.Center)
                         }
                     }
                 }
