@@ -9,9 +9,7 @@ import cl.emilym.sinatra.ui.presentation.theme.defaultLineColor
 
 interface MapControl {
     fun zoomToArea(bounds: Bounds, padding: Int)
-
     fun zoomToArea(topLeft: Location, bottomRight: Location, padding: Int)
-
     fun zoomToPoint(location: Location, zoom: Float = 16f)
 }
 

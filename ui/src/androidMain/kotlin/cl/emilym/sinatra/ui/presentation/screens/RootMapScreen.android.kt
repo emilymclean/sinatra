@@ -31,6 +31,7 @@ import cl.emilym.sinatra.ui.widgets.LocalPermissionState
 import cl.emilym.sinatra.ui.widgets.MyLocationIcon
 import cl.emilym.sinatra.ui.widgets.currentLocation
 import cl.emilym.sinatra.ui.widgets.screenSize
+import cl.emilym.sinatra.ui.widgets.viewportSize
 import com.google.android.gms.maps.GoogleMapOptions
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.maps.android.compose.ComposeMapColorScheme
@@ -49,7 +50,7 @@ actual fun Map(content: @Composable MapControl.(@Composable () -> Unit) -> Unit)
 
     val scope = MapScope(
         cameraPositionState,
-        screenSize(),
+        viewportSize(),
         bottomSheetHalfHeight()
     )
     scope.content {

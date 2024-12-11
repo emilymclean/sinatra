@@ -92,23 +92,26 @@ class RootMapScreen: Screen {
                 val height = maxHeight.toFloatPx()
                 val width = maxWidth.toFloatPx()
 
-                if (isCurrentMapScreen()) {
-                    Map { map ->
-                        CompositionLocalProvider(
-                            LocalMapControl provides this,
-                            LocalBottomSheetState provides scaffoldState,
-                            LocalViewportSize provides Size(width, height)
-                        ) {
-                            BottomSheet(scaffoldState) {
-                                Box(Modifier.fillMaxSize()) {
-                                    map()
-                                    MapOverlay()
+                CompositionLocalProvider(
+                    LocalBottomSheetState provides scaffoldState,
+                    LocalViewportSize provides Size(width, height)
+                ) {
+                    if (isCurrentMapScreen()) {
+                        Map { map ->
+                            CompositionLocalProvider(
+                                LocalMapControl provides this
+                            ) {
+                                BottomSheet(scaffoldState) {
+                                    Box(Modifier.fillMaxSize()) {
+                                        map()
+                                        MapOverlay()
+                                    }
                                 }
                             }
                         }
+                    } else {
+                        CurrentScreen()
                     }
-                } else {
-                    CurrentScreen()
                 }
             }
         }

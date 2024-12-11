@@ -34,15 +34,18 @@ data class BoxDescriptor(
 
 actual class MapScope(
     private val cameraPositionState: CameraPositionState,
-    private val screenSize: Size,
+    private val contentViewportSize: Size,
     private val bottomSheetHalfHeight: Float
 ): MapControl {
+    
+    private val visibleMapSize: Size
+        get() = Size(contentViewportSize.width, contentViewportSize.height * (1 - bottomSheetHalfHeight))
 
-    private val viewportSize: Size
-        get() = Size(screenSize.width, screenSize.height * (1 - bottomSheetHalfHeight))
+    private val contentViewportAspect: Float get() = contentViewportSize.width / contentViewportSize.height
+    private val visibleMapAspect: Float get() = visibleMapSize.width / visibleMapSize.height
 
-    private val screenAspect: Float get() = screenSize.width / screenSize.height
-    private val viewportAspect: Float get() = viewportSize.width / viewportSize.height
+    private val moveDownPx: Float
+        get() = ((contentViewportSize.height / 2) - (visibleMapSize.height / 2)) * 1.75f
 
     private fun boxOverOther(box: BoxDescriptor, aspect: Float): BoxDescriptor {
         val boxAspect = box.aspect
@@ -60,9 +63,6 @@ actual class MapScope(
             )
         )
     }
-
-    private val moveDownPx: Float
-        get() = ((screenSize.height / 2) - (viewportSize.height / 2)) * 2
 
     @Composable
     @GoogleMapComposable
@@ -108,13 +108,13 @@ actual class MapScope(
                 projection.toScreenLocation(original.northeast),
                 projection.toScreenLocation(original.southwest),
             ),
-            viewportAspect
+            visibleMapAspect
         )
 
         val screenBox = viewportBox.copy(
             bottomLeft = Point(
                 viewportBox.bottomLeft.x,
-                (viewportBox.bottomLeft.y + (viewportBox.width / screenAspect)).toInt(),
+                (viewportBox.bottomLeft.y + (viewportBox.width / contentViewportAspect)).toInt(),
             )
         )
 
