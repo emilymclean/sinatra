@@ -52,13 +52,13 @@ abstract class CacheWorker<T> {
     }
 
     private suspend fun fetch(digest: ShaDigest, info: CacheInformation, pair: EndpointDigestPair<T>, resource: ResourceKey): Cachable<T> {
-        shaRepository.save(digest, cacheCategory, resource)
         val data = try {
             pair.endpoint()
         } catch (e: Throwable) {
             return failure(info, e, resource)
         }
         saveToPersistence(data, resource)
+        shaRepository.save(digest, cacheCategory, resource)
         // We get from persistence anyway to ensure any joined tables are included
         return Cachable.live(getFromPersistence(resource))
     }

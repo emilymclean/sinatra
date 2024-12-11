@@ -9,6 +9,7 @@ import cl.emilym.sinatra.data.models.StopId
 import cl.emilym.sinatra.data.models.StopTimetable
 import cl.emilym.sinatra.data.models.flatMap
 import cl.emilym.sinatra.data.models.map
+import cl.emilym.sinatra.data.persistence.ServicePersistence
 import cl.emilym.sinatra.data.persistence.StopPersistence
 import cl.emilym.sinatra.data.persistence.StopTimetablePersistence
 import kotlinx.coroutines.flow.Flow
@@ -53,10 +54,38 @@ class StopTimetableCacheWorker(
 }
 
 @Factory
+class StopsCleanupWorker(
+    private val stopPersistence: StopPersistence,
+    override val shaRepository: ShaRepository,
+    override val clock: Clock
+): CleanupWorker() {
+
+    override val cacheCategory: CacheCategory = CacheCategory.STOP
+    override suspend fun delete(resource: ResourceKey) =
+        stopPersistence.clear()
+
+}
+
+@Factory
+class StopTimetableCleanupWorker(
+    private val stopTimetablePersistence: StopTimetablePersistence,
+    override val shaRepository: ShaRepository,
+    override val clock: Clock
+): CleanupWorker() {
+
+    override val cacheCategory: CacheCategory = CacheCategory.STOP_TIMETABLE
+    override suspend fun delete(resource: ResourceKey) =
+        stopTimetablePersistence.clear(resource)
+
+}
+
+@Factory
 class StopRepository(
     private val routesCacheWorker: RoutesCacheWorker,
     private val stopsCacheWorker: StopsCacheWorker,
     private val stopTimetableCacheWorker: StopTimetableCacheWorker,
+    private val stopsCleanupWorker: StopsCleanupWorker,
+    private val stopTimetableCleanupWorker: StopTimetableCleanupWorker,
     private val stopPersistence: StopPersistence
 ) {
 
@@ -68,6 +97,11 @@ class StopRepository(
     suspend fun timetable(stopId: StopId): Cachable<StopTimetable> {
         val routes = routesCacheWorker.get()
         return routes.flatMap { stopTimetableCacheWorker.get(stopId) }
+    }
+
+    suspend fun cleanup() {
+        stopsCleanupWorker()
+        stopTimetableCleanupWorker()
     }
 
 }

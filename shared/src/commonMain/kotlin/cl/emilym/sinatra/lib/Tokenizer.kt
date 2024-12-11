@@ -1,4 +1,4 @@
-package cl.emilym.sinatra.domain
+package cl.emilym.sinatra.lib
 
 import org.koin.core.annotation.Factory
 

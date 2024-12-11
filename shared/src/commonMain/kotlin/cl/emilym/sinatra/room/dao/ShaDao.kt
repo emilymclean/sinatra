@@ -15,7 +15,13 @@ interface ShaDao {
     @Delete
     suspend fun delete(shaEntity: ShaEntity)
 
+    @Query("DELETE FROM shaEntity WHERE type = :type AND resource = :resource")
+    suspend fun deleteByTypeAndResource(type: String, resource: String)
+
     @Query("SELECT * FROM shaEntity WHERE type = :type AND resource = :resource")
     suspend fun shaByTypeAndResource(type: String, resource: String): ShaEntity?
+
+    @Query("SELECT * FROM shaEntity WHERE type = :type")
+    suspend fun shaByType(type: String): List<ShaEntity>
 
 }

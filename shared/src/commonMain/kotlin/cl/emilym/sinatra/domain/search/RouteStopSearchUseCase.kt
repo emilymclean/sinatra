@@ -5,11 +5,9 @@ import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.data.models.map
 import cl.emilym.sinatra.data.repository.RouteRepository
 import cl.emilym.sinatra.data.repository.StopRepository
-import cl.emilym.sinatra.domain.Tokenizer
+import cl.emilym.sinatra.lib.Tokenizer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext

@@ -32,4 +32,8 @@ class RouteServicePersistence(
         return routeServiceEntityDao.get(resource).map { it.serviceId }
     }
 
+    suspend fun clear(resource: ResourceKey) {
+        routeServiceEntityDao.clear(resource)
+    }
+
 }

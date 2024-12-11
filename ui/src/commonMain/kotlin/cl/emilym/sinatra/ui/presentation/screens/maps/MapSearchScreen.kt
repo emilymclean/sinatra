@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -40,7 +41,9 @@ import cl.emilym.compose.requeststate.RequestState
 import cl.emilym.compose.requeststate.RequestStateWidget
 import cl.emilym.compose.requeststate.handle
 import cl.emilym.compose.units.rdp
+import cl.emilym.sinatra.data.models.RecentVisit
 import cl.emilym.sinatra.data.models.Stop
+import cl.emilym.sinatra.data.repository.RecentVisitRepository
 import cl.emilym.sinatra.data.repository.StopRepository
 import cl.emilym.sinatra.domain.search.RouteStopSearchUseCase
 import cl.emilym.sinatra.domain.search.SearchResult
@@ -52,15 +55,20 @@ import cl.emilym.sinatra.ui.widgets.ListHint
 import cl.emilym.sinatra.ui.widgets.LocalMapControl
 import cl.emilym.sinatra.ui.widgets.MyLocationIcon
 import cl.emilym.sinatra.ui.widgets.NoBusIcon
+import cl.emilym.sinatra.ui.widgets.NoResultsIcon
 import cl.emilym.sinatra.ui.widgets.PillShape
 import cl.emilym.sinatra.ui.widgets.RouteCard
 import cl.emilym.sinatra.ui.widgets.SearchIcon
 import cl.emilym.sinatra.ui.widgets.SinatraBackHandler
 import cl.emilym.sinatra.ui.widgets.StopCard
+import cl.emilym.sinatra.ui.widgets.Subheading
 import cl.emilym.sinatra.ui.widgets.bottomsheet.SinatraSheetValue
+import cl.emilym.sinatra.ui.widgets.createRequestStateFlowFlow
 import cl.emilym.sinatra.ui.widgets.currentLocation
 import cl.emilym.sinatra.ui.widgets.handleFlow
+import cl.emilym.sinatra.ui.widgets.handleFlowProperly
 import cl.emilym.sinatra.ui.widgets.screenHeight
+import cl.emilym.sinatra.ui.widgets.viewportHeight
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
@@ -72,14 +80,17 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.koin.android.annotation.KoinViewModel
 import org.koin.compose.viewmodel.koinViewModel
+import org.koin.core.KoinApplication.Companion.init
 import sinatra.ui.generated.resources.Res
 import sinatra.ui.generated.resources.no_upcoming_vehicles
 import sinatra.ui.generated.resources.search_hint
 import sinatra.ui.generated.resources.no_search_results
+import sinatra.ui.generated.resources.search_recently_viewed
 import kotlin.time.Duration.Companion.seconds
 
 sealed interface MapSearchState {
@@ -92,7 +103,8 @@ sealed interface MapSearchState {
 @KoinViewModel
 class MapSearchViewModel(
     private val stopRepository: StopRepository,
-    private val routeStopSearchUseCase: RouteStopSearchUseCase
+    private val routeStopSearchUseCase: RouteStopSearchUseCase,
+    private val recentVisitRepository: RecentVisitRepository
 ): ViewModel() {
 
     private val _state = MutableStateFlow(State.BROWSE)
@@ -127,14 +139,26 @@ class MapSearchViewModel(
     val stops = MutableStateFlow<RequestState<List<Stop>>>(RequestState.Initial())
     var hasZoomedToLocation = false
 
+    private val _recentVisits = createRequestStateFlowFlow<List<RecentVisit>>()
+    val recentVisits = _recentVisits.flatMapLatest { it }
+
     init {
         retry()
+        retryRecentVisits()
     }
 
     fun retry() {
         viewModelScope.launch {
             stops.handle {
                 stopRepository.stops().item
+            }
+        }
+    }
+
+    fun retryRecentVisits() {
+        viewModelScope.launch {
+            _recentVisits.handleFlowProperly {
+                recentVisitRepository.all()
             }
         }
     }
@@ -188,7 +212,7 @@ class MapSearchScreen: MapScreen {
 
         ConstraintLayout(Modifier.fillMaxSize()) {
             val padding = 1.rdp
-            val halfScreen = screenHeight() * bottomSheetHalfHeight
+            val halfScreen = viewportHeight() * bottomSheetHalfHeight
             val (expandOffsetRef, searchButtonRef, locationButtonRef) = createRefs()
 //            val actionBarrier = createTopBarrier(searchButtonRef, expandOffsetRef)
 
@@ -242,7 +266,7 @@ class MapSearchScreen: MapScreen {
         val viewModel = koinViewModel<MapSearchViewModel>()
         val state by viewModel.state.collectAsState(MapSearchState.Browse)
 
-        Box(modifier = Modifier.heightIn(min = screenHeight() * 0.5f)) {
+        Box(modifier = Modifier.heightIn(min = viewportHeight() * 0.5f)) {
             when (state) {
                 is MapSearchState.Browse -> BrowseContent()
                 is MapSearchState.Search -> SearchContent(
@@ -293,12 +317,14 @@ class MapSearchScreen: MapScreen {
         val bottomSheetState = LocalBottomSheetState.current.bottomSheetState
         val focusRequester = remember { FocusRequester() }
 
+        val recentlyViewed by viewModel.recentVisits.collectAsState(RequestState.Initial())
+
         LaunchedEffect(Unit) {
             bottomSheetState.expand()
         }
 
         val query by viewModel.query.collectAsState()
-        LazyColumn(Modifier.fillMaxWidth().heightIn(min = screenHeight() * 1.2f)) {
+        LazyColumn(Modifier.fillMaxWidth().heightIn(min = viewportHeight())) {
             item {
                 Box(Modifier.padding(1.rdp))
             }
@@ -329,6 +355,31 @@ class MapSearchScreen: MapScreen {
                 }
             }
             when {
+                query.isNullOrBlank() &&
+                        recentlyViewed is RequestState.Success &&
+                        !(recentlyViewed as? RequestState.Success)?.value.isNullOrEmpty() -> {
+                    item {
+                        Box(Modifier.height(1.rdp))
+                    }
+                    item {
+                        Subheading(stringResource(Res.string.search_recently_viewed))
+                    }
+                    items((recentlyViewed as? RequestState.Success)?.value ?: listOf()) {
+                        when (it) {
+                            is RecentVisit.Stop -> StopCard(
+                                it.stop,
+                                arrival = null,
+                                modifier = Modifier.fillMaxWidth(),
+                                onClick = { navigator.push(StopDetailScreen(it.stop.id)) }
+                            )
+                            is RecentVisit.Route -> RouteCard(
+                                it.route,
+                                modifier = Modifier.fillMaxWidth(),
+                                onClick = { navigator.push(RouteDetailScreen(it.route.id)) }
+                            )
+                        }
+                    }
+                }
                 results is RequestState.Success -> {
                     item {
                         Box(Modifier.padding(0.5.rdp))
@@ -341,7 +392,7 @@ class MapSearchScreen: MapScreen {
                             ListHint(
                                 stringResource(Res.string.no_search_results, query ?: "")
                             ) {
-                                SearchIcon(
+                                NoResultsIcon(
                                     tint = MaterialTheme.colorScheme.primary
                                 )
                             }

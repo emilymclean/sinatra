@@ -19,5 +19,5 @@ inline fun <reified T: RoomDatabase> createDatabaseBuilder(
 }
 
 actual val databaseBuilderModule: Module = module {
-    single { createDatabaseBuilder<CacheDatabase>(androidContext(), cacheDatabaseName) }
+    single { createDatabaseBuilder<AppDatabase>(androidContext(), appDatabaseName) }
 }

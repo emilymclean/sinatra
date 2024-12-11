@@ -27,4 +27,8 @@ class RoutePersistence(
         return routeDao.get(id)?.toModel()
     }
 
+    suspend fun clear() {
+        routeDao.clear()
+    }
+
 }

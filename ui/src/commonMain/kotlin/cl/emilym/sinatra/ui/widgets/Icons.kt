@@ -14,6 +14,9 @@ import sinatra.ui.generated.resources.no_routes
 import sinatra.ui.generated.resources.my_location
 import sinatra.ui.generated.resources.search
 import sinatra.ui.generated.resources.no_results
+import sinatra.ui.generated.resources.star
+import sinatra.ui.generated.resources.star_outline
+import sinatra.ui.generated.resources.map
 
 @Composable
 fun AccessibleIcon(
@@ -113,6 +116,57 @@ fun NoResultsIcon(
     Icon(
         painterResource(Res.drawable.no_results),
         contentDescription = "A magnifying glass with a cross beside it",
+        modifier = modifier,
+        tint = tint
+    )
+}
+
+@Composable
+fun StarOutlineIcon(
+    modifier: Modifier = Modifier,
+    tint: Color = LocalContentColor.current
+) {
+    Icon(
+        painterResource(Res.drawable.star_outline),
+        contentDescription = "The outline of a star",
+        modifier = modifier,
+        tint = tint
+    )
+}
+
+@Composable
+fun StarIcon(
+    modifier: Modifier = Modifier,
+    tint: Color = LocalContentColor.current
+) {
+    Icon(
+        painterResource(Res.drawable.star),
+        contentDescription = "A filled in star",
+        modifier = modifier,
+        tint = tint
+    )
+}
+
+@Composable
+fun FavouriteIcon(
+    favourited: Boolean,
+    modifier: Modifier = Modifier,
+    tint: Color = LocalContentColor.current
+) {
+    when (favourited) {
+        true -> StarIcon(modifier, tint)
+        false -> StarOutlineIcon(modifier, tint)
+    }
+}
+
+@Composable
+fun MapIcon(
+    modifier: Modifier = Modifier,
+    tint: Color = LocalContentColor.current
+) {
+    Icon(
+        painterResource(Res.drawable.map),
+        contentDescription = "A map",
         modifier = modifier,
         tint = tint
     )

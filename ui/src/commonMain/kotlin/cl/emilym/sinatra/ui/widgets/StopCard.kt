@@ -27,8 +27,8 @@ import sinatra.ui.generated.resources.estimated_arrival
 @Composable
 fun StopCard(
     stop: Stop,
-    arrival: StationTime?,
     modifier: Modifier = Modifier,
+    arrival: StationTime? = null,
     onClick: (() -> Unit)? = null
 ) {
     ListCard(

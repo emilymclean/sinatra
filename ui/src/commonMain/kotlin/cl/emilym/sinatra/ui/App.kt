@@ -10,6 +10,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cafe.adriel.voyager.navigator.Navigator
 import cl.emilym.sinatra.data.repository.TransportMetadataRepository
+import cl.emilym.sinatra.domain.CleanupUseCase
 import cl.emilym.sinatra.e
 import cl.emilym.sinatra.ui.presentation.screens.RootMapScreen
 import cl.emilym.sinatra.ui.presentation.theme.SinatraTheme
@@ -24,6 +25,9 @@ import dev.icerock.moko.permissions.PermissionsController
 import dev.icerock.moko.permissions.compose.BindEffect
 import dev.icerock.moko.permissions.compose.rememberPermissionsControllerFactory
 import io.github.aakira.napier.Napier
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -34,7 +38,8 @@ import org.koin.compose.viewmodel.koinViewModel
 
 @KoinViewModel
 class AppViewModel(
-    private val transportMetadataRepository: TransportMetadataRepository
+    private val transportMetadataRepository: TransportMetadataRepository,
+    private val cleanupUseCase: CleanupUseCase
 ): ViewModel() {
 
     val scheduleTimeZone = MutableStateFlow(TimeZone.currentSystemDefault())
@@ -42,6 +47,9 @@ class AppViewModel(
     init {
         viewModelScope.launch {
             scheduleTimeZone.value = transportMetadataRepository.timeZone()
+        }
+        CoroutineScope(Dispatchers.IO).launch {
+            cleanupUseCase()
         }
     }
 

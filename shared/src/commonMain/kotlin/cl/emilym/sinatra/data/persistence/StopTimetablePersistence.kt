@@ -28,4 +28,8 @@ class StopTimetablePersistence(
         )
     }
 
+    suspend fun clear(resource: ResourceKey) {
+        stopTimetableTimeEntityDao.clear(resource)
+    }
+
 }

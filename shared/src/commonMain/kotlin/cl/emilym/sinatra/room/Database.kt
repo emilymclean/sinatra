@@ -1,10 +1,14 @@
 package cl.emilym.sinatra.room
 
+import androidx.room.AutoMigration
 import androidx.room.ConstructedBy
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.RoomDatabaseConstructor
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
+import cl.emilym.sinatra.data.persistence.RecentVisitPersistence
+import cl.emilym.sinatra.room.dao.FavouriteDao
+import cl.emilym.sinatra.room.dao.RecentVisitDao
 import cl.emilym.sinatra.room.dao.RouteDao
 import cl.emilym.sinatra.room.dao.RouteServiceEntityDao
 import cl.emilym.sinatra.room.dao.RouteTripInformationEntityDao
@@ -14,6 +18,8 @@ import cl.emilym.sinatra.room.dao.StopDao
 import cl.emilym.sinatra.room.dao.StopTimetableTimeEntityDao
 import cl.emilym.sinatra.room.dao.TimetableServiceExceptionEntityDao
 import cl.emilym.sinatra.room.dao.TimetableServiceRegularEntityDao
+import cl.emilym.sinatra.room.entities.FavouriteEntity
+import cl.emilym.sinatra.room.entities.RecentVisitEntity
 import cl.emilym.sinatra.room.entities.RouteEntity
 import cl.emilym.sinatra.room.entities.RouteServiceEntity
 import cl.emilym.sinatra.room.entities.RouteTripInformationEntity
@@ -29,28 +35,35 @@ import org.koin.core.annotation.Factory
 import org.koin.core.annotation.Single
 import org.koin.core.module.Module
 
-const val cacheDatabaseName = "cache"
+const val appDatabaseName = "app"
 
 expect val databaseBuilderModule: Module
 
 @Suppress("NO_ACTUAL_FOR_EXPECT")
-expect object CacheDatabaseConstructor : RoomDatabaseConstructor<CacheDatabase> {
-    override fun initialize(): CacheDatabase
+expect object AppDatabaseConstructor : RoomDatabaseConstructor<AppDatabase> {
+    override fun initialize(): AppDatabase
 }
 
-@Database(entities = [
-    ShaEntity::class,
-    StopEntity::class,
-    StopTimetableTimeEntity::class,
-    RouteEntity::class,
-    RouteServiceEntity::class,
-    RouteTripInformationEntity::class,
-    RouteTripStopEntity::class,
-    TimetableServiceRegularEntity::class,
-    TimetableServiceExceptionEntity::class,
-], version = 9)
-@ConstructedBy(CacheDatabaseConstructor::class)
-abstract class CacheDatabase: RoomDatabase() {
+@Database(entities =
+    [
+        ShaEntity::class,
+        StopEntity::class,
+        StopTimetableTimeEntity::class,
+        RouteEntity::class,
+        RouteServiceEntity::class,
+        RouteTripInformationEntity::class,
+        RouteTripStopEntity::class,
+        TimetableServiceRegularEntity::class,
+        TimetableServiceExceptionEntity::class,
+        FavouriteEntity::class,
+        RecentVisitEntity::class
+    ],
+    autoMigrations = [
+    ],
+    version = 1
+)
+@ConstructedBy(AppDatabaseConstructor::class)
+abstract class AppDatabase: RoomDatabase() {
     abstract fun sha(): ShaDao
     abstract fun stop(): StopDao
     abstract fun stopTimetableTime(): StopTimetableTimeEntityDao
@@ -60,10 +73,12 @@ abstract class CacheDatabase: RoomDatabase() {
     abstract fun timetableServiceExceptionDao(): TimetableServiceExceptionEntityDao
     abstract fun routeTripInformationDao(): RouteTripInformationEntityDao
     abstract fun routeTripStopDao(): RouteTripStopEntityDao
+    abstract fun favouriteDao(): FavouriteDao
+    abstract fun recentVisitDao(): RecentVisitDao
 }
 
 @Single
-fun cacheDatabase(builder: RoomDatabase.Builder<CacheDatabase>): CacheDatabase {
+fun appDatabase(builder: RoomDatabase.Builder<AppDatabase>): AppDatabase {
     return builder
         .fallbackToDestructiveMigration(true)
         .setDriver(BundledSQLiteDriver())
@@ -72,46 +87,56 @@ fun cacheDatabase(builder: RoomDatabase.Builder<CacheDatabase>): CacheDatabase {
 }
 
 @Factory
-fun shaDao(db: CacheDatabase): ShaDao {
+fun shaDao(db: AppDatabase): ShaDao {
     return db.sha()
 }
 
 @Factory
-fun stopDao(db: CacheDatabase): StopDao {
+fun stopDao(db: AppDatabase): StopDao {
     return db.stop()
 }
 
 @Factory
-fun stopTimetableTimeDao(db: CacheDatabase): StopTimetableTimeEntityDao {
+fun stopTimetableTimeDao(db: AppDatabase): StopTimetableTimeEntityDao {
     return db.stopTimetableTime()
 }
 
 @Factory
-fun routeDao(db: CacheDatabase): RouteDao {
+fun routeDao(db: AppDatabase): RouteDao {
     return db.route()
 }
 
 @Factory
-fun routeServiceDao(db: CacheDatabase): RouteServiceEntityDao {
+fun routeServiceDao(db: AppDatabase): RouteServiceEntityDao {
     return db.routeService()
 }
 
 @Factory
-fun timetableServiceRegularDao(db: CacheDatabase): TimetableServiceRegularEntityDao {
+fun timetableServiceRegularDao(db: AppDatabase): TimetableServiceRegularEntityDao {
     return db.timetableServiceRegularDao()
 }
 
 @Factory
-fun timetableServiceExceptionDao(db: CacheDatabase): TimetableServiceExceptionEntityDao {
+fun timetableServiceExceptionDao(db: AppDatabase): TimetableServiceExceptionEntityDao {
     return db.timetableServiceExceptionDao()
 }
 
 @Factory
-fun routeTripInformationDao(db: CacheDatabase): RouteTripInformationEntityDao {
+fun routeTripInformationDao(db: AppDatabase): RouteTripInformationEntityDao {
     return db.routeTripInformationDao()
 }
 
 @Factory
-fun routeTripStopDao(db: CacheDatabase): RouteTripStopEntityDao {
+fun routeTripStopDao(db: AppDatabase): RouteTripStopEntityDao {
     return db.routeTripStopDao()
+}
+
+@Factory
+fun favouriteDao(db: AppDatabase): FavouriteDao {
+    return db.favouriteDao()
+}
+
+@Factory
+fun recentVisitDao(db: AppDatabase): RecentVisitDao {
+    return db.recentVisitDao()
 }
