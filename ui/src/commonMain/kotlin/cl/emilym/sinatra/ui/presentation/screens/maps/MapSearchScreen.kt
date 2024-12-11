@@ -19,10 +19,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
@@ -187,7 +190,7 @@ class MapSearchScreen: MapScreen {
             val padding = 1.rdp
             val halfScreen = screenHeight() * bottomSheetHalfHeight
             val (expandOffsetRef, searchButtonRef, locationButtonRef) = createRefs()
-//            val actionBarrier = createTopBarrier(locationButtonRef, expandOffsetRef)
+//            val actionBarrier = createTopBarrier(searchButtonRef, expandOffsetRef)
 
             if (state !is MapSearchState.Search) {
                 FloatingActionButton(
@@ -196,7 +199,7 @@ class MapSearchScreen: MapScreen {
                     },
                     modifier = Modifier.constrainAs(searchButtonRef) {
                         end.linkTo(parent.end, padding)
-                        bottom.linkTo(currentLocation?.let { locationButtonRef.top } ?: expandOffsetRef.top, padding)
+                        bottom.linkTo(expandOffsetRef.top, padding)
                     }
                 ) { SearchIcon() }
             }
@@ -208,7 +211,7 @@ class MapSearchScreen: MapScreen {
                     },
                     modifier = Modifier.constrainAs(locationButtonRef) {
                         end.linkTo(parent.end, padding)
-                        bottom.linkTo(expandOffsetRef.top, padding)
+                        bottom.linkTo(if (state !is MapSearchState.Search) searchButtonRef.top else expandOffsetRef.top, padding)
                     }
                 ) { MyLocationIcon() }
             }
@@ -288,6 +291,7 @@ class MapSearchScreen: MapScreen {
         val viewModel = koinViewModel<MapSearchViewModel>()
         val navigator = LocalNavigator.currentOrThrow
         val bottomSheetState = LocalBottomSheetState.current.bottomSheetState
+        val focusRequester = remember { FocusRequester() }
 
         LaunchedEffect(Unit) {
             bottomSheetState.expand()
@@ -302,7 +306,7 @@ class MapSearchScreen: MapScreen {
                 TextField(
                     query ?: "",
                     { viewModel.search(it) },
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 1.rdp),
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 1.rdp).focusRequester(focusRequester),
                     maxLines = 1,
                     singleLine = true,
                     shape = MaterialTheme.shapes.large,
@@ -320,13 +324,19 @@ class MapSearchScreen: MapScreen {
                         disabledIndicatorColor = Color.Transparent
                     )
                 )
-            }
-            item {
-                Box(Modifier.padding(1.rdp))
+                LaunchedEffect(Unit) {
+                    focusRequester.requestFocus()
+                }
             }
             when {
                 results is RequestState.Success -> {
+                    item {
+                        Box(Modifier.padding(0.5.rdp))
+                    }
                     if (results.value.isEmpty()) {
+                        item {
+                            Box(Modifier.padding(0.5.rdp))
+                        }
                         item {
                             ListHint(
                                 stringResource(Res.string.no_search_results, query ?: "")
@@ -359,6 +369,9 @@ class MapSearchScreen: MapScreen {
                     }
                 }
                 else -> {
+                    item {
+                        Box(Modifier.padding(1.rdp))
+                    }
                     item {
                         if (query.isNullOrBlank()) return@item
                         Box(
