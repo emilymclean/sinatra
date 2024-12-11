@@ -52,6 +52,7 @@ import cl.emilym.sinatra.ui.widgets.ListHint
 import cl.emilym.sinatra.ui.widgets.LocalMapControl
 import cl.emilym.sinatra.ui.widgets.MyLocationIcon
 import cl.emilym.sinatra.ui.widgets.NoBusIcon
+import cl.emilym.sinatra.ui.widgets.NoResultsIcon
 import cl.emilym.sinatra.ui.widgets.PillShape
 import cl.emilym.sinatra.ui.widgets.RouteCard
 import cl.emilym.sinatra.ui.widgets.SearchIcon
@@ -341,7 +342,7 @@ class MapSearchScreen: MapScreen {
                             ListHint(
                                 stringResource(Res.string.no_search_results, query ?: "")
                             ) {
-                                SearchIcon(
+                                NoResultsIcon(
                                     tint = MaterialTheme.colorScheme.primary
                                 )
                             }

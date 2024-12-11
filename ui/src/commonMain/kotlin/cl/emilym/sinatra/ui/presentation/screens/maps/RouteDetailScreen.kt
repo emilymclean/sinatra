@@ -1,5 +1,7 @@
 package cl.emilym.sinatra.ui.presentation.screens.maps
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -8,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
@@ -47,6 +50,7 @@ import cl.emilym.sinatra.data.models.ServiceId
 import cl.emilym.sinatra.data.models.ServiceWheelchairAccessible
 import cl.emilym.sinatra.data.models.StationTime
 import cl.emilym.sinatra.data.models.TripId
+import cl.emilym.sinatra.data.repository.FavouriteRepository
 import cl.emilym.sinatra.data.repository.startOfDay
 import cl.emilym.sinatra.domain.CurrentTripForRouteUseCase
 import cl.emilym.sinatra.domain.CurrentTripInformation
@@ -55,6 +59,7 @@ import cl.emilym.sinatra.ui.asInstants
 import cl.emilym.sinatra.ui.color
 import cl.emilym.sinatra.ui.current
 import cl.emilym.sinatra.ui.maps.routeStopMarkerIcon
+import cl.emilym.sinatra.ui.minimumTouchTarget
 import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
 import cl.emilym.sinatra.ui.navigation.MapScope
 import cl.emilym.sinatra.ui.navigation.MapScreen
@@ -62,6 +67,8 @@ import cl.emilym.sinatra.ui.past
 import cl.emilym.sinatra.ui.presentation.theme.defaultLineColor
 import cl.emilym.sinatra.ui.widgets.AccessibilityIconLockup
 import cl.emilym.sinatra.ui.widgets.BikeIcon
+import cl.emilym.sinatra.ui.widgets.FavouriteButton
+import cl.emilym.sinatra.ui.widgets.FavouriteIcon
 import cl.emilym.sinatra.ui.widgets.LocalClock
 import cl.emilym.sinatra.ui.widgets.LocalScheduleTimeZone
 import cl.emilym.sinatra.ui.widgets.NoBusIcon
@@ -73,7 +80,10 @@ import cl.emilym.sinatra.ui.widgets.StopCard
 import cl.emilym.sinatra.ui.widgets.Subheading
 import cl.emilym.sinatra.ui.widgets.WheelchairAccessibleIcon
 import cl.emilym.sinatra.ui.widgets.toIntPx
+import io.github.aakira.napier.Napier
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.koin.android.annotation.KoinViewModel
@@ -93,15 +103,31 @@ import sinatra.ui.generated.resources.route_heading
 
 @KoinViewModel
 class RouteDetailViewModel(
-    private val currentTripForRouteUseCase: CurrentTripForRouteUseCase
+    private val currentTripForRouteUseCase: CurrentTripForRouteUseCase,
+    private val favouriteRepository: FavouriteRepository
 ): ViewModel() {
+
     val tripInformation = MutableStateFlow<RequestState<CurrentTripInformation?>>(RequestState.Initial())
+    val favourited = MutableStateFlow(false)
+
+    fun init(routeId: RouteId) {
+        viewModelScope.launch {
+            favourited.emitAll(favouriteRepository.routeIsFavourited(routeId))
+        }
+    }
 
     fun retry(routeId: RouteId, serviceId: ServiceId?, tripId: TripId?) {
         viewModelScope.launch {
             tripInformation.handle {
                 currentTripForRouteUseCase(routeId, serviceId, tripId).item
             }
+        }
+    }
+
+    fun favourite(routeId: RouteId, favourited: Boolean) {
+        this.favourited.value = favourited
+        viewModelScope.launch {
+            favouriteRepository.setRouteFavourite(routeId, favourited)
         }
     }
 
@@ -125,6 +151,10 @@ class RouteDetailScreen(
 
         LaunchedEffect(bottomSheetState) {
             bottomSheetState.bottomSheetState.halfExpand()
+        }
+
+        LaunchedEffect(routeId) {
+            viewModel.init(routeId)
         }
 
         LaunchedEffect(routeId, serviceId, tripId) {
@@ -161,6 +191,7 @@ class RouteDetailScreen(
 
     @Composable
     fun TripDetails(route: Route, info: RouteTripInformation, trigger: Int?) {
+        val viewModel = koinViewModel<RouteDetailViewModel>()
         val navigator = LocalNavigator.currentOrThrow
         val clock = LocalClock.current
         val timeZone = LocalScheduleTimeZone.current
@@ -193,7 +224,7 @@ class RouteDetailScreen(
                     horizontalArrangement = Arrangement.spacedBy(1.rdp)
                 ) {
                     RouteRandle(route)
-                    Column {
+                    Column(Modifier.weight(1f)) {
                         Text(
                             route.name,
                             style = MaterialTheme.typography.titleLarge
@@ -205,6 +236,8 @@ class RouteDetailScreen(
                             )
                         }
                     }
+                    val favourited by viewModel.favourited.collectAsState(false)
+                    FavouriteButton(favourited, { viewModel.favourite(routeId, it) })
                 }
             }
             item { Box(Modifier.height(0.5.rdp)) }
