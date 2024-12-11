@@ -12,6 +12,8 @@ import sinatra.ui.generated.resources.not_accessible
 import sinatra.ui.generated.resources.bike
 import sinatra.ui.generated.resources.no_routes
 import sinatra.ui.generated.resources.my_location
+import sinatra.ui.generated.resources.search
+import sinatra.ui.generated.resources.no_results
 
 @Composable
 fun AccessibleIcon(
@@ -85,6 +87,32 @@ fun MyLocationIcon(
     Icon(
         painterResource(Res.drawable.my_location),
         contentDescription = "A crosshair",
+        modifier = modifier,
+        tint = tint
+    )
+}
+
+@Composable
+fun SearchIcon(
+    modifier: Modifier = Modifier,
+    tint: Color = LocalContentColor.current
+) {
+    Icon(
+        painterResource(Res.drawable.search),
+        contentDescription = "A magnifying glass",
+        modifier = modifier,
+        tint = tint,
+    )
+}
+
+@Composable
+fun NoResultsIcon(
+    modifier: Modifier = Modifier,
+    tint: Color = LocalContentColor.current
+) {
+    Icon(
+        painterResource(Res.drawable.no_results),
+        contentDescription = "A magnifying glass with a cross beside it",
         modifier = modifier,
         tint = tint
     )

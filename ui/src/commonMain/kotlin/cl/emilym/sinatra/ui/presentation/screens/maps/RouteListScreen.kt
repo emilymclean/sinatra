@@ -51,35 +51,3 @@ class RouteListViewModel(
     }
 
 }
-
-class RouteListScreen: Screen {
-    override val key: ScreenKey = "${this::class.qualifiedName!!}"
-
-    @Composable
-    override fun Content() {
-        val viewModel = koinViewModel<RouteListViewModel>()
-
-        Box(
-            Modifier
-                .fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            val navigator = LocalNavigator.currentOrThrow
-            val routes by viewModel.routes.collectAsState(RequestState.Initial())
-            RequestStateWidget(routes, { viewModel.retry() }) { routes ->
-                LazyColumn {
-                    items(routes.size) {
-                        RouteCard(
-                            routes[it],
-                            onClick = {
-                                navigator.parent!!.push(RouteDetailScreen(
-                                    routes[it].id
-                                ))
-                            }
-                        )
-                    }
-                }
-            }
-        }
-    }
-}

@@ -15,6 +15,8 @@ interface MapControl {
     fun zoomToPoint(location: Location, zoom: Float = 16f)
 }
 
+expect class NativeMapScope
+
 expect class MapScope: MapControl {
 
     override fun zoomToArea(bounds: Bounds, padding: Int)
@@ -24,12 +26,15 @@ expect class MapScope: MapControl {
     override fun zoomToPoint(location: Location, zoom: Float)
 
     @Composable
-    fun Marker(location: Location, icon: MarkerIcon? = null, onClick: (() -> Unit)? = null)
+    fun Marker(location: Location, icon: MarkerIcon? = null, zoomThreshold: Float? = null, onClick: (() -> Unit)? = null)
 
     @Composable
     fun Line(
         points: List<Location>,
         color: Color = defaultLineColor()
     )
+
+    @Composable
+    fun Native(init: @Composable NativeMapScope.() -> Unit)
 
 }

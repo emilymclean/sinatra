@@ -17,7 +17,7 @@ class Tokenizer {
         }
 
 
-        val chars = text.iterator()
+        val chars = text.lowercase().iterator()
         while (chars.hasNext()) {
             val c = chars.nextChar()
             if (c in splitCharacters) {

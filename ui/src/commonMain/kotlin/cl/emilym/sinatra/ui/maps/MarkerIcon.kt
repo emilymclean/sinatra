@@ -23,18 +23,20 @@ expect interface MarkerIcon {
 @Composable
 expect fun spotMarkerIcon(
     tint: Color,
+    borderColor: Color = Color.White,
     size: Dp = 30.dp
 ): MarkerIcon
 
 @Composable
 expect fun circularIcon(
     color: Color = MaterialTheme.colorScheme.primary,
-    borderColor: Color = MaterialTheme.colorScheme.surface,
-    size: Dp = 20.dp
+    borderColor: Color = Color.White,
+    size: Dp = 20.dp,
+    borderWidth: Dp = 4.dp
 ): MarkerIcon
 
 @Composable
-fun stopMarkerIcon(stop: Stop): MarkerIcon {
+fun stopMarkerIcon(stop: Stop? = null): MarkerIcon {
     return spotMarkerIcon(MaterialTheme.colorScheme.primary
         .copy(alpha = 0.5f)
         .compositeOver(MaterialTheme.colorScheme.onSurface)
@@ -43,7 +45,7 @@ fun stopMarkerIcon(stop: Stop): MarkerIcon {
 
 @Composable
 fun routeStopMarkerIcon(route: Route): MarkerIcon {
-    return circularIcon(route.color(), size = 8.dp)
+    return circularIcon(route.color(), size = 8.dp, borderWidth = 2.dp)
 }
 
 @Composable

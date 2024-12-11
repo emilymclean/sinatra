@@ -66,7 +66,7 @@ actual class MapScope(
 
     @Composable
     @GoogleMapComposable
-    actual fun Marker(location: Location, icon: MarkerIcon?, onClick: (() -> Unit)?) {
+    actual fun Marker(location: Location, icon: MarkerIcon?, zoomThreshold: Float?, onClick: (() -> Unit)?) {
         com.google.maps.android.compose.Marker(
             rememberMarkerState(position = location.toMaps()),
             icon = icon?.bitmapDescriptor,
@@ -74,7 +74,8 @@ actual class MapScope(
             onClick = onClick?.let { {
                 onClick()
                 true
-            } } ?: { false }
+            } } ?: { false },
+            visible = zoomThreshold == null || cameraPositionState.position.zoom >= zoomThreshold
         )
     }
 
@@ -86,8 +87,6 @@ actual class MapScope(
             color = color
         )
     }
-
-
 
     actual override fun zoomToArea(
         topLeft: Location,
@@ -148,8 +147,17 @@ actual class MapScope(
         }
     }
 
+    @Composable
+    @GoogleMapComposable
+    actual fun Native(init: @GoogleMapComposable @Composable NativeMapScope.() -> Unit) {
+        NativeMapScope(cameraPositionState).init()
+    }
 
 }
+
+actual class NativeMapScope(
+    val cameraPositionState: CameraPositionState
+)
 
 const val EARTH_CIRCUMFERENCE = 6378137
 
