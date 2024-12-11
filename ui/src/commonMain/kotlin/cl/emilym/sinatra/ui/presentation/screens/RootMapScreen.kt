@@ -126,8 +126,7 @@ class RootMapScreen: Screen {
                     NavigationItem(
                         { it is MapScreen },
                         {
-                            navigator.popAll()
-                            navigator.push(MapSearchScreen())
+                            navigator.replaceAll(MapSearchScreen())
                         },
                         { MapIcon() },
                         { Text(stringResource(Res.string.navigation_bar_map)) }
@@ -135,8 +134,7 @@ class RootMapScreen: Screen {
                     NavigationItem(
                         { it is FavouriteScreen },
                         {
-                            navigator.popAll()
-                            navigator.push(FavouriteScreen())
+                            navigator.replaceAll(FavouriteScreen())
                         },
                         { StarOutlineIcon() },
                         { Text(stringResource(Res.string.navigation_bar_favourites)) }
