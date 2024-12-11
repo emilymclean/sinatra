@@ -50,11 +50,11 @@ kotlin {
             implementation(compose.runtime)
             implementation(compose.foundation)
             implementation(compose.material3)
+            implementation(compose.material)
             implementation(compose.ui)
             implementation(compose.components.resources)
             implementation(libs.compose.adaptive)
             implementation(libs.compose.adaptive.navigation)
-            implementation(libs.compose.constraintlayout)
             implementation(libs.markdown)
 
             // Koin
@@ -80,12 +80,8 @@ kotlin {
             // Voyager
             implementation(libs.voyager.navigator)
             implementation(libs.voyager.navigator.bottomsheet)
-            implementation(libs.voyager.koin)
-            implementation(libs.voyager.koin)
         }
-        iosMain.dependencies {
-            implementation(compose.material)
-        }
+        iosMain.dependencies {}
         iosMain {
             kotlin.srcDir("build/generated/ksp/metadata")
         }

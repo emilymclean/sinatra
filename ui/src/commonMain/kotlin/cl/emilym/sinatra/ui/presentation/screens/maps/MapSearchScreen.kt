@@ -1,8 +1,9 @@
 package cl.emilym.sinatra.ui.presentation.screens.maps
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -26,11 +27,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.FocusRequester.Companion.createRefs
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.constraintlayout.compose.ConstraintLayout
-import androidx.constraintlayout.compose.Dimension
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cafe.adriel.voyager.core.screen.ScreenKey
@@ -210,43 +210,37 @@ class MapSearchScreen: MapScreen {
             }
         }
 
-        ConstraintLayout(Modifier.fillMaxSize()) {
-            val padding = 1.rdp
-            val halfScreen = viewportHeight() * bottomSheetHalfHeight
-            val (expandOffsetRef, searchButtonRef, locationButtonRef) = createRefs()
-//            val actionBarrier = createTopBarrier(searchButtonRef, expandOffsetRef)
-
-            if (state !is MapSearchState.Search) {
-                FloatingActionButton(
-                    onClick = {
-                        viewModel.openSearch()
-                    },
-                    modifier = Modifier.constrainAs(searchButtonRef) {
-                        end.linkTo(parent.end, padding)
-                        bottom.linkTo(expandOffsetRef.top, padding)
+        val halfScreen = viewportHeight() * bottomSheetHalfHeight
+        Box(
+            Modifier.fillMaxSize(),
+            contentAlignment = Alignment.BottomEnd
+        ) {
+            Column(
+                Modifier.padding(1.rdp),
+                verticalArrangement = Arrangement.spacedBy(1.rdp)
+            ) {
+//                currentLocation?.let {
+//                    FloatingActionButton(
+//                        onClick = {
+//                            mapControl.zoomToPoint(it)
+//                        }
+//                    ) { MyLocationIcon() }
+//                }
+//                if (state !is MapSearchState.Search) {
+//                    FloatingActionButton(
+//                        onClick = {
+//                            viewModel.openSearch()
+//                        },
+//                    ) { SearchIcon() }
+//                }
+                val sheetValue = LocalBottomSheetState.current.bottomSheetState.currentValue
+                Box(Modifier.height(
+                    when(sheetValue) {
+                        SinatraSheetValue.PartiallyExpanded -> 56.dp
+                        else -> halfScreen
                     }
-                ) { SearchIcon() }
+                ))
             }
-
-            currentLocation?.let {
-                FloatingActionButton(
-                    onClick = {
-                        mapControl.zoomToPoint(it)
-                    },
-                    modifier = Modifier.constrainAs(locationButtonRef) {
-                        end.linkTo(parent.end, padding)
-                        bottom.linkTo(if (state !is MapSearchState.Search) searchButtonRef.top else expandOffsetRef.top, padding)
-                    }
-                ) { MyLocationIcon() }
-            }
-
-            val sheetValue = LocalBottomSheetState.current.bottomSheetState.currentValue
-            Box(Modifier.constrainAs(expandOffsetRef) {
-                bottom.linkTo(parent.bottom, when(sheetValue) {
-                    SinatraSheetValue.PartiallyExpanded -> 56.dp
-                    else -> halfScreen
-                })
-            })
         }
     }
 

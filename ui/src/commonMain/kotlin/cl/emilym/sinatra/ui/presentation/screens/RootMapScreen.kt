@@ -161,32 +161,32 @@ class RootMapScreen: Screen {
                         ) {
                             content()
                         }
-                        NavigationBar {
-                            for (item in items) {
-                                with (item) {
-                                    bar(navigator.lastItem)
-                                }
-                            }
-                        }
+//                        NavigationBar {
+//                            for (item in items) {
+//                                with (item) {
+//                                    bar(navigator.lastItem)
+//                                }
+//                            }
+//                        }
                     }
                 }
                 else -> {
                     Row(Modifier.fillMaxSize()) {
-                        Box(
-                            Modifier
-                                .background(MaterialTheme.colorScheme.surfaceContainer)
-                                .padding(WindowInsets.displayCutout.only(WindowInsetsSides.Start).asPaddingValues())
-                        ) {
-                            NavigationRail(
-                                containerColor = MaterialTheme.colorScheme.surfaceContainer
-                            ) {
-                                for (item in items) {
-                                    with (item) {
-                                        rail(navigator.lastItem)
-                                    }
-                                }
-                            }
-                        }
+//                        Box(
+//                            Modifier
+//                                .background(MaterialTheme.colorScheme.surfaceContainer)
+//                                .padding(WindowInsets.displayCutout.only(WindowInsetsSides.Start).asPaddingValues())
+//                        ) {
+//                            NavigationRail(
+//                                containerColor = MaterialTheme.colorScheme.surfaceContainer
+//                            ) {
+//                                for (item in items) {
+//                                    with (item) {
+//                                        rail(navigator.lastItem)
+//                                    }
+//                                }
+//                            }
+//                        }
                         Box(
                             Modifier
                                 .weight(1f)

@@ -1,6 +1,6 @@
 package cl.emilym.sinatra.ui.widgets
 
-import androidx.compose.foundation.clickable
+//import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -29,9 +29,9 @@ fun ListCard(
             .heightIn(min = 4.rdp)
             .then(
                 when {
-                    onClick != null -> Modifier.clickable {
-                        onClick()
-                    }
+//                    onClick != null -> Modifier.clickable {
+//                        onClick()
+//                    }
                     else -> Modifier
                 }
             )

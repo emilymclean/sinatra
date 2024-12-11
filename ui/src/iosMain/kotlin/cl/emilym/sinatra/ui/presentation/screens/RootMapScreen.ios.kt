@@ -1,6 +1,7 @@
 package cl.emilym.sinatra.ui.presentation.screens
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import cafe.adriel.voyager.core.screen.Screen
 import cl.emilym.sinatra.data.models.Bounds
 import cl.emilym.sinatra.data.models.Location
