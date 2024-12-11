@@ -84,6 +84,10 @@ kotlin {
             implementation(libs.voyager.koin)
         }
         iosMain.dependencies {
+            implementation(compose.material)
+        }
+        iosMain {
+            kotlin.srcDir("build/generated/ksp/metadata")
         }
     }
 }
@@ -94,6 +98,10 @@ dependencies {
     add("kspIosX64", libs.koin.ksp.compiler)
     add("kspIosArm64", libs.koin.ksp.compiler)
     add("kspIosSimulatorArm64", libs.koin.ksp.compiler)
+}
+
+ksp {
+    arg("KOIN_USE_COMPOSE_VIEWMODEL","true")
 }
 
 android {

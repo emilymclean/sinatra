@@ -36,6 +36,10 @@ actual class MapScope: MapControl {
     ) {
     }
 
+    @Composable
+    actual fun Native(init: @Composable NativeMapScope.() -> Unit) {
+    }
+
 }
 
 actual class NativeMapScope

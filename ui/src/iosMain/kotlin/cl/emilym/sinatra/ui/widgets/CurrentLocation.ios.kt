@@ -7,5 +7,5 @@ import kotlinx.coroutines.flow.flowOf
 
 @Composable
 internal actual fun platformCurrentLocation(): Flow<Location?> {
-    return flowOf(w)
+    return flowOf()
 }

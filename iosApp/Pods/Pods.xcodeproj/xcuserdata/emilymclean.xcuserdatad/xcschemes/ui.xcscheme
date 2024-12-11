@@ -14,9 +14,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "8777C9F6889E59EFFD631D80AEE9048B"
-               BuildableName = "shared"
-               BlueprintName = "shared"
+               BlueprintIdentifier = "59AD938A4628EB67F3A971E6D44BE048"
+               BuildableName = "ui"
+               BlueprintName = "ui"
                ReferencedContainer = "container:Pods.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
