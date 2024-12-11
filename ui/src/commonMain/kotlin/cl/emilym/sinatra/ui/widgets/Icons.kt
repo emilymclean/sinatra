@@ -101,7 +101,7 @@ fun SearchIcon(
         painterResource(Res.drawable.search),
         contentDescription = "A magnifying glass",
         modifier = modifier,
-        tint = tint
+        tint = tint,
     )
 }
 

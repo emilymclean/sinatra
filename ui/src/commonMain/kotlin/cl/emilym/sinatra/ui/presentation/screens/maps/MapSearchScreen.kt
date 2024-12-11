@@ -14,6 +14,7 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -22,6 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
@@ -302,24 +304,27 @@ class MapSearchScreen: MapScreen {
                     { viewModel.search(it) },
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 1.rdp),
                     maxLines = 1,
-                    singleLine = true
+                    singleLine = true,
+                    shape = MaterialTheme.shapes.large,
+                    leadingIcon = {
+                        SearchIcon(
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    },
+                    placeholder = {
+                        Text(stringResource(Res.string.search_hint))
+                    },
+                    colors = TextFieldDefaults.colors(
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent,
+                        disabledIndicatorColor = Color.Transparent
+                    )
                 )
             }
             item {
                 Box(Modifier.padding(1.rdp))
             }
             when {
-                query.isNullOrBlank() -> {
-                    item {
-                        ListHint(
-                            stringResource(Res.string.search_hint)
-                        ) {
-                            SearchIcon(
-                                tint = MaterialTheme.colorScheme.primary
-                            )
-                        }
-                    }
-                }
                 results is RequestState.Success -> {
                     if (results.value.isEmpty()) {
                         item {
