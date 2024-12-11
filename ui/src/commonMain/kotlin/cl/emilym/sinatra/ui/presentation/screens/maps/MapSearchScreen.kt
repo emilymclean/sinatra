@@ -190,7 +190,7 @@ class MapSearchScreen: MapScreen {
 
         ConstraintLayout(Modifier.fillMaxSize()) {
             val padding = 1.rdp
-            val halfScreen = viewportHeight() * bottomSheetHalfHeight - 16.dp
+            val halfScreen = viewportHeight() * bottomSheetHalfHeight
             val (expandOffsetRef, searchButtonRef, locationButtonRef) = createRefs()
 //            val actionBarrier = createTopBarrier(searchButtonRef, expandOffsetRef)
 

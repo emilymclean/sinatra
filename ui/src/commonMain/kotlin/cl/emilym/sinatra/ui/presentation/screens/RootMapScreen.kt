@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.calculateStartPadding
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.exclude
 import androidx.compose.foundation.layout.fillMaxSize
@@ -146,7 +147,10 @@ class RootMapScreen: Screen {
             when (adaptiveWindowInfo.windowSizeClass.windowWidthSizeClass) {
                 WindowWidthSizeClass.COMPACT -> {
                     Column(Modifier.fillMaxSize()) {
-                        Box(Modifier.weight(1f)) {
+                        Box(
+                            Modifier.weight(1f)
+                                .consumeWindowInsets(WindowInsets.safeContent.only(WindowInsetsSides.Bottom))
+                        ) {
                             content()
                         }
                         NavigationBar {
@@ -173,7 +177,11 @@ class RootMapScreen: Screen {
                                 }
                             }
                         }
-                        Box(Modifier.weight(1f)) {
+                        Box(
+                            Modifier
+                                .weight(1f)
+                                .consumeWindowInsets(WindowInsets.displayCutout.only(WindowInsetsSides.Start))
+                        ) {
                             content()
                         }
                     }

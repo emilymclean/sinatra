@@ -304,8 +304,8 @@ class RouteDetailScreen(
             if (it.stop == null) return@items
             StopCard(
                 it.stop!!,
-                it.arrivalTime?.let { StationTime.Scheduled(it) },
                 Modifier.fillMaxWidth(),
+                it.arrivalTime?.let { StationTime.Scheduled(it) },
                 onClick = {
                     navigator.push(StopDetailScreen(
                         it.stopId

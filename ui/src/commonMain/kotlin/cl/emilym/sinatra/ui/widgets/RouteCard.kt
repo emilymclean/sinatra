@@ -43,11 +43,11 @@ fun RouteRandle(
         else -> Modifier
     }
     Box(
-        Modifier.size(2.5.rdp).then(extraModifier).padding(0.25.rdp).then(modifier),
+        Modifier.size(2.5.rdp).then(extraModifier).padding(0.3.rdp).then(modifier),
         contentAlignment = Alignment.Center
     ) {
         AutoSizeText(
-            route.code,
+            route.displayCode,
             fontWeight = FontWeight.Bold,
             color = route.colors?.onColor() ?: LocalContentColor.current
         )
