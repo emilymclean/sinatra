@@ -100,12 +100,19 @@ class MapSearchViewModel(
             State.SEARCH -> flow<MapSearchState> {
                 emit(MapSearchState.Search(RequestState.Initial()))
                 emitAll(
-                    query.debounce(1.seconds).flatMapLatest { query ->
-                        when (query) {
-                            null, "" -> flowOf(MapSearchState.Search(RequestState.Initial()))
-                            else -> handleFlow {
-                                routeStopSearchUseCase(query)
-                            }.map { MapSearchState.Search(it) }
+                    query.flatMapLatest {
+                        flow {
+                            emit(MapSearchState.Search(RequestState.Loading()))
+                            emitAll(
+                                query.debounce(1.seconds).flatMapLatest { query ->
+                                    when (query) {
+                                        null, "" -> flowOf(MapSearchState.Search(RequestState.Initial()))
+                                        else -> handleFlow {
+                                            routeStopSearchUseCase(query)
+                                        }.map { MapSearchState.Search(it) }
+                                    }
+                                }
+                            )
                         }
                     }
                 )
