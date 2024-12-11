@@ -33,10 +33,13 @@ import cl.emilym.compose.requeststate.RequestState
 import cl.emilym.compose.requeststate.RequestStateWidget
 import cl.emilym.compose.requeststate.handle
 import cl.emilym.compose.units.rdp
+import cl.emilym.sinatra.data.models.Favourite
+import cl.emilym.sinatra.data.models.RouteId
 import cl.emilym.sinatra.data.models.StationTime
 import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.data.models.StopId
 import cl.emilym.sinatra.data.models.StopTimetableTime
+import cl.emilym.sinatra.data.repository.FavouriteRepository
 import cl.emilym.sinatra.data.repository.StopRepository
 import cl.emilym.sinatra.domain.UpcomingRoutesForStopUseCase
 import cl.emilym.sinatra.ui.maps.circularIcon
@@ -45,12 +48,14 @@ import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
 import cl.emilym.sinatra.ui.navigation.MapScope
 import cl.emilym.sinatra.ui.navigation.MapScreen
 import cl.emilym.sinatra.ui.widgets.AccessibilityIconLockup
+import cl.emilym.sinatra.ui.widgets.FavouriteButton
 import cl.emilym.sinatra.ui.widgets.ListHint
 import cl.emilym.sinatra.ui.widgets.NoBusIcon
 import cl.emilym.sinatra.ui.widgets.UpcomingRouteCard
 import cl.emilym.sinatra.ui.widgets.WheelchairAccessibleIcon
 import cl.emilym.sinatra.ui.widgets.handleFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
@@ -67,14 +72,20 @@ import sinatra.ui.generated.resources.no_upcoming_vehicles
 class StopDetailViewModel(
     private val stopRepository: StopRepository,
     private val upcomingRoutesForStopUseCase: UpcomingRoutesForStopUseCase,
+    private val favouriteRepository: FavouriteRepository
 ): ViewModel() {
 
+    val favourited = MutableStateFlow(false)
     val stop = MutableStateFlow<RequestState<Stop?>>(RequestState.Initial())
     val upcoming = MutableStateFlow<RequestState<List<StopTimetableTime>>>(RequestState.Initial())
 
     fun load(stopId: StopId) {
         retryStop(stopId)
         retryUpcoming(stopId)
+
+        viewModelScope.launch {
+            favourited.emitAll(favouriteRepository.stopIsFavourited(stopId))
+        }
     }
 
     fun retryStop(stopId: StopId) {
@@ -83,7 +94,6 @@ class StopDetailViewModel(
                 stopRepository.stop(stopId).item
             }
         }
-
     }
 
     fun retryUpcoming(stopId: StopId) {
@@ -91,6 +101,13 @@ class StopDetailViewModel(
             upcoming.handleFlow {
                 upcomingRoutesForStopUseCase(stopId).map { it.item }
             }
+        }
+    }
+
+    fun favourite(stopId: StopId, favourited: Boolean) {
+        this.favourited.value = favourited
+        viewModelScope.launch {
+            favouriteRepository.setStopFavourite(stopId, favourited)
         }
     }
 
@@ -141,10 +158,14 @@ class StopDetailScreen(
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.spacedBy(1.rdp)
                                 ) {
-                                    Text(
-                                        stop.name,
-                                        style = MaterialTheme.typography.titleLarge
-                                    )
+                                    Column(Modifier.weight(1f)) {
+                                        Text(
+                                            stop.name,
+                                            style = MaterialTheme.typography.titleLarge
+                                        )
+                                    }
+                                    val favourited by viewModel.favourited.collectAsState(false)
+                                    FavouriteButton(favourited, { viewModel.favourite(stopId, it) })
                                 }
                             }
                             item {
