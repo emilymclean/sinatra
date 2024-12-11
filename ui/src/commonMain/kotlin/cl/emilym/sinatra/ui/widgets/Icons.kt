@@ -16,6 +16,7 @@ import sinatra.ui.generated.resources.search
 import sinatra.ui.generated.resources.no_results
 import sinatra.ui.generated.resources.star
 import sinatra.ui.generated.resources.star_outline
+import sinatra.ui.generated.resources.map
 
 @Composable
 fun AccessibleIcon(
@@ -156,4 +157,17 @@ fun FavouriteIcon(
         true -> StarIcon(modifier, tint)
         false -> StarOutlineIcon(modifier, tint)
     }
+}
+
+@Composable
+fun MapIcon(
+    modifier: Modifier = Modifier,
+    tint: Color = LocalContentColor.current
+) {
+    Icon(
+        painterResource(Res.drawable.map),
+        contentDescription = "A map",
+        modifier = modifier,
+        tint = tint
+    )
 }

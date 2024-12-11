@@ -31,6 +31,12 @@ fun bottomSheetHalfHeight(): Float {
 }
 
 @Composable
+fun isCurrentMapScreen(): Boolean {
+    val navigator = LocalNavigator.currentOrThrow
+    return (navigator.lastItem is MapScreen)
+}
+
+@Composable
 fun CurrentMapOverlayContent() {
     CurrentScreen()
 }
