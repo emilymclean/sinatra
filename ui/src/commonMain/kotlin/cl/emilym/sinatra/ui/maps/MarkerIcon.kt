@@ -23,14 +23,14 @@ expect interface MarkerIcon {
 @Composable
 expect fun spotMarkerIcon(
     tint: Color,
-    borderColor: Color = MaterialTheme.colorScheme.surface,
+    borderColor: Color = Color.White,
     size: Dp = 30.dp
 ): MarkerIcon
 
 @Composable
 expect fun circularIcon(
     color: Color = MaterialTheme.colorScheme.primary,
-    borderColor: Color = MaterialTheme.colorScheme.surface,
+    borderColor: Color = Color.White,
     size: Dp = 20.dp,
     borderWidth: Dp = 4.dp
 ): MarkerIcon
