@@ -2,6 +2,8 @@
     <string name="navigation_bar_map">Map</string>
     <string name="navigation_bar_favourites">Favourites</string>
 
+    <string name="favourites_nothing_favourited">Any routes or stops you favourite can be found here</string>
+
     <string name="search_recently_viewed">Recently viewed</string>
     <string name="search_hint">Search for a stop or route.</string>
     <string name="no_search_results">We couldn't find anything for "%1$s".</string>

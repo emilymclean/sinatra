@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -26,7 +27,9 @@ import cl.emilym.sinatra.data.models.Favourite
 import cl.emilym.sinatra.data.repository.FavouriteRepository
 import cl.emilym.sinatra.ui.presentation.screens.maps.RouteDetailScreen
 import cl.emilym.sinatra.ui.presentation.screens.maps.StopDetailScreen
+import cl.emilym.sinatra.ui.widgets.ListHint
 import cl.emilym.sinatra.ui.widgets.RouteCard
+import cl.emilym.sinatra.ui.widgets.StarOutlineIcon
 import cl.emilym.sinatra.ui.widgets.StopCard
 import cl.emilym.sinatra.ui.widgets.createRequestStateFlowFlow
 import cl.emilym.sinatra.ui.widgets.handleFlowProperly
@@ -40,6 +43,7 @@ import org.koin.android.annotation.KoinViewModel
 import org.koin.compose.viewmodel.koinViewModel
 import sinatra.ui.generated.resources.Res
 import sinatra.ui.generated.resources.navigation_bar_favourites
+import sinatra.ui.generated.resources.favourites_nothing_favourited
 
 @KoinViewModel
 class FavouriteViewModel(
@@ -89,28 +93,38 @@ class FavouriteScreen: Screen {
                     favourites,
                     retry = { viewModel.retry() }
                 ) { favourites ->
-                    LazyColumn(Modifier.fillMaxSize()) {
-                        items(favourites) {
-                            when (it) {
-                                is Favourite.Stop -> StopCard(
-                                    it.stop,
-                                    onClick = {
-                                        navigator.push(StopDetailScreen(it.stop.id))
-                                    }
-                                )
-                                is Favourite.Route -> RouteCard(
-                                    it.route,
-                                    onClick = {
-                                        navigator.push(RouteDetailScreen(it.route.id))
-                                    }
-                                )
-                                is Favourite.StopOnRoute -> StopCard(
-                                    it.stop,
-                                    onClick = {
-                                        navigator.push(StopDetailScreen(it.stop.id))
-                                    }
-                                )
+                    if (favourites.isNotEmpty()) {
+                        LazyColumn(Modifier.fillMaxSize()) {
+                            items(favourites) {
+                                when (it) {
+                                    is Favourite.Stop -> StopCard(
+                                        it.stop,
+                                        onClick = {
+                                            navigator.push(StopDetailScreen(it.stop.id))
+                                        }
+                                    )
+
+                                    is Favourite.Route -> RouteCard(
+                                        it.route,
+                                        onClick = {
+                                            navigator.push(RouteDetailScreen(it.route.id))
+                                        }
+                                    )
+
+                                    is Favourite.StopOnRoute -> StopCard(
+                                        it.stop,
+                                        onClick = {
+                                            navigator.push(StopDetailScreen(it.stop.id))
+                                        }
+                                    )
+                                }
                             }
+                        }
+                    } else {
+                        ListHint(
+                            stringResource(Res.string.favourites_nothing_favourited)
+                        ) {
+                            StarOutlineIcon(tint = MaterialTheme.colorScheme.primary)
                         }
                     }
                 }
