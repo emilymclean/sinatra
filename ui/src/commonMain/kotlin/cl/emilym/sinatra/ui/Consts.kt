@@ -14,6 +14,7 @@ val minimumTouchTarget = 48.dp
 val canberra = Location(
     -35.2802, 149.1310
 )
+val canberraZoom = 10f
 
 val timeFormat = LocalTime.Format {
     amPmHour(Padding.NONE)

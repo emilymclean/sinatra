@@ -7,10 +7,16 @@ import androidx.compose.ui.viewinterop.UIKitView
 import cafe.adriel.voyager.core.screen.Screen
 import cl.emilym.sinatra.data.models.Bounds
 import cl.emilym.sinatra.data.models.Location
+import cl.emilym.sinatra.ui.canberra
+import cl.emilym.sinatra.ui.canberraZoom
+import cl.emilym.sinatra.ui.maps.createRegion
+import cl.emilym.sinatra.ui.maps.toMaps
 import cl.emilym.sinatra.ui.navigation.MapControl
 import cl.emilym.sinatra.ui.navigation.MapScope
+import kotlinx.cinterop.ExperimentalForeignApi
 import platform.MapKit.MKMapView
 
+@OptIn(ExperimentalForeignApi::class)
 @Composable
 actual fun Map(content: @Composable MapControl.(@Composable () -> Unit) -> Unit) {
 
@@ -31,7 +37,7 @@ actual fun Map(content: @Composable MapControl.(@Composable () -> Unit) -> Unit)
                 }
             },
             update = { mapView ->
-//                mapView.setCenterCoordinate(clLocation, animated = true)
+                mapView.setRegion(createRegion(canberra, canberraZoom), animated = true)
             }
         )
     }

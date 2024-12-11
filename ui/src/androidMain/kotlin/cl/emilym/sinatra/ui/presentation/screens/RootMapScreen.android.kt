@@ -19,6 +19,7 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.dp
 import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.ui.canberra
+import cl.emilym.sinatra.ui.canberraZoom
 import cl.emilym.sinatra.ui.maps.currentLocationIcon
 import cl.emilym.sinatra.ui.navigation.CurrentMapContent
 import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
@@ -40,7 +41,7 @@ import com.google.maps.android.compose.rememberCameraPositionState
 @Composable
 actual fun Map(content: @Composable MapControl.(@Composable () -> Unit) -> Unit) {
     val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(canberra.toMaps(), 10f)
+        position = CameraPosition.fromLatLngZoom(canberra.toMaps(), canberraZoom)
     }
     val windowPadding = ScaffoldDefaults.contentWindowInsets.asPaddingValues()
     val layoutDirection = LocalLayoutDirection.current
