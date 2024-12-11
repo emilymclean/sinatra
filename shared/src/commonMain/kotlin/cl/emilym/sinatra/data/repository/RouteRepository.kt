@@ -172,4 +172,8 @@ class RouteRepository(
         return listOf("NIS", "X1", "X2", "X3", "X4")
     }
 
+    suspend fun removedRoutes(): List<RouteId> {
+        return listOf("NIS")
+    }
+
 }

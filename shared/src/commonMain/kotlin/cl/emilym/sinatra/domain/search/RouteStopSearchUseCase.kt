@@ -2,6 +2,7 @@ package cl.emilym.sinatra.domain.search
 
 import cl.emilym.sinatra.data.models.Route
 import cl.emilym.sinatra.data.models.Stop
+import cl.emilym.sinatra.data.models.map
 import cl.emilym.sinatra.data.repository.RouteRepository
 import cl.emilym.sinatra.data.repository.StopRepository
 import cl.emilym.sinatra.domain.Tokenizer
@@ -58,7 +59,8 @@ class RouteStopSearchUseCase(
     private suspend fun get(): SearchSpace {
         searchLock.withLock {
             searchSpace.also { if (it != null) return it }
-            val routes = routeRepository.routes()
+            val removedRoutes = routeRepository.removedRoutes()
+            val routes = routeRepository.routes().map { it.filter { it.id !in removedRoutes } }
             val stops = stopRepository.stops()
             return SearchSpace(
                 routes.item, stops.item
