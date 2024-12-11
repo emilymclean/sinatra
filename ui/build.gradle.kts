@@ -53,9 +53,9 @@ kotlin {
             implementation(compose.ui)
             implementation(compose.components.resources)
             implementation(libs.compose.adaptive)
-//            implementation(libs.compose.adaptive.layout)
             implementation(libs.compose.adaptive.navigation)
             implementation(libs.compose.constraintlayout)
+            implementation(libs.markdown)
 
             // Koin
             implementation(libs.koin.core)
