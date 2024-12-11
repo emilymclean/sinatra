@@ -164,10 +164,12 @@ class RootMapScreen: Screen {
                     Row(Modifier.fillMaxSize()) {
                         Box(
                             Modifier
-                                .background(MaterialTheme.colorScheme.surface)
+                                .background(MaterialTheme.colorScheme.surfaceContainer)
                                 .padding(WindowInsets.displayCutout.only(WindowInsetsSides.Start).asPaddingValues())
                         ) {
-                            NavigationRail {
+                            NavigationRail(
+                                containerColor = MaterialTheme.colorScheme.surfaceContainer
+                            ) {
                                 for (item in items) {
                                     with (item) {
                                         rail(navigator.lastItem)
