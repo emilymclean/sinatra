@@ -39,6 +39,7 @@ mokoPermissions = "0.18.1"
 kmmLocation = "0.2.4"
 constraintlayout = "0.4.0"
 playServicesLocation = "21.3.0"
+markdown = "0.27.0"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -112,7 +113,8 @@ room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
 room-driver = { module = "androidx.sqlite:sqlite-bundled", version.ref = "sqlite" }
 room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
 
-
+# Misc
+markdown = { module = "com.mikepenz:multiplatform-markdown-renderer-m3", version.ref = "markdown" }
 play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playServicesLocation" }
 
 [plugins]

@@ -17,6 +17,7 @@ import sinatra.ui.generated.resources.no_results
 import sinatra.ui.generated.resources.star
 import sinatra.ui.generated.resources.star_outline
 import sinatra.ui.generated.resources.map
+import sinatra.ui.generated.resources.info
 
 @Composable
 fun AccessibleIcon(
@@ -167,6 +168,19 @@ fun MapIcon(
     Icon(
         painterResource(Res.drawable.map),
         contentDescription = "A map",
+        modifier = modifier,
+        tint = tint
+    )
+}
+
+@Composable
+fun InfoIcon(
+    modifier: Modifier = Modifier,
+    tint: Color = LocalContentColor.current
+) {
+    Icon(
+        painterResource(Res.drawable.info),
+        contentDescription = "An \"i\" in a circle",
         modifier = modifier,
         tint = tint
     )

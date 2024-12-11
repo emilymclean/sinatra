@@ -52,6 +52,7 @@ import cl.emilym.sinatra.ui.navigation.MapScreen
 import cl.emilym.sinatra.ui.navigation.bottomSheetHalfHeight
 import cl.emilym.sinatra.ui.navigation.isCurrentMapScreen
 import cl.emilym.sinatra.ui.presentation.screens.maps.MapSearchScreen
+import cl.emilym.sinatra.ui.widgets.InfoIcon
 import cl.emilym.sinatra.ui.widgets.LocalMapControl
 import cl.emilym.sinatra.ui.widgets.LocalViewportSize
 import cl.emilym.sinatra.ui.widgets.MapIcon
@@ -70,6 +71,7 @@ import org.jetbrains.compose.resources.stringResource
 import sinatra.ui.generated.resources.Res
 import sinatra.ui.generated.resources.navigation_bar_map
 import sinatra.ui.generated.resources.navigation_bar_favourites
+import sinatra.ui.generated.resources.navigation_bar_about
 
 @Composable
 expect fun Map(content: @Composable MapControl.(@Composable () -> Unit) -> Unit)
@@ -138,6 +140,14 @@ class RootMapScreen: Screen {
                         },
                         { StarOutlineIcon() },
                         { Text(stringResource(Res.string.navigation_bar_favourites)) }
+                    ),
+                    NavigationItem(
+                        { it is AboutScreen },
+                        {
+                            navigator.replaceAll(AboutScreen())
+                        },
+                        { InfoIcon() },
+                        { Text(stringResource(Res.string.navigation_bar_about)) }
                     )
                 )
             }
