@@ -46,7 +46,7 @@ class RouteStopSearchUseCase(
                 stopTypeSearcher(tokens, space.stops)
             ).flatten()
         }
-        return results.sortedBy { it.score }.mapNotNull {
+        return results.sortedByDescending { it.score }.mapNotNull {
             when (it.result) {
                 is Route -> SearchResult.RouteResult(it.result)
                 is Stop -> SearchResult.StopResult(it.result)
@@ -76,6 +76,8 @@ data class RankableResult<T>(
 abstract class TypeSearcher<T> {
 
     protected abstract fun fields(t: T): List<String>
+
+    open fun scoreMultiplier(item: T): Double { return 1.0 }
 
     operator fun invoke(tokens: List<String>, space: List<T>): List<RankableResult<T>> {
         return space.mapNotNull {
@@ -117,7 +119,7 @@ abstract class TypeSearcher<T> {
         return when {
             matchedTokens.size != tokens.size -> null
             highestScore == 0.0 -> null
-            else -> RankableResult(item, highestScore)
+            else -> RankableResult(item, scoreMultiplier(item) * highestScore)
         }
     }
 
