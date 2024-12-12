@@ -57,8 +57,8 @@ class UIImageAnnotationView(
             this.image = image
             this.centerOffset = image.size.useContents {
                 CGPointMake(
-                    anchor.x.toDouble(),
-                    anchor.y.toDouble(),
+                    -(anchor.x - 0.5f) * width,
+                    -(anchor.y - 0.5f) * height,
                 )
             }
         }
