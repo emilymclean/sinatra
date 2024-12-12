@@ -333,7 +333,8 @@ class RouteDetailScreen(
         ) + stops.mapNotNull {
             MarkerItem(
                 it.stop?.location ?: return@mapNotNull null,
-                icon
+                icon,
+                id = "routeDetail-${it.stopId}",
             )
         }
     }

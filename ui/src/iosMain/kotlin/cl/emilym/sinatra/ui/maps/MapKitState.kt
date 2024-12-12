@@ -90,6 +90,12 @@ class MapKitState(
             val toAdd = mutableListOf<MKAnnotationProtocol>()
             val toRemove = mutableListOf<MKAnnotationProtocol>()
             val toRemoveArena = mutableListOf<Arena>()
+
+            fun removeItem(id: String) {
+                managedAnnotations.remove(id)?.let { toRemove.add(it) }
+                managedArenas.remove(id)?.let { toRemoveArena.add(it) }
+            }
+
             for (item in items) {
                 visitedIds[item.id] = Unit
                 val existing = managedAnnotations[item.id]
@@ -99,17 +105,17 @@ class MapKitState(
                         val marker = when {
                             existing is MKPointAnnotation -> existing
                             else -> {
-                                if (existing != null) toRemove.add(existing)
+                                if (existing != null) removeItem(item.id)
                                 MKPointAnnotation().also {
                                     toAdd.add(it)
+                                    managedAnnotations[item.id] = it
                                 }
                             }
                         }
                         updatePointAnnotation(marker, item)
                     }
                     is LineItem -> {
-                        managedAnnotations[item.id]?.let { toRemove.add(it) }
-                        managedArenas[item.id]?.let { toRemoveArena.add(it) }
+                        removeItem(item.id)
 
                         val arena = Arena()
                         val coordinates = arena.allocArrayOf(
@@ -120,20 +126,24 @@ class MapKitState(
                             item.points.size.toULong()
                         ).also {
                             toAdd.add(it)
+                            managedAnnotations[item.id] = it
+                            managedArenas[item.id] = arena
                         }
                     }
                 }
             }
 
-            for (annotationKey in managedAnnotations.keys) {
-                if (visitedIds.containsKey(annotationKey)) continue
-                toRemove.add(managedAnnotations.remove(annotationKey)!!)
-                managedArenas.remove(annotationKey)?.let { toRemoveArena.add(it) }
+            val discardedIds = managedAnnotations.keys.filterNot { visitedIds.containsKey(it) }
+            for (id in discardedIds) {
+                toRemove.add(managedAnnotations.remove(id)!!)
+                managedArenas.remove(id)?.let { toRemoveArena.add(it) }
             }
 
             map?.removeAnnotations(toRemove)
             toRemoveArena.forEach { it.clear() }
             map?.addAnnotations(toAdd)
+
+            Napier.d("Map updates: removed ${toRemove.size} items, added ${toAdd.size} items, updated ${items.size - toAdd.size} items")
         }
     }
 
