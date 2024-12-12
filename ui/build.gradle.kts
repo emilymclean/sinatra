@@ -84,6 +84,7 @@ kotlin {
         iosMain.dependencies {}
         iosMain {
             kotlin.srcDir("build/generated/ksp/metadata")
+            kotlin.srcDir("src/iosMain/resources")
         }
     }
 }

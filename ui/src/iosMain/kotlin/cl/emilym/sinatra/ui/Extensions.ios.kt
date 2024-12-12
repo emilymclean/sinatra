@@ -25,7 +25,10 @@ import platform.MapKit.MKCoordinateSpanMake
 import platform.UIKit.UIColor
 import kotlin.math.pow
 import cnames.structs.CGColor
+import kotlinx.cinterop.ByteVar
+import kotlinx.cinterop.toCValues
 import platform.CoreGraphics.CGColorRef
+import platform.posix.malloc
 
 @OptIn(ExperimentalForeignApi::class)
 fun MapLocation.toNative(): CValue<CLLocationCoordinate2D> {

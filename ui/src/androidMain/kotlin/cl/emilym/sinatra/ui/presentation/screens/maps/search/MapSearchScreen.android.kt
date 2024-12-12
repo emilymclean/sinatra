@@ -18,7 +18,7 @@ import com.google.maps.android.compose.rememberMarkerState
 @GoogleMapComposable
 actual fun NativeMapScope.DrawMapSearchScreenMapNative(stops: List<Stop>) {
     val navigator = LocalNavigator.currentOrThrow
-    val icon = stopMarkerIcon()
+    val icon = stopMarkerIcon()!!
     val bitmapDescriptor = remember { icon.bitmapDescriptor }
     val anchor = remember { icon.anchor.toNative() }
     val markerStates = stops.map { rememberMarkerState(position = it.location.toNative()) }

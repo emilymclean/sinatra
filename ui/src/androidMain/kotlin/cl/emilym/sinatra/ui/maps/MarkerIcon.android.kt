@@ -16,7 +16,7 @@ import com.google.android.gms.maps.model.BitmapDescriptor
 
 actual interface MarkerIcon {
     val bitmapDescriptor: BitmapDescriptor
-    actual val anchor: MarkerIconOffset
+    val anchor: MarkerIconOffset
 }
 
 fun MarkerIconOffset.toNative(): Offset {
@@ -34,13 +34,13 @@ val defaultMarkerOffset = MarkerIconOffset(0.5f, 1f)
 
 @Composable
 actual fun circularIcon(color: Color, borderColor: Color, size: Dp, borderWidth: Dp): MarkerIcon {
-    val markerCirclePadding = (minimumTouchTarget - size) / 2
-    val totalMarkerCircleSize = minimumTouchTarget
+    val markerCirclePadding = ((minimumTouchTarget * platformSizeAdjustment()) - (size * platformSizeAdjustment())) / 2
+    val totalMarkerCircleSize = minimumTouchTarget * platformSizeAdjustment()
 
-    val halfBorderSize = borderWidth.toIntPx() / 2
-    val canvasSize = totalMarkerCircleSize.toIntPx()
-    val markerPadding = markerCirclePadding.toIntPx()
-    val markerRadius = (size / 2).toIntPx()
+    val halfBorderSize = (borderWidth * platformSizeAdjustment()).toIntPx() / 2
+    val canvasSize = (totalMarkerCircleSize * platformSizeAdjustment()).toIntPx()
+    val markerPadding = (markerCirclePadding * platformSizeAdjustment()).toIntPx()
+    val markerRadius = ((size * platformSizeAdjustment()) / 2).toIntPx()
     return MarkerIconBuilder(
         factory = {
             bitmapDescriptorBuilder(
@@ -63,9 +63,9 @@ actual fun spotMarkerIcon(
     tint: Color,
     borderColor: Color,
     size: Dp
-): MarkerIcon {
-    val sizePx = size.toIntPx()
-    val borderSize = 4.dp.toIntPx()
+): MarkerIcon? {
+    val sizePx = (size * platformSizeAdjustment()).toIntPx()
+    val borderSize = (4.dp * platformSizeAdjustment()).toIntPx()
     val overDrawable = DrawableCompat.wrap(
         ContextCompat.getDrawable(LocalContext.current, R.drawable.spot_marker)!!
     ).apply {
@@ -92,3 +92,5 @@ actual fun spotMarkerIcon(
         anchor = MarkerIconOffset(0.5f, 1f)
     )
 }
+
+actual fun platformSizeAdjustment(): Float = 1f

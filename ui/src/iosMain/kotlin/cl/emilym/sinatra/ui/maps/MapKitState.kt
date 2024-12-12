@@ -104,8 +104,6 @@ class MapKitState(
 
             for (item in items) {
                 visitedIds[item.id] = Unit
-                val existing = managedAnnotations[item.id]
-
                 when (item) {
                     is MarkerItem -> {
                         removeItem(item.id)
