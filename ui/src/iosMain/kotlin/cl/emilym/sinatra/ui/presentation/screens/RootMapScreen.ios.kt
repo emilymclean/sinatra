@@ -12,11 +12,14 @@ import cl.emilym.sinatra.ui.maps.AppleMapControl
 import cl.emilym.sinatra.ui.maps.CameraState
 import cl.emilym.sinatra.ui.maps.MapControl
 import cl.emilym.sinatra.ui.maps.MapScope
+import cl.emilym.sinatra.ui.maps.MarkerItem
+import cl.emilym.sinatra.ui.maps.currentLocationIcon
 import cl.emilym.sinatra.ui.maps.rememberMapKitState
 import cl.emilym.sinatra.ui.navigation.bottomSheetHalfHeight
 import cl.emilym.sinatra.ui.navigation.currentMapItems
 import cl.emilym.sinatra.ui.toShared
 import cl.emilym.sinatra.ui.toZoom
+import cl.emilym.sinatra.ui.widgets.currentLocation
 import cl.emilym.sinatra.ui.widgets.viewportSize
 import kotlinx.coroutines.launch
 import platform.MapKit.MKMapView
@@ -47,7 +50,18 @@ actual fun Map(content: @Composable MapControl.(@Composable () -> Unit) -> Unit)
         )
     }
 
-    val items = scope.currentMapItems()
+    val currentLocation = currentLocation()
+    val currentLocationIcon = currentLocationIcon()
+
+    val items = scope.currentMapItems() + listOfNotNull(
+        currentLocation?.let {
+            MarkerItem(
+                it,
+                currentLocationIcon,
+                id = "currentLocation"
+            )
+        }
+    )
     LaunchedEffect(items) {
         state.updateItems(items)
     }
