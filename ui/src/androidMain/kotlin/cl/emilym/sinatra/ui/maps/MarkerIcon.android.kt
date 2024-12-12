@@ -34,8 +34,8 @@ val defaultMarkerOffset = MarkerIconOffset(0.5f, 1f)
 
 @Composable
 actual fun circularIcon(color: Color, borderColor: Color, size: Dp, borderWidth: Dp): MarkerIcon {
-    val markerCirclePadding = ((minimumTouchTarget * platformSizeAdjustment()) - (size * platformSizeAdjustment())) / 2
-    val totalMarkerCircleSize = minimumTouchTarget * platformSizeAdjustment()
+    val markerCirclePadding = (minimumTouchTarget - size) / 2
+    val totalMarkerCircleSize = minimumTouchTarget
 
     val halfBorderSize = (borderWidth * platformSizeAdjustment()).toIntPx() / 2
     val canvasSize = (totalMarkerCircleSize * platformSizeAdjustment()).toIntPx()
