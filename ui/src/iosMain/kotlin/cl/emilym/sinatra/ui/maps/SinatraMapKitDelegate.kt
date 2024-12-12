@@ -15,7 +15,9 @@ import platform.MapKit.MKPolylineRenderer
 import platform.UIKit.UIColor
 import platform.darwin.NSObject
 
-class SinatraMapKitDelegate : NSObject(), MKMapViewDelegateProtocol {
+class SinatraMapKitDelegate(
+    val callback: (MKAnnotationProtocol) -> Unit
+): NSObject(), MKMapViewDelegateProtocol {
 
     @OptIn(ExperimentalForeignApi::class)
     override fun mapView(
@@ -47,5 +49,9 @@ class SinatraMapKitDelegate : NSObject(), MKMapViewDelegateProtocol {
             }
             else -> MKAnnotationView()
         }
+    }
+
+    override fun mapView(mapView: MKMapView, didSelectAnnotationView: MKAnnotationView) {
+        callback(didSelectAnnotationView.annotation ?: return)
     }
 }

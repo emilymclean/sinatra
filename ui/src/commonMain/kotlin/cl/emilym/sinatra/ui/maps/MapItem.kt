@@ -8,13 +8,17 @@ interface MapItem {
     val visible: Boolean
 }
 
+interface ClickableMapItem {
+    val onClick: (() -> Unit)?
+}
+
 data class MarkerItem(
     val location: MapLocation,
     val icon: MarkerIcon? = null,
-    val onClick: (() -> Unit)? = null,
+    override val onClick: (() -> Unit)? = null,
     override val visible: Boolean = true,
     override val id: String = uuid(),
-): MapItem
+): MapItem, ClickableMapItem
 
 data class LineItem(
     val points: List<MapLocation>,

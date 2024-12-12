@@ -60,7 +60,7 @@ class MapKitState(
     @OptIn(ExperimentalForeignApi::class)
     private var managedArenas = mutableMapOf<String, Arena>()
 
-    private val delegate = SinatraMapKitDelegate()
+    private val delegate = SinatraMapKitDelegate(::onAnnotationClick)
 
     private var _cameraDescription by mutableStateOf(cameraDescription)
     @OptIn(ExperimentalForeignApi::class)
@@ -87,6 +87,14 @@ class MapKitState(
         map?.setRegion(description.region, true)
     }
 
+    fun onAnnotationClick(annotation: MKAnnotationProtocol) {
+        val id = when (annotation) {
+            is MarkerAnnotation -> annotation.id
+            else -> return
+        }
+        (items.firstOrNull { it.id == id } as? ClickableMapItem)?.onClick?.invoke()
+    }
+
     @OptIn(ExperimentalForeignApi::class)
     suspend fun updateItems(items: List<MapItem>) {
         lock.withLock {
@@ -109,6 +117,7 @@ class MapKitState(
                         removeItem(item.id)
 
                         MarkerAnnotation(
+                            item.id,
                             item.location.toNative(),
                             item.icon
                         ).also {

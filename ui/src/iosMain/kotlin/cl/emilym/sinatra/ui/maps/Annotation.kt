@@ -35,6 +35,7 @@ class LineAnnotation(
 }
 
 class MarkerAnnotation @OptIn(ExperimentalForeignApi::class) constructor(
+    val id: String,
     val position: CValue<CLLocationCoordinate2D>,
     val icon: MarkerIcon?
 ): NSObject(), MKAnnotationProtocol {
@@ -43,5 +44,5 @@ class MarkerAnnotation @OptIn(ExperimentalForeignApi::class) constructor(
     override fun coordinate(): CValue<CLLocationCoordinate2D> {
         return position
     }
-
+    
 }
