@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -17,8 +18,8 @@ import cl.emilym.sinatra.ui.canberra
 import cl.emilym.sinatra.ui.canberraZoom
 import cl.emilym.sinatra.ui.maps.CameraState
 import cl.emilym.sinatra.ui.maps.LineItem
-import cl.emilym.sinatra.ui.maps.LocalCameraState
 import cl.emilym.sinatra.ui.maps.MapControl
+import cl.emilym.sinatra.ui.maps.MapScope
 import cl.emilym.sinatra.ui.maps.MarkerItem
 import cl.emilym.sinatra.ui.maps.NativeMapScope
 import cl.emilym.sinatra.ui.maps.currentLocationIcon
@@ -62,6 +63,14 @@ actual fun Map(content: @Composable MapControl.(@Composable () -> Unit) -> Unit)
         bottomSheetHalfHeight()
     )
     val nativeMapScope = NativeMapScope(cameraPositionState)
+    val mapScope = remember(cameraPositionState.position) {
+        MapScope(
+            CameraState(
+                cameraPositionState.position.target.toShared(),
+                cameraPositionState.position.zoom
+            )
+        )
+    }
 
     scope.content {
         GoogleMap(
@@ -83,24 +92,19 @@ actual fun Map(content: @Composable MapControl.(@Composable () -> Unit) -> Unit)
             ),
             mapColorScheme = ComposeMapColorScheme.FOLLOW_SYSTEM
         ) {
-            CompositionLocalProvider(LocalCameraState provides CameraState(
-                cameraPositionState.position.target.toShared(),
-                cameraPositionState.position.zoom
-            )) {
-                val items = currentMapItems()
+            val items = mapScope.currentMapItems()
 
-                currentLocation?.let { DrawMarker(MarkerItem(it, currentLocationIcon)) }
+            currentLocation?.let { DrawMarker(MarkerItem(it, currentLocationIcon)) }
 
-                for (item in items) {
-                    when (item) {
-                        is MarkerItem -> DrawMarker(item)
-                        is LineItem -> DrawLine(item)
-                        else -> {}
-                    }
+            for (item in items) {
+                when (item) {
+                    is MarkerItem -> DrawMarker(item)
+                    is LineItem -> DrawLine(item)
+                    else -> {}
                 }
-
-                nativeMapScope.currentDrawNativeMap()
             }
+
+            nativeMapScope.currentDrawNativeMap()
         }
     }
 }

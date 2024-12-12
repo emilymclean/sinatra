@@ -1,7 +1,11 @@
 package cl.emilym.sinatra.ui.maps
 
+import cl.emilym.gtfs.Location
+import cl.emilym.sinatra.data.models.MapLocation
+import cl.emilym.sinatra.ui.toNative
 import kotlinx.cinterop.CValue
 import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.cinterop.useContents
 import platform.CoreLocation.CLLocationCoordinate2D
 import platform.MapKit.MKAnnotationProtocol
 import platform.MapKit.MKMapRect
@@ -26,9 +30,12 @@ class LineAnnotation(
 
 class MarkerAnnotation @OptIn(ExperimentalForeignApi::class) constructor(
     val id: String,
-    val position: CValue<CLLocationCoordinate2D>,
+    val location: MapLocation,
     val icon: MarkerIcon?
 ): NSObject(), MKAnnotationProtocol {
+
+    @OptIn(ExperimentalForeignApi::class)
+    private val position = location.toNative()
 
     @ExperimentalForeignApi
     override fun coordinate(): CValue<CLLocationCoordinate2D> {

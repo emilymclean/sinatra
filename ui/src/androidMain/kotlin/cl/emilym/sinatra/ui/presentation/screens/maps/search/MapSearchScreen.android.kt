@@ -5,6 +5,7 @@ import androidx.compose.runtime.remember
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import cl.emilym.sinatra.data.models.Stop
+import cl.emilym.sinatra.ui.maps.MapScope
 import cl.emilym.sinatra.ui.maps.MarkerItem
 import cl.emilym.sinatra.ui.maps.NativeMapScope
 import cl.emilym.sinatra.ui.maps.stopMarkerIcon
@@ -25,7 +26,7 @@ actual fun NativeMapScope.DrawMapSearchScreenMapNative(stops: List<Stop>) {
     val markerStates = stops.map { rememberMarkerState(position = it.location.toNative()) }
 
     val visible =
-        remember(cameraPositionState.position.zoom) { cameraPositionState.position.zoom >= 14f }
+        remember(cameraPositionState.position.zoom) { cameraPositionState.position.zoom >= zoomThreshold }
     for (i in stops.indices) {
         val stop = stops[i]
         Marker(
@@ -42,4 +43,4 @@ actual fun NativeMapScope.DrawMapSearchScreenMapNative(stops: List<Stop>) {
 }
 
 @Composable
-actual fun mapSearchScreenMapItems(stops: List<Stop>): List<MarkerItem> = listOf()
+actual fun MapScope.mapSearchScreenMapItems(stops: List<Stop>): List<MarkerItem> = listOf()

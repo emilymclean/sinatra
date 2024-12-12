@@ -1,6 +1,5 @@
 package cl.emilym.sinatra.ui.maps
 
-import androidx.compose.runtime.compositionLocalOf
 import cl.emilym.sinatra.data.models.MapLocation
 
 data class CameraState(
@@ -8,4 +7,6 @@ data class CameraState(
     val zoom: Float
 )
 
-val LocalCameraState = compositionLocalOf<CameraState> { error("No camera state available") }
+data class MapScope(
+    val camera: CameraState
+)

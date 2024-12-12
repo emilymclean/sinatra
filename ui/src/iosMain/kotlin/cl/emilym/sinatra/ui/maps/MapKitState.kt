@@ -9,14 +9,17 @@ import androidx.compose.runtime.setValue
 import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.ui.canberra
 import cl.emilym.sinatra.ui.canberraZoom
+import cl.emilym.sinatra.ui.matches
 import cl.emilym.sinatra.ui.sinatraAllocArrayOf
 import cl.emilym.sinatra.ui.toCoordinateSpan
 import cl.emilym.sinatra.ui.toNative
 import cl.emilym.sinatra.ui.toNativeUIColor
+import cl.emilym.sinatra.ui.toShared
 import io.github.aakira.napier.Napier
 import kotlinx.cinterop.Arena
 import kotlinx.cinterop.CValue
 import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.cinterop.useContents
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import platform.CoreLocation.CLLocationCoordinate2D
@@ -60,7 +63,7 @@ class MapKitState(
     @OptIn(ExperimentalForeignApi::class)
     private var managedArenas = mutableMapOf<String, Arena>()
 
-    private val delegate = SinatraMapKitDelegate(::onAnnotationClick)
+    private val delegate = SinatraMapKitDelegate(::onAnnotationClick, ::onMapUpdate)
 
     private var _cameraDescription by mutableStateOf(cameraDescription)
     @OptIn(ExperimentalForeignApi::class)
@@ -87,7 +90,7 @@ class MapKitState(
         map?.setRegion(description.region, true)
     }
 
-    fun onAnnotationClick(annotation: MKAnnotationProtocol) {
+    private fun onAnnotationClick(annotation: MKAnnotationProtocol) {
         val id = when (annotation) {
             is MarkerAnnotation -> annotation.id
             else -> return
@@ -96,10 +99,18 @@ class MapKitState(
     }
 
     @OptIn(ExperimentalForeignApi::class)
+    private fun onMapUpdate() {
+        val map = map ?: return
+        _cameraDescription = CameraDescription(
+            map.camera.centerCoordinate.toShared(),
+            map.region.useContents { span.toShared() }
+        )
+    }
+
+    @OptIn(ExperimentalForeignApi::class)
     suspend fun updateItems(items: List<MapItem>) {
         lock.withLock {
             this._items = items
-            Napier.d("Items = $items")
             val visitedIds = mutableMapOf<String, Unit>()
             val toAdd = mutableListOf<MKAnnotationProtocol>()
             val toRemove = mutableListOf<MKAnnotationProtocol>()
@@ -112,13 +123,16 @@ class MapKitState(
 
             for (item in items) {
                 visitedIds[item.id] = Unit
+                val existing = managedAnnotations[item.id]
+
                 when (item) {
                     is MarkerItem -> {
+                        if (existing is MarkerAnnotation && existing.matches(item)) continue
                         removeItem(item.id)
 
                         MarkerAnnotation(
                             item.id,
-                            item.location.toNative(),
+                            item.location,
                             item.icon
                         ).also {
                             toAdd.add(it)

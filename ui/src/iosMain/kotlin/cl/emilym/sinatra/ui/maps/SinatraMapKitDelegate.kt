@@ -1,9 +1,6 @@
 package cl.emilym.sinatra.ui.maps
 
-import io.github.aakira.napier.Napier
 import kotlinx.cinterop.ExperimentalForeignApi
-import kotlinx.cinterop.get
-import kotlinx.cinterop.pointed
 import platform.MapKit.MKAnnotationProtocol
 import platform.MapKit.MKAnnotationView
 import platform.MapKit.MKMapView
@@ -12,11 +9,11 @@ import platform.MapKit.MKOverlayProtocol
 import platform.MapKit.MKOverlayRenderer
 import platform.MapKit.MKPolyline
 import platform.MapKit.MKPolylineRenderer
-import platform.UIKit.UIColor
 import platform.darwin.NSObject
 
 class SinatraMapKitDelegate(
-    val callback: (MKAnnotationProtocol) -> Unit
+    val clickCallback: (MKAnnotationProtocol) -> Unit,
+    val mapUpdateCallback: () -> Unit
 ): NSObject(), MKMapViewDelegateProtocol {
 
     @OptIn(ExperimentalForeignApi::class)
@@ -52,6 +49,10 @@ class SinatraMapKitDelegate(
     }
 
     override fun mapView(mapView: MKMapView, didSelectAnnotationView: MKAnnotationView) {
-        callback(didSelectAnnotationView.annotation ?: return)
+        clickCallback(didSelectAnnotationView.annotation ?: return)
+    }
+
+    override fun mapViewDidChangeVisibleRegion(mapView: MKMapView) {
+        mapUpdateCallback()
     }
 }

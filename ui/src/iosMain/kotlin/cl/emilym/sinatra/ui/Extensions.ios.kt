@@ -5,6 +5,8 @@ import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.data.models.MapRegion
 import cl.emilym.sinatra.data.models.ScreenLocation
 import cl.emilym.sinatra.ui.maps.CoordinateSpan
+import cl.emilym.sinatra.ui.maps.MarkerAnnotation
+import cl.emilym.sinatra.ui.maps.MarkerItem
 import kotlinx.cinterop.CArrayPointer
 import kotlinx.cinterop.CPointer
 import kotlinx.cinterop.CValue
@@ -24,11 +26,9 @@ import platform.MapKit.MKCoordinateSpan
 import platform.MapKit.MKCoordinateSpanMake
 import platform.UIKit.UIColor
 import kotlin.math.pow
-import cnames.structs.CGColor
-import kotlinx.cinterop.ByteVar
-import kotlinx.cinterop.toCValues
 import platform.CoreGraphics.CGColorRef
-import platform.posix.malloc
+import kotlin.math.ln
+import kotlin.math.log
 
 @OptIn(ExperimentalForeignApi::class)
 fun MapLocation.toNative(): CValue<CLLocationCoordinate2D> {
@@ -56,14 +56,18 @@ fun Float.toCoordinateSpan(): CoordinateSpan {
     )
 }
 
+fun CoordinateSpan.toZoom(): Float {
+    return listOf(deltaLatitude, deltaLongitude).map {
+        ln(360.0 / it) / ln(2.0)
+    }.min().toFloat()
+}
+
 @OptIn(ExperimentalForeignApi::class)
-fun CValue<MKCoordinateSpan>.toShared(): CoordinateSpan {
-    return useContents {
-        CoordinateSpan(
-            deltaLatitude = latitudeDelta,
-            deltaLongitude = longitudeDelta
-        )
-    }
+fun MKCoordinateSpan.toShared(): CoordinateSpan {
+    return CoordinateSpan(
+        deltaLatitude = latitudeDelta,
+        deltaLongitude = longitudeDelta
+    )
 }
 
 @OptIn(ExperimentalForeignApi::class)
@@ -133,4 +137,11 @@ inline fun <reified T: CVariable> NativePlacement.sinatraAllocArrayOf(items: Lis
         array[index] = item
     }
     return array
+}
+
+@OptIn(ExperimentalForeignApi::class)
+fun MarkerAnnotation.matches(markerItem: MarkerItem): Boolean {
+    return id == markerItem.id &&
+            markerItem.icon?.reuseIdentifier == icon?.reuseIdentifier &&
+            location == markerItem.location
 }
