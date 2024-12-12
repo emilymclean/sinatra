@@ -22,7 +22,10 @@ val copyPastedAppModuleBecauseKMPIsBroken = module {
     viewModel() { _ -> cl.emilym.sinatra.ui.presentation.screens.maps.StopDetailViewModel(stopRepository=get(),upcomingRoutesForStopUseCase=get(),favouriteRepository=get(),recentVisitRepository=get()) }
 }
 
-fun init() {
+fun init(
+    versionName: String,
+    versionCode: String
+) {
     Napier.base(DebugAntilog())
 
     startKoin {
@@ -32,7 +35,7 @@ fun init() {
             databaseBuilderModule,
             manualModule,
             module {
-                single { VersionInformation("Version", 0) }
+                single { VersionInformation(versionName, versionCode) }
             }
         )
     }
