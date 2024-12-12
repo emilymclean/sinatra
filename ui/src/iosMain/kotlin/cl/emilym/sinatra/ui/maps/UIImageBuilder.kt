@@ -79,7 +79,7 @@ fun uiImageBuilder(
 ): UIImage? {
     return UIImageScope.builder(
         with(density) { width.roundToPx().toDouble() },
-        with(density) { width.roundToPx().toDouble() },
+        with(density) { height.roundToPx().toDouble() },
         init
     )
 }
@@ -106,33 +106,50 @@ fun UIImageScope.circle(color: Color, x: Number, y: Number, radius: Number) {
 
 @OptIn(ExperimentalForeignApi::class)
 fun UIImageScope.pdf(pdf: ByteArray, tint: Color, x: Number, y: Number, width: Number, height: Number) {
-    memScoped {
-        CGContextSaveGState(context)
-        val dataPtr = pdf.toCValues().getPointer(this)
+    uiImageBuilder(
+        width.toDouble(),
+        height.toDouble()
+    ) {
+        memScoped {
+            CGContextSaveGState(context)
+            val dataPtr = pdf.toCValues().getPointer(this)
 
-        val data = NSData.dataWithBytes(dataPtr, pdf.size.toULong())
-        val cfData = CFBridgingRetain(data) as CFDataRef
+            val data = NSData.dataWithBytes(dataPtr, pdf.size.toULong())
+            val cfData = CFBridgingRetain(data) as CFDataRef
 
-        val provider = CGDataProviderCreateWithCFData(cfData)!!
-        val pdf = CGPDFDocumentCreateWithProvider(provider)!!
-        val page = CGPDFDocumentGetPage(pdf, 1u)!!
+            val provider = CGDataProviderCreateWithCFData(cfData)!!
+            val pdf = CGPDFDocumentCreateWithProvider(provider)!!
+            val page = CGPDFDocumentGetPage(pdf, 1u)!!
 
-        val box = CGPDFPageGetBoxRect(page, kCGPDFArtBox)
-        CGContextTranslateCTM(context, 0.0, height.toDouble())
-        CGContextScaleCTM(context, 1.0, -1.0)
-        CGContextTranslateCTM(context, x.toDouble(), -y.toDouble())
-        box.useContents {
-            Napier.d("Box = ${size.width}/${size.height} (into = ${width}/${height}, offset = ($x, $y))")
-            CGContextScaleCTM(context,  width.toDouble() / size.width, height.toDouble() / size.height)
+            val box = CGPDFPageGetBoxRect(page, kCGPDFArtBox)
+            CGContextTranslateCTM(context, 0.0, height.toDouble())
+            CGContextScaleCTM(context, 1.0, -1.0)
+            box.useContents {
+                CGContextScaleCTM(context,  width.toDouble() / size.width, height.toDouble() / size.height)
+            }
+
+            CGContextDrawPDFPage(context, page)
+
+            CGContextSetFillColorWithColor(context, tint.toNativeCGColor())
+            CGContextSetBlendMode(context, CGBlendMode.kCGBlendModeSourceAtop)
+            CGContextFillRect(context, box)
+
+            CFRelease(cfData)
+            CGContextRestoreGState(context)
         }
-
-        CGContextDrawPDFPage(context, page)
-
-        CGContextSetFillColorWithColor(context, tint.toNativeCGColor())
-        CGContextSetBlendMode(context, CGBlendMode.kCGBlendModeSourceAtop)
-        CGContextFillRect(context, box)
-
-        CFRelease(cfData)
-        CGContextRestoreGState(context)
+    }?.let {
+        uiImage(
+            it,
+            x.toDouble(),
+            y.toDouble(),
+            width.toDouble(),
+            height.toDouble()
+        )
     }
+}
+
+@OptIn(ExperimentalForeignApi::class)
+fun UIImageScope.uiImage(image: UIImage, x: Number, y: Number, width: Number, height: Number) {
+    val rect = CGRectMake(x.toDouble(), y.toDouble(), width.toDouble(), height.toDouble())
+    image.drawInRect(rect)
 }

@@ -109,14 +109,14 @@ actual fun spotMarkerIcon(
 
     return UIImageMarkerIcon(
         image = uiImageBuilder(sizePx.toDouble(), sizePx.toDouble()) {
-            pdf(locationPdf, tint, 0, 0, sizePx, sizePx)
-//            pdf(
-//                locationPdf,
-//                tint,
-//                borderSize, borderSize,
-//                sizePx - (borderSize * 2),
-//                sizePx - (borderSize * 2),
-//            )
+            pdf(locationPdf, borderColor, 0, 0, sizePx, sizePx)
+            pdf(
+                locationPdf,
+                tint,
+                borderSize, borderSize,
+                sizePx - (borderSize * 2),
+                sizePx - (borderSize * 2),
+            )
         },
         anchor = MarkerIconOffset(0.5f, 1f),
         reuseIdentifier = "spotMarkerIcon-${tint.toArgb()}-${borderColor.toArgb()}-${size.toIntPx()}"
