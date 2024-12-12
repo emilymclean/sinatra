@@ -16,6 +16,9 @@ typealias Latitude = Double
 typealias Longitude = Double
 typealias Pixel = Int
 
+typealias Radian = Double
+typealias Degree = Double
+
 typealias Time = Duration
 
 fun parseTime(time: String): Time {

@@ -40,8 +40,8 @@ abstract class AbstractMapControl: MapControl {
         )
     }
 
-    abstract fun toScreenSpace(location: MapLocation): ScreenLocation
-    abstract fun toMapSpace(coordinate: ScreenLocation): MapLocation
+    abstract fun toScreenSpace(location: MapLocation): ScreenLocation?
+    abstract fun toMapSpace(coordinate: ScreenLocation): MapLocation?
 
     abstract fun showBounds(bounds: MapRegion)
     abstract fun showPoint(center: MapLocation, zoom: Float)
@@ -51,10 +51,15 @@ abstract class AbstractMapControl: MapControl {
         bottomRight: MapLocation,
         padding: Int
     ) {
+        val screenSpace = listOfNotNull(toScreenSpace(topLeft), toScreenSpace(bottomRight))
+        if (screenSpace.size != 2) return showBounds(
+            MapRegion(topLeft, bottomRight)
+        )
+
         val viewportBox = boxOverOther(
             ScreenRegion(
-                toScreenSpace(topLeft),
-                toScreenSpace(bottomRight),
+                screenSpace[0],
+                screenSpace[1],
             ),
             visibleMapAspect
         )
@@ -66,9 +71,15 @@ abstract class AbstractMapControl: MapControl {
             )
         ).padded(padding)
 
+        val mapSpace = listOfNotNull(toMapSpace(screenBox.topLeft), toMapSpace((screenBox.bottomRight)))
+
+        if (mapSpace.size != 2) return showBounds(
+            MapRegion(topLeft, bottomRight)
+        )
+
         val bounds = MapRegion(
-            toMapSpace(screenBox.topLeft),
-            toMapSpace(screenBox.bottomRight),
+            mapSpace[0],
+            mapSpace[1],
         )
         showBounds(bounds)
     }

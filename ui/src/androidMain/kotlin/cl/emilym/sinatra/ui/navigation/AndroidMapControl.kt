@@ -20,13 +20,13 @@ class AndroidMapControl(
     override val bottomSheetHalfHeight: Float
 ): AbstractMapControl() {
 
-    override fun toScreenSpace(location: MapLocation): ScreenLocation {
-        val projection = cameraPositionState.projection ?: return ScreenLocation.ZERO
+    override fun toScreenSpace(location: MapLocation): ScreenLocation? {
+        val projection = cameraPositionState.projection ?: return null
         return projection.toScreenLocation(location.toNative()).toShared()
     }
 
-    override fun toMapSpace(coordinate: ScreenLocation): MapLocation {
-        val projection = cameraPositionState.projection ?: return canberra
+    override fun toMapSpace(coordinate: ScreenLocation): MapLocation? {
+        val projection = cameraPositionState.projection ?: return null
         return projection.fromScreenLocation(coordinate.toNative()).toShared()
     }
 
