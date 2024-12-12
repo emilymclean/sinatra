@@ -14,6 +14,12 @@ import cl.emilym.sinatra.ui.navigation.currentMapItems
 import cl.emilym.sinatra.ui.widgets.viewportSize
 import kotlinx.coroutines.launch
 import platform.MapKit.MKMapView
+import platform.MapKit.MKPointOfInterestCategoryPublicTransport
+import platform.MapKit.MKPointOfInterestFilter
+
+val globalPointOfInterestFilter = MKPointOfInterestFilter(excludingCategories = listOf(
+    MKPointOfInterestCategoryPublicTransport
+))
 
 @Composable
 actual fun Map(content: @Composable MapControl.(@Composable () -> Unit) -> Unit) {
@@ -39,6 +45,7 @@ actual fun Map(content: @Composable MapControl.(@Composable () -> Unit) -> Unit)
                 MKMapView().apply {
                     setZoomEnabled(true)
                     setScrollEnabled(true)
+                    setPointOfInterestFilter(globalPointOfInterestFilter)
                 }.also {
                     coroutineScope.launch { state.setMap(it) }
                 }
