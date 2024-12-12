@@ -5,6 +5,7 @@ import cl.emilym.sinatra.data.models.MapRegion
 import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.data.models.ScreenLocation
 import cl.emilym.sinatra.ui.canberra
+import cl.emilym.sinatra.ui.maps.AbstractMapControl
 import cl.emilym.sinatra.ui.toNative
 import cl.emilym.sinatra.ui.toShared
 import com.google.android.gms.maps.CameraUpdateFactory

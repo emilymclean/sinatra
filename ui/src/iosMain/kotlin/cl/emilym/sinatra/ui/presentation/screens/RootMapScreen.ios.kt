@@ -8,11 +8,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.UIKitView
 import cl.emilym.sinatra.data.models.MapRegion
 import cl.emilym.sinatra.data.models.MapLocation
+import cl.emilym.sinatra.ui.maps.MapControl
 import cl.emilym.sinatra.ui.maps.createRegion
-import cl.emilym.sinatra.ui.maps.currentLocationIcon
 import cl.emilym.sinatra.ui.maps.rememberMapKitState
-import cl.emilym.sinatra.ui.navigation.CurrentMapContent
-import cl.emilym.sinatra.ui.navigation.MapControl
 import cl.emilym.sinatra.ui.navigation.MapScope
 import cl.emilym.sinatra.ui.widgets.currentLocation
 import io.github.aakira.napier.Napier
@@ -59,12 +57,5 @@ actual fun Map(content: @Composable MapControl.(@Composable () -> Unit) -> Unit)
                 mapView.setRegion(createRegion(coordinate, zoom), animated = true)
             }
         )
-
-        scope.apply {
-            CurrentMapContent()
-            currentLocation?.let {
-                Marker(it, currentLocationIcon())
-            }
-        }
     }
 }

@@ -18,13 +18,15 @@ import cl.emilym.sinatra.ui.canberraZoom
 import cl.emilym.sinatra.ui.maps.CameraState
 import cl.emilym.sinatra.ui.maps.LineItem
 import cl.emilym.sinatra.ui.maps.LocalCameraState
+import cl.emilym.sinatra.ui.maps.MapControl
 import cl.emilym.sinatra.ui.maps.MarkerItem
+import cl.emilym.sinatra.ui.maps.NativeMapScope
 import cl.emilym.sinatra.ui.maps.currentLocationIcon
 import cl.emilym.sinatra.ui.maps.defaultMarkerOffset
 import cl.emilym.sinatra.ui.maps.toNative
 import cl.emilym.sinatra.ui.navigation.AndroidMapControl
-import cl.emilym.sinatra.ui.navigation.MapControl
 import cl.emilym.sinatra.ui.navigation.bottomSheetHalfHeight
+import cl.emilym.sinatra.ui.navigation.currentDrawNativeMap
 import cl.emilym.sinatra.ui.navigation.currentMapItems
 import cl.emilym.sinatra.ui.presentation.theme.defaultLineColor
 import cl.emilym.sinatra.ui.toNative
@@ -59,6 +61,7 @@ actual fun Map(content: @Composable MapControl.(@Composable () -> Unit) -> Unit)
         viewportSize(),
         bottomSheetHalfHeight()
     )
+    val nativeMapScope = NativeMapScope(cameraPositionState)
 
     scope.content {
         GoogleMap(
@@ -85,7 +88,7 @@ actual fun Map(content: @Composable MapControl.(@Composable () -> Unit) -> Unit)
                 cameraPositionState.position.zoom
             )) {
                 val items = currentMapItems()
-                
+
                 currentLocation?.let { MarkerItem(it, currentLocationIcon) }
 
                 for (item in items) {
@@ -95,6 +98,8 @@ actual fun Map(content: @Composable MapControl.(@Composable () -> Unit) -> Unit)
                         else -> {}
                     }
                 }
+
+                nativeMapScope.currentDrawNativeMap()
             }
         }
     }

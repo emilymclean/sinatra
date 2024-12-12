@@ -42,12 +42,10 @@ import cl.emilym.sinatra.data.repository.RecentVisitRepository
 import cl.emilym.sinatra.data.repository.StopRepository
 import cl.emilym.sinatra.domain.search.RouteStopSearchUseCase
 import cl.emilym.sinatra.domain.search.SearchResult
-import cl.emilym.sinatra.ui.maps.LocalCameraState
-import cl.emilym.sinatra.ui.maps.MapItem
-import cl.emilym.sinatra.ui.maps.MarkerItem
-import cl.emilym.sinatra.ui.maps.stopMarkerIcon
+import cl.emilym.sinatra.ui.maps.NativeMapScope
 import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
 import cl.emilym.sinatra.ui.navigation.MapScreen
+import cl.emilym.sinatra.ui.navigation.NativeMapScreen
 import cl.emilym.sinatra.ui.widgets.IosBackButton
 import cl.emilym.sinatra.ui.widgets.ListHint
 import cl.emilym.sinatra.ui.widgets.LocalMapControl
@@ -174,7 +172,7 @@ class MapSearchViewModel(
 
 }
 
-class MapSearchScreen: MapScreen {
+class MapSearchScreen: MapScreen, NativeMapScreen {
     override val key: ScreenKey = this::class.qualifiedName!!
 
     override val bottomSheetHalfHeight: Float
@@ -233,29 +231,6 @@ class MapSearchScreen: MapScreen {
                 ))
             }
         }
-    }
-
-    @Composable
-    override fun mapItems(): List<MapItem> {
-        val viewModel = koinViewModel<MapSearchViewModel>()
-        val stopsRS by viewModel.stops.collectAsState(RequestState.Initial())
-        val cameraState = LocalCameraState.current
-        val icon = stopMarkerIcon()
-
-        val stops = (stopsRS as? RequestState.Success)?.value ?: return listOf()
-
-        val markers = stops.map {
-            it.important to MarkerItem(
-                it.location,
-                icon = icon,
-                visible = true,
-                id = it.id
-            )
-        }
-
-        val visible = remember(cameraState.zoom) { cameraState.zoom >= 14f }
-
-        return markers.filter { it.first || visible }.map { it.second }
     }
 
     @Composable
@@ -444,4 +419,16 @@ class MapSearchScreen: MapScreen {
         }
     }
 
+    @Composable
+    override fun NativeMapScope.DrawMapNative() {
+        val viewModel = koinViewModel<MapSearchViewModel>()
+        val stopsRS by viewModel.stops.collectAsState(RequestState.Initial())
+        val stops = (stopsRS as? RequestState.Success)?.value?.filter { it.parentStation == null } ?: return
+
+        DrawMapSearchScreenMapNative(stops)
+    }
+
 }
+
+@Composable
+expect fun NativeMapScope.DrawMapSearchScreenMapNative(stops: List<Stop>)

@@ -1,4 +1,4 @@
-package cl.emilym.sinatra.ui.navigation
+package cl.emilym.sinatra.ui.maps
 
 import androidx.compose.ui.geometry.Size
 import cl.emilym.sinatra.data.models.MapRegion

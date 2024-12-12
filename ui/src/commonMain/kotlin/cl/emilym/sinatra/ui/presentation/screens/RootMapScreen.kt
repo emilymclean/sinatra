@@ -44,10 +44,10 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.CurrentScreen
 import cafe.adriel.voyager.navigator.Navigator
 import cl.emilym.compose.units.rdp
+import cl.emilym.sinatra.ui.maps.MapControl
 import cl.emilym.sinatra.ui.navigation.CurrentBottomSheetContent
 import cl.emilym.sinatra.ui.navigation.CurrentMapOverlayContent
 import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
-import cl.emilym.sinatra.ui.navigation.MapControl
 import cl.emilym.sinatra.ui.navigation.MapScreen
 import cl.emilym.sinatra.ui.navigation.bottomSheetHalfHeight
 import cl.emilym.sinatra.ui.navigation.isCurrentMapScreen
