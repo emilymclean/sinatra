@@ -7,26 +7,40 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.Color
 import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.ui.canberra
 import cl.emilym.sinatra.ui.canberraZoom
+import cl.emilym.sinatra.ui.presentation.theme.defaultLineColor
+import cl.emilym.sinatra.ui.sinatraAllocArrayOf
 import cl.emilym.sinatra.ui.toCoordinateSpan
 import cl.emilym.sinatra.ui.toNative
 import io.github.aakira.napier.Napier
 import kotlinx.cinterop.Arena
+import kotlinx.cinterop.CPointer
 import kotlinx.cinterop.CValue
 import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.cinterop.allocArray
+import kotlinx.cinterop.get
+import kotlinx.cinterop.memScoped
 import kotlinx.cinterop.pointed
 import kotlinx.cinterop.value
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import platform.CoreLocation.CLLocationCoordinate2D
 import platform.MapKit.MKAnnotationProtocol
 import platform.MapKit.MKCoordinateRegion
 import platform.MapKit.MKCoordinateRegionMake
 import platform.MapKit.MKMapView
+import platform.MapKit.MKMapViewDelegateProtocol
+import platform.MapKit.MKOverlayProtocol
 import platform.MapKit.MKPointAnnotation
 import platform.MapKit.MKPolyline
+import platform.MapKit.MKPolylineRenderer
 import platform.MapKit.MKPolylineView
+import platform.MapKit.addOverlays
+import platform.MapKit.removeOverlays
+import platform.UIKit.UIColor
 
 
 data class CameraDescription(
@@ -55,6 +69,8 @@ class MapKitState(
     private var managedAnnotations = mutableMapOf<String, MKAnnotationProtocol>()
     @OptIn(ExperimentalForeignApi::class)
     private var managedArenas = mutableMapOf<String, Arena>()
+
+    private val delegate = SinatraMapKitDelegate()
 
     private var _cameraDescription by mutableStateOf(cameraDescription)
     @OptIn(ExperimentalForeignApi::class)
@@ -118,12 +134,16 @@ class MapKitState(
                         removeItem(item.id)
 
                         val arena = Arena()
-                        val coordinates = arena.allocArrayOf(
-                            item.points.map { it.toNative().getPointer(arena) }
+                        val coordinates = arena.sinatraAllocArrayOf<CLLocationCoordinate2D>(
+                            item.points.map { it.toNative() }
                         )
-                        MKPolyline.polylineWithCoordinates(
-                            coordinates.pointed.value,
-                            item.points.size.toULong()
+
+                        LineAnnotation(
+                            MKPolyline.polylineWithCoordinates(
+                                coordinates,
+                                item.points.size.toULong()
+                            ),
+                            color = item.color?.toNative() ?: UIColor.magentaColor
                         ).also {
                             toAdd.add(it)
                             managedAnnotations[item.id] = it
@@ -139,11 +159,14 @@ class MapKitState(
                 managedArenas.remove(id)?.let { toRemoveArena.add(it) }
             }
 
-            map?.removeAnnotations(toRemove)
+            map?.removeOverlays(toRemove.filterIsInstance<MKOverlayProtocol>())
+            map?.removeAnnotations(toRemove.filter { it !is MKOverlayProtocol })
             toRemoveArena.forEach { it.clear() }
-            map?.addAnnotations(toAdd)
+            map?.addOverlays(toAdd.filterIsInstance<MKOverlayProtocol>())
+            map?.addAnnotations(toAdd.filter { it !is MKOverlayProtocol })
 
-            Napier.d("Map updates: removed ${toRemove.size} items, added ${toAdd.size} items, updated ${items.size - toAdd.size} items")
+            Napier.d("Map updates: removed ${toRemove.size} items, added ${toAdd.size} items, updated ${items.size - toAdd.size} items; removed ${toRemoveArena.size} arenas")
+            Napier.d("Map stats: ${managedAnnotations.size} items, ${managedArenas.size} arenas")
         }
     }
 
@@ -157,6 +180,7 @@ class MapKitState(
             this._map = map
 
             if (map != null) {
+                map.delegate = delegate
                 map.setRegion(cameraDescription.region)
             } else {
                 managedAnnotations.clear()

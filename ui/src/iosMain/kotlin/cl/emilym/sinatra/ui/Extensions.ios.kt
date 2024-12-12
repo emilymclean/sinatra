@@ -1,11 +1,23 @@
 package cl.emilym.sinatra.ui
 
+import androidx.compose.ui.graphics.Color
 import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.data.models.MapRegion
 import cl.emilym.sinatra.data.models.ScreenLocation
 import cl.emilym.sinatra.ui.maps.CoordinateSpan
+import kotlinx.cinterop.CArrayPointer
+import kotlinx.cinterop.CPointed
+import kotlinx.cinterop.CPointer
+import kotlinx.cinterop.CPointerVarOf
 import kotlinx.cinterop.CValue
+import kotlinx.cinterop.CValues
+import kotlinx.cinterop.CVariable
 import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.cinterop.NativePlacement
+import kotlinx.cinterop.allocArray
+import kotlinx.cinterop.get
+import kotlinx.cinterop.interpretCPointer
+import kotlinx.cinterop.sizeOf
 import kotlinx.cinterop.useContents
 import platform.CoreGraphics.CGPoint
 import platform.CoreGraphics.CGPointMake
@@ -13,6 +25,7 @@ import platform.CoreLocation.CLLocationCoordinate2D
 import platform.CoreLocation.CLLocationCoordinate2DMake
 import platform.MapKit.MKCoordinateSpan
 import platform.MapKit.MKCoordinateSpanMake
+import platform.UIKit.UIColor
 import kotlin.math.pow
 
 @OptIn(ExperimentalForeignApi::class)
@@ -79,4 +92,37 @@ fun MapRegion.toCoordinateSpan(): CoordinateSpan {
         deltaLatitude = width,
         deltaLongitude = height
     )
+}
+
+fun Color.toNative(): UIColor {
+    return UIColor.colorWithRed(
+        red.toDouble(),
+        green.toDouble(),
+        blue.toDouble(),
+        alpha.toDouble()
+    )
+}
+
+@OptIn(ExperimentalForeignApi::class)
+inline operator fun <reified T : CVariable> CPointer<T>.set(index: Int, item: CValues<T>) {
+    val offset = index * sizeOf<T>()
+    item.place(interpretCPointer(rawValue + offset)!!)
+}
+
+@OptIn(ExperimentalForeignApi::class)
+inline fun <reified T: CVariable> NativePlacement.sinatraAllocArrayOf(vararg items: CValue<T>): CArrayPointer<T> {
+    val array = allocArray<T>(items.size)
+    items.forEachIndexed { index, item ->
+        array[index] = item
+    }
+    return array
+}
+
+@OptIn(ExperimentalForeignApi::class)
+inline fun <reified T: CVariable> NativePlacement.sinatraAllocArrayOf(items: List<CValue<T>>): CArrayPointer<T> {
+    val array = allocArray<T>(items.size)
+    items.forEachIndexed { index, item ->
+        array[index] = item
+    }
+    return array
 }
