@@ -1,43 +1,33 @@
 package cl.emilym.sinatra.ui.maps
 
-import kotlinx.cinterop.allocArrayOf
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.graphics.Color
 import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.ui.canberra
 import cl.emilym.sinatra.ui.canberraZoom
-import cl.emilym.sinatra.ui.presentation.theme.defaultLineColor
 import cl.emilym.sinatra.ui.sinatraAllocArrayOf
 import cl.emilym.sinatra.ui.toCoordinateSpan
 import cl.emilym.sinatra.ui.toNative
+import cl.emilym.sinatra.ui.toNativeUIColor
 import io.github.aakira.napier.Napier
 import kotlinx.cinterop.Arena
-import kotlinx.cinterop.CPointer
 import kotlinx.cinterop.CValue
 import kotlinx.cinterop.ExperimentalForeignApi
-import kotlinx.cinterop.allocArray
-import kotlinx.cinterop.get
-import kotlinx.cinterop.memScoped
-import kotlinx.cinterop.pointed
-import kotlinx.cinterop.value
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import platform.CoreLocation.CLLocationCoordinate2D
 import platform.MapKit.MKAnnotationProtocol
+import platform.MapKit.MKAnnotationView
 import platform.MapKit.MKCoordinateRegion
 import platform.MapKit.MKCoordinateRegionMake
 import platform.MapKit.MKMapView
-import platform.MapKit.MKMapViewDelegateProtocol
 import platform.MapKit.MKOverlayProtocol
 import platform.MapKit.MKPointAnnotation
 import platform.MapKit.MKPolyline
-import platform.MapKit.MKPolylineRenderer
-import platform.MapKit.MKPolylineView
 import platform.MapKit.addOverlays
 import platform.MapKit.removeOverlays
 import platform.UIKit.UIColor
@@ -118,17 +108,15 @@ class MapKitState(
 
                 when (item) {
                     is MarkerItem -> {
-                        val marker = when {
-                            existing is MKPointAnnotation -> existing
-                            else -> {
-                                if (existing != null) removeItem(item.id)
-                                MKPointAnnotation().also {
-                                    toAdd.add(it)
-                                    managedAnnotations[item.id] = it
-                                }
-                            }
+                        removeItem(item.id)
+
+                        MarkerAnnotation(
+                            item.location.toNative(),
+                            item.icon
+                        ).also {
+                            toAdd.add(it)
+                            managedAnnotations[item.id] = it
                         }
-                        updatePointAnnotation(marker, item)
                     }
                     is LineItem -> {
                         removeItem(item.id)
@@ -143,7 +131,7 @@ class MapKitState(
                                 coordinates,
                                 item.points.size.toULong()
                             ),
-                            color = item.color?.toNative() ?: UIColor.magentaColor
+                            color = item.color?.toNativeUIColor() ?: UIColor.magentaColor
                         ).also {
                             toAdd.add(it)
                             managedAnnotations[item.id] = it

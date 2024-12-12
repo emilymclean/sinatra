@@ -16,9 +16,7 @@ data class MarkerIconOffset(
     val y: Float
 )
 
-expect interface MarkerIcon {
-    val anchor: MarkerIconOffset
-}
+expect interface MarkerIcon
 
 @Composable
 expect fun spotMarkerIcon(

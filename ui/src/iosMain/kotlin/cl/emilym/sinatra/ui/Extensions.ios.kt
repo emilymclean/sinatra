@@ -6,16 +6,13 @@ import cl.emilym.sinatra.data.models.MapRegion
 import cl.emilym.sinatra.data.models.ScreenLocation
 import cl.emilym.sinatra.ui.maps.CoordinateSpan
 import kotlinx.cinterop.CArrayPointer
-import kotlinx.cinterop.CPointed
 import kotlinx.cinterop.CPointer
-import kotlinx.cinterop.CPointerVarOf
 import kotlinx.cinterop.CValue
 import kotlinx.cinterop.CValues
 import kotlinx.cinterop.CVariable
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.NativePlacement
 import kotlinx.cinterop.allocArray
-import kotlinx.cinterop.get
 import kotlinx.cinterop.interpretCPointer
 import kotlinx.cinterop.sizeOf
 import kotlinx.cinterop.useContents
@@ -27,6 +24,8 @@ import platform.MapKit.MKCoordinateSpan
 import platform.MapKit.MKCoordinateSpanMake
 import platform.UIKit.UIColor
 import kotlin.math.pow
+import cnames.structs.CGColor
+import platform.CoreGraphics.CGColorRef
 
 @OptIn(ExperimentalForeignApi::class)
 fun MapLocation.toNative(): CValue<CLLocationCoordinate2D> {
@@ -94,7 +93,7 @@ fun MapRegion.toCoordinateSpan(): CoordinateSpan {
     )
 }
 
-fun Color.toNative(): UIColor {
+fun Color.toNativeUIColor(): UIColor {
     return UIColor.colorWithRed(
         red.toDouble(),
         green.toDouble(),
@@ -102,6 +101,12 @@ fun Color.toNative(): UIColor {
         alpha.toDouble()
     )
 }
+
+@OptIn(ExperimentalForeignApi::class)
+fun Color.toNativeCGColor(): CGColorRef? {
+    return toNativeUIColor().CGColor
+}
+
 
 @OptIn(ExperimentalForeignApi::class)
 inline operator fun <reified T : CVariable> CPointer<T>.set(index: Int, item: CValues<T>) {

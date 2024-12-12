@@ -4,6 +4,8 @@ import io.github.aakira.napier.Napier
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.get
 import kotlinx.cinterop.pointed
+import platform.MapKit.MKAnnotationProtocol
+import platform.MapKit.MKAnnotationView
 import platform.MapKit.MKMapView
 import platform.MapKit.MKMapViewDelegateProtocol
 import platform.MapKit.MKOverlayProtocol
@@ -33,4 +35,17 @@ class SinatraMapKitDelegate : NSObject(), MKMapViewDelegateProtocol {
         }
     }
 
+    override fun mapView(
+        mapView: MKMapView,
+        viewForAnnotation: MKAnnotationProtocol
+    ): MKAnnotationView? {
+        return when (viewForAnnotation) {
+            is MarkerAnnotation -> {
+                val icon = viewForAnnotation.icon ?: return MKAnnotationView()
+                mapView.dequeueReusableAnnotationViewWithIdentifier(icon.reuseIdentifier)
+                    ?: icon.annotationView(viewForAnnotation)
+            }
+            else -> MKAnnotationView()
+        }
+    }
 }

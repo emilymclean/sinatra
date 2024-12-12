@@ -8,16 +8,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.UIKitView
 import cl.emilym.sinatra.ui.maps.AppleMapControl
 import cl.emilym.sinatra.ui.maps.MapControl
-import cl.emilym.sinatra.ui.maps.MarkerItem
 import cl.emilym.sinatra.ui.maps.rememberMapKitState
 import cl.emilym.sinatra.ui.navigation.bottomSheetHalfHeight
 import cl.emilym.sinatra.ui.navigation.currentMapItems
-import cl.emilym.sinatra.ui.toNative
 import cl.emilym.sinatra.ui.widgets.viewportSize
-import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.coroutines.launch
 import platform.MapKit.MKMapView
-import platform.MapKit.MKPointAnnotation
 
 @Composable
 actual fun Map(content: @Composable MapControl.(@Composable () -> Unit) -> Unit) {

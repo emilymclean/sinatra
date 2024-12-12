@@ -8,9 +8,6 @@ import cl.emilym.sinatra.ui.toCoordinateSpan
 import cl.emilym.sinatra.ui.toNative
 import cl.emilym.sinatra.ui.toShared
 import kotlinx.cinterop.ExperimentalForeignApi
-import platform.MapKit.MKMapView
-import kotlin.experimental.ExperimentalNativeApi
-import kotlin.native.ref.WeakReference
 
 class AppleMapControl(
     private val state: MapKitState,
