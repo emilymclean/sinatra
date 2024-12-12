@@ -28,7 +28,7 @@ class LineAnnotation(
     }
 }
 
-class MarkerAnnotation @OptIn(ExperimentalForeignApi::class) constructor(
+class MarkerAnnotation(
     val id: String,
     val location: MapLocation,
     val icon: MarkerIcon?

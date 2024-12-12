@@ -1,6 +1,7 @@
 package cl.emilym.sinatra.ui.presentation.screens.maps.search
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
@@ -21,12 +22,12 @@ actual fun MapScope.mapSearchScreenMapItems(stops: List<Stop>): List<MarkerItem>
     val navigator = LocalNavigator.currentOrThrow
     val icon = stopMarkerIcon() ?: return listOf()
 
-    val important = stops.filter { it.important }.map {
+    val important = remember { stops.filter { it.important }.map {
         it.toMarkerItem(navigator, icon)
-    }
-    val all = stops.map {
+    } }
+    val all = remember { stops.map {
         it.toMarkerItem(navigator, icon)
-    }
+    } }
 
     return when {
         camera.zoom >= zoomThreshold -> all

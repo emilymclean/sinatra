@@ -59,7 +59,7 @@ fun Float.toCoordinateSpan(): CoordinateSpan {
 fun CoordinateSpan.toZoom(): Float {
     return listOf(deltaLatitude, deltaLongitude).map {
         ln(360.0 / it) / ln(2.0)
-    }.min().toFloat()
+    }.max().toFloat()
 }
 
 @OptIn(ExperimentalForeignApi::class)
