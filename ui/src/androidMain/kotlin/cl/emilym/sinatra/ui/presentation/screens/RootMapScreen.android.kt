@@ -89,7 +89,7 @@ actual fun Map(content: @Composable MapControl.(@Composable () -> Unit) -> Unit)
             )) {
                 val items = currentMapItems()
 
-                currentLocation?.let { MarkerItem(it, currentLocationIcon) }
+                currentLocation?.let { DrawMarker(MarkerItem(it, currentLocationIcon)) }
 
                 for (item in items) {
                     when (item) {
