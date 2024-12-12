@@ -1,4 +1,4 @@
-package cl.emilym.sinatra.ui.presentation.screens.maps
+package cl.emilym.sinatra.ui.presentation.screens.maps.search
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -8,6 +8,7 @@ import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.ui.maps.NativeMapScope
 import cl.emilym.sinatra.ui.maps.stopMarkerIcon
 import cl.emilym.sinatra.ui.maps.toNative
+import cl.emilym.sinatra.ui.presentation.screens.maps.StopDetailScreen
 import cl.emilym.sinatra.ui.toNative
 import com.google.maps.android.compose.GoogleMapComposable
 import com.google.maps.android.compose.Marker
@@ -22,7 +23,8 @@ actual fun NativeMapScope.DrawMapSearchScreenMapNative(stops: List<Stop>) {
     val anchor = remember { icon.anchor.toNative() }
     val markerStates = stops.map { rememberMarkerState(position = it.location.toNative()) }
 
-    val visible = remember(cameraPositionState.position.zoom) { cameraPositionState.position.zoom >= 14f }
+    val visible =
+        remember(cameraPositionState.position.zoom) { cameraPositionState.position.zoom >= 14f }
     for (i in stops.indices) {
         val stop = stops[i]
         Marker(

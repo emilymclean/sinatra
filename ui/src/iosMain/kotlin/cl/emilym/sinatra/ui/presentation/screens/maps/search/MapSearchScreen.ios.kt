@@ -1,4 +1,4 @@
-package cl.emilym.sinatra.ui.presentation.screens.maps
+package cl.emilym.sinatra.ui.presentation.screens.maps.search
 
 import androidx.compose.runtime.Composable
 import cl.emilym.sinatra.data.models.Stop
