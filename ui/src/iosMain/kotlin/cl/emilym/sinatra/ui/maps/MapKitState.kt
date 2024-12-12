@@ -11,6 +11,7 @@ import cl.emilym.sinatra.ui.canberra
 import cl.emilym.sinatra.ui.canberraZoom
 import cl.emilym.sinatra.ui.toCoordinateSpan
 import cl.emilym.sinatra.ui.toNative
+import io.github.aakira.napier.Napier
 import kotlinx.cinterop.CValue
 import kotlinx.cinterop.ExperimentalForeignApi
 import platform.CoreLocation.CLLocationCoordinate2D
@@ -21,14 +22,6 @@ import platform.MapKit.MKMapView
 import kotlin.math.pow
 
 
-
-@OptIn(ExperimentalForeignApi::class)
-fun MapLocation.toNative(): CValue<CLLocationCoordinate2D> {
-    return CLLocationCoordinate2DMake(
-        latitude = lat,
-        longitude = lng
-    )
-}
 
 data class CameraDescription(
     val center: MapLocation,
@@ -45,23 +38,43 @@ class MapKitState(
 ) {
 
     private var _map by mutableStateOf<MKMapView?>(null)
-    val map = _map
+    val map: MKMapView?
+        get() = _map
 
-    private val _cameraDescription = mutableStateOf(cameraDescription)
-    var cameraDescription by _cameraDescription
+    private var _cameraDescription by mutableStateOf(cameraDescription)
+    @OptIn(ExperimentalForeignApi::class)
+    var cameraDescription: CameraDescription
+        get() = _cameraDescription
+        set(value) {
+            _cameraDescription = value
+            map?.setRegion(value.region)
+        }
 
     @OptIn(ExperimentalForeignApi::class)
-    fun animate(cameraDescription: CameraDescription) {
-        _cameraDescription.value = cameraDescription
-        map?.setRegion(cameraDescription.region, true)
+    fun animate(description: CameraDescription) {
+        _cameraDescription = description
+        Napier.d("Map update called, map is null = ${map == null}, (description = $description)")
+        map?.setRegion(description.region, true)
     }
 
+    @OptIn(ExperimentalForeignApi::class)
+    fun animate(location: MapLocation) {
+        val description = cameraDescription.copy(
+            center = location
+        )
+        _cameraDescription = description
+        map?.setRegion(description.region, true)
+    }
+
+    @OptIn(ExperimentalForeignApi::class)
     internal fun setMap(map: MKMapView?) {
         if (this._map == null && map == null) return
         if (this._map != null && map != null) {
             error("MapKitState may only be associated with one MKMapView at a time")
         }
         this._map = map
+        map?.setRegion(cameraDescription.region)
+        Napier.d("Map in MapKitState is null = ${map == null}")
     }
 
     companion object {

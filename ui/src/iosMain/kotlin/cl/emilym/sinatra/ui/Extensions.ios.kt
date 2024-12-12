@@ -10,9 +10,18 @@ import kotlinx.cinterop.useContents
 import platform.CoreGraphics.CGPoint
 import platform.CoreGraphics.CGPointMake
 import platform.CoreLocation.CLLocationCoordinate2D
+import platform.CoreLocation.CLLocationCoordinate2DMake
 import platform.MapKit.MKCoordinateSpan
 import platform.MapKit.MKCoordinateSpanMake
 import kotlin.math.pow
+
+@OptIn(ExperimentalForeignApi::class)
+fun MapLocation.toNative(): CValue<CLLocationCoordinate2D> {
+    return CLLocationCoordinate2DMake(
+        latitude = lat,
+        longitude = lng
+    )
+}
 
 @OptIn(ExperimentalForeignApi::class)
 fun CValue<CLLocationCoordinate2D>.toShared(): MapLocation {

@@ -13,7 +13,7 @@ fun Napier.e(throwable: Throwable) {
 val Degree.asRadians: Radian
     get() = this * 0.01745f
 
-val Radian.asDegree: Degree
+val Radian.asDegrees: Degree
     get() = this * 57.2958f
 
 val Number.radians: Radian get() = toDouble()

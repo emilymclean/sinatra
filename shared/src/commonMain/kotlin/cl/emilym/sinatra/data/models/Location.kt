@@ -1,8 +1,11 @@
 package cl.emilym.sinatra.data.models
 
 import cl.emilym.kmp.serializable.Serializable
+import cl.emilym.sinatra.asDegrees
 import cl.emilym.sinatra.asRadians
 import cl.emilym.sinatra.degrees
+import io.github.aakira.napier.Napier
+import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.pow
@@ -30,11 +33,12 @@ data class MapRegion(
     val bottomRight: MapLocation,
 ) {
 
-    val width get() = bottomRight.lat - topLeft.lat
-    val height get() = bottomRight.lng - topLeft.lng
+    val width get() = abs(bottomRight.lat - topLeft.lat)
+    val height get() = abs(bottomRight.lng - topLeft.lng)
 
     val center: MapLocation
         get() {
+            Napier.d("Getting midpoint of topLeft = $topLeft and bottomRight = $bottomRight")
             val dLng = (bottomRight.lng - topLeft.lng).degrees.asRadians
 
             val tlLat = topLeft.lat.degrees.asRadians
@@ -50,7 +54,7 @@ data class MapRegion(
             )
             val mLng = tlLng + atan2(bY, cos(tlLat) + bX)
 
-            return MapLocation(mLng, mLng)
+            return MapLocation(mLat.asDegrees, mLng.asDegrees)
         }
 
 }
@@ -58,13 +62,7 @@ data class MapRegion(
 data class ScreenLocation(
     val x: Pixel,
     val y: Pixel
-) {
-
-    companion object {
-        val ZERO = ScreenLocation(0,0)
-    }
-
-}
+)
 
 data class ScreenRegion(
     val topLeft: ScreenLocation,

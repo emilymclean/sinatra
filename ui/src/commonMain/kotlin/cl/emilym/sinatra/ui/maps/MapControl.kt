@@ -92,7 +92,7 @@ abstract class AbstractMapControl: MapControl {
         location: MapLocation,
         zoom: Float
     ) {
-        val moveDownPx = ((contentViewportSize.height / 2) - (visibleMapSize.height / 2)) * -1.75f
+        val moveDownPx = ((contentViewportSize.height / 2) - (visibleMapSize.height / 2)) * -1f
         showPoint(location.addMetersLatitude(metersPerPxAtZoom(zoom) * moveDownPx), zoom)
     }
 
