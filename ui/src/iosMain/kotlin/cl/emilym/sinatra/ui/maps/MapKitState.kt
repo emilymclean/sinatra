@@ -1,5 +1,6 @@
 package cl.emilym.sinatra.ui.maps
 
+import kotlinx.cinterop.allocArrayOf
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -12,8 +13,11 @@ import cl.emilym.sinatra.ui.canberraZoom
 import cl.emilym.sinatra.ui.toCoordinateSpan
 import cl.emilym.sinatra.ui.toNative
 import io.github.aakira.napier.Napier
+import kotlinx.cinterop.Arena
 import kotlinx.cinterop.CValue
 import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.cinterop.pointed
+import kotlinx.cinterop.value
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import platform.MapKit.MKAnnotationProtocol
@@ -49,6 +53,8 @@ class MapKitState(
     private var _items: List<MapItem> = items
     val items get() = _items
     private var managedAnnotations = mutableMapOf<String, MKAnnotationProtocol>()
+    @OptIn(ExperimentalForeignApi::class)
+    private var managedArenas = mutableMapOf<String, Arena>()
 
     private var _cameraDescription by mutableStateOf(cameraDescription)
     @OptIn(ExperimentalForeignApi::class)
@@ -75,26 +81,46 @@ class MapKitState(
         map?.setRegion(description.region, true)
     }
 
+    @OptIn(ExperimentalForeignApi::class)
     suspend fun updateItems(items: List<MapItem>) {
         lock.withLock {
             this._items = items
+            Napier.d("Items = $items")
             val visitedIds = mutableMapOf<String, Unit>()
             val toAdd = mutableListOf<MKAnnotationProtocol>()
             val toRemove = mutableListOf<MKAnnotationProtocol>()
+            val toRemoveArena = mutableListOf<Arena>()
             for (item in items) {
                 visitedIds[item.id] = Unit
-                val existing = managedAnnotations[item.id] ?: run {
-                    when (item) {
-                        is MarkerItem -> MKPointAnnotation()
-                        else -> null
-                    }.also {
-                        it?.let { toAdd.add(it) }
-                    }
-                }
+                val existing = managedAnnotations[item.id]
 
                 when (item) {
                     is MarkerItem -> {
-                        updatePointAnnotation(existing as? MKPointAnnotation ?: continue, item)
+                        val marker = when {
+                            existing is MKPointAnnotation -> existing
+                            else -> {
+                                if (existing != null) toRemove.add(existing)
+                                MKPointAnnotation().also {
+                                    toAdd.add(it)
+                                }
+                            }
+                        }
+                        updatePointAnnotation(marker, item)
+                    }
+                    is LineItem -> {
+                        managedAnnotations[item.id]?.let { toRemove.add(it) }
+                        managedArenas[item.id]?.let { toRemoveArena.add(it) }
+
+                        val arena = Arena()
+                        val coordinates = arena.allocArrayOf(
+                            item.points.map { it.toNative().getPointer(arena) }
+                        )
+                        MKPolyline.polylineWithCoordinates(
+                            coordinates.pointed.value,
+                            item.points.size.toULong()
+                        ).also {
+                            toAdd.add(it)
+                        }
                     }
                 }
             }
@@ -102,9 +128,11 @@ class MapKitState(
             for (annotationKey in managedAnnotations.keys) {
                 if (visitedIds.containsKey(annotationKey)) continue
                 toRemove.add(managedAnnotations.remove(annotationKey)!!)
+                managedArenas.remove(annotationKey)?.let { toRemoveArena.add(it) }
             }
 
             map?.removeAnnotations(toRemove)
+            toRemoveArena.forEach { it.clear() }
             map?.addAnnotations(toAdd)
         }
     }
@@ -117,7 +145,15 @@ class MapKitState(
                 error("MapKitState may only be associated with one MKMapView at a time")
             }
             this._map = map
-            map?.setRegion(cameraDescription.region)
+
+            if (map != null) {
+                map.setRegion(cameraDescription.region)
+            } else {
+                managedAnnotations.clear()
+                managedArenas.values.forEach { it.clear() }
+                managedArenas.clear()
+            }
+
             Napier.d("Map in MapKitState is null = ${map == null}")
         }
     }
