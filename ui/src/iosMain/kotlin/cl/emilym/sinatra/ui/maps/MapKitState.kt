@@ -14,13 +14,15 @@ import cl.emilym.sinatra.ui.toNative
 import io.github.aakira.napier.Napier
 import kotlinx.cinterop.CValue
 import kotlinx.cinterop.ExperimentalForeignApi
-import platform.CoreLocation.CLLocationCoordinate2D
-import platform.CoreLocation.CLLocationCoordinate2DMake
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import platform.MapKit.MKAnnotationProtocol
 import platform.MapKit.MKCoordinateRegion
 import platform.MapKit.MKCoordinateRegionMake
 import platform.MapKit.MKMapView
-import kotlin.math.pow
-
+import platform.MapKit.MKPointAnnotation
+import platform.MapKit.MKPolyline
+import platform.MapKit.MKPolylineView
 
 
 data class CameraDescription(
@@ -34,12 +36,19 @@ data class CameraDescription(
 }
 
 class MapKitState(
-    cameraDescription: CameraDescription
+    cameraDescription: CameraDescription,
+    items: List<MapItem>
 ) {
+
+    private val lock = Mutex()
 
     private var _map by mutableStateOf<MKMapView?>(null)
     val map: MKMapView?
         get() = _map
+
+    private var _items: List<MapItem> = items
+    val items get() = _items
+    private var managedAnnotations = mutableMapOf<String, MKAnnotationProtocol>()
 
     private var _cameraDescription by mutableStateOf(cameraDescription)
     @OptIn(ExperimentalForeignApi::class)
@@ -66,28 +75,65 @@ class MapKitState(
         map?.setRegion(description.region, true)
     }
 
-    @OptIn(ExperimentalForeignApi::class)
-    internal fun setMap(map: MKMapView?) {
-        if (this._map == null && map == null) return
-        if (this._map != null && map != null) {
-            error("MapKitState may only be associated with one MKMapView at a time")
+    suspend fun updateItems(items: List<MapItem>) {
+        lock.withLock {
+            this._items = items
+            val visitedIds = mutableMapOf<String, Unit>()
+            val toAdd = mutableListOf<MKAnnotationProtocol>()
+            val toRemove = mutableListOf<MKAnnotationProtocol>()
+            for (item in items) {
+                visitedIds[item.id] = Unit
+                val existing = managedAnnotations[item.id] ?: run {
+                    when (item) {
+                        is MarkerItem -> MKPointAnnotation()
+                        else -> null
+                    }.also {
+                        it?.let { toAdd.add(it) }
+                    }
+                }
+
+                when (item) {
+                    is MarkerItem -> {
+                        updatePointAnnotation(existing as? MKPointAnnotation ?: continue, item)
+                    }
+                }
+            }
+
+            for (annotationKey in managedAnnotations.keys) {
+                if (visitedIds.containsKey(annotationKey)) continue
+                toRemove.add(managedAnnotations.remove(annotationKey)!!)
+            }
+
+            map?.removeAnnotations(toRemove)
+            map?.addAnnotations(toAdd)
         }
-        this._map = map
-        map?.setRegion(cameraDescription.region)
-        Napier.d("Map in MapKitState is null = ${map == null}")
+    }
+
+    @OptIn(ExperimentalForeignApi::class)
+    suspend fun setMap(map: MKMapView?) {
+        lock.withLock {
+            if (this._map == null && map == null) return
+            if (this._map != null && map != null) {
+                error("MapKitState may only be associated with one MKMapView at a time")
+            }
+            this._map = map
+            map?.setRegion(cameraDescription.region)
+            Napier.d("Map in MapKitState is null = ${map == null}")
+        }
     }
 
     companion object {
         val Saver: Saver<MapKitState, MapKitSavedState> = Saver(
-            save = { MapKitSavedState(it.cameraDescription) },
-            restore = { MapKitState(it.cameraDescription) }
+            save = { MapKitSavedState(it.cameraDescription, it.items) },
+            restore = { MapKitState(it.cameraDescription, it.items) }
         )
     }
 
 }
 
 class MapKitSavedState(
-    val cameraDescription: CameraDescription
+    val cameraDescription: CameraDescription,
+    val items: List<MapItem>
 )
 
 @Composable
@@ -96,7 +142,8 @@ inline fun rememberMapKitState(
     crossinline init: MapKitState.() -> Unit = {}
 ): MapKitState = rememberSaveable(key = key, saver = MapKitState.Saver) {
     MapKitState(
-        CameraDescription(canberra, canberraZoom.toCoordinateSpan())
+        CameraDescription(canberra, canberraZoom.toCoordinateSpan()),
+        listOf()
     ).apply(init)
 }
 

@@ -2,18 +2,23 @@ package cl.emilym.sinatra.ui.presentation.screens
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.UIKitView
 import cl.emilym.sinatra.ui.maps.AppleMapControl
 import cl.emilym.sinatra.ui.maps.MapControl
+import cl.emilym.sinatra.ui.maps.MarkerItem
 import cl.emilym.sinatra.ui.maps.rememberMapKitState
 import cl.emilym.sinatra.ui.navigation.bottomSheetHalfHeight
-import cl.emilym.sinatra.ui.widgets.currentLocation
+import cl.emilym.sinatra.ui.navigation.currentMapItems
+import cl.emilym.sinatra.ui.toNative
 import cl.emilym.sinatra.ui.widgets.viewportSize
 import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.coroutines.launch
 import platform.MapKit.MKMapView
+import platform.MapKit.MKPointAnnotation
 
-@OptIn(ExperimentalForeignApi::class)
 @Composable
 actual fun Map(content: @Composable MapControl.(@Composable () -> Unit) -> Unit) {
 
@@ -25,10 +30,13 @@ actual fun Map(content: @Composable MapControl.(@Composable () -> Unit) -> Unit)
         bottomSheetHalfHeight()
     )
 
+    val items = currentMapItems()
+    LaunchedEffect(items) {
+        state.updateItems(items)
+    }
 
+    val coroutineScope = rememberCoroutineScope()
     control.content {
-        val currentLocation = currentLocation()
-
         UIKitView(
             modifier = Modifier.fillMaxSize(),
             factory = {
@@ -36,11 +44,11 @@ actual fun Map(content: @Composable MapControl.(@Composable () -> Unit) -> Unit)
                     setZoomEnabled(true)
                     setScrollEnabled(true)
                 }.also {
-                    state.setMap(it)
+                    coroutineScope.launch { state.setMap(it) }
                 }
             },
             onRelease = {
-                state.setMap(null)
+                coroutineScope.launch { state.setMap(null) }
             }
         )
     }
