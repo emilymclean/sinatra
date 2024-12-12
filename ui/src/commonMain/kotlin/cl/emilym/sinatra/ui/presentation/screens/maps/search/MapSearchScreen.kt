@@ -36,6 +36,8 @@ import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.data.models.RecentVisit
 import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.domain.search.SearchResult
+import cl.emilym.sinatra.ui.maps.MapItem
+import cl.emilym.sinatra.ui.maps.MarkerItem
 import cl.emilym.sinatra.ui.maps.NativeMapScope
 import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
 import cl.emilym.sinatra.ui.navigation.MapScreen
@@ -148,7 +150,19 @@ class MapSearchScreen: MapScreen, NativeMapScreen {
         DrawMapSearchScreenMapNative(stops)
     }
 
+    @Composable
+    override fun mapItems(): List<MapItem> {
+        val viewModel = koinViewModel<MapSearchViewModel>()
+        val stopsRS by viewModel.stops.collectAsState(RequestState.Initial())
+        val stops = (stopsRS as? RequestState.Success)?.value?.filter { it.parentStation == null } ?: return listOf()
+
+        return mapSearchScreenMapItems(stops)
+    }
+
 }
 
 @Composable
 expect fun NativeMapScope.DrawMapSearchScreenMapNative(stops: List<Stop>)
+
+@Composable
+expect fun mapSearchScreenMapItems(stops: List<Stop>): List<MarkerItem>

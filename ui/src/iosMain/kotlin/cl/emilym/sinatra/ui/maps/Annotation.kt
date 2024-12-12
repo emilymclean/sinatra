@@ -1,24 +1,14 @@
 package cl.emilym.sinatra.ui.maps
 
-import cl.emilym.sinatra.ui.toNative
 import kotlinx.cinterop.CValue
 import kotlinx.cinterop.ExperimentalForeignApi
 import platform.CoreLocation.CLLocationCoordinate2D
 import platform.MapKit.MKAnnotationProtocol
 import platform.MapKit.MKMapRect
 import platform.MapKit.MKOverlayProtocol
-import platform.MapKit.MKPointAnnotation
 import platform.MapKit.MKPolyline
 import platform.UIKit.UIColor
 import platform.darwin.NSObject
-
-@OptIn(ExperimentalForeignApi::class)
-fun updatePointAnnotation(
-    annotation: MKPointAnnotation,
-    item: MarkerItem
-) {
-    annotation.setCoordinate(item.location.toNative())
-}
 
 @OptIn(ExperimentalForeignApi::class)
 class LineAnnotation(
@@ -44,5 +34,5 @@ class MarkerAnnotation @OptIn(ExperimentalForeignApi::class) constructor(
     override fun coordinate(): CValue<CLLocationCoordinate2D> {
         return position
     }
-    
+
 }
