@@ -135,3 +135,9 @@ playground.xcworkspace
 # Carthage/Checkouts
 
 Carthage/Build/
+
+iosApp/Pods/
+
+androidApp/google-services.json
+
+iosApp/iosApp/GoogleService-Info.plist

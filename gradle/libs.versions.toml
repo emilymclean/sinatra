@@ -40,6 +40,8 @@ kmmLocation = "0.2.4"
 constraintlayout = "0.4.0"
 playServicesLocation = "21.3.0"
 markdown = "0.27.0"
+google-services = "4.4.2"
+firebase-crashlytics = "3.0.2"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -130,3 +132,5 @@ serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref 
 jetbrainsCompose = { id = "org.jetbrains.compose", version.ref = "compose-plugin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 room = { id = "androidx.room", version.ref = "room" }
+googleServices = { id = "com.google.gms.google-services", version.ref = "google-services" }
+firebaseCrashlytics = { id = "com.google.firebase.crashlytics", version.ref = "firebase-crashlytics" }
