@@ -9,6 +9,9 @@ import cafe.adriel.voyager.navigator.CurrentScreen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import cl.emilym.compose.units.px
+import cl.emilym.sinatra.ui.maps.MapItem
+import cl.emilym.sinatra.ui.maps.MapScope
+import cl.emilym.sinatra.ui.maps.NativeMapScope
 
 const val DEFAULT_HALF_HEIGHT = 0.66f
 
@@ -20,7 +23,14 @@ interface MapScreen: Screen {
     fun BottomSheetContent() {}
 
     @Composable
-    fun MapScope.MapContent() {}
+    fun MapScope.mapItems(): List<MapItem> = listOf()
+}
+
+interface NativeMapScreen {
+
+    @Composable
+    fun NativeMapScope.DrawMapNative()
+
 }
 
 @Composable
@@ -56,4 +66,30 @@ fun CurrentBottomSheetContent() {
 }
 
 @Composable
-expect fun MapScope.CurrentMapContent()
+fun MapScope.currentMapItems(
+    accept: @Composable (List<MapItem>) -> Unit
+) {
+    val navigator = LocalNavigator.currentOrThrow
+    val currentScreen = navigator.lastItem
+    val mapScreen = (currentScreen as? MapScreen)
+
+    if (mapScreen == null) {
+        accept(listOf())
+        return
+    }
+
+    navigator.saveableState("mapItems") {
+        with(mapScreen) { accept(mapItems()) }
+    }
+}
+
+@Composable
+fun NativeMapScope.currentDrawNativeMap() {
+    val navigator = LocalNavigator.currentOrThrow
+    val currentScreen = navigator.lastItem
+    val mapScreen = (currentScreen as? NativeMapScreen) ?: return
+
+    navigator.saveableState("nativeMap") {
+        with(mapScreen) { DrawMapNative() }
+    }
+}

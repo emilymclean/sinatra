@@ -14,7 +14,7 @@ val versionInformationModule = module {
     single {
         VersionInformation(
             BuildConfig.VERSION_NAME,
-            BuildConfig.VERSION_CODE
+            BuildConfig.VERSION_CODE.toString()
         )
     }
 }

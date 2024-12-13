@@ -50,11 +50,11 @@ kotlin {
             implementation(compose.runtime)
             implementation(compose.foundation)
             implementation(compose.material3)
+            implementation(compose.material)
             implementation(compose.ui)
             implementation(compose.components.resources)
             implementation(libs.compose.adaptive)
             implementation(libs.compose.adaptive.navigation)
-            implementation(libs.compose.constraintlayout)
             implementation(libs.markdown)
 
             // Koin
@@ -80,10 +80,11 @@ kotlin {
             // Voyager
             implementation(libs.voyager.navigator)
             implementation(libs.voyager.navigator.bottomsheet)
-            implementation(libs.voyager.koin)
-            implementation(libs.voyager.koin)
         }
-        iosMain.dependencies {
+        iosMain.dependencies {}
+        iosMain {
+            kotlin.srcDir("build/generated/ksp/metadata")
+            kotlin.srcDir("src/iosMain/resources")
         }
     }
 }
@@ -94,6 +95,10 @@ dependencies {
     add("kspIosX64", libs.koin.ksp.compiler)
     add("kspIosArm64", libs.koin.ksp.compiler)
     add("kspIosSimulatorArm64", libs.koin.ksp.compiler)
+}
+
+ksp {
+    arg("KOIN_USE_COMPOSE_VIEWMODEL","true")
 }
 
 android {

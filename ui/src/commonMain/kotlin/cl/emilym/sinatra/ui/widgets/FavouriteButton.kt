@@ -11,10 +11,10 @@ import androidx.compose.ui.Modifier
 import cl.emilym.sinatra.ui.minimumTouchTarget
 
 @Composable
-fun FavouriteButton(
-    favourite: Boolean,
-    onFavouriteChange: (Boolean) -> Unit,
-    modifier: Modifier = Modifier
+fun SinatraIconButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    icon: @Composable () -> Unit
 ) {
     Box(
         modifier = Modifier
@@ -22,9 +22,25 @@ fun FavouriteButton(
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null
-            ) { onFavouriteChange(!favourite) }
+            ) { onClick() }
             .then(modifier),
         contentAlignment = Alignment.Center
+    ) {
+        icon()
+    }
+}
+
+@Composable
+fun FavouriteButton(
+    favourite: Boolean,
+    onFavouriteChange: (Boolean) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    SinatraIconButton(
+        onClick = {
+            onFavouriteChange(!favourite)
+        },
+        modifier = modifier
     ) {
         FavouriteIcon(
             favourite

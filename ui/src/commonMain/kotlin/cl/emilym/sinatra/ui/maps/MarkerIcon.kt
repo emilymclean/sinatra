@@ -10,22 +10,21 @@ import cl.emilym.sinatra.data.models.Route
 import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.ui.color
 
+expect fun platformSizeAdjustment(): Float
 
 data class MarkerIconOffset(
     val x: Float,
     val y: Float
 )
 
-expect interface MarkerIcon {
-    val anchor: MarkerIconOffset
-}
+expect interface MarkerIcon
 
 @Composable
 expect fun spotMarkerIcon(
     tint: Color,
     borderColor: Color = Color.White,
     size: Dp = 30.dp
-): MarkerIcon
+): MarkerIcon?
 
 @Composable
 expect fun circularIcon(
@@ -36,7 +35,7 @@ expect fun circularIcon(
 ): MarkerIcon
 
 @Composable
-fun stopMarkerIcon(stop: Stop? = null): MarkerIcon {
+fun stopMarkerIcon(stop: Stop? = null): MarkerIcon? {
     return spotMarkerIcon(MaterialTheme.colorScheme.primary
         .copy(alpha = 0.5f)
         .compositeOver(MaterialTheme.colorScheme.onSurface)

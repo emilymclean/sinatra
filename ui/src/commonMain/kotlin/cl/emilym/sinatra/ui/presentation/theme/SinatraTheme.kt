@@ -36,7 +36,7 @@ expect fun pickColorScheme(dynamicColor: Boolean = true, darkTheme: Boolean = is
 @Composable
 fun SinatraTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = false,
+    dynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {
     MaterialTheme(

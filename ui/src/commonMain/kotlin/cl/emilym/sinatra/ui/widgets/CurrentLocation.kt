@@ -7,17 +7,17 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import cl.emilym.sinatra.data.models.Location
+import cl.emilym.sinatra.data.models.MapLocation
 import dev.icerock.moko.permissions.Permission
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 
 @Composable
-internal expect fun platformCurrentLocation(): Flow<Location?>
+internal expect fun platformCurrentLocation(): Flow<MapLocation?>
 
 @Composable
-fun currentLocation(): Location? {
+fun currentLocation(): MapLocation? {
     var hasPermission by remember { mutableStateOf(false) }
     val permissionRequestQueue = LocalPermissionRequestQueue.current
 

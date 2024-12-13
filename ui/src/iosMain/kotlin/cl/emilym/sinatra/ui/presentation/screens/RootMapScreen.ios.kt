@@ -1,10 +1,115 @@
 package cl.emilym.sinatra.ui.presentation.screens
 
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.runtime.Composable
-import cafe.adriel.voyager.core.screen.Screen
-import cl.emilym.sinatra.ui.navigation.MapControl
-import cl.emilym.sinatra.ui.navigation.MapScope
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.viewinterop.UIKitView
+import cl.emilym.sinatra.ui.maps.AppleMapControl
+import cl.emilym.sinatra.ui.maps.CameraState
+import cl.emilym.sinatra.ui.maps.MapControl
+import cl.emilym.sinatra.ui.maps.MapItem
+import cl.emilym.sinatra.ui.maps.MapScope
+import cl.emilym.sinatra.ui.maps.MarkerItem
+import cl.emilym.sinatra.ui.maps.currentLocationIcon
+import cl.emilym.sinatra.ui.maps.iosCurrentMapItems
+import cl.emilym.sinatra.ui.maps.precompute
+import cl.emilym.sinatra.ui.maps.rememberMapKitState
+import cl.emilym.sinatra.ui.navigation.bottomSheetHalfHeight
+import cl.emilym.sinatra.ui.navigation.currentMapItems
+import cl.emilym.sinatra.ui.toZoom
+import cl.emilym.sinatra.ui.widgets.currentLocation
+import cl.emilym.sinatra.ui.widgets.screenSize
+import cl.emilym.sinatra.ui.widgets.viewportSize
+import io.github.aakira.napier.Napier
+import kotlinx.coroutines.launch
+import platform.MapKit.MKMapView
+import platform.MapKit.MKPointOfInterestCategoryPublicTransport
+import platform.MapKit.MKPointOfInterestFilter
+
+val globalPointOfInterestFilter = MKPointOfInterestFilter(excludingCategories = listOf(
+    MKPointOfInterestCategoryPublicTransport
+))
 
 @Composable
 actual fun Map(content: @Composable MapControl.(@Composable () -> Unit) -> Unit) {
+
+    val state = rememberMapKitState {}
+
+    val insets = WindowInsets.systemBars.only(WindowInsetsSides.Top)
+    val viewportSize = viewportSize(insets)
+    val paddingValues = insets.asPaddingValues().precompute()
+    val bottomSheetHalfHeight = bottomSheetHalfHeight()
+    val screenSize = screenSize()
+
+    val control = remember(state, viewportSize, paddingValues, bottomSheetHalfHeight) {
+        AppleMapControl(
+            state,
+            viewportSize,
+            paddingValues,
+            bottomSheetHalfHeight
+        )
+    }
+
+    LaunchedEffect(screenSize, viewportSize) {
+        Napier.d("viewportSize = $viewportSize, screenSize = $screenSize")
+    }
+
+    val scope = remember(state.cameraDescription) {
+        MapScope(
+            CameraState(
+                state.cameraDescription.center,
+                state.cameraDescription.coordinateSpan.toZoom()
+            )
+        )
+    }
+
+    val currentLocation = currentLocation()
+    val currentLocationIcon = currentLocationIcon()
+
+    val items = scope.iosCurrentMapItems() + listOfNotNull(
+        currentLocation?.let {
+            MarkerItem(
+                it,
+                currentLocationIcon,
+                id = "currentLocation"
+            )
+        }
+    )
+
+    LaunchedEffect(items) {
+        state.updateItems(items)
+    }
+
+    val coroutineScope = rememberCoroutineScope()
+
+    control.content {
+        UIKitView(
+            modifier = Modifier.fillMaxSize(),
+            factory = {
+                MKMapView().apply {
+                    setZoomEnabled(true)
+                    setScrollEnabled(true)
+                    setRotateEnabled(false)
+                    setPointOfInterestFilter(globalPointOfInterestFilter)
+                }.also {
+                    coroutineScope.launch { state.setMap(it) }
+                }
+            },
+            onRelease = {
+                coroutineScope.launch { state.setMap(null) }
+            }
+        )
+    }
 }

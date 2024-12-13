@@ -2,7 +2,7 @@ package cl.emilym.sinatra.room.entities
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import cl.emilym.sinatra.data.models.Location
+import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.data.models.StopAccessibility
 import cl.emilym.sinatra.data.models.StopWheelchairAccessibility
@@ -22,7 +22,7 @@ class StopEntity(
             id,
             parentStation,
             name,
-            Location(lat, lng),
+            MapLocation(lat, lng),
             StopAccessibility(
                 StopWheelchairAccessibility.valueOf(wheelchairAccessible)
             )

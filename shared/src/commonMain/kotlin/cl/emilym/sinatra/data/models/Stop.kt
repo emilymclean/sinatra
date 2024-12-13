@@ -1,8 +1,6 @@
 package cl.emilym.sinatra.data.models
 
 import cl.emilym.gtfs.WheelchairStopAccessibility
-import kotlinx.datetime.Instant
-import kotlin.time.Duration
 
 private val SIMPLE_TERMINATORS = arrayOf(" Platform", " at", " Plt")
 
@@ -10,7 +8,7 @@ data class Stop(
     val id: StopId,
     val parentStation: StopId?,
     val name: String,
-    val location: Location,
+    val location: MapLocation,
     val accessibility: StopAccessibility,
 ) {
 
@@ -20,7 +18,7 @@ data class Stop(
                 pb.id,
                 pb.parentStation,
                 pb.name,
-                Location.fromPB(pb.location),
+                MapLocation.fromPB(pb.location),
                 StopAccessibility.fromPB(pb.accessibility)
             )
         }

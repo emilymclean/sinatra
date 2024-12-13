@@ -8,6 +8,7 @@ import androidx.compose.ui.graphics.Color
 import org.jetbrains.compose.resources.painterResource
 import sinatra.ui.generated.resources.Res
 import sinatra.ui.generated.resources.accessible
+import sinatra.ui.generated.resources.back
 import sinatra.ui.generated.resources.not_accessible
 import sinatra.ui.generated.resources.bike
 import sinatra.ui.generated.resources.no_routes
@@ -18,6 +19,7 @@ import sinatra.ui.generated.resources.star
 import sinatra.ui.generated.resources.star_outline
 import sinatra.ui.generated.resources.map
 import sinatra.ui.generated.resources.info
+import sinatra.ui.generated.resources.back
 
 @Composable
 fun AccessibleIcon(
@@ -181,6 +183,19 @@ fun InfoIcon(
     Icon(
         painterResource(Res.drawable.info),
         contentDescription = "An \"i\" in a circle",
+        modifier = modifier,
+        tint = tint
+    )
+}
+
+@Composable
+fun BackIcon(
+    modifier: Modifier = Modifier,
+    tint: Color = LocalContentColor.current
+) {
+    Icon(
+        painterResource(Res.drawable.back),
+        contentDescription = "An arrow pointing to the left",
         modifier = modifier,
         tint = tint
     )

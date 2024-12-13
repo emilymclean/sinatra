@@ -3,9 +3,15 @@ package cl.emilym.sinatra.ui
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import cl.emilym.compose.requeststate.RequestState
+import cl.emilym.sinatra.asRadians
 import cl.emilym.sinatra.data.models.ColorPair
+import cl.emilym.sinatra.data.models.CoordinateSpan
+import cl.emilym.sinatra.data.models.Latitude
+import cl.emilym.sinatra.data.models.MapLocation
+import cl.emilym.sinatra.data.models.MapRegion
 import cl.emilym.sinatra.data.models.OnColor
 import cl.emilym.sinatra.data.models.OnColor.DARK
 import cl.emilym.sinatra.data.models.OnColor.LIGHT
@@ -14,10 +20,15 @@ import cl.emilym.sinatra.data.models.RouteTripStop
 import cl.emilym.sinatra.data.models.StationTime
 import cl.emilym.sinatra.data.models.TimetableStationTime
 import cl.emilym.sinatra.data.models.forDay
+import cl.emilym.sinatra.degrees
+import cl.emilym.sinatra.ui.maps.MarkerItem
 import cl.emilym.sinatra.ui.widgets.LocalClock
 import cl.emilym.sinatra.ui.widgets.toTodayInstant
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
+import kotlin.math.cos
+import kotlin.math.ln
+import kotlin.math.pow
 
 fun String.toColor(): Color {
     val trimmed = removePrefix("#")
@@ -81,4 +92,41 @@ fun List<RouteTripStop>.past(
 @Composable
 fun List<TimetableStationTime>.asInstants(): List<Instant> {
     return flatMap { it.times.map { it.time.toTodayInstant() } }
+}
+
+fun Float.toCoordinateSpan(
+    viewportSize: Size
+): CoordinateSpan {
+    val span = 360 / 2.0.pow(this.toDouble())
+    return CoordinateSpan(
+        deltaLatitude = ((viewportSize.width) / 256.0) * span,
+        deltaLongitude = ((viewportSize.width) / 256.0) * span
+    )
+}
+
+fun CoordinateSpan.adjustForLatitude(latitude: Latitude): CoordinateSpan {
+    return CoordinateSpan(
+        deltaLatitude,
+        deltaLongitude * cos(latitude.degrees.asRadians)
+    )
+}
+
+fun CoordinateSpan.toZoom(): Float {
+    return listOf(deltaLatitude, deltaLongitude).map {
+        ln(360.0 / it) / ln(2.0)
+    }.max().toFloat()
+}
+
+fun MapLocation.addCoordinateSpan(span: CoordinateSpan): MapRegion {
+    val adjusted = span.adjustForLatitude(lat)
+    return MapRegion(
+        MapLocation(
+            lat + adjusted.deltaLatitude,
+            ((lng + adjusted.deltaLongitude + 180) % 360) - 180,
+        ),
+        MapLocation(
+            lat - adjusted.deltaLatitude,
+            ((lng - adjusted.deltaLongitude + 180) % 360) - 180
+        )
+    )
 }

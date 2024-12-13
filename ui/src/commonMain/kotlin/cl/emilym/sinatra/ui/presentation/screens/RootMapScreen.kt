@@ -44,14 +44,14 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.CurrentScreen
 import cafe.adriel.voyager.navigator.Navigator
 import cl.emilym.compose.units.rdp
+import cl.emilym.sinatra.ui.maps.MapControl
 import cl.emilym.sinatra.ui.navigation.CurrentBottomSheetContent
 import cl.emilym.sinatra.ui.navigation.CurrentMapOverlayContent
 import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
-import cl.emilym.sinatra.ui.navigation.MapControl
 import cl.emilym.sinatra.ui.navigation.MapScreen
 import cl.emilym.sinatra.ui.navigation.bottomSheetHalfHeight
 import cl.emilym.sinatra.ui.navigation.isCurrentMapScreen
-import cl.emilym.sinatra.ui.presentation.screens.maps.MapSearchScreen
+import cl.emilym.sinatra.ui.presentation.screens.maps.search.MapSearchScreen
 import cl.emilym.sinatra.ui.widgets.InfoIcon
 import cl.emilym.sinatra.ui.widgets.LocalMapControl
 import cl.emilym.sinatra.ui.widgets.LocalViewportSize
@@ -92,23 +92,26 @@ class RootMapScreen: Screen {
                 val height = maxHeight.toFloatPx()
                 val width = maxWidth.toFloatPx()
 
-                if (isCurrentMapScreen()) {
-                    Map { map ->
-                        CompositionLocalProvider(
-                            LocalMapControl provides this,
-                            LocalBottomSheetState provides scaffoldState,
-                            LocalViewportSize provides Size(width, height)
-                        ) {
-                            BottomSheet(scaffoldState) {
-                                Box(Modifier.fillMaxSize()) {
-                                    map()
-                                    MapOverlay()
+                CompositionLocalProvider(
+                    LocalBottomSheetState provides scaffoldState,
+                    LocalViewportSize provides Size(width, height)
+                ) {
+                    if (isCurrentMapScreen()) {
+                        Map { map ->
+                            CompositionLocalProvider(
+                                LocalMapControl provides this
+                            ) {
+                                BottomSheet(scaffoldState) {
+                                    Box(Modifier.fillMaxSize()) {
+                                        map()
+                                        MapOverlay()
+                                    }
                                 }
                             }
                         }
+                    } else {
+                        CurrentScreen()
                     }
-                } else {
-                    CurrentScreen()
                 }
             }
         }
