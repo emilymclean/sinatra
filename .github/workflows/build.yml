@@ -1,0 +1,235 @@
+name: Build App
+'on':
+  pull_request:
+    branches:
+    - main
+    - develop
+  push:
+    branches:
+    - main
+    - develop
+    - release/**
+permissions:
+  contents: write
+jobs:
+  version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.gitversion.outputs.semVer }}
+      versionCode: ${{ steps.run-number.outputs.versionCode }}
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - name: Install GitVersion
+      uses: gittools/actions/gitversion/setup@v3.0.0
+      with:
+        versionSpec: 5.x
+    - id: gitversion
+      name: Use GitVersion
+      uses: gittools/actions/gitversion/execute@v3.0.0
+      with:
+        useConfigFile: true
+        configFilePath: ./gitversion.yml
+    - id: run-number
+      run: |-
+        current_run_number=${{ github.run_number }}
+        new_number=$((current_run_number+0))
+        echo "versionCode=${new_number}" >> $GITHUB_OUTPUT
+    - name: Generate Job Summary
+      run: |-
+        echo "# Version Info
+        Semantic Version: ${{ steps.gitversion.outputs.semVer }}
+        Version Number: ${{ steps.run-number.outputs.versionCode }}" >> $GITHUB_STEP_SUMMARY
+  build-apk:
+    needs:
+    - version
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        build:
+        - module: androidApp
+          command: Debug
+          variant: debug
+          release: false
+          path: ./androidApp/build/outputs/apk/debug
+          fileName: androidApp-debug
+          name: androidApp-debug
+          instant: false
+          hasMappingFile: false
+          mappingFile: ./androidApp/build/outputs/mapping/debug/mapping.txt
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: temurin
+    - name: Setup gradle
+      uses: gradle/actions/setup-gradle@v3
+    - name: Build with Gradle
+      env:
+        ORG_GRADLE_PROJECT_appVersionName: ${{ needs.version.outputs.version }}
+        ORG_GRADLE_PROJECT_appVersionCode: ${{ needs.version.outputs.versionCode }}
+      run: ./gradlew ${{ matrix.build.module }}:package${{ matrix.build.command }}UniversalApk
+    - id: sign
+      name: Sign app
+      if: ${{ matrix.build.release }}
+      uses: ilharp/sign-android-release@v1
+      with:
+        releaseDir: ${{ matrix.build.path }}
+        signingKey: ${{ secrets.SIGNING_KEY }}
+        keyAlias: ${{ secrets.ALIAS }}
+        keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
+        keyPassword: ${{ secrets.KEY_PASSWORD }}
+        buildToolsVersion: 33.0.0
+    - name: Rename apk
+      if: ${{ matrix.build.release }}
+      run: mv ${{ steps.sign.outputs.signedFile }} ./${{ matrix.build.name }}.apk
+    - name: Rename apk
+      if: ${{ !matrix.build.release }}
+      run: mv ${{ matrix.build.path }}/${{ matrix.build.fileName }}.apk ./${{ matrix.build.name }}.apk
+    - uses: actions/upload-artifact@v4
+      with:
+        name: ${{ matrix.build.name }}-apk
+        path: ./${{ matrix.build.name }}.apk
+    - if: matrix.build.hasMappingFile
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ matrix.build.name }}-apk-mapping
+        path: ${{ matrix.build.mappingFile }}
+  publish-apk-to-release:
+    needs:
+    - version
+    - release
+    - build-apk
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        build:
+        - module: androidApp
+          command: Debug
+          variant: debug
+          release: false
+          path: ./androidApp/build/outputs//debug
+          fileName: androidApp-debug
+          name: androidApp-debug
+          instant: false
+          hasMappingFile: false
+          mappingFile: ./androidApp/build/outputs/mapping/debug/mapping.txt
+    steps:
+    - uses: actions/download-artifact@v4
+      with:
+        name: ${{ matrix.build.name }}-apk
+        path: ./
+    - if: matrix.build.hasMappingFile
+      uses: actions/download-artifact@v4
+      with:
+        name: ${{ matrix.build.name }}-apk-mapping
+        path: ./
+    - name: Upload Artifact to Release
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      uses: shogo82148/actions-upload-release-asset@v1
+      with:
+        upload_url: ${{ needs.release.outputs.upload_url }}
+        asset_path: ./${{ matrix.build.name }}.apk
+        asset_name: ${{ matrix.build.name }}-v${{ needs.version.outputs.version }}.apk
+        asset_content_type: application/zip
+    - name: Upload Artifact to Release
+      if: matrix.build.hasMappingFile
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      uses: shogo82148/actions-upload-release-asset@v1
+      with:
+        upload_url: ${{ needs.release.outputs.upload_url }}
+        asset_path: ./mapping.txt
+        asset_name: mapping-${{ matrix.build.name }}-v${{ needs.version.outputs.version }}.txt
+        asset_content_type: text/plain
+  build-aab:
+    needs:
+    - version
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        build:
+        - module: androidApp
+          command: Debug
+          variant: debug
+          release: false
+          path: ./androidApp/build/outputs/bundle/debug
+          fileName: androidApp-debug
+          name: androidApp-debug
+          instant: false
+          hasMappingFile: false
+          mappingFile: ./androidApp/build/outputs/mapping/debug/mapping.txt
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: temurin
+    - name: Setup gradle
+      uses: gradle/actions/setup-gradle@v3
+    - name: Build with Gradle
+      env:
+        ORG_GRADLE_PROJECT_appVersionName: ${{ needs.version.outputs.version }}
+        ORG_GRADLE_PROJECT_appVersionCode: ${{ needs.version.outputs.versionCode }}
+      run: ./gradlew ${{ matrix.build.module }}:bundle${{ matrix.build.command }}
+    - id: sign
+      name: Sign app
+      if: ${{ matrix.build.release }}
+      uses: ilharp/sign-android-release@v1
+      with:
+        releaseDir: ${{ matrix.build.path }}
+        signingKey: ${{ secrets.SIGNING_KEY }}
+        keyAlias: ${{ secrets.ALIAS }}
+        keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
+        keyPassword: ${{ secrets.KEY_PASSWORD }}
+        buildToolsVersion: 33.0.0
+    - name: Rename aab
+      if: ${{ matrix.build.release }}
+      run: mv ${{ steps.sign.outputs.signedFile }} ./${{ matrix.build.name }}.aab
+    - name: Rename aab
+      if: ${{ !matrix.build.release }}
+      run: mv ${{ matrix.build.path }}/${{ matrix.build.fileName }}.aab ./${{ matrix.build.name }}.aab
+    - uses: actions/upload-artifact@v4
+      with:
+        name: ${{ matrix.build.name }}-aab
+        path: ./${{ matrix.build.name }}.aab
+    - if: matrix.build.hasMappingFile
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ matrix.build.name }}-aab-mapping
+        path: ${{ matrix.build.mappingFile }}
+  release:
+    permissions:
+      contents: write
+    needs:
+    - version
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - name: Create tag for release
+      uses: rickstaa/action-create-tag@v1
+      with:
+        tag: v${{ needs.version.outputs.version }}
+    - id: create_release
+      name: Create Release
+      uses: softprops/action-gh-release@v2
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        tag_name: v${{ needs.version.outputs.version }}
+        name: Release ${{ needs.version.outputs.version }}
+        draft: false
+        prerelease: ${{ github.ref != 'refs/heads/main' }}

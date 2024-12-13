@@ -1,0 +1,291 @@
+extends "package://components.emilym.cl/actions/actions@0.1.12#/common/build-app-support.pkl"
+import "package://components.emilym.cl/actions/actions@0.1.12#/common/common.pkl" as common
+
+hidden modules: List<String>(length == 0) = List()
+hidden extraBuildSteps: Listing<Step>
+
+hidden iaToolPath: String? = null
+hidden versionNumberOffset = 0
+hidden instantVersionNumberOffset = 0
+hidden gradleVersionNameName = "version"
+hidden gradleVersionCodeName = "versionCode"
+
+hidden releaseTrackPublishingConfiguration: List<AppReleaseDescriptor>(isDistinctBy((e) -> List(e.appModule, e.flavor))) = List()
+
+hidden apkBuildDescriptors: List<BuildDescriptor> = List(
+  debugBuildDescriptor("androidApp")
+)
+hidden aabBuildDescriptors: List<BuildDescriptor> = List(
+  releaseBuildDescriptor("androidApp", false)
+)
+
+local hasInstant = aabBuildDescriptors.filter((e) -> e.instant).length > 0
+local hasAab = aabBuildDescriptors.length > 0
+local hasApk = apkBuildDescriptors.length > 0
+
+function buildJob(
+  descriptors: List<BuildDescriptor>,
+  extension: String,
+  command: String,
+  postCommand: String,
+  folder: String
+) = new Job {
+  strategy = new JobStrategy {
+    matrix = new Mapping {
+      ["build"] = generateMatrixInclude(descriptors, folder)
+    }
+  }
+  needs = new Listing {
+    "version"
+    ...(
+    if (hasInstant)
+      new Listing {
+        "version-instant"
+      }
+    else new Listing {}
+    )
+  }
+  steps = new Listing {
+    common.checkout
+    common.setupJdk
+    ...extraBuildSteps
+    ...common.gradle(
+      "Build",
+      "${{ matrix.build.module }}:\(command)${{ matrix.build.command }}\(postCommand)",
+      new Mapping {
+        ["ORG_GRADLE_PROJECT_appVersionName"] = "${{ needs.version.outputs.version }}"
+        ["ORG_GRADLE_PROJECT_appVersionCode"] = if (hasInstant)
+            "${{ matrix.build.instant && needs.version-instant.outputs.versionCode || needs.version.outputs.versionCode }}"
+          else
+            "${{ needs.version.outputs.versionCode }}"
+      }
+    )
+    (common.signApp("${{ matrix.build.path }}")) {
+      `if` = "${{ matrix.build.release }}"
+    }
+    new CommandStep {
+      name = "Rename \(extension)"
+      run = "mv ${{ steps.sign.outputs.signedFile }} ./${{ matrix.build.name }}.\(extension)"
+      `if` = "${{ matrix.build.release }}"
+    }
+    new CommandStep {
+      name = "Rename \(extension)"
+      run = "mv ${{ matrix.build.path }}/${{ matrix.build.fileName }}.\(extension) ./${{ matrix.build.name }}.\(extension)"
+      `if` = "${{ !matrix.build.release }}"
+    }
+    new ActionStep {
+      uses = "actions/upload-artifact@v4"
+      with = new Mapping {
+        ["name"] = "${{ matrix.build.name }}-\(extension)"
+        ["path"] = "./${{ matrix.build.name }}.\(extension)"
+      }
+    }
+    new ActionStep {
+      uses = "actions/upload-artifact@v4"
+      `if` = "matrix.build.hasMappingFile"
+      with = new Mapping {
+        ["name"] = "${{ matrix.build.name }}-\(extension)-mapping"
+        ["path"] = "${{ matrix.build.mappingFile }}"
+      }
+    }
+  }
+}
+
+function releaseJob(
+  descriptors: List<BuildDescriptor>,
+  extension: String
+) = new Job {
+  strategy = new JobStrategy {
+    matrix = new Mapping {
+      ["build"] = generateMatrixInclude(descriptors, "")
+    }
+  }
+  needs = new Listing {
+    "version"
+    "release"
+    "build-\(extension)"
+  }
+  steps = new Listing {
+    new ActionStep {
+      uses = "actions/download-artifact@v4"
+      with = new Mapping {
+        ["name"] = "${{ matrix.build.name }}-\(extension)"
+        ["path"] = "./"
+      }
+    }
+    new ActionStep {
+      uses = "actions/download-artifact@v4"
+      `if` = "matrix.build.hasMappingFile"
+      with = new Mapping {
+        ["name"] = "${{ matrix.build.name }}-\(extension)-mapping"
+        ["path"] = "./"
+      }
+    }
+    new ActionStep {
+      name = "Upload Artifact to Release"
+      uses = "shogo82148/actions-upload-release-asset@v1"
+      env = new Mapping {
+        ["GITHUB_TOKEN"] = "${{ secrets.GITHUB_TOKEN }}"
+      }
+      with = new Mapping {
+        ["upload_url"] = "${{ needs.release.outputs.upload_url }}"
+        ["asset_path"] = "./${{ matrix.build.name }}.\(extension)"
+        ["asset_name"] = "${{ matrix.build.name }}-v${{ needs.version.outputs.version }}.\(extension)"
+        ["asset_content_type"] = "application/zip"
+      }
+    }
+    new ActionStep {
+      name = "Upload Artifact to Release"
+      uses = "shogo82148/actions-upload-release-asset@v1"
+      `if` = "matrix.build.hasMappingFile"
+      env = new Mapping {
+        ["GITHUB_TOKEN"] = "${{ secrets.GITHUB_TOKEN }}"
+      }
+      with = new Mapping {
+        ["upload_url"] = "${{ needs.release.outputs.upload_url }}"
+        ["asset_path"] = "./mapping.txt"
+        ["asset_name"] = "mapping-${{ matrix.build.name }}-v${{ needs.version.outputs.version }}.txt"
+        ["asset_content_type"] = "text/plain"
+      }
+    }
+  }
+}
+
+function generateMatrixInclude(
+  descriptors: List<BuildDescriptor>,
+  folder: String
+): Listing<Mapping<String, Any>> = new Listing {
+  for (descriptor in descriptors) {
+    new Mapping {
+      ["module"] = descriptor.appModule
+      ["command"] = descriptor.full
+      ["variant"] = descriptor.variant
+      ["flavor"] = descriptor.flavor
+      ["release"] = descriptor.release
+      ["path"] = descriptor.path(folder)
+      ["fileName"] = descriptor.fileName
+      ["name"] = descriptor.artifactName
+      ["instant"] = descriptor.instant
+      ["hasMappingFile"] = descriptor.hasMappingFile
+      ["mappingFile"] = descriptor.mappingFile
+    }
+  }
+}
+
+function extractApksFromAAB(extraArgs: Listing<String>) =
+  let (args =
+    (new Listing<String> {
+      "java -jar bundletool.jar build-apks"
+      "--ks=temp.keystore"
+      "--ks-key-alias=${{ secrets.ALIAS }}"
+      "--ks-pass=pass:${{ secrets.KEY_STORE_PASSWORD }}"
+      "--key-pass=pass:${{ secrets.KEY_PASSWORD }}"
+      "--bundle=\"./${{ matrix.build.name }}.aab\""
+      "--output=\"${{ matrix.build.name }}.apks\""
+    }.toList() + extraArgs.toList()).join(" \\\n")
+  )
+    new Listing {
+      downloadBundletool
+      new CommandStep {
+        name = "Setup keystore"
+        run = """
+          echo "${{ secrets.SIGNING_KEY }}" | base64 --decode > temp.keystore
+          """
+      }
+      new CommandStep {
+        name = "Extract apks from aab"
+        run = args
+      }
+      new CommandStep {
+        name = "Cleanup keystore"
+        run = """
+          rm temp.keystore
+          """
+      }
+    }
+
+hidden downloadBundletool = new CommandStep {
+  name = "Download bundletool"
+  run = """
+    wget -q https://github.com/google/bundletool/releases/download/1.17.2/bundletool-all-1.17.2.jar -O bundletool.jar
+    """
+}
+
+name = "Build App"
+
+on = new On {
+  push = new Push {
+    branches = new Listing {
+      "main"
+      "develop"
+      "release/**"
+    }
+  }
+  pull_request = new PullRequest {
+    branches = new Listing {
+      "main"
+      "develop"
+    }
+  }
+}
+
+permissions = new Mapping {
+  ["contents"] = "write"
+}
+
+jobs = new Mapping {
+  ["version"] = common.version(versionNumberOffset)
+  ...(
+  if (hasInstant)
+    new Mapping {
+      ["version-instant"] = common.version(instantVersionNumberOffset)
+    }
+  else new Mapping {}
+  )
+  ...(
+  if (hasApk)
+    new Mapping {
+      ["build-apk"] = buildJob(
+        apkBuildDescriptors,
+        "apk",
+        "package",
+        "UniversalApk",
+        "apk"
+      )
+      ["publish-apk-to-release"] = releaseJob(
+        apkBuildDescriptors,
+        "apk"
+      )
+    }
+  else new Mapping {}
+  )
+  ...(
+  if (hasAab)
+    new Mapping {
+      ["build-aab"] = buildJob(
+        apkBuildDescriptors,
+        "aab",
+        "bundle",
+        "",
+        "bundle"
+      )
+    }
+  else new Mapping {}
+  )
+  ["release"] = new Job {
+    needs = new Listing {
+      "version"
+    }
+    `if` = "github.event_name != 'pull_request'"
+    permissions = new Mapping {
+      ["contents"] = "write"
+    }
+    outputs = new Mapping {
+      ["upload_url"] = "${{ steps.create_release.outputs.upload_url }}"
+    }
+    steps = new Listing {
+      common.checkout
+      ...common.create_release
+    }
+  }
+}

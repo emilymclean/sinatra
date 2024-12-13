@@ -10,14 +10,17 @@ plugins {
 }
 
 android {
+    val appVersionCode: String by project
+    val appVersionName: String by project
+
     namespace = "cl.emilym.sinatra.android"
     compileSdk = 35
     defaultConfig {
-        applicationId = "cl.emilym.sinatra.android"
+        applicationId = "cl.emilym.sinatra"
         minSdk = 24
         targetSdk = 34
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = appVersionCode.toInt()+100
+        versionName = appVersionName
     }
     buildFeatures {
         compose = true
