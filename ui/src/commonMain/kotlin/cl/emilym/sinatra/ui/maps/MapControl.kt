@@ -134,7 +134,6 @@ fun ScreenRegion.padded(
     fullBoxSize: Size,
     values: PrecomputedPaddingValues
 ): ScreenRegion {
-    Napier.d("Applying padding of ${values}")
     val horizontalScaling = width / fullBoxSize.width
     val verticalScaling = height / fullBoxSize.height
 

@@ -1,9 +1,11 @@
 package cl.emilym.sinatra.data.models
 
+import cl.emilym.gtfs.Location
 import cl.emilym.kmp.serializable.Serializable
 import cl.emilym.sinatra.asDegrees
 import cl.emilym.sinatra.asRadians
 import cl.emilym.sinatra.degrees
+import cl.emilym.sinatra.radians
 import io.github.aakira.napier.Napier
 import kotlin.math.abs
 import kotlin.math.atan2
@@ -49,27 +51,27 @@ data class MapRegion(
         )
     }
 
-    val center: MapLocation
-        get() {
-            Napier.d("Getting midpoint of topLeft = $topLeft and bottomRight = $bottomRight")
-            val dLng = (bottomRight.lng - topLeft.lng).degrees.asRadians
+    val center: MapLocation = listOf(topLeft, bottomRight).findMidpoint()
 
-            val tlLat = topLeft.lat.degrees.asRadians
-            val brLat = bottomRight.lat.degrees.asRadians
-            val tlLng = topLeft.lng.degrees.asRadians
+}
 
-            val bX = cos(brLat) * cos(dLng)
-            val bY = cos(brLat) * sin(dLng)
+fun List<MapLocation>.findMidpoint(): MapLocation {
+    val latR = map { it.lat.degrees.asRadians }
+    val lngR = map { it.lng.degrees.asRadians }
 
-            val mLat = atan2(
-                sin(tlLat) + sin(brLat),
-                sqrt((cos(tlLat) + bX).pow(2) + bY * bY)
-            )
-            val mLng = tlLng + atan2(bY, cos(tlLat) + bX)
+    val X = mapIndexed { i, it -> cos(latR[i]) * cos(lngR[i]) }
+    val Y = mapIndexed { i, it -> cos(latR[i]) * sin(lngR[i]) }
+    val Z = mapIndexed { i, it -> sin(latR[i]) }
 
-            return MapLocation(mLat.asDegrees, mLng.asDegrees)
-        }
+    val x = X.sum() / X.size
+    val y = Y.sum() / Y.size
+    val z = Z.sum() / Z.size
 
+    val oLng = atan2(y,x)
+    val hyp = sqrt(x.pow(2) + y.pow(2))
+    val oLat = atan2(z,hyp)
+
+    return MapLocation(oLat.radians.asDegrees, oLng.radians.asDegrees)
 }
 
 data class ScreenLocation(
