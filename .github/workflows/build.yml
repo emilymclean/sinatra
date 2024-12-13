@@ -52,8 +52,8 @@ jobs:
           command: Debug
           variant: debug
           release: false
-          path: ./androidApp/build/outputs/apk/debug
-          fileName: androidApp-debug
+          path: ./androidApp/build/outputs/apk_from_bundle/debug
+          fileName: androidApp-debug-universal
           name: androidApp-debug
           instant: false
           hasMappingFile: false
@@ -67,6 +67,12 @@ jobs:
       with:
         java-version: '17'
         distribution: temurin
+    - env:
+        MAPS_API_KEY: ${{ secrets.MAPS_API_KEY }}
+        GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+      run: |-
+        printf "MAPS_API_KEY=${MAPS_API_KEY}" >> secrets.properties
+        printf "${GOOGLE_SERVICES_JSON}" >> androidApp/google-services.json
     - name: Setup gradle
       uses: gradle/actions/setup-gradle@v3
     - name: Build with Gradle
@@ -174,6 +180,12 @@ jobs:
       with:
         java-version: '17'
         distribution: temurin
+    - env:
+        MAPS_API_KEY: ${{ secrets.MAPS_API_KEY }}
+        GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+      run: |-
+        printf "MAPS_API_KEY=${MAPS_API_KEY}" >> secrets.properties
+        printf "${GOOGLE_SERVICES_JSON}" >> androidApp/google-services.json
     - name: Setup gradle
       uses: gradle/actions/setup-gradle@v3
     - name: Build with Gradle

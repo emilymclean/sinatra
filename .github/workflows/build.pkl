@@ -12,6 +12,12 @@ hidden gradleVersionCodeName = "versionCode"
 
 hidden releaseTrackPublishingConfiguration: List<AppReleaseDescriptor>(isDistinctBy((e) -> List(e.appModule, e.flavor))) = List()
 
+function debugUniversalBuildDescriptor(_appModule: String) = new BuildDescriptor {
+  appModule = _appModule
+  variant = "debug"
+  release = false
+}
+
 hidden apkBuildDescriptors: List<BuildDescriptor> = List(
   debugBuildDescriptor("androidApp")
 )
@@ -28,11 +34,12 @@ function buildJob(
   extension: String,
   command: String,
   postCommand: String,
+  fileNameBuilder: (BuildDescriptor) -> String,
   folder: String
 ) = new Job {
   strategy = new JobStrategy {
     matrix = new Mapping {
-      ["build"] = generateMatrixInclude(descriptors, folder)
+      ["build"] = generateMatrixInclude(descriptors, fileNameBuilder, folder)
     }
   }
   needs = new Listing {
@@ -49,6 +56,16 @@ function buildJob(
     common.checkout
     common.setupJdk
     ...extraBuildSteps
+    new CommandStep {
+      run = """
+        printf "MAPS_API_KEY=${MAPS_API_KEY}" >> secrets.properties
+        printf "${GOOGLE_SERVICES_JSON}" >> androidApp/google-services.json
+        """
+      env {
+        ["MAPS_API_KEY"] = "${{ secrets.MAPS_API_KEY }}"
+        ["GOOGLE_SERVICES_JSON"] = "${{ secrets.GOOGLE_SERVICES_JSON }}"
+      }
+    }
     ...common.gradle(
       "Build",
       "${{ matrix.build.module }}:\(command)${{ matrix.build.command }}\(postCommand)",
@@ -97,7 +114,7 @@ function releaseJob(
 ) = new Job {
   strategy = new JobStrategy {
     matrix = new Mapping {
-      ["build"] = generateMatrixInclude(descriptors, "")
+      ["build"] = generateMatrixInclude(descriptors, defaultFileName, "")
     }
   }
   needs = new Listing {
@@ -151,8 +168,11 @@ function releaseJob(
   }
 }
 
+hidden defaultFileName = (descriptor: BuildDescriptor) -> descriptor.fileName
+
 function generateMatrixInclude(
   descriptors: List<BuildDescriptor>,
+  fileNameBuilder: (BuildDescriptor) -> String,
   folder: String
 ): Listing<Mapping<String, Any>> = new Listing {
   for (descriptor in descriptors) {
@@ -163,7 +183,7 @@ function generateMatrixInclude(
       ["flavor"] = descriptor.flavor
       ["release"] = descriptor.release
       ["path"] = descriptor.path(folder)
-      ["fileName"] = descriptor.fileName
+      ["fileName"] = fileNameBuilder.apply(descriptor)
       ["name"] = descriptor.artifactName
       ["instant"] = descriptor.instant
       ["hasMappingFile"] = descriptor.hasMappingFile
@@ -250,7 +270,13 @@ jobs = new Mapping {
         "apk",
         "package",
         "UniversalApk",
-        "apk"
+        (descriptor: BuildDescriptor) -> List(
+          descriptor.appModule.split(":").last,
+          descriptor.flavor,
+          descriptor.variant,
+          "universal"
+        ).filterNonNull().join("-"),
+        "apk_from_bundle"
       )
       ["publish-apk-to-release"] = releaseJob(
         apkBuildDescriptors,
@@ -267,6 +293,7 @@ jobs = new Mapping {
         "aab",
         "bundle",
         "",
+        defaultFileName,
         "bundle"
       )
     }
