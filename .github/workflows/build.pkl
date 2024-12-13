@@ -77,8 +77,19 @@ function buildJob(
             "${{ needs.version.outputs.versionCode }}"
       }
     )
-    (common.signApp("${{ matrix.build.path }}")) {
+    new ActionStep {
+      id = "sign"
+      uses = "ilharp/sign-android-release@v1"
+      name = "Sign app"
       `if` = "${{ matrix.build.release }}"
+      with = new Mapping {
+        ["releaseDir"] = "${{ matrix.build.path }}"
+        ["signingKey"] = "${{ secrets.SIGNING_KEY }}"
+        ["keyAlias"] = "${{ secrets.ALIAS }}"
+        ["keyStorePassword"] = "${{ secrets.KEY_STORE_PASSWORD }}"
+        ["keyPassword"] = "${{ secrets.KEY_PASSWORD }}"
+        ["buildToolsVersion"] = "35.0.0"
+      }
     }
     new CommandStep {
       name = "Rename \(extension)"
