@@ -4,13 +4,17 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.UIKitView
 import cl.emilym.sinatra.ui.maps.AppleMapControl
 import cl.emilym.sinatra.ui.maps.CameraState
 import cl.emilym.sinatra.ui.maps.MapControl
+import cl.emilym.sinatra.ui.maps.MapItem
 import cl.emilym.sinatra.ui.maps.MapScope
 import cl.emilym.sinatra.ui.maps.MarkerItem
 import cl.emilym.sinatra.ui.maps.currentLocationIcon
@@ -53,18 +57,23 @@ actual fun Map(content: @Composable MapControl.(@Composable () -> Unit) -> Unit)
     val currentLocation = currentLocation()
     val currentLocationIcon = currentLocationIcon()
 
-    val items = scope.currentMapItems() + listOfNotNull(
-        currentLocation?.let {
-            MarkerItem(
-                it,
-                currentLocationIcon,
-                id = "currentLocation"
-            )
+    scope.currentMapItems { mapItems ->
+        val items = mapItems + listOfNotNull(
+            currentLocation?.let {
+                MarkerItem(
+                    it,
+                    currentLocationIcon,
+                    id = "currentLocation"
+                )
+            }
+        )
+
+        LaunchedEffect(items) {
+            state.updateItems(items)
         }
-    )
-    LaunchedEffect(items) {
-        state.updateItems(items)
     }
+
+
 
     val coroutineScope = rememberCoroutineScope()
 

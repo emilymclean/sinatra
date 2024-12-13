@@ -66,12 +66,21 @@ fun CurrentBottomSheetContent() {
 }
 
 @Composable
-fun MapScope.currentMapItems(): List<MapItem> {
+fun MapScope.currentMapItems(
+    accept: @Composable (List<MapItem>) -> Unit
+) {
     val navigator = LocalNavigator.currentOrThrow
     val currentScreen = navigator.lastItem
-    val mapScreen = (currentScreen as? MapScreen) ?: return listOf()
+    val mapScreen = (currentScreen as? MapScreen)
 
-    return with(mapScreen) { mapItems() }
+    if (mapScreen == null) {
+        accept(listOf())
+        return
+    }
+
+    navigator.saveableState("mapItems") {
+        with(mapScreen) { accept(mapItems()) }
+    }
 }
 
 @Composable

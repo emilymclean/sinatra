@@ -92,15 +92,15 @@ actual fun Map(content: @Composable MapControl.(@Composable () -> Unit) -> Unit)
             ),
             mapColorScheme = ComposeMapColorScheme.FOLLOW_SYSTEM
         ) {
-            val items = mapScope.currentMapItems()
-
             currentLocation?.let { DrawMarker(MarkerItem(it, currentLocationIcon)) }
 
-            for (item in items) {
-                when (item) {
-                    is MarkerItem -> DrawMarker(item)
-                    is LineItem -> DrawLine(item)
-                    else -> {}
+            mapScope.currentMapItems { items ->
+                for (item in items) {
+                    when (item) {
+                        is MarkerItem -> DrawMarker(item)
+                        is LineItem -> DrawLine(item)
+                        else -> {}
+                    }
                 }
             }
 
