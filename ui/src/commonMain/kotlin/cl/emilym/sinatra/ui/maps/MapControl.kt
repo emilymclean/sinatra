@@ -1,10 +1,13 @@
 package cl.emilym.sinatra.ui.maps
 
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.ui.geometry.Size
 import cl.emilym.sinatra.data.models.MapRegion
 import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.data.models.ScreenLocation
 import cl.emilym.sinatra.data.models.ScreenRegion
+import cl.emilym.sinatra.ui.toCoordinateSpan
+import cl.emilym.sinatra.ui.widgets.toFloatPx
 import kotlin.math.PI
 import kotlin.math.pow
 
@@ -15,6 +18,7 @@ interface MapControl {
 }
 
 abstract class AbstractMapControl: MapControl {
+    protected abstract val contentViewportPadding: PrecomputedPaddingValues
     protected abstract val contentViewportSize: Size
     protected abstract val bottomSheetHalfHeight: Float
 
@@ -92,10 +96,19 @@ abstract class AbstractMapControl: MapControl {
         location: MapLocation,
         zoom: Float
     ) {
-        val moveDownPx = ((contentViewportSize.height / 2) - (visibleMapSize.height / 2)) * -1f
-        showPoint(location.addMetersLatitude(metersPerPxAtZoom(zoom) * moveDownPx), zoom)
+        val span = zoom.toCoordinateSpan()
+        zoomToArea(
+            MapLocation(
+                location.lat + span.deltaLatitude,
+                location.lng + span.deltaLongitude,
+            ),
+            MapLocation(
+                location.lat - span.deltaLatitude,
+                location.lng - span.deltaLongitude
+            ),
+            0
+        )
     }
-
 
 }
 
@@ -109,5 +122,18 @@ fun MapLocation.addMetersLatitude(meters: Float): MapLocation {
     return MapLocation(
         lat + (meters / EARTH_CIRCUMFERENCE) * (180 / PI),
         lng
+    )
+}
+
+fun ScreenRegion.padded(values: PrecomputedPaddingValues): ScreenRegion {
+    return copy(
+        topLeft = ScreenLocation(
+            topLeft.x - values.left,
+            topLeft.y - values.top
+        ),
+        bottomRight = ScreenLocation(
+            bottomRight.x + values.right,
+            bottomRight.y + values.bottom
+        )
     )
 }

@@ -4,7 +4,7 @@ import androidx.compose.ui.graphics.Color
 import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.data.models.MapRegion
 import cl.emilym.sinatra.data.models.ScreenLocation
-import cl.emilym.sinatra.ui.maps.CoordinateSpan
+import cl.emilym.sinatra.data.models.CoordinateSpan
 import cl.emilym.sinatra.ui.maps.MarkerAnnotation
 import cl.emilym.sinatra.ui.maps.MarkerItem
 import kotlinx.cinterop.CArrayPointer
@@ -46,20 +46,6 @@ fun CValue<CLLocationCoordinate2D>.toShared(): MapLocation {
             longitude
         )
     }
-}
-
-fun Float.toCoordinateSpan(): CoordinateSpan {
-    val span = 360 / 2.0.pow(this.toDouble())
-    return CoordinateSpan(
-        deltaLatitude = span,
-        deltaLongitude = span
-    )
-}
-
-fun CoordinateSpan.toZoom(): Float {
-    return listOf(deltaLatitude, deltaLongitude).map {
-        ln(360.0 / it) / ln(2.0)
-    }.max().toFloat()
 }
 
 @OptIn(ExperimentalForeignApi::class)

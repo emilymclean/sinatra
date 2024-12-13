@@ -1,5 +1,6 @@
 package cl.emilym.sinatra.ui.maps
 
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.ui.geometry.Size
 import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.data.models.MapRegion
@@ -12,6 +13,7 @@ import kotlinx.cinterop.ExperimentalForeignApi
 class AppleMapControl(
     private val state: MapKitState,
     override val contentViewportSize: Size,
+    override val contentViewportPadding: PrecomputedPaddingValues,
     override val bottomSheetHalfHeight: Float
 ): AbstractMapControl() {
 

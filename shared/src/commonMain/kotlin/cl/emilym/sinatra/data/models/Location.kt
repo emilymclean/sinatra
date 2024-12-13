@@ -87,3 +87,8 @@ data class ScreenRegion(
         )
     }
 }
+
+data class CoordinateSpan(
+    val deltaLatitude: Double,
+    val deltaLongitude: Double
+)

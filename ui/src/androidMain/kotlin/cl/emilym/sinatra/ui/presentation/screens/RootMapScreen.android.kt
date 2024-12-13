@@ -1,10 +1,14 @@
 package cl.emilym.sinatra.ui.presentation.screens
 
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -24,6 +28,7 @@ import cl.emilym.sinatra.ui.maps.MarkerItem
 import cl.emilym.sinatra.ui.maps.NativeMapScope
 import cl.emilym.sinatra.ui.maps.currentLocationIcon
 import cl.emilym.sinatra.ui.maps.defaultMarkerOffset
+import cl.emilym.sinatra.ui.maps.precompute
 import cl.emilym.sinatra.ui.maps.toNative
 import cl.emilym.sinatra.ui.navigation.AndroidMapControl
 import cl.emilym.sinatra.ui.navigation.bottomSheetHalfHeight
@@ -56,12 +61,22 @@ actual fun Map(content: @Composable MapControl.(@Composable () -> Unit) -> Unit)
     val currentLocation = currentLocation()
     val currentLocationIcon = currentLocationIcon()
 
-    val scope = AndroidMapControl(
-        cameraPositionState,
-        rememberCoroutineScope(),
-        viewportSize(),
-        bottomSheetHalfHeight()
-    )
+    val insets = WindowInsets.systemBars.only(WindowInsetsSides.Top)
+    val coroutineScope = rememberCoroutineScope()
+    val viewportSize = viewportSize(insets)
+    val paddingValues = insets.asPaddingValues().precompute()
+    val bottomSheetHalfHeight = bottomSheetHalfHeight()
+
+
+    val scope = remember(cameraPositionState, coroutineScope, viewportSize, paddingValues, bottomSheetHalfHeight) {
+        AndroidMapControl(
+            cameraPositionState,
+            coroutineScope,
+            viewportSize,
+            paddingValues,
+            bottomSheetHalfHeight
+        )
+    }
     val nativeMapScope = NativeMapScope(cameraPositionState)
     val mapScope = remember(cameraPositionState.position) {
         MapScope(

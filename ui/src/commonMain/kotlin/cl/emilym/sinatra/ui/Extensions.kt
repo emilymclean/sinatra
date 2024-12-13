@@ -6,6 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import cl.emilym.compose.requeststate.RequestState
 import cl.emilym.sinatra.data.models.ColorPair
+import cl.emilym.sinatra.data.models.CoordinateSpan
 import cl.emilym.sinatra.data.models.OnColor
 import cl.emilym.sinatra.data.models.OnColor.DARK
 import cl.emilym.sinatra.data.models.OnColor.LIGHT
@@ -19,6 +20,8 @@ import cl.emilym.sinatra.ui.widgets.LocalClock
 import cl.emilym.sinatra.ui.widgets.toTodayInstant
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
+import kotlin.math.ln
+import kotlin.math.pow
 
 fun String.toColor(): Color {
     val trimmed = removePrefix("#")
@@ -82,4 +85,18 @@ fun List<RouteTripStop>.past(
 @Composable
 fun List<TimetableStationTime>.asInstants(): List<Instant> {
     return flatMap { it.times.map { it.time.toTodayInstant() } }
+}
+
+fun Float.toCoordinateSpan(): CoordinateSpan {
+    val span = 360 / 2.0.pow(this.toDouble())
+    return CoordinateSpan(
+        deltaLatitude = span,
+        deltaLongitude = span
+    )
+}
+
+fun CoordinateSpan.toZoom(): Float {
+    return listOf(deltaLatitude, deltaLongitude).map {
+        ln(360.0 / it) / ln(2.0)
+    }.max().toFloat()
 }
