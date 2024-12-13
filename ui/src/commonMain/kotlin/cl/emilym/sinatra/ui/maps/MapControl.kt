@@ -8,6 +8,7 @@ import cl.emilym.sinatra.data.models.ScreenLocation
 import cl.emilym.sinatra.data.models.ScreenRegion
 import cl.emilym.sinatra.ui.toCoordinateSpan
 import cl.emilym.sinatra.ui.widgets.toFloatPx
+import io.github.aakira.napier.Napier
 import kotlin.math.PI
 import kotlin.math.pow
 
@@ -41,7 +42,7 @@ abstract class AbstractMapControl: MapControl {
                 (box.topLeft.x + (width / 2) + (box.width / 2)).toInt(),
                 (box.topLeft.y + (height / 2) + (box.height / 2)).toInt()
             )
-        )
+        ).order()
     }
 
     abstract fun toScreenSpace(location: MapLocation): ScreenLocation?
@@ -64,7 +65,7 @@ abstract class AbstractMapControl: MapControl {
             ScreenRegion(
                 screenSpace[0],
                 screenSpace[1],
-            ),
+            ).order(),
             visibleMapAspect
         )
 
@@ -73,7 +74,8 @@ abstract class AbstractMapControl: MapControl {
                 viewportBox.bottomRight.x,
                 (viewportBox.bottomRight.y + (viewportBox.width / contentViewportAspect)).toInt(),
             )
-        ).padded(padding)
+        ).order()
+            .padded(contentViewportSize, contentViewportPadding)
 
         val mapSpace = listOfNotNull(toMapSpace(screenBox.topLeft), toMapSpace((screenBox.bottomRight)))
 
@@ -84,7 +86,7 @@ abstract class AbstractMapControl: MapControl {
         val bounds = MapRegion(
             mapSpace[0],
             mapSpace[1],
-        )
+        ).order()
         showBounds(bounds)
     }
 
@@ -125,15 +127,22 @@ fun MapLocation.addMetersLatitude(meters: Float): MapLocation {
     )
 }
 
-fun ScreenRegion.padded(values: PrecomputedPaddingValues): ScreenRegion {
+fun ScreenRegion.padded(
+    fullBoxSize: Size,
+    values: PrecomputedPaddingValues
+): ScreenRegion {
+    Napier.d("Applying padding of ${values}")
+    val horizontalScaling = width / fullBoxSize.width
+    val verticalScaling = height / fullBoxSize.height
+
     return copy(
         topLeft = ScreenLocation(
-            topLeft.x - values.left,
-            topLeft.y - values.top
+            topLeft.x - (values.left * horizontalScaling).toInt(),
+            topLeft.y - (values.top * verticalScaling).toInt()
         ),
         bottomRight = ScreenLocation(
-            bottomRight.x + values.right,
-            bottomRight.y + values.bottom
+            bottomRight.x + (values.right * horizontalScaling).toInt(),
+            bottomRight.y + (values.bottom * verticalScaling).toInt()
         )
     )
 }

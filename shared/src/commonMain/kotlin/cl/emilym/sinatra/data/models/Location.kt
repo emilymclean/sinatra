@@ -36,6 +36,19 @@ data class MapRegion(
     val width get() = abs(bottomRight.lat - topLeft.lat)
     val height get() = abs(bottomRight.lng - topLeft.lng)
 
+    fun order(): MapRegion {
+        return copy(
+            topLeft = MapLocation(
+                if (topLeft.lat > bottomRight.lat) topLeft.lat else bottomRight.lat,
+                topLeft.lng
+            ),
+            bottomRight = MapLocation(
+                if (topLeft.lat <= bottomRight.lat) topLeft.lat else bottomRight.lat,
+                bottomRight.lng
+            )
+        )
+    }
+
     val center: MapLocation
         get() {
             Napier.d("Getting midpoint of topLeft = $topLeft and bottomRight = $bottomRight")
@@ -83,6 +96,19 @@ data class ScreenRegion(
             bottomRight = ScreenLocation(
                 bottomRight.x + halfPadding,
                 bottomRight.y + halfPadding
+            )
+        )
+    }
+
+    fun order(): ScreenRegion {
+        return copy(
+            topLeft = ScreenLocation(
+                if (topLeft.x < bottomRight.x) topLeft.x else bottomRight.x,
+                if (topLeft.y < bottomRight.y) topLeft.y else bottomRight.y
+            ),
+            bottomRight = ScreenLocation(
+                if (topLeft.x >= bottomRight.x) topLeft.x else bottomRight.x,
+                if (topLeft.y >= bottomRight.y) topLeft.y else bottomRight.y
             )
         )
     }
