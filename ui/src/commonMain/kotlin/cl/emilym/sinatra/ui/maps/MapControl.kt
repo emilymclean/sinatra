@@ -102,7 +102,7 @@ abstract class AbstractMapControl: MapControl {
             contentViewportSize,
             location.lat
         )
-        zoomToArea(
+        val region = MapRegion(
             MapLocation(
                 location.lat + span.deltaLatitude,
                 location.lng + span.deltaLongitude,
@@ -110,7 +110,10 @@ abstract class AbstractMapControl: MapControl {
             MapLocation(
                 location.lat - span.deltaLatitude,
                 location.lng - span.deltaLongitude
-            ),
+            )
+        )
+        zoomToArea(
+            region,
             0
         )
     }

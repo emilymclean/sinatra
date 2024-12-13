@@ -8,6 +8,7 @@ import cl.emilym.sinatra.data.models.ScreenLocation
 import cl.emilym.sinatra.ui.toCoordinateSpan
 import cl.emilym.sinatra.ui.toNative
 import cl.emilym.sinatra.ui.toShared
+import io.github.aakira.napier.Napier
 import kotlinx.cinterop.ExperimentalForeignApi
 
 class AppleMapControl(
@@ -45,5 +46,10 @@ class AppleMapControl(
                 center.lat
             )
         ))
+    }
+
+    override fun zoomToPoint(location: MapLocation, zoom: Float) {
+        Napier.d("Zooming to point = $location")
+        super.zoomToPoint(location, zoom)
     }
 }

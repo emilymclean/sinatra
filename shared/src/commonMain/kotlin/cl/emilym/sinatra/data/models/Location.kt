@@ -1,15 +1,15 @@
 package cl.emilym.sinatra.data.models
 
-import cl.emilym.gtfs.Location
 import cl.emilym.kmp.serializable.Serializable
 import cl.emilym.sinatra.asDegrees
 import cl.emilym.sinatra.asRadians
 import cl.emilym.sinatra.degrees
 import cl.emilym.sinatra.radians
-import io.github.aakira.napier.Napier
 import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.cos
+import kotlin.math.max
+import kotlin.math.min
 import kotlin.math.pow
 import kotlin.math.sin
 import kotlin.math.sqrt
@@ -51,7 +51,11 @@ data class MapRegion(
         )
     }
 
-    val center: MapLocation = listOf(topLeft, bottomRight).findMidpoint()
+    private val naiveCenter = MapLocation(
+        ((max(topLeft.lat, bottomRight.lat) - min(topLeft.lat, bottomRight.lat)) / 2) + min(topLeft.lat, bottomRight.lat),
+        ((max(topLeft.lng, bottomRight.lng) - min(topLeft.lng, bottomRight.lng)) / 2) + min(topLeft.lng, bottomRight.lng),
+    )
+    val center: MapLocation get() = naiveCenter
 
 }
 
