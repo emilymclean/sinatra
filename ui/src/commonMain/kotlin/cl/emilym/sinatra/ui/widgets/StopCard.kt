@@ -4,11 +4,13 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.data.models.ServiceAccessibility
@@ -36,13 +38,21 @@ fun StopCard(
         modifier,
         onClick,
     ) {
-        FlowRow(
-            horizontalArrangement = Arrangement.spacedBy(0.25.rdp),
-            verticalArrangement = Arrangement.Center
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(0.5.rdp)
         ) {
-            Text(stop.name)
-            Box {}
-            stop.accessibility.icons()
+            Text(
+                stop.name,
+                modifier = Modifier.weight(1f, fill = false),
+            )
+            // Every stop is marked as not wheelchair accessible, so there isn't any point having this :/, thanks Transport Canberra
+//            Row(
+//                verticalAlignment = Alignment.CenterVertically,
+//                horizontalArrangement = Arrangement.spacedBy(0.25.rdp)
+//            ) {
+//                stop.accessibility.icons()
+//            }
         }
         if (arrival != null) {
             val time = arrival.time.format()
