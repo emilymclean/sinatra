@@ -162,15 +162,15 @@ jobs:
       matrix:
         build:
         - module: androidApp
-          command: Debug
-          variant: debug
-          release: false
-          path: ./androidApp/build/outputs/bundle/debug
-          fileName: androidApp-debug
-          name: androidApp-debug
+          command: Release
+          variant: release
+          release: true
+          path: ./androidApp/build/outputs/bundle/release
+          fileName: androidApp-release
+          name: androidApp-release
           instant: false
           hasMappingFile: false
-          mappingFile: ./androidApp/build/outputs/mapping/debug/mapping.txt
+          mappingFile: ./androidApp/build/outputs/mapping/release/mapping.txt
     steps:
     - uses: actions/checkout@v4
       with:
