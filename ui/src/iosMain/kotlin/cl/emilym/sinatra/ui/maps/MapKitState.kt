@@ -8,6 +8,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import cl.emilym.sinatra.data.models.CoordinateSpan
 import cl.emilym.sinatra.data.models.MapLocation
+import cl.emilym.sinatra.ui.adjustForLatitude
 import cl.emilym.sinatra.ui.canberra
 import cl.emilym.sinatra.ui.canberraZoom
 import cl.emilym.sinatra.ui.matches
@@ -225,10 +226,12 @@ inline fun rememberMapKitState(
     val screenSize = screenSize()
     return rememberSaveable(key = key, saver = MapKitState.Saver) {
         MapKitState(
-            CameraDescription(canberra, canberraZoom.toCoordinateSpan(
-                screenSize,
-                canberra.lat
-            )),
+            CameraDescription(
+                canberra,
+                canberraZoom.toCoordinateSpan(
+                    screenSize,
+                ).adjustForLatitude(canberra.lat)
+            ),
             listOf()
         ).apply(init)
     }

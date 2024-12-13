@@ -5,6 +5,7 @@ import androidx.compose.ui.geometry.Size
 import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.data.models.MapRegion
 import cl.emilym.sinatra.data.models.ScreenLocation
+import cl.emilym.sinatra.ui.adjustForLatitude
 import cl.emilym.sinatra.ui.toCoordinateSpan
 import cl.emilym.sinatra.ui.toNative
 import cl.emilym.sinatra.ui.toShared
@@ -42,9 +43,8 @@ class AppleMapControl(
         state.animate(CameraDescription(
             center,
             zoom.toCoordinateSpan(
-                contentViewportSize,
-                center.lat
-            )
+                contentViewportSize
+            ).adjustForLatitude(center.lat)
         ))
     }
 
