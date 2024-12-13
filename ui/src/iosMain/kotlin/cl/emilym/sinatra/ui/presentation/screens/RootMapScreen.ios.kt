@@ -23,6 +23,7 @@ import cl.emilym.sinatra.ui.maps.MapItem
 import cl.emilym.sinatra.ui.maps.MapScope
 import cl.emilym.sinatra.ui.maps.MarkerItem
 import cl.emilym.sinatra.ui.maps.currentLocationIcon
+import cl.emilym.sinatra.ui.maps.iosCurrentMapItems
 import cl.emilym.sinatra.ui.maps.precompute
 import cl.emilym.sinatra.ui.maps.rememberMapKitState
 import cl.emilym.sinatra.ui.navigation.bottomSheetHalfHeight
@@ -77,23 +78,19 @@ actual fun Map(content: @Composable MapControl.(@Composable () -> Unit) -> Unit)
     val currentLocation = currentLocation()
     val currentLocationIcon = currentLocationIcon()
 
-    scope.currentMapItems { mapItems ->
-        val items = mapItems + listOfNotNull(
-            currentLocation?.let {
-                MarkerItem(
-                    it,
-                    currentLocationIcon,
-                    id = "currentLocation"
-                )
-            }
-        )
-
-        LaunchedEffect(items) {
-            state.updateItems(items)
+    val items = scope.iosCurrentMapItems() + listOfNotNull(
+        currentLocation?.let {
+            MarkerItem(
+                it,
+                currentLocationIcon,
+                id = "currentLocation"
+            )
         }
+    )
+
+    LaunchedEffect(items) {
+        state.updateItems(items)
     }
-
-
 
     val coroutineScope = rememberCoroutineScope()
 

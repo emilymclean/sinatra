@@ -96,6 +96,7 @@ actual fun Map(content: @Composable MapControl.(@Composable () -> Unit) -> Unit)
             },
             uiSettings = MapUiSettings(
                 compassEnabled = false,
+                rotationGesturesEnabled = false,
                 myLocationButtonEnabled = false,
                 zoomControlsEnabled = false
             ),
