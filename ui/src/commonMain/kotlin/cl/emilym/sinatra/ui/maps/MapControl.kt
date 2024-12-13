@@ -98,7 +98,10 @@ abstract class AbstractMapControl: MapControl {
         location: MapLocation,
         zoom: Float
     ) {
-        val span = zoom.toCoordinateSpan()
+        val span = zoom.toCoordinateSpan(
+            contentViewportSize,
+            location.lat
+        )
         zoomToArea(
             MapLocation(
                 location.lat + span.deltaLatitude,

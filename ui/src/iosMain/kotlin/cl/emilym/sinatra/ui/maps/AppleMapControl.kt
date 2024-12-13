@@ -39,7 +39,11 @@ class AppleMapControl(
 
     override fun showPoint(center: MapLocation, zoom: Float) {
         state.animate(CameraDescription(
-            center, zoom.toCoordinateSpan()
+            center,
+            zoom.toCoordinateSpan(
+                contentViewportSize,
+                center.lat
+            )
         ))
     }
 }

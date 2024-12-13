@@ -16,6 +16,7 @@ import cl.emilym.sinatra.ui.toCoordinateSpan
 import cl.emilym.sinatra.ui.toNative
 import cl.emilym.sinatra.ui.toNativeUIColor
 import cl.emilym.sinatra.ui.toShared
+import cl.emilym.sinatra.ui.widgets.screenSize
 import io.github.aakira.napier.Napier
 import kotlinx.cinterop.Arena
 import kotlinx.cinterop.CValue
@@ -220,11 +221,17 @@ class MapKitSavedState(
 inline fun rememberMapKitState(
     key: String? = null,
     crossinline init: MapKitState.() -> Unit = {}
-): MapKitState = rememberSaveable(key = key, saver = MapKitState.Saver) {
-    MapKitState(
-        CameraDescription(canberra, canberraZoom.toCoordinateSpan()),
-        listOf()
-    ).apply(init)
+): MapKitState {
+    val screenSize = screenSize()
+    return rememberSaveable(key = key, saver = MapKitState.Saver) {
+        MapKitState(
+            CameraDescription(canberra, canberraZoom.toCoordinateSpan(
+                screenSize,
+                canberra.lat
+            )),
+            listOf()
+        ).apply(init)
+    }
 }
 
 
