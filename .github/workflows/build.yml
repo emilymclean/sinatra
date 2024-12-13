@@ -90,7 +90,7 @@ jobs:
         keyAlias: ${{ secrets.ALIAS }}
         keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
         keyPassword: ${{ secrets.KEY_PASSWORD }}
-        buildToolsVersion: 33.0.0
+        buildToolsVersion: 35.0.0
     - name: Rename apk
       if: ${{ matrix.build.release }}
       run: mv ${{ steps.sign.outputs.signedFile }} ./${{ matrix.build.name }}.apk
@@ -203,7 +203,7 @@ jobs:
         keyAlias: ${{ secrets.ALIAS }}
         keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
         keyPassword: ${{ secrets.KEY_PASSWORD }}
-        buildToolsVersion: 33.0.0
+        buildToolsVersion: 35.0.0
     - name: Rename aab
       if: ${{ matrix.build.release }}
       run: mv ${{ steps.sign.outputs.signedFile }} ./${{ matrix.build.name }}.aab
