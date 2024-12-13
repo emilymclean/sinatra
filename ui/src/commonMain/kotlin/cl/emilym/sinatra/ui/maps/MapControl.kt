@@ -1,6 +1,7 @@
 package cl.emilym.sinatra.ui.maps
 
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.geometry.Size
 import cl.emilym.sinatra.data.models.MapRegion
 import cl.emilym.sinatra.data.models.MapLocation
@@ -29,18 +30,20 @@ abstract class AbstractMapControl: MapControl {
     private val contentViewportAspect: Float get() = contentViewportSize.width / contentViewportSize.height
     private val visibleMapAspect: Float get() = visibleMapSize.width / visibleMapSize.height
 
-    private fun boxOverOther(box: ScreenRegion, aspect: Float): ScreenRegion {
+    private fun boxOverOther(box: ScreenRegion, aspect: Float, padding: PrecomputedPaddingValues): ScreenRegion {
         val boxAspect = box.aspect
         val width = if (boxAspect > aspect) box.width.toFloat() else (box.height * aspect)
         val height = if (boxAspect <= aspect) box.height.toFloat() else (box.width / aspect)
 
+        val padding = padding * (width / contentViewportSize.width)
+
         return ScreenRegion(
             topLeft = ScreenLocation(
-                (box.topLeft.x - (width / 2) + (box.width / 2)).toInt(),
-                (box.topLeft.y - (height / 2) + (box.height / 2)).toInt()
+                (box.topLeft.x - (width / 2) + (box.width / 2)).toInt() - padding.left,
+                (box.topLeft.y - (height / 2) + (box.height / 2)).toInt() - (padding.top / 2)
             ),
             bottomRight = ScreenLocation(
-                (box.topLeft.x + (width / 2) + (box.width / 2)).toInt(),
+                (box.topLeft.x + (width / 2) + (box.width / 2)).toInt() + padding.right,
                 (box.topLeft.y + (height / 2) + (box.height / 2)).toInt()
             )
         ).order()
@@ -67,16 +70,21 @@ abstract class AbstractMapControl: MapControl {
                 screenSpace[0],
                 screenSpace[1],
             ).order(),
-            visibleMapAspect
+            visibleMapAspect,
+            PrecomputedPaddingValues.all(padding)
         )
 
-        val screenBox = viewportBox.copy(
-            bottomRight = ScreenLocation(
-                viewportBox.bottomRight.x,
-                (viewportBox.bottomRight.y + (viewportBox.width / contentViewportAspect)).toInt(),
+        val screenBox = viewportBox
+            .copy(
+                bottomRight = ScreenLocation(
+                    viewportBox.bottomRight.x,
+                    (viewportBox.topLeft.y + (viewportBox.width / contentViewportAspect)).toInt(),
+                )
             )
-        ).order()
-            .padded(contentViewportSize, contentViewportPadding)
+            .order()
+
+
+        Napier.d("Screen box = $screenBox, aspect = ${screenBox.width.toFloat() / screenBox.height.toFloat()}, target = ${contentViewportAspect}")
 
         val mapSpace = listOfNotNull(toMapSpace(screenBox.topLeft), toMapSpace((screenBox.bottomRight)))
 
@@ -126,11 +134,11 @@ fun MapLocation.addMetersLatitude(meters: Float): MapLocation {
 }
 
 fun ScreenRegion.padded(
-    fullBoxSize: Size,
+    scale: Float,
     values: PrecomputedPaddingValues
 ): ScreenRegion {
-    val horizontalScaling = width / fullBoxSize.width
-    val verticalScaling = height / fullBoxSize.height
+    val horizontalScaling = width / scale
+    val verticalScaling = height / scale
 
     return copy(
         topLeft = ScreenLocation(

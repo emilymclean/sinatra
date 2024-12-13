@@ -29,7 +29,9 @@ import cl.emilym.sinatra.ui.navigation.bottomSheetHalfHeight
 import cl.emilym.sinatra.ui.navigation.currentMapItems
 import cl.emilym.sinatra.ui.toZoom
 import cl.emilym.sinatra.ui.widgets.currentLocation
+import cl.emilym.sinatra.ui.widgets.screenSize
 import cl.emilym.sinatra.ui.widgets.viewportSize
+import io.github.aakira.napier.Napier
 import kotlinx.coroutines.launch
 import platform.MapKit.MKMapView
 import platform.MapKit.MKPointOfInterestCategoryPublicTransport
@@ -48,6 +50,7 @@ actual fun Map(content: @Composable MapControl.(@Composable () -> Unit) -> Unit)
     val viewportSize = viewportSize(insets)
     val paddingValues = insets.asPaddingValues().precompute()
     val bottomSheetHalfHeight = bottomSheetHalfHeight()
+    val screenSize = screenSize()
 
     val control = remember(state, viewportSize, paddingValues, bottomSheetHalfHeight) {
         AppleMapControl(
@@ -56,6 +59,10 @@ actual fun Map(content: @Composable MapControl.(@Composable () -> Unit) -> Unit)
             paddingValues,
             bottomSheetHalfHeight
         )
+    }
+
+    LaunchedEffect(screenSize, viewportSize) {
+        Napier.d("viewportSize = $viewportSize, screenSize = $screenSize")
     }
 
     val scope = remember(state.cameraDescription) {
@@ -97,6 +104,7 @@ actual fun Map(content: @Composable MapControl.(@Composable () -> Unit) -> Unit)
                 MKMapView().apply {
                     setZoomEnabled(true)
                     setScrollEnabled(true)
+                    setRotateEnabled(false)
                     setPointOfInterestFilter(globalPointOfInterestFilter)
                 }.also {
                     coroutineScope.launch { state.setMap(it) }

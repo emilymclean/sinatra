@@ -24,6 +24,25 @@ data class PrecomputedPaddingValues(
         }
     }
 
+    operator fun plus(other: PrecomputedPaddingValues): PrecomputedPaddingValues {
+        return PrecomputedPaddingValues(
+            top + other.top,
+            bottom + other.bottom,
+            left + other.left,
+            right + other.right
+        )
+    }
+
+    operator fun times(other: Number): PrecomputedPaddingValues {
+        val otherF = other.toDouble()
+        return PrecomputedPaddingValues(
+            (top * otherF).toInt(),
+            (bottom * otherF).toInt(),
+            (left * otherF).toInt(),
+            (right * otherF).toInt()
+        )
+    }
+
 }
 
 @Composable
