@@ -11,6 +11,7 @@
     <string name="search_recently_viewed">Recently viewed</string>
     <string name="search_hint">Search for a stop or route.</string>
     <string name="no_search_results">We couldn't find anything for "%1$s".</string>
+    <string name="no_content_page">The requested page could not be found.</string>
 
     <string name="route_not_found">The requested route has has no stops.</string>
     <string name="stop_not_found">The requested stop could not be found.</string>

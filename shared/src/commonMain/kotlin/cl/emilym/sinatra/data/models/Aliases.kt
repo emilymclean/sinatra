@@ -21,6 +21,9 @@ typealias Degree = Double
 
 typealias Time = Duration
 
+typealias MarkdownString = String
+typealias ContentId = String
+
 fun parseTime(time: String): Time {
     return Duration.parseIsoString(time)
 }

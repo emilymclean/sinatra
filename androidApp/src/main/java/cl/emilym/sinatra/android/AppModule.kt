@@ -3,14 +3,15 @@ package cl.emilym.sinatra.android
 import cl.emilym.sinatra.SharedModule
 import cl.emilym.sinatra.ui.UIModule
 import cl.emilym.sinatra.ui.VersionInformation
+import org.koin.core.annotation.ComponentScan
 import org.koin.core.annotation.Module
 import org.koin.dsl.module
-import cl.emilym.sinatra.android.BuildConfig
 
 @Module(includes = [SharedModule::class, UIModule::class])
+@ComponentScan
 class AppModule
 
-val versionInformationModule = module {
+val nativeModule = module {
     single {
         VersionInformation(
             BuildConfig.VERSION_NAME,

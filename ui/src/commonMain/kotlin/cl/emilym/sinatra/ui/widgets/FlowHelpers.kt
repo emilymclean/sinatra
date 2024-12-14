@@ -5,12 +5,17 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 
 fun <T> createRequestStateFlowFlow(): MutableStateFlow<Flow<RequestState<T>>> {
     return MutableStateFlow(flowOf(RequestState.Initial()))
+}
+
+fun <T> MutableStateFlow<Flow<RequestState<T>>>.presentable(): Flow<RequestState<T>> {
+    return flatMapLatest { it.map { it } }
 }
 
 fun <T> createRequestStateFlow(): MutableStateFlow<RequestState<T>> {
@@ -23,10 +28,10 @@ suspend fun <T> MutableStateFlow<Flow<RequestState<T>>>.handleFlowProperly(
 ) {
     if (!hideLoading) emit(flowOf(RequestState.Loading()))
     emit(
-        operation().catch {
-            RequestState.Failure<T>(it as? Exception ?: Exception(it))
-        }.map {
+        operation().map<T, RequestState<T>> {
             RequestState.Success(it)
+        }.catch {
+            emit(RequestState.Failure(it as? Exception ?: Exception(it)))
         }
     )
 }
