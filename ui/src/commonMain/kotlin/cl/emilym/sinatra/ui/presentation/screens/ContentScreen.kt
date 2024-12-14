@@ -1,6 +1,5 @@
 package cl.emilym.sinatra.ui.presentation.screens
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -9,7 +8,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -22,7 +20,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -43,20 +40,12 @@ import cl.emilym.sinatra.ui.widgets.ListHint
 import cl.emilym.sinatra.ui.widgets.NoResultsIcon
 import cl.emilym.sinatra.ui.widgets.SinatraIconButton
 import cl.emilym.sinatra.ui.widgets.createRequestStateFlow
-import cl.emilym.sinatra.ui.widgets.createRequestStateFlowFlow
-import cl.emilym.sinatra.ui.widgets.handleFlowProperly
-import cl.emilym.sinatra.ui.widgets.presentable
 import com.mikepenz.markdown.m3.Markdown
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
-import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.android.annotation.KoinViewModel
 import org.koin.compose.viewmodel.koinViewModel
 import sinatra.ui.generated.resources.Res
-import sinatra.ui.generated.resources.about_app_description
-import sinatra.ui.generated.resources.about_app_version
-import sinatra.ui.generated.resources.in_app_icon
 import sinatra.ui.generated.resources.no_content_page
 
 @KoinViewModel
@@ -177,7 +166,7 @@ open class ContentScreen(
         Box(Modifier.height(1.rdp))
         Column(
             Modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(1.dp)
+            verticalArrangement = Arrangement.spacedBy(2.dp)
         ) {
             for (link in content.links) {
                 ContentLinkWidget(

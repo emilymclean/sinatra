@@ -27,7 +27,6 @@ fun ContentLinkWidget(
         modifier = Modifier
             .heightIn(min = minimumTouchTarget)
             .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f))
-            .padding(horizontal = 1.rdp, vertical = 0.75.rdp)
             .clickable {
                 when (link) {
                     is ContentLink.External -> {
@@ -35,6 +34,7 @@ fun ContentLinkWidget(
                     }
                 }
             }
+            .padding(horizontal = 1.rdp, vertical = 0.75.rdp)
             .then(modifier),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(0.5.rdp)

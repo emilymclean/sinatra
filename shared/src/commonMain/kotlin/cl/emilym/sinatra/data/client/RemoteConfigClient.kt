@@ -19,7 +19,7 @@ interface RemoteConfigClient {
 class TemporaryRemoteConfigClient: RemoteConfigClient {
 
     override suspend fun apiUrl(): String {
-        return "https://emilym.cl/gtfs-api/"
+        return "emilym.cl/gtfs-api"
     }
 
     override suspend fun privacyPolicyUrl(): String? {
