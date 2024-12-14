@@ -1,7 +1,6 @@
 package cl.emilym.sinatra.ui.widgets
 
 import cl.emilym.compose.requeststate.RequestState
-import io.github.aakira.napier.Napier
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.catch
@@ -29,10 +28,10 @@ suspend fun <T> MutableStateFlow<Flow<RequestState<T>>>.handleFlowProperly(
 ) {
     if (!hideLoading) emit(flowOf(RequestState.Loading()))
     emit(
-        operation().catch {
-            RequestState.Failure<T>(it as? Exception ?: Exception(it))
-        }.map {
+        operation().map<T, RequestState<T>> {
             RequestState.Success(it)
+        }.catch {
+            emit(RequestState.Failure(it as? Exception ?: Exception(it)))
         }
     )
 }
