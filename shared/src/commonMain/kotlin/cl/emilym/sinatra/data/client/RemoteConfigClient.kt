@@ -13,25 +13,11 @@ interface RemoteConfigClient {
     suspend fun termsUrl(): String?
     suspend fun aboutContentUrl(): String?
 
-}
-
-@Factory(binds = [RemoteConfigClient::class])
-class TemporaryRemoteConfigClient: RemoteConfigClient {
-
-    override suspend fun apiUrl(): String {
-        return "emilym.cl/gtfs-api"
-    }
-
-    override suspend fun privacyPolicyUrl(): String? {
-        return "https://emilym.cl/sinatra/privacy"
-    }
-
-    override suspend fun termsUrl(): String? {
-        return "https://emilym.cl/sinatra/terms"
-    }
-
-    override suspend fun aboutContentUrl(): String? {
-        return "https://emilym.cl/assets/content/sinatra/about.md"
+    companion object {
+        const val API_URL_KEY = "api_url"
+        const val PRIVACY_POLICY_URL_KEY = "privacy_policy_url"
+        const val TERMS_URL_KEY = "terms_url"
+        const val ABOUT_CONTENT_URL_KEY = "about_content_url"
     }
 
 }
