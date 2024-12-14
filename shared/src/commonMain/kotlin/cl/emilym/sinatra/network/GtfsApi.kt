@@ -15,6 +15,7 @@ import cl.emilym.sinatra.data.models.StopId
 import cl.emilym.sinatra.data.models.TripId
 import de.jensklingenberg.ktorfit.http.GET
 import de.jensklingenberg.ktorfit.http.Path
+import de.jensklingenberg.ktorfit.http.Url
 
 interface GtfsApi {
 
@@ -93,5 +94,8 @@ interface GtfsApi {
 
     @GET("services.pb.sha")
     suspend fun servicesDigest(): String
+
+    @GET
+    suspend fun markdownContent(@Url url: String): String
 
 }

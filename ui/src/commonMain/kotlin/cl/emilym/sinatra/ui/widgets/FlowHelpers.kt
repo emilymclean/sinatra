@@ -1,16 +1,22 @@
 package cl.emilym.sinatra.ui.widgets
 
 import cl.emilym.compose.requeststate.RequestState
+import io.github.aakira.napier.Napier
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 
 fun <T> createRequestStateFlowFlow(): MutableStateFlow<Flow<RequestState<T>>> {
     return MutableStateFlow(flowOf(RequestState.Initial()))
+}
+
+fun <T> MutableStateFlow<Flow<RequestState<T>>>.presentable(): Flow<RequestState<T>> {
+    return flatMapLatest { it.map { it } }
 }
 
 fun <T> createRequestStateFlow(): MutableStateFlow<RequestState<T>> {
