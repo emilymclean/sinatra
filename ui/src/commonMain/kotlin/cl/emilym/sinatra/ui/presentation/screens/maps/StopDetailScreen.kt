@@ -53,7 +53,10 @@ import cl.emilym.sinatra.ui.widgets.NoBusIcon
 import cl.emilym.sinatra.ui.widgets.SheetIosBackButton
 import cl.emilym.sinatra.ui.widgets.UpcomingRouteCard
 import cl.emilym.sinatra.ui.widgets.WheelchairAccessibleIcon
+import cl.emilym.sinatra.ui.widgets.createRequestStateFlowFlow
 import cl.emilym.sinatra.ui.widgets.handleFlow
+import cl.emilym.sinatra.ui.widgets.handleFlowProperly
+import cl.emilym.sinatra.ui.widgets.presentable
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.map
@@ -78,7 +81,9 @@ class StopDetailViewModel(
 
     val favourited = MutableStateFlow(false)
     val stop = MutableStateFlow<RequestState<Stop?>>(RequestState.Initial())
-    val upcoming = MutableStateFlow<RequestState<List<StopTimetableTime>>>(RequestState.Initial())
+
+    val _upcoming = createRequestStateFlowFlow<List<StopTimetableTime>>()
+    val upcoming = _upcoming.presentable()
 
     fun init(stopId: StopId) {
         retryStop(stopId)
@@ -102,7 +107,7 @@ class StopDetailViewModel(
 
     fun retryUpcoming(stopId: StopId) {
         viewModelScope.launch {
-            upcoming.handleFlow {
+            _upcoming.handleFlowProperly {
                 upcomingRoutesForStopUseCase(stopId).map { it.item }
             }
         }

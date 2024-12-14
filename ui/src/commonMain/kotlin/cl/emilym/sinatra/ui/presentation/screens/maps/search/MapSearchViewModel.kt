@@ -13,6 +13,7 @@ import cl.emilym.sinatra.domain.search.SearchResult
 import cl.emilym.sinatra.ui.widgets.createRequestStateFlowFlow
 import cl.emilym.sinatra.ui.widgets.handleFlow
 import cl.emilym.sinatra.ui.widgets.handleFlowProperly
+import cl.emilym.sinatra.ui.widgets.presentable
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
@@ -74,7 +75,7 @@ class MapSearchViewModel(
     var hasZoomedToLocation = false
 
     private val _recentVisits = createRequestStateFlowFlow<List<RecentVisit>>()
-    val recentVisits = _recentVisits.flatMapLatest { it }
+    val recentVisits = _recentVisits.presentable()
 
     init {
         retry()

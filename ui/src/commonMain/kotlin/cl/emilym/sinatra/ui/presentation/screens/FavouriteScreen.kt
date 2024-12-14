@@ -33,17 +33,15 @@ import cl.emilym.sinatra.ui.widgets.StarOutlineIcon
 import cl.emilym.sinatra.ui.widgets.StopCard
 import cl.emilym.sinatra.ui.widgets.createRequestStateFlowFlow
 import cl.emilym.sinatra.ui.widgets.handleFlowProperly
-import io.github.aakira.napier.Napier
+import cl.emilym.sinatra.ui.widgets.presentable
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.koin.android.annotation.KoinViewModel
 import org.koin.compose.viewmodel.koinViewModel
 import sinatra.ui.generated.resources.Res
-import sinatra.ui.generated.resources.navigation_bar_favourites
 import sinatra.ui.generated.resources.favourites_nothing_favourited
+import sinatra.ui.generated.resources.navigation_bar_favourites
 
 @KoinViewModel
 class FavouriteViewModel(
@@ -51,10 +49,7 @@ class FavouriteViewModel(
 ): ViewModel() {
 
     private val _favourites = createRequestStateFlowFlow<List<Favourite>>()
-    val favourites: Flow<RequestState<List<Favourite>>> = _favourites.flatMapLatest { it.map {
-        Napier.d("Value = ${(it as? RequestState.Success)?.value}")
-        it
-    } }
+    val favourites: Flow<RequestState<List<Favourite>>> = _favourites.presentable()
 
     init {
         retry()
