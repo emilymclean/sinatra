@@ -14,6 +14,7 @@ import cl.emilym.sinatra.data.models.RouteServiceCanonicalTimetable
 import cl.emilym.sinatra.data.repository.RemoteConfigRepository
 import de.jensklingenberg.ktorfit.Ktorfit
 import de.jensklingenberg.ktorfit.ktorfitBuilder
+import io.github.aakira.napier.Napier
 import io.ktor.client.HttpClient
 import io.ktor.client.call.HttpClientCall
 import io.ktor.client.engine.HttpClientEngine
@@ -22,6 +23,7 @@ import io.ktor.client.plugins.Sender
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.plugin
 import io.ktor.client.request.HttpRequestBuilder
+import io.ktor.client.request.url
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 import org.koin.core.annotation.Factory
@@ -37,8 +39,8 @@ fun urlReplaceInterceptor(
     return { request ->
         if (request.url.host == "replaceable.com") {
             val realUrl = remoteConfigRepository.apiUrl()
-            request.url.buildString().replace(TEMPORARY_URL, realUrl)
-
+            request.url(request.url.buildString().replace(TEMPORARY_URL, realUrl))
+            Napier.d("Url = ${request.url.buildString()}")
         }
         execute(request)
     }

@@ -1,10 +1,11 @@
 import SwiftUI
 import ui
 import FirebaseCore
+import FirebaseRemoteConfig
 
 class AppDelegate: NSObject, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
-        FirebaseApp.configure()
+        
         return true
     }
 }
@@ -15,7 +16,9 @@ struct iOSApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     
     init() {
+        FirebaseApp.configure()
         InitKt.doInit(
+            remoteConfig: RemoteConfigWrapper(),
             versionName: Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as! String,
             versionCode:  Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as! String
         )
@@ -26,4 +29,30 @@ struct iOSApp: App {
 			ContentView()
 		}
 	}
+}
+
+class RemoteConfigWrapper: RemoteConfigProtocol {
+    
+    var config = RemoteConfig.remoteConfig()
+    
+    func fetch(callback: @escaping (KotlinBoolean) -> Void) {
+        config.fetchAndActivate { status, error in
+            if status == .error {
+                callback(KotlinBoolean(bool: false))
+            } else {
+                callback(KotlinBoolean(bool: true))
+            }
+        }
+    }
+    
+    func string(key: String) -> String? {
+        do {
+            return try config.configValue(forKey: key).stringValue
+        } catch let error {
+            print("\(error)")
+            return nil
+        }
+    }
+
+    
 }
