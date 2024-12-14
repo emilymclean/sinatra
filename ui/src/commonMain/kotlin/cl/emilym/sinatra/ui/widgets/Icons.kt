@@ -20,6 +20,7 @@ import sinatra.ui.generated.resources.star_outline
 import sinatra.ui.generated.resources.map
 import sinatra.ui.generated.resources.info
 import sinatra.ui.generated.resources.back
+import sinatra.ui.generated.resources.external_link
 
 @Composable
 fun AccessibleIcon(
@@ -196,6 +197,19 @@ fun BackIcon(
     Icon(
         painterResource(Res.drawable.back),
         contentDescription = "An arrow pointing to the left",
+        modifier = modifier,
+        tint = tint
+    )
+}
+
+@Composable
+fun ExternalLinkIcon(
+    modifier: Modifier = Modifier,
+    tint: Color = LocalContentColor.current
+) {
+    Icon(
+        painterResource(Res.drawable.external_link),
+        contentDescription = "An arrow out of a box",
         modifier = modifier,
         tint = tint
     )

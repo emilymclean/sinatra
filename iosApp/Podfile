@@ -3,4 +3,5 @@ target 'iosApp' do
   platform :ios, '16.0'
   pod 'ui', :path => '../ui'
   pod 'FirebaseCrashlytics'
+  pod 'FirebaseRemoteConfig'
 end

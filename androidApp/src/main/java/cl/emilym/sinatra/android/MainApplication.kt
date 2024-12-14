@@ -21,10 +21,10 @@ class MainApplication: Application() {
             androidLogger()
             androidContext(this@MainApplication)
             modules(
+                nativeModule,
                 AppModule().module,
                 databaseBuilderModule,
                 manualModule,
-                versionInformationModule
             )
         }
     }
