@@ -21,3 +21,29 @@ interface RemoteConfigClient {
     }
 
 }
+
+interface RemoteConfigWrapper {
+    suspend fun string(key: String): String?
+}
+
+@Factory(binds = [RemoteConfigClient::class])
+class DefaultRemoteConfigClient(
+    private val wrapper: RemoteConfigWrapper
+): RemoteConfigClient {
+
+    override suspend fun apiUrl(): String {
+        return wrapper.string(RemoteConfigClient.API_URL_KEY) ?: throw NoApiUrlException.default()
+    }
+
+    override suspend fun privacyPolicyUrl(): String? {
+        return wrapper.string(RemoteConfigClient.PRIVACY_POLICY_URL_KEY)
+    }
+
+    override suspend fun termsUrl(): String? {
+        return wrapper.string(RemoteConfigClient.TERMS_URL_KEY)
+    }
+
+    override suspend fun aboutContentUrl(): String? {
+        return wrapper.string(RemoteConfigClient.ABOUT_CONTENT_URL_KEY)
+    }
+}
