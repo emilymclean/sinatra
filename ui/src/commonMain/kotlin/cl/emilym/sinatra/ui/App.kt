@@ -46,9 +46,9 @@ class AppViewModel(
         viewModelScope.launch {
             scheduleTimeZone.value = transportMetadataRepository.timeZone()
         }
-        CoroutineScope(Dispatchers.IO).launch {
-            cleanupUseCase()
-        }
+//        CoroutineScope(Dispatchers.IO).launch {
+//            cleanupUseCase()
+//        }
     }
 
 }
