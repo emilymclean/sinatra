@@ -6,7 +6,3 @@ data class CameraState(
     val position: MapLocation,
     val zoom: Float
 )
-
-data class MapScope(
-    val camera: CameraState
-)

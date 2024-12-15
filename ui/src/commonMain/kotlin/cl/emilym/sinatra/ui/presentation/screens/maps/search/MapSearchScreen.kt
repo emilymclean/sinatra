@@ -20,7 +20,6 @@ import cl.emilym.compose.requeststate.RequestState
 import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.ui.maps.MapItem
-import cl.emilym.sinatra.ui.maps.MapScope
 import cl.emilym.sinatra.ui.maps.MarkerItem
 import cl.emilym.sinatra.ui.maps.NativeMapScope
 import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
