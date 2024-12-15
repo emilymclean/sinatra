@@ -36,10 +36,7 @@ expect fun circularIcon(
 
 @Composable
 fun stopMarkerIcon(stop: Stop? = null): MarkerIcon? {
-    return spotMarkerIcon(MaterialTheme.colorScheme.primary
-        .copy(alpha = 0.5f)
-        .compositeOver(MaterialTheme.colorScheme.onSurface)
-    )
+    return spotMarkerIcon(MaterialTheme.colorScheme.primary)
 }
 
 @Composable

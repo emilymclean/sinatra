@@ -282,10 +282,12 @@ class StopDetailScreen(
         val stopRS by viewModel.stop.collectAsState(RequestState.Initial())
         val stop = (stopRS as? RequestState.Success)?.value ?: return listOf()
 
-        return listOf(MarkerItem(
-            stop.location,
-            stopMarkerIcon(stop),
-            id = "stopDetail-${stop.id}"
-        ))
+        return listOf(
+            MarkerItem(
+                stop.location,
+                stopMarkerIcon(stop),
+                id = "stopDetail-${stop.id}"
+            )
+        )
     }
 }
