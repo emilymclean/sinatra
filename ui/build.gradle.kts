@@ -1,4 +1,6 @@
+import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
 
 plugins {
@@ -33,8 +35,19 @@ kotlin {
         podfile = project.file("../iosApp/Podfile")
         framework {
             baseName = "ui"
-            isStatic = true
+            isStatic = false
+
+            @OptIn(ExperimentalKotlinGradlePluginApi::class)
+            transitiveExport = false
+            export(project(":shared"))
         }
+
+        xcodeConfigurationToNativeBuildType["CUSTOM_DEBUG"] = NativeBuildType.DEBUG
+        xcodeConfigurationToNativeBuildType["CUSTOM_RELEASE"] = NativeBuildType.RELEASE
+
+//        pod("GoogleMaps") {
+//            version = "9.2.0"
+//        }
     }
     
     sourceSets {
@@ -45,7 +58,7 @@ kotlin {
             implementation(libs.play.services.location)
         }
         commonMain.dependencies {
-            implementation(project(":shared"))
+            api(project(":shared"))
 
             // Compose
             implementation(compose.runtime)
