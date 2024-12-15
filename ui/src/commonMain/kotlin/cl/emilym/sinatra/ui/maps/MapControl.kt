@@ -1,18 +1,13 @@
 package cl.emilym.sinatra.ui.maps
 
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.geometry.Size
-import cl.emilym.sinatra.data.models.MapRegion
 import cl.emilym.sinatra.data.models.MapLocation
+import cl.emilym.sinatra.data.models.MapRegion
 import cl.emilym.sinatra.data.models.ScreenLocation
 import cl.emilym.sinatra.data.models.ScreenRegion
 import cl.emilym.sinatra.ui.addCoordinateSpan
 import cl.emilym.sinatra.ui.toCoordinateSpan
-import cl.emilym.sinatra.ui.widgets.toFloatPx
 import io.github.aakira.napier.Napier
-import kotlin.math.PI
-import kotlin.math.pow
 
 interface MapControl {
     fun zoomToArea(bounds: MapRegion, padding: Int)

@@ -1,15 +1,9 @@
 package cl.emilym.sinatra.data.persistence
 
 import cl.emilym.sinatra.data.models.ResourceKey
-import cl.emilym.sinatra.data.models.Route
 import cl.emilym.sinatra.data.models.ServiceId
-import cl.emilym.sinatra.data.models.Stop
-import cl.emilym.sinatra.room.dao.RouteDao
 import cl.emilym.sinatra.room.dao.RouteServiceEntityDao
-import cl.emilym.sinatra.room.dao.StopDao
-import cl.emilym.sinatra.room.entities.RouteEntity
 import cl.emilym.sinatra.room.entities.RouteServiceEntity
-import cl.emilym.sinatra.room.entities.StopEntity
 import org.koin.core.annotation.Factory
 
 @Factory

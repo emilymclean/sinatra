@@ -10,7 +10,6 @@ import cl.emilym.sinatra.data.models.RouteServiceCanonicalTimetable
 import cl.emilym.sinatra.data.models.RouteServiceTimetable
 import cl.emilym.sinatra.data.models.RouteTripTimetable
 import cl.emilym.sinatra.data.models.ServiceId
-import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.data.models.TripId
 import cl.emilym.sinatra.data.models.flatMap
 import cl.emilym.sinatra.data.models.map

@@ -4,10 +4,8 @@ import cl.emilym.sinatra.data.models.Service
 import cl.emilym.sinatra.data.models.ShaDigest
 import cl.emilym.sinatra.data.repository.TransportMetadataRepository
 import cl.emilym.sinatra.network.GtfsApi
-import cl.emilym.gtfs.ServiceEndpoint
 import io.github.aakira.napier.Napier
 import org.koin.core.annotation.Factory
-import pbandk.decodeFromByteArray
 
 @Factory
 class ServiceClient(

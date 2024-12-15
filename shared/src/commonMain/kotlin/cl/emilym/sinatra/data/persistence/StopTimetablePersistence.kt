@@ -1,12 +1,8 @@
 package cl.emilym.sinatra.data.persistence
 
 import cl.emilym.sinatra.data.models.ResourceKey
-import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.data.models.StopTimetable
-import cl.emilym.sinatra.data.models.StopTimetableTime
-import cl.emilym.sinatra.room.dao.StopDao
 import cl.emilym.sinatra.room.dao.StopTimetableTimeEntityDao
-import cl.emilym.sinatra.room.entities.StopEntity
 import cl.emilym.sinatra.room.entities.StopTimetableTimeEntity
 import org.koin.core.annotation.Factory
 

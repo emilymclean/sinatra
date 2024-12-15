@@ -1,9 +1,7 @@
 package cl.emilym.sinatra.ui.widgets
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
@@ -22,8 +20,8 @@ import cl.emilym.sinatra.data.models.StopAccessibility
 import cl.emilym.sinatra.data.models.StopWheelchairAccessibility
 import org.jetbrains.compose.resources.stringResource
 import sinatra.ui.generated.resources.Res
-import sinatra.ui.generated.resources.scheduled_arrival
 import sinatra.ui.generated.resources.estimated_arrival
+import sinatra.ui.generated.resources.scheduled_arrival
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable

@@ -4,8 +4,6 @@ import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
-import cl.emilym.sinatra.data.models.RouteId
-import cl.emilym.sinatra.data.models.StopId
 import cl.emilym.sinatra.room.entities.FavouriteEntity
 import cl.emilym.sinatra.room.entities.FavouriteEntityEntityWithStopAndRoute
 import kotlinx.coroutines.flow.Flow

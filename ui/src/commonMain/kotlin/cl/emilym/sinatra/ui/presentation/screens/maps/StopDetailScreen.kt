@@ -53,7 +53,6 @@ import cl.emilym.sinatra.ui.widgets.SheetIosBackButton
 import cl.emilym.sinatra.ui.widgets.UpcomingRouteCard
 import cl.emilym.sinatra.ui.widgets.WheelchairAccessibleIcon
 import cl.emilym.sinatra.ui.widgets.createRequestStateFlowFlow
-import cl.emilym.sinatra.ui.widgets.handleFlow
 import cl.emilym.sinatra.ui.widgets.handleFlowProperly
 import cl.emilym.sinatra.ui.widgets.presentable
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -64,11 +63,11 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.android.annotation.KoinViewModel
 import org.koin.compose.viewmodel.koinViewModel
 import sinatra.ui.generated.resources.Res
+import sinatra.ui.generated.resources.accessibility_not_wheelchair_accessible
+import sinatra.ui.generated.resources.accessibility_wheelchair_accessible
+import sinatra.ui.generated.resources.no_upcoming_vehicles
 import sinatra.ui.generated.resources.stop_not_found
 import sinatra.ui.generated.resources.upcoming_vehicles
-import sinatra.ui.generated.resources.accessibility_wheelchair_accessible
-import sinatra.ui.generated.resources.accessibility_not_wheelchair_accessible
-import sinatra.ui.generated.resources.no_upcoming_vehicles
 
 @KoinViewModel
 class StopDetailViewModel(

@@ -5,8 +5,8 @@ import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Transaction
 import cl.emilym.sinatra.data.models.ResourceKey
-import cl.emilym.sinatra.room.entities.StopTimetableTimeEntityWithRouteEntity
 import cl.emilym.sinatra.room.entities.StopTimetableTimeEntity
+import cl.emilym.sinatra.room.entities.StopTimetableTimeEntityWithRouteEntity
 
 @Dao
 interface StopTimetableTimeEntityDao {

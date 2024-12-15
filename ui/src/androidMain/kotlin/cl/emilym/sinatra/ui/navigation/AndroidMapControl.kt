@@ -1,11 +1,9 @@
 package cl.emilym.sinatra.ui.navigation
 
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.ui.geometry.Size
-import cl.emilym.sinatra.data.models.MapRegion
 import cl.emilym.sinatra.data.models.MapLocation
+import cl.emilym.sinatra.data.models.MapRegion
 import cl.emilym.sinatra.data.models.ScreenLocation
-import cl.emilym.sinatra.ui.canberra
 import cl.emilym.sinatra.ui.maps.AbstractMapControl
 import cl.emilym.sinatra.ui.maps.PrecomputedPaddingValues
 import cl.emilym.sinatra.ui.toNative

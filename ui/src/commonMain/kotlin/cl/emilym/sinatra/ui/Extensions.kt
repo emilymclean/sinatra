@@ -5,7 +5,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import cl.emilym.compose.requeststate.RequestState
 import cl.emilym.sinatra.asRadians
 import cl.emilym.sinatra.data.models.ColorPair
 import cl.emilym.sinatra.data.models.CoordinateSpan
@@ -17,14 +16,10 @@ import cl.emilym.sinatra.data.models.OnColor.DARK
 import cl.emilym.sinatra.data.models.OnColor.LIGHT
 import cl.emilym.sinatra.data.models.Route
 import cl.emilym.sinatra.data.models.RouteTripStop
-import cl.emilym.sinatra.data.models.StationTime
 import cl.emilym.sinatra.data.models.TimetableStationTime
 import cl.emilym.sinatra.data.models.forDay
 import cl.emilym.sinatra.degrees
-import cl.emilym.sinatra.ui.maps.MarkerItem
-import cl.emilym.sinatra.ui.widgets.LocalClock
 import cl.emilym.sinatra.ui.widgets.toTodayInstant
-import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlin.math.cos
 import kotlin.math.ln

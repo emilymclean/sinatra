@@ -78,17 +78,17 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.android.annotation.KoinViewModel
 import org.koin.compose.viewmodel.koinViewModel
 import sinatra.ui.generated.resources.Res
+import sinatra.ui.generated.resources.accessibility_title
+import sinatra.ui.generated.resources.current_stops_title
+import sinatra.ui.generated.resources.past_stops_title
 import sinatra.ui.generated.resources.route_accessibility_bikes_allowed
 import sinatra.ui.generated.resources.route_accessibility_no_bikes_allowed
 import sinatra.ui.generated.resources.route_accessibility_not_wheelchair_accessible
 import sinatra.ui.generated.resources.route_accessibility_wheelchair_accessible
-import sinatra.ui.generated.resources.stops_title
-import sinatra.ui.generated.resources.current_stops_title
-import sinatra.ui.generated.resources.past_stops_title
-import sinatra.ui.generated.resources.accessibility_title
-import sinatra.ui.generated.resources.route_not_found
-import sinatra.ui.generated.resources.trip_not_found
 import sinatra.ui.generated.resources.route_heading
+import sinatra.ui.generated.resources.route_not_found
+import sinatra.ui.generated.resources.stops_title
+import sinatra.ui.generated.resources.trip_not_found
 
 @KoinViewModel
 class RouteDetailViewModel(

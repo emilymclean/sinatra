@@ -8,9 +8,7 @@ import io.github.aakira.napier.Napier
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsChannel
 import io.ktor.utils.io.toByteArray
-import pbandk.Message
 import kotlin.reflect.KClass
-import kotlin.reflect.KType
 
 typealias ProtobufFactory<T> = (arr: ByteArray) -> T
 

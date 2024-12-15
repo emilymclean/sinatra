@@ -4,8 +4,6 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
 import cl.emilym.sinatra.room.entities.RouteEntity
-import cl.emilym.sinatra.room.entities.StopEntity
-import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface RouteDao {

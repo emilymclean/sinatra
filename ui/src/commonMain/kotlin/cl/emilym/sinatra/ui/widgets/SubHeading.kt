@@ -9,9 +9,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import cl.emilym.compose.units.rdp
-import org.jetbrains.compose.resources.stringResource
-import sinatra.ui.generated.resources.Res
-import sinatra.ui.generated.resources.stops_title
 
 @Composable
 fun Subheading(

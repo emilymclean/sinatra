@@ -1,8 +1,8 @@
 package cl.emilym.sinatra
 
 import cl.emilym.sinatra.data.models.Degree
-import cl.emilym.sinatra.data.models.MapRegion
 import cl.emilym.sinatra.data.models.MapLocation
+import cl.emilym.sinatra.data.models.MapRegion
 import cl.emilym.sinatra.data.models.Radian
 import io.github.aakira.napier.Napier
 
