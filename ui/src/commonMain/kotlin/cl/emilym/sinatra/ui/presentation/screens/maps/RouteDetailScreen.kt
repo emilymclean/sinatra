@@ -52,7 +52,6 @@ import cl.emilym.sinatra.ui.color
 import cl.emilym.sinatra.ui.current
 import cl.emilym.sinatra.ui.maps.LineItem
 import cl.emilym.sinatra.ui.maps.MapItem
-import cl.emilym.sinatra.ui.maps.MapScope
 import cl.emilym.sinatra.ui.maps.MarkerItem
 import cl.emilym.sinatra.ui.maps.routeStopMarkerIcon
 import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
@@ -317,7 +316,7 @@ class RouteDetailScreen(
     }
 
     @Composable
-    override fun MapScope.mapItems(): List<MapItem> {
+    override fun mapItems(): List<MapItem> {
         val viewModel = koinViewModel<RouteDetailViewModel>()
         val tripInformationRS by viewModel.tripInformation.collectAsState(RequestState.Initial())
         val info = (tripInformationRS as? RequestState.Success)?.value ?: return listOf()

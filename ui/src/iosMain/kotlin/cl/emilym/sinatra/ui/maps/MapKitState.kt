@@ -11,12 +11,12 @@ import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.ui.adjustForLatitude
 import cl.emilym.sinatra.ui.canberra
 import cl.emilym.sinatra.ui.canberraZoom
-import cl.emilym.sinatra.ui.matches
 import cl.emilym.sinatra.ui.sinatraAllocArrayOf
 import cl.emilym.sinatra.ui.toCoordinateSpan
 import cl.emilym.sinatra.ui.toNative
 import cl.emilym.sinatra.ui.toNativeUIColor
 import cl.emilym.sinatra.ui.toShared
+import cl.emilym.sinatra.ui.toZoom
 import cl.emilym.sinatra.ui.widgets.screenSize
 import io.github.aakira.napier.Napier
 import kotlinx.cinterop.Arena
@@ -27,15 +27,13 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import platform.CoreLocation.CLLocationCoordinate2D
 import platform.MapKit.MKAnnotationProtocol
-import platform.MapKit.MKAnnotationView
 import platform.MapKit.MKCoordinateRegion
 import platform.MapKit.MKCoordinateRegionMake
 import platform.MapKit.MKMapView
 import platform.MapKit.MKOverlayProtocol
-import platform.MapKit.MKPointAnnotation
 import platform.MapKit.MKPolyline
-import platform.MapKit.addOverlays
-import platform.MapKit.removeOverlays
+import platform.MapKit.addOverlay
+import platform.MapKit.removeOverlay
 import platform.UIKit.UIColor
 
 
@@ -47,6 +45,25 @@ data class CameraDescription(
     @OptIn(ExperimentalForeignApi::class)
     val region: CValue<MKCoordinateRegion> get() = createRegion(center, coordinateSpan)
 
+}
+
+class ManagedMapItem<T: MapItem> @OptIn(ExperimentalForeignApi::class) constructor(
+    val item: T,
+    val annotation: MKAnnotationProtocol,
+    val arena: Arena?
+) {
+
+    override fun equals(other: Any?): Boolean {
+        return item == other
+    }
+
+    override fun hashCode(): Int {
+        return item.hashCode()
+    }
+
+    override fun toString(): String {
+        return item.toString()
+    }
 }
 
 class MapKitState(
@@ -62,9 +79,8 @@ class MapKitState(
 
     private var _items: List<MapItem> = items
     val items get() = _items
-    private var managedAnnotations = mutableMapOf<String, MKAnnotationProtocol>()
-    @OptIn(ExperimentalForeignApi::class)
-    private var managedArenas = mutableMapOf<String, Arena>()
+
+    private var managedItems = mutableMapOf<String, ManagedMapItem<*>>()
 
     private val delegate = SinatraMapKitDelegate(::onAnnotationClick, ::onMapUpdate)
 
@@ -104,42 +120,58 @@ class MapKitState(
     @OptIn(ExperimentalForeignApi::class)
     private fun onMapUpdate() {
         val map = map ?: return
+        val coordinateSpan = map.region.useContents { span.toShared() }
+        val zoom = coordinateSpan.toZoom()
         _cameraDescription = CameraDescription(
             map.camera.centerCoordinate.toShared(),
-            map.region.useContents { span.toShared() }
+            coordinateSpan
         )
+        for (annotation in map.annotations) {
+            when (annotation) {
+                is MarkerAnnotation -> {
+                    val range = annotation.visibleZoomRange ?: continue
+                    map.viewForAnnotation(annotation)?.hidden = zoom !in range
+                }
+            }
+        }
     }
 
     @OptIn(ExperimentalForeignApi::class)
     suspend fun updateItems(items: List<MapItem>) {
         lock.withLock {
-            this._items = items
+            _items = items
             val visitedIds = mutableMapOf<String, Unit>()
-            val toAdd = mutableListOf<MKAnnotationProtocol>()
-            val toRemove = mutableListOf<MKAnnotationProtocol>()
-            val toRemoveArena = mutableListOf<Arena>()
+            val toAdd = mutableListOf<ManagedMapItem<*>>()
+            val toRemove = mutableListOf<ManagedMapItem<*>>()
 
             fun removeItem(id: String) {
-                managedAnnotations.remove(id)?.let { toRemove.add(it) }
-                managedArenas.remove(id)?.let { toRemoveArena.add(it) }
+                managedItems.remove(id)?.let { toRemove.add(it) }
+            }
+
+            fun addItem(item: MapItem, annotation: MKAnnotationProtocol, arena: Arena? = null) {
+                val managed = ManagedMapItem(
+                    item, annotation, arena
+                )
+                toAdd.add(managed)
+                managedItems[item.id] = managed
             }
 
             for (item in items) {
                 visitedIds[item.id] = Unit
-                val existing = managedAnnotations[item.id]
+                val existing = managedItems[item.id]
+                if (existing == item) continue
 
                 when (item) {
                     is MarkerItem -> {
-                        if (existing is MarkerAnnotation && existing.matches(item)) continue
                         removeItem(item.id)
 
                         MarkerAnnotation(
                             item.id,
                             item.location,
-                            item.icon
+                            item.icon,
+                            item.visibleZoomRange
                         ).also {
-                            toAdd.add(it)
-                            managedAnnotations[item.id] = it
+                            addItem(item, it)
                         }
                     }
                     is LineItem -> {
@@ -157,28 +189,34 @@ class MapKitState(
                             ),
                             color = item.color?.toNativeUIColor() ?: UIColor.magentaColor
                         ).also {
-                            toAdd.add(it)
-                            managedAnnotations[item.id] = it
-                            managedArenas[item.id] = arena
+                            addItem(item, it, arena)
                         }
                     }
                 }
             }
 
-            val discardedIds = managedAnnotations.keys.filterNot { visitedIds.containsKey(it) }
-            for (id in discardedIds) {
-                toRemove.add(managedAnnotations.remove(id)!!)
-                managedArenas.remove(id)?.let { toRemoveArena.add(it) }
+            toRemove.addAll(
+                managedItems
+                    .filterNot { visitedIds.containsKey(it.key) }
+                    .map { managedItems.remove(it.key)!! }
+            )
+
+            for (remove in toRemove) {
+                when (val annotation = remove.annotation) {
+                    is MKOverlayProtocol -> map?.removeOverlay(annotation)
+                    else -> map?.removeAnnotation(annotation)
+                }
+                remove.arena?.clear()
             }
 
-            map?.removeOverlays(toRemove.filterIsInstance<MKOverlayProtocol>())
-            map?.removeAnnotations(toRemove.filter { it !is MKOverlayProtocol })
-            toRemoveArena.forEach { it.clear() }
-            map?.addOverlays(toAdd.filterIsInstance<MKOverlayProtocol>())
-            map?.addAnnotations(toAdd.filter { it !is MKOverlayProtocol })
+            for (add in toAdd) {
+                when (val annotation = add.annotation) {
+                    is MKOverlayProtocol -> map?.addOverlay(annotation)
+                    else -> map?.addAnnotation(annotation)
+                }
+            }
 
-            Napier.d("Map updates: removed ${toRemove.size} items, added ${toAdd.size} items, updated ${items.size - toAdd.size} items; removed ${toRemoveArena.size} arenas")
-            Napier.d("Map stats: ${managedAnnotations.size} items, ${managedArenas.size} arenas")
+            Napier.d("Map updates: removed ${toRemove.size} items, added ${toAdd.size} items, updated ${items.size - toAdd.size} items")
         }
     }
 
@@ -195,9 +233,8 @@ class MapKitState(
                 map.delegate = delegate
                 map.setRegion(cameraDescription.region)
             } else {
-                managedAnnotations.clear()
-                managedArenas.values.forEach { it.clear() }
-                managedArenas.clear()
+                managedItems.forEach { it.value.arena?.clear() }
+                managedItems.clear()
             }
 
             Napier.d("Map in MapKitState is null = ${map == null}")

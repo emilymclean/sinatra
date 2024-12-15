@@ -23,7 +23,6 @@ import cl.emilym.sinatra.ui.canberraZoom
 import cl.emilym.sinatra.ui.maps.CameraState
 import cl.emilym.sinatra.ui.maps.LineItem
 import cl.emilym.sinatra.ui.maps.MapControl
-import cl.emilym.sinatra.ui.maps.MapScope
 import cl.emilym.sinatra.ui.maps.MarkerItem
 import cl.emilym.sinatra.ui.maps.NativeMapScope
 import cl.emilym.sinatra.ui.maps.currentLocationIcon
@@ -78,14 +77,6 @@ actual fun Map(content: @Composable MapControl.(@Composable () -> Unit) -> Unit)
         )
     }
     val nativeMapScope = NativeMapScope(cameraPositionState)
-    val mapScope = remember(cameraPositionState.position) {
-        MapScope(
-            CameraState(
-                cameraPositionState.position.target.toShared(),
-                cameraPositionState.position.zoom
-            )
-        )
-    }
 
     scope.content {
         GoogleMap(
@@ -110,7 +101,7 @@ actual fun Map(content: @Composable MapControl.(@Composable () -> Unit) -> Unit)
         ) {
             currentLocation?.let { DrawMarker(MarkerItem(it, currentLocationIcon)) }
 
-            mapScope.currentMapItems { items ->
+            currentMapItems { items ->
                 for (item in items) {
                     when (item) {
                         is MarkerItem -> DrawMarker(item)

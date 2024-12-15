@@ -1,6 +1,9 @@
 package cl.emilym.sinatra.ui.maps
 
+import cl.emilym.sinatra.ui.toShared
+import cl.emilym.sinatra.ui.toZoom
 import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.cinterop.useContents
 import platform.MapKit.MKAnnotationProtocol
 import platform.MapKit.MKAnnotationView
 import platform.MapKit.MKMapView
@@ -34,6 +37,7 @@ class SinatraMapKitDelegate(
         }
     }
 
+    @OptIn(ExperimentalForeignApi::class)
     override fun mapView(
         mapView: MKMapView,
         viewForAnnotation: MKAnnotationProtocol
@@ -41,8 +45,13 @@ class SinatraMapKitDelegate(
         return when (viewForAnnotation) {
             is MarkerAnnotation -> {
                 val icon = viewForAnnotation.icon ?: return MKAnnotationView()
-                mapView.dequeueReusableAnnotationViewWithIdentifier(icon.reuseIdentifier)
+                (mapView.dequeueReusableAnnotationViewWithIdentifier(icon.reuseIdentifier)
                     ?: icon.annotationView(viewForAnnotation)
+                ).apply {
+                    viewForAnnotation.visibleZoomRange?.let {
+                        hidden = mapView.region.useContents { span }.toShared().toZoom() !in it
+                    }
+                }
             }
             else -> MKAnnotationView()
         }

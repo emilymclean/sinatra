@@ -119,35 +119,3 @@ abstract class AbstractMapControl: MapControl {
     }
 
 }
-
-const val EARTH_CIRCUMFERENCE = 6378137
-
-fun metersPerPxAtZoom(zoom: Float): Float {
-    return EARTH_CIRCUMFERENCE / (256 * 2f.pow(zoom))
-}
-
-fun MapLocation.addMetersLatitude(meters: Float): MapLocation {
-    return MapLocation(
-        lat + (meters / EARTH_CIRCUMFERENCE) * (180 / PI),
-        lng
-    )
-}
-
-fun ScreenRegion.padded(
-    scale: Float,
-    values: PrecomputedPaddingValues
-): ScreenRegion {
-    val horizontalScaling = width / scale
-    val verticalScaling = height / scale
-
-    return copy(
-        topLeft = ScreenLocation(
-            topLeft.x - (values.left * horizontalScaling).toInt(),
-            topLeft.y - (values.top * verticalScaling).toInt()
-        ),
-        bottomRight = ScreenLocation(
-            bottomRight.x + (values.right * horizontalScaling).toInt(),
-            bottomRight.y + (values.bottom * verticalScaling).toInt()
-        )
-    )
-}
