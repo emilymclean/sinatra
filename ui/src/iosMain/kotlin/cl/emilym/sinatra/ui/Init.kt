@@ -4,6 +4,8 @@ import cl.emilym.sinatra.SharedModule
 import cl.emilym.sinatra.data.client.RemoteConfigWrapper
 import cl.emilym.sinatra.manualModule
 import cl.emilym.sinatra.room.databaseBuilderModule
+import cl.emilym.sinatra.ui.maps.MAPS_API_KEY
+import cocoapods.GoogleMaps.GMSServices
 import io.github.aakira.napier.DebugAntilog
 import io.github.aakira.napier.Napier
 import kotlinx.cinterop.ExperimentalForeignApi
@@ -18,6 +20,7 @@ fun init(
     versionName: String,
     versionCode: String
 ) {
+    GMSServices.provideAPIKey(MAPS_API_KEY)
     Napier.base(DebugAntilog())
 
     startKoin {
