@@ -12,6 +12,8 @@
 		2152FB042600AC8F00CF470E /* iOSApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2152FB032600AC8F00CF470E /* iOSApp.swift */; };
 		23E820D16B5E6032EC4B470C /* Pods_iosApp.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 05718B41F64AB618F4BD9D71 /* Pods_iosApp.framework */; };
 		5144DD9C2D0C219F002C42B2 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 5144DD9B2D0C219F002C42B2 /* GoogleService-Info.plist */; };
+		51959A152D0E82C600C153E3 /* GoogleMapsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51959A142D0E82BE00C153E3 /* GoogleMapsViewController.swift */; };
+		51959A172D0E85A900C153E3 /* MapsApiKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51959A162D0E85A600C153E3 /* MapsApiKey.swift */; };
 		7555FF83242A565900829871 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7555FF82242A565900829871 /* ContentView.swift */; };
 /* End PBXBuildFile section */
 
@@ -21,6 +23,8 @@
 		058557D8273AAEEB004C7B11 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		2152FB032600AC8F00CF470E /* iOSApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSApp.swift; sourceTree = "<group>"; };
 		5144DD9B2D0C219F002C42B2 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		51959A142D0E82BE00C153E3 /* GoogleMapsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoogleMapsViewController.swift; sourceTree = "<group>"; };
+		51959A162D0E85A600C153E3 /* MapsApiKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapsApiKey.swift; sourceTree = "<group>"; };
 		75529B80CBC0212E8CC489DA /* Pods-iosApp.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-iosApp.debug.xcconfig"; path = "Target Support Files/Pods-iosApp/Pods-iosApp.debug.xcconfig"; sourceTree = "<group>"; };
 		7555FF7B242A565900829871 /* Sinatra.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Sinatra.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7555FF82242A565900829871 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -78,6 +82,8 @@
 		7555FF7D242A565900829871 /* iosApp */ = {
 			isa = PBXGroup;
 			children = (
+				51959A162D0E85A600C153E3 /* MapsApiKey.swift */,
+				51959A142D0E82BE00C153E3 /* GoogleMapsViewController.swift */,
 				5144DD9B2D0C219F002C42B2 /* GoogleService-Info.plist */,
 				058557BA273AAA24004C7B11 /* Assets.xcassets */,
 				7555FF82242A565900829871 /* ContentView.swift */,
@@ -255,6 +261,8 @@
 			files = (
 				2152FB042600AC8F00CF470E /* iOSApp.swift in Sources */,
 				7555FF83242A565900829871 /* ContentView.swift in Sources */,
+				51959A152D0E82C600C153E3 /* GoogleMapsViewController.swift in Sources */,
+				51959A172D0E85A900C153E3 /* MapsApiKey.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -1,5 +1,6 @@
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
 
@@ -23,9 +24,21 @@ kotlin {
             }
         }
     }
-    iosX64()
-    iosArm64()
-    iosSimulatorArm64()
+    iosX64 {
+        binaries.all {
+            linkerOpts("-ObjC")
+        }
+    }
+    iosArm64 {
+        binaries.all {
+            linkerOpts("-ObjC")
+        }
+    }
+    iosSimulatorArm64 {
+        binaries.all {
+            linkerOpts("-ObjC")
+        }
+    }
 
     cocoapods {
         summary = "Some description for the Shared Module"
@@ -33,21 +46,21 @@ kotlin {
         version = "1.0"
         ios.deploymentTarget = "16.0"
         podfile = project.file("../iosApp/Podfile")
+
         framework {
             baseName = "ui"
-            isStatic = false
-
-            @OptIn(ExperimentalKotlinGradlePluginApi::class)
-            transitiveExport = false
-            export(project(":shared"))
+            isStatic = true
         }
-
-        xcodeConfigurationToNativeBuildType["CUSTOM_DEBUG"] = NativeBuildType.DEBUG
-        xcodeConfigurationToNativeBuildType["CUSTOM_RELEASE"] = NativeBuildType.RELEASE
 
         pod("GoogleMaps") {
             version = "9.2.0"
             extraOpts = listOf("-compiler-option", "-fmodules")
+        }
+    }
+
+    targets.withType<KotlinNativeTarget> {
+        binaries.all {
+            linkerOpts("-ObjC")
         }
     }
     

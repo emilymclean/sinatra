@@ -7,19 +7,16 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.UIKitView
+import cl.emilym.sinatra.ui.canberra
+import cl.emilym.sinatra.ui.canberraZoom
 import cl.emilym.sinatra.ui.maps.AppleMapControl
 import cl.emilym.sinatra.ui.maps.CameraState
 import cl.emilym.sinatra.ui.maps.MapControl
-import cl.emilym.sinatra.ui.maps.MapItem
 import cl.emilym.sinatra.ui.maps.MapScope
 import cl.emilym.sinatra.ui.maps.MarkerItem
 import cl.emilym.sinatra.ui.maps.currentLocationIcon
@@ -27,24 +24,22 @@ import cl.emilym.sinatra.ui.maps.iosCurrentMapItems
 import cl.emilym.sinatra.ui.maps.precompute
 import cl.emilym.sinatra.ui.maps.rememberMapKitState
 import cl.emilym.sinatra.ui.navigation.bottomSheetHalfHeight
-import cl.emilym.sinatra.ui.navigation.currentMapItems
+import cl.emilym.sinatra.ui.toNative
 import cl.emilym.sinatra.ui.toZoom
 import cl.emilym.sinatra.ui.widgets.currentLocation
 import cl.emilym.sinatra.ui.widgets.screenSize
 import cl.emilym.sinatra.ui.widgets.viewportSize
+import cocoapods.GoogleMaps.GMSCameraPosition
+import cocoapods.GoogleMaps.GMSMapView
+import cocoapods.GoogleMaps.GMSMapView.Companion.mapWithFrame
 import io.github.aakira.napier.Napier
-import kotlinx.coroutines.launch
-import platform.MapKit.MKMapView
-import platform.MapKit.MKPointOfInterestCategoryPublicTransport
-import platform.MapKit.MKPointOfInterestFilter
+import kotlinx.cinterop.ExperimentalForeignApi
 
-val globalPointOfInterestFilter = MKPointOfInterestFilter(excludingCategories = listOf(
-    MKPointOfInterestCategoryPublicTransport
-))
-
+@OptIn(ExperimentalForeignApi::class)
 @Composable
 actual fun Map(content: @Composable MapControl.(@Composable () -> Unit) -> Unit) {
 
+    val camera = remember { GMSCameraPosition.cameraWithTarget(canberra.toNative(), canberraZoom) }
     val state = rememberMapKitState {}
 
     val insets = WindowInsets.systemBars.only(WindowInsetsSides.Top)
@@ -98,17 +93,12 @@ actual fun Map(content: @Composable MapControl.(@Composable () -> Unit) -> Unit)
         UIKitView(
             modifier = Modifier.fillMaxSize(),
             factory = {
-                MKMapView().apply {
-                    setZoomEnabled(true)
-                    setScrollEnabled(true)
-                    setRotateEnabled(false)
-                    setPointOfInterestFilter(globalPointOfInterestFilter)
-                }.also {
-                    coroutineScope.launch { state.setMap(it) }
+                GMSMapView().apply {
+                    mapWithFrame(frame, camera)
                 }
             },
             onRelease = {
-                coroutineScope.launch { state.setMap(null) }
+                it.removeFromSuperview()
             }
         )
     }
