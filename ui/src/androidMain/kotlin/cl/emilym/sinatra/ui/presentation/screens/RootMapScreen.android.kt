@@ -110,7 +110,7 @@ actual fun Map(content: @Composable MapControl.(@Composable () -> Unit) -> Unit)
         ) {
             currentLocation?.let { DrawMarker(MarkerItem(it, currentLocationIcon)) }
 
-            mapScope.currentMapItems { items ->
+            currentMapItems { items ->
                 for (item in items) {
                     when (item) {
                         is MarkerItem -> DrawMarker(item)

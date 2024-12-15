@@ -317,7 +317,7 @@ class RouteDetailScreen(
     }
 
     @Composable
-    override fun MapScope.mapItems(): List<MapItem> {
+    override fun mapItems(): List<MapItem> {
         val viewModel = koinViewModel<RouteDetailViewModel>()
         val tripInformationRS by viewModel.tripInformation.collectAsState(RequestState.Initial())
         val info = (tripInformationRS as? RequestState.Success)?.value ?: return listOf()

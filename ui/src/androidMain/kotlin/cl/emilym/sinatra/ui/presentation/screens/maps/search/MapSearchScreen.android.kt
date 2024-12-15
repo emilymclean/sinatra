@@ -43,4 +43,4 @@ actual fun NativeMapScope.DrawMapSearchScreenMapNative(stops: List<Stop>) {
 }
 
 @Composable
-actual fun MapScope.mapSearchScreenMapItems(stops: List<Stop>): List<MarkerItem> = listOf()
+actual fun mapSearchScreenMapItems(stops: List<Stop>): List<MarkerItem> = listOf()

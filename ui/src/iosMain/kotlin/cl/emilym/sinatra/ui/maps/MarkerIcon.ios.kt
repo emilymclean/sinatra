@@ -43,6 +43,20 @@ class UIImageMarkerIcon(
         )
     }
 
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null || this::class != other::class) return false
+
+        other as UIImageMarkerIcon
+
+        return reuseIdentifier == other.reuseIdentifier
+    }
+
+    override fun hashCode(): Int {
+        return reuseIdentifier.hashCode()
+    }
+
+
 }
 
 @OptIn(ExperimentalForeignApi::class)
@@ -123,4 +137,4 @@ actual fun spotMarkerIcon(
     )
 }
 
-actual fun platformSizeAdjustment(): Float = 0.5f
+actual fun platformSizeAdjustment(): Float = 0.4f

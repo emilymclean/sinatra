@@ -55,7 +55,6 @@ actual fun Map(content: @Composable MapControl.(@Composable () -> Unit) -> Unit)
     val viewportSize = viewportSize(insets)
     val paddingValues = insets.asPaddingValues().precompute()
     val bottomSheetHalfHeight = bottomSheetHalfHeight()
-    val screenSize = screenSize()
 
     val control = remember(state, viewportSize, paddingValues, bottomSheetHalfHeight) {
         AppleMapControl(
@@ -66,23 +65,10 @@ actual fun Map(content: @Composable MapControl.(@Composable () -> Unit) -> Unit)
         )
     }
 
-    LaunchedEffect(screenSize, viewportSize) {
-        Napier.d("viewportSize = $viewportSize, screenSize = $screenSize")
-    }
-
-    val scope = remember(state.cameraDescription) {
-        MapScope(
-            CameraState(
-                state.cameraDescription.center,
-                state.cameraDescription.coordinateSpan.toZoom()
-            )
-        )
-    }
-
     val currentLocation = currentLocation()
     val currentLocationIcon = currentLocationIcon()
 
-    val items = scope.iosCurrentMapItems() + listOfNotNull(
+    val items = iosCurrentMapItems() + listOfNotNull(
         currentLocation?.let {
             MarkerItem(
                 it,

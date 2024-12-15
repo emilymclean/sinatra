@@ -23,7 +23,7 @@ interface MapScreen: Screen {
     fun BottomSheetContent() {}
 
     @Composable
-    fun MapScope.mapItems(): List<MapItem> = listOf()
+    fun mapItems(): List<MapItem> = listOf()
 }
 
 interface NativeMapScreen {
@@ -66,7 +66,7 @@ fun CurrentBottomSheetContent() {
 }
 
 @Composable
-fun MapScope.currentMapItems(
+fun currentMapItems(
     accept: @Composable (List<MapItem>) -> Unit
 ) {
     val navigator = LocalNavigator.currentOrThrow
@@ -79,7 +79,7 @@ fun MapScope.currentMapItems(
     }
 
     navigator.saveableState("mapItems") {
-        with(mapScreen) { accept(mapItems()) }
+        accept(mapScreen.mapItems())
     }
 }
 

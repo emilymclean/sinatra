@@ -277,7 +277,7 @@ class StopDetailScreen(
     }
 
     @Composable
-    override fun MapScope.mapItems(): List<MapItem> {
+    override fun mapItems(): List<MapItem> {
         val viewModel = koinViewModel<StopDetailViewModel>()
         val stopRS by viewModel.stop.collectAsState(RequestState.Initial())
         val stop = (stopRS as? RequestState.Success)?.value ?: return listOf()
