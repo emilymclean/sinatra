@@ -27,7 +27,7 @@ actual fun mapSearchScreenMapItems(stops: List<Stop>): List<MarkerItem> {
         it.toMarkerItem(
             navigator,
             icon,
-            if (it.important) FloatRange.default else FloatRange(14f, Float.MAX_VALUE)
+            if (it.important) null else FloatRange(14f, Float.MAX_VALUE)
         )
     } }
 
@@ -37,7 +37,7 @@ actual fun mapSearchScreenMapItems(stops: List<Stop>): List<MarkerItem> {
 private fun Stop.toMarkerItem(
     navigator: Navigator,
     icon: MarkerIcon,
-    zoomThreshold: FloatRange
+    zoomThreshold: FloatRange?
 ): MarkerItem {
     return MarkerItem(
         location,

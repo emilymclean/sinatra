@@ -19,7 +19,7 @@ data class MarkerItem(
     override val onClick: (() -> Unit)? = null,
     override val visible: Boolean = true,
     override val id: String = uuid(),
-    val visibleZoomRange: FloatRange = FloatRange(-1f, Float.MAX_VALUE)
+    val visibleZoomRange: FloatRange? = null
 ): MapItem, ClickableMapItem {
 
     override fun equals(other: Any?): Boolean {

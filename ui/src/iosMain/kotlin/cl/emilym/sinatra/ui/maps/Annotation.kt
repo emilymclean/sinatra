@@ -33,7 +33,7 @@ class MarkerAnnotation(
     val id: String,
     val location: MapLocation,
     val icon: MarkerIcon?,
-    val visibleZoomRange: FloatRange,
+    val visibleZoomRange: FloatRange?,
 ): NSObject(), MKAnnotationProtocol {
 
     @OptIn(ExperimentalForeignApi::class)

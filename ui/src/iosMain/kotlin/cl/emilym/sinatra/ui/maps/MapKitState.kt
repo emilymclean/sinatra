@@ -16,6 +16,7 @@ import cl.emilym.sinatra.ui.toCoordinateSpan
 import cl.emilym.sinatra.ui.toNative
 import cl.emilym.sinatra.ui.toNativeUIColor
 import cl.emilym.sinatra.ui.toShared
+import cl.emilym.sinatra.ui.toZoom
 import cl.emilym.sinatra.ui.widgets.screenSize
 import io.github.aakira.napier.Napier
 import kotlinx.cinterop.Arena
@@ -119,10 +120,20 @@ class MapKitState(
     @OptIn(ExperimentalForeignApi::class)
     private fun onMapUpdate() {
         val map = map ?: return
+        val coordinateSpan = map.region.useContents { span.toShared() }
+        val zoom = coordinateSpan.toZoom()
         _cameraDescription = CameraDescription(
             map.camera.centerCoordinate.toShared(),
-            map.region.useContents { span.toShared() }
+            coordinateSpan
         )
+        for (annotation in map.annotations) {
+            when (annotation) {
+                is MarkerAnnotation -> {
+                    val range = annotation.visibleZoomRange ?: continue
+                    map.viewForAnnotation(annotation)?.hidden = zoom !in range
+                }
+            }
+        }
     }
 
     @OptIn(ExperimentalForeignApi::class)
