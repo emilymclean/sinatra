@@ -14,7 +14,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.viewinterop.UIKitInteropInteractionMode
+import androidx.compose.ui.viewinterop.UIKitInteropProperties
 import androidx.compose.ui.viewinterop.UIKitView
 import cl.emilym.sinatra.ui.maps.AppleMapControl
 import cl.emilym.sinatra.ui.maps.CameraState
@@ -42,6 +45,7 @@ val globalPointOfInterestFilter = MKPointOfInterestFilter(excludingCategories = 
     MKPointOfInterestCategoryPublicTransport
 ))
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 actual fun Map(content: @Composable MapControl.(@Composable () -> Unit) -> Unit) {
 
@@ -109,7 +113,10 @@ actual fun Map(content: @Composable MapControl.(@Composable () -> Unit) -> Unit)
             },
             onRelease = {
                 coroutineScope.launch { state.setMap(null) }
-            }
+            },
+            properties = UIKitInteropProperties(
+                interactionMode = UIKitInteropInteractionMode.NonCooperative
+            )
         )
     }
 }

@@ -123,4 +123,4 @@ actual fun spotMarkerIcon(
     )
 }
 
-actual fun platformSizeAdjustment(): Float = 0.35f
+actual fun platformSizeAdjustment(): Float = 0.5f
