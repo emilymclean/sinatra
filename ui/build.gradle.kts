@@ -45,9 +45,10 @@ kotlin {
         xcodeConfigurationToNativeBuildType["CUSTOM_DEBUG"] = NativeBuildType.DEBUG
         xcodeConfigurationToNativeBuildType["CUSTOM_RELEASE"] = NativeBuildType.RELEASE
 
-//        pod("GoogleMaps") {
-//            version = "9.2.0"
-//        }
+        pod("GoogleMaps") {
+            version = "9.2.0"
+            extraOpts = listOf("-compiler-option", "-fmodules")
+        }
     }
     
     sourceSets {

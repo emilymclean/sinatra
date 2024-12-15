@@ -45,6 +45,9 @@ PODS:
   - GoogleDataTransport (10.1.0):
     - nanopb (~> 3.30910.0)
     - PromisesObjC (~> 2.4)
+  - GoogleMaps (9.2.0):
+    - GoogleMaps/Maps (= 9.2.0)
+  - GoogleMaps/Maps (9.2.0)
   - GoogleUtilities/Environment (8.0.2):
     - GoogleUtilities/Privacy
   - GoogleUtilities/Logger (8.0.2):
@@ -64,7 +67,8 @@ PODS:
   - PromisesObjC (2.4.0)
   - PromisesSwift (2.4.0):
     - PromisesObjC (= 2.4.0)
-  - ui (1.0)
+  - ui (1.0):
+    - GoogleMaps (= 9.2.0)
 
 DEPENDENCIES:
   - FirebaseCrashlytics
@@ -84,6 +88,7 @@ SPEC REPOS:
     - FirebaseSessions
     - FirebaseSharedSwift
     - GoogleDataTransport
+    - GoogleMaps
     - GoogleUtilities
     - nanopb
     - PromisesObjC
@@ -105,11 +110,12 @@ SPEC CHECKSUMS:
   FirebaseSessions: 9529d14180868e29a8da164b3a729c036204918b
   FirebaseSharedSwift: a4e5dfca3e210633bb3a3dfb94176c019211948b
   GoogleDataTransport: aae35b7ea0c09004c3797d53c8c41f66f219d6a7
+  GoogleMaps: 634ec3ca99698b31ca2253d64f017217d70cfb38
   GoogleUtilities: 26a3abef001b6533cf678d3eb38fd3f614b7872d
   nanopb: fad817b59e0457d11a5dfbde799381cd727c1275
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
   PromisesSwift: 9d77319bbe72ebf6d872900551f7eeba9bce2851
-  ui: 0b242254c064c5474a5fefbe6df9726c3ebfb5a8
+  ui: 94ad9ae67ea27594fca10a6cb82352c17adf7029
 
 PODFILE CHECKSUM: aa78b2d301911823ff209b04b1d3e276207338f7
 

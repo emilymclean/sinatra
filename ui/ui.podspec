@@ -9,7 +9,7 @@ Pod::Spec.new do |spec|
     spec.vendored_frameworks      = 'build/cocoapods/framework/ui.framework'
     spec.libraries                = 'c++'
     spec.ios.deployment_target    = '16.0'
-                
+    spec.dependency 'GoogleMaps', '9.2.0'
                 
     if !Dir.exist?('build/cocoapods/framework/ui.framework') || Dir.empty?('build/cocoapods/framework/ui.framework')
         raise "
