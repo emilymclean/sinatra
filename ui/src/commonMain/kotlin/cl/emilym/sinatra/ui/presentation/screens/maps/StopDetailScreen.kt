@@ -40,7 +40,6 @@ import cl.emilym.sinatra.data.repository.RecentVisitRepository
 import cl.emilym.sinatra.data.repository.StopRepository
 import cl.emilym.sinatra.domain.UpcomingRoutesForStopUseCase
 import cl.emilym.sinatra.ui.maps.MapItem
-import cl.emilym.sinatra.ui.maps.MapScope
 import cl.emilym.sinatra.ui.maps.MarkerItem
 import cl.emilym.sinatra.ui.maps.stopMarkerIcon
 import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
@@ -54,7 +53,6 @@ import cl.emilym.sinatra.ui.widgets.SheetIosBackButton
 import cl.emilym.sinatra.ui.widgets.UpcomingRouteCard
 import cl.emilym.sinatra.ui.widgets.WheelchairAccessibleIcon
 import cl.emilym.sinatra.ui.widgets.createRequestStateFlowFlow
-import cl.emilym.sinatra.ui.widgets.handleFlow
 import cl.emilym.sinatra.ui.widgets.handleFlowProperly
 import cl.emilym.sinatra.ui.widgets.presentable
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -65,11 +63,11 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.android.annotation.KoinViewModel
 import org.koin.compose.viewmodel.koinViewModel
 import sinatra.ui.generated.resources.Res
+import sinatra.ui.generated.resources.accessibility_not_wheelchair_accessible
+import sinatra.ui.generated.resources.accessibility_wheelchair_accessible
+import sinatra.ui.generated.resources.no_upcoming_vehicles
 import sinatra.ui.generated.resources.stop_not_found
 import sinatra.ui.generated.resources.upcoming_vehicles
-import sinatra.ui.generated.resources.accessibility_wheelchair_accessible
-import sinatra.ui.generated.resources.accessibility_not_wheelchair_accessible
-import sinatra.ui.generated.resources.no_upcoming_vehicles
 
 @KoinViewModel
 class StopDetailViewModel(
@@ -277,15 +275,17 @@ class StopDetailScreen(
     }
 
     @Composable
-    override fun MapScope.mapItems(): List<MapItem> {
+    override fun mapItems(): List<MapItem> {
         val viewModel = koinViewModel<StopDetailViewModel>()
         val stopRS by viewModel.stop.collectAsState(RequestState.Initial())
         val stop = (stopRS as? RequestState.Success)?.value ?: return listOf()
 
-        return listOf(MarkerItem(
-            stop.location,
-            stopMarkerIcon(stop),
-            id = "stopDetail-${stop.id}"
-        ))
+        return listOf(
+            MarkerItem(
+                stop.location,
+                stopMarkerIcon(stop),
+                id = "stopDetail-${stop.id}"
+            )
+        )
     }
 }

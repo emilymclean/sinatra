@@ -9,18 +9,17 @@ import org.jetbrains.compose.resources.painterResource
 import sinatra.ui.generated.resources.Res
 import sinatra.ui.generated.resources.accessible
 import sinatra.ui.generated.resources.back
-import sinatra.ui.generated.resources.not_accessible
 import sinatra.ui.generated.resources.bike
-import sinatra.ui.generated.resources.no_routes
+import sinatra.ui.generated.resources.external_link
+import sinatra.ui.generated.resources.info
+import sinatra.ui.generated.resources.map
 import sinatra.ui.generated.resources.my_location
-import sinatra.ui.generated.resources.search
 import sinatra.ui.generated.resources.no_results
+import sinatra.ui.generated.resources.no_routes
+import sinatra.ui.generated.resources.not_accessible
+import sinatra.ui.generated.resources.search
 import sinatra.ui.generated.resources.star
 import sinatra.ui.generated.resources.star_outline
-import sinatra.ui.generated.resources.map
-import sinatra.ui.generated.resources.info
-import sinatra.ui.generated.resources.back
-import sinatra.ui.generated.resources.external_link
 
 @Composable
 fun AccessibleIcon(

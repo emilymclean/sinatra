@@ -10,7 +10,6 @@ import cl.emilym.gtfs.ServiceEndpoint
 import cl.emilym.gtfs.StopDetailEndpoint
 import cl.emilym.gtfs.StopEndpoint
 import cl.emilym.gtfs.StopTimetable
-import cl.emilym.sinatra.data.models.RouteServiceCanonicalTimetable
 import cl.emilym.sinatra.data.repository.RemoteConfigRepository
 import de.jensklingenberg.ktorfit.Ktorfit
 import de.jensklingenberg.ktorfit.ktorfitBuilder

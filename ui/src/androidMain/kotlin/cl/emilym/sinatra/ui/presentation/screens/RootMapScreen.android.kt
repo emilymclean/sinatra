@@ -11,19 +11,15 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.dp
 import cl.emilym.sinatra.ui.canberra
 import cl.emilym.sinatra.ui.canberraZoom
-import cl.emilym.sinatra.ui.maps.CameraState
 import cl.emilym.sinatra.ui.maps.LineItem
 import cl.emilym.sinatra.ui.maps.MapControl
-import cl.emilym.sinatra.ui.maps.MapScope
 import cl.emilym.sinatra.ui.maps.MarkerItem
 import cl.emilym.sinatra.ui.maps.NativeMapScope
 import cl.emilym.sinatra.ui.maps.currentLocationIcon
@@ -36,7 +32,6 @@ import cl.emilym.sinatra.ui.navigation.currentDrawNativeMap
 import cl.emilym.sinatra.ui.navigation.currentMapItems
 import cl.emilym.sinatra.ui.presentation.theme.defaultLineColor
 import cl.emilym.sinatra.ui.toNative
-import cl.emilym.sinatra.ui.toShared
 import cl.emilym.sinatra.ui.widgets.currentLocation
 import cl.emilym.sinatra.ui.widgets.viewportSize
 import com.google.android.gms.maps.GoogleMapOptions
@@ -78,14 +73,6 @@ actual fun Map(content: @Composable MapControl.(@Composable () -> Unit) -> Unit)
         )
     }
     val nativeMapScope = NativeMapScope(cameraPositionState)
-    val mapScope = remember(cameraPositionState.position) {
-        MapScope(
-            CameraState(
-                cameraPositionState.position.target.toShared(),
-                cameraPositionState.position.zoom
-            )
-        )
-    }
 
     scope.content {
         GoogleMap(
@@ -110,7 +97,7 @@ actual fun Map(content: @Composable MapControl.(@Composable () -> Unit) -> Unit)
         ) {
             currentLocation?.let { DrawMarker(MarkerItem(it, currentLocationIcon)) }
 
-            mapScope.currentMapItems { items ->
+            currentMapItems { items ->
                 for (item in items) {
                     when (item) {
                         is MarkerItem -> DrawMarker(item)

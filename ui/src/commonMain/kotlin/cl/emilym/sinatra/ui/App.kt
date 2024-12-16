@@ -20,7 +20,6 @@ import cl.emilym.sinatra.ui.widgets.PermissionRequestQueue
 import coil3.ImageLoader
 import coil3.compose.setSingletonImageLoaderFactory
 import coil3.request.crossfade
-import dev.icerock.moko.permissions.Permission
 import dev.icerock.moko.permissions.PermissionsController
 import dev.icerock.moko.permissions.compose.BindEffect
 import dev.icerock.moko.permissions.compose.rememberPermissionsControllerFactory
@@ -28,7 +27,6 @@ import io.github.aakira.napier.Napier
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.datetime.TimeZone
@@ -48,9 +46,9 @@ class AppViewModel(
         viewModelScope.launch {
             scheduleTimeZone.value = transportMetadataRepository.timeZone()
         }
-        CoroutineScope(Dispatchers.IO).launch {
-            cleanupUseCase()
-        }
+//        CoroutineScope(Dispatchers.IO).launch {
+//            cleanupUseCase()
+//        }
     }
 
 }

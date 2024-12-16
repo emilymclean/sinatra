@@ -3,7 +3,6 @@ package cl.emilym.sinatra.ui.maps
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import cl.emilym.sinatra.data.models.Route
@@ -36,10 +35,7 @@ expect fun circularIcon(
 
 @Composable
 fun stopMarkerIcon(stop: Stop? = null): MarkerIcon? {
-    return spotMarkerIcon(MaterialTheme.colorScheme.primary
-        .copy(alpha = 0.5f)
-        .compositeOver(MaterialTheme.colorScheme.onSurface)
-    )
+    return spotMarkerIcon(MaterialTheme.colorScheme.primary)
 }
 
 @Composable

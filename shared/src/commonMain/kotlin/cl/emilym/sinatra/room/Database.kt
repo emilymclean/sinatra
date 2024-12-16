@@ -1,12 +1,10 @@
 package cl.emilym.sinatra.room
 
-import androidx.room.AutoMigration
 import androidx.room.ConstructedBy
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.RoomDatabaseConstructor
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
-import cl.emilym.sinatra.data.persistence.RecentVisitPersistence
 import cl.emilym.sinatra.room.dao.FavouriteDao
 import cl.emilym.sinatra.room.dao.RecentVisitDao
 import cl.emilym.sinatra.room.dao.RouteDao

@@ -3,14 +3,8 @@ package cl.emilym.sinatra.room.dao
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
-import cl.emilym.sinatra.data.models.ResourceKey
 import cl.emilym.sinatra.data.models.ServiceId
-import cl.emilym.sinatra.data.models.TimetableServiceRegular
-import cl.emilym.sinatra.room.entities.StopEntity
-import cl.emilym.sinatra.room.entities.StopTimetableTimeEntity
-import cl.emilym.sinatra.room.entities.TimetableServiceExceptionEntity
 import cl.emilym.sinatra.room.entities.TimetableServiceRegularEntity
-import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface TimetableServiceRegularEntityDao {

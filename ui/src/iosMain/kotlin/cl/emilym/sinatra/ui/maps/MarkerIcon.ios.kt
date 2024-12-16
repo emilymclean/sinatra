@@ -16,6 +16,7 @@ import cl.emilym.sinatra.ui.widgets.toFloatPx
 import cl.emilym.sinatra.ui.widgets.toIntPx
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.useContents
+import kotlinx.coroutines.runBlocking
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import platform.CoreGraphics.CGPointMake
 import platform.MapKit.MKAnnotationProtocol
@@ -42,6 +43,20 @@ class UIImageMarkerIcon(
             image, anchor, annotation, reuseIdentifier
         )
     }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null || this::class != other::class) return false
+
+        other as UIImageMarkerIcon
+
+        return reuseIdentifier == other.reuseIdentifier
+    }
+
+    override fun hashCode(): Int {
+        return reuseIdentifier.hashCode()
+    }
+
 
 }
 
@@ -100,12 +115,7 @@ actual fun spotMarkerIcon(
     val sizePx = (size * platformSizeAdjustment()).toFloatPx()
     val borderSize = (4.dp * platformSizeAdjustment()).toFloatPx()
 
-    var locationPdfMS by remember { mutableStateOf<ByteArray?>(null) }
-    LaunchedEffect(Unit) {
-        locationPdfMS = Res.readBytes("files/location.pdf")
-    }
-
-    val locationPdf = locationPdfMS ?: return null
+    val locationPdf = remember { runBlocking { Res.readBytes("files/location.pdf") } }
 
     return UIImageMarkerIcon(
         image = uiImageBuilder(sizePx.toDouble(), sizePx.toDouble()) {
@@ -123,4 +133,4 @@ actual fun spotMarkerIcon(
     )
 }
 
-actual fun platformSizeAdjustment(): Float = 0.35f
+actual fun platformSizeAdjustment(): Float = 0.4f

@@ -1,18 +1,13 @@
 package cl.emilym.sinatra.ui.maps
 
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.geometry.Size
-import cl.emilym.sinatra.data.models.MapRegion
 import cl.emilym.sinatra.data.models.MapLocation
+import cl.emilym.sinatra.data.models.MapRegion
 import cl.emilym.sinatra.data.models.ScreenLocation
 import cl.emilym.sinatra.data.models.ScreenRegion
 import cl.emilym.sinatra.ui.addCoordinateSpan
 import cl.emilym.sinatra.ui.toCoordinateSpan
-import cl.emilym.sinatra.ui.widgets.toFloatPx
 import io.github.aakira.napier.Napier
-import kotlin.math.PI
-import kotlin.math.pow
 
 interface MapControl {
     fun zoomToArea(bounds: MapRegion, padding: Int)
@@ -118,36 +113,4 @@ abstract class AbstractMapControl: MapControl {
         )
     }
 
-}
-
-const val EARTH_CIRCUMFERENCE = 6378137
-
-fun metersPerPxAtZoom(zoom: Float): Float {
-    return EARTH_CIRCUMFERENCE / (256 * 2f.pow(zoom))
-}
-
-fun MapLocation.addMetersLatitude(meters: Float): MapLocation {
-    return MapLocation(
-        lat + (meters / EARTH_CIRCUMFERENCE) * (180 / PI),
-        lng
-    )
-}
-
-fun ScreenRegion.padded(
-    scale: Float,
-    values: PrecomputedPaddingValues
-): ScreenRegion {
-    val horizontalScaling = width / scale
-    val verticalScaling = height / scale
-
-    return copy(
-        topLeft = ScreenLocation(
-            topLeft.x - (values.left * horizontalScaling).toInt(),
-            topLeft.y - (values.top * verticalScaling).toInt()
-        ),
-        bottomRight = ScreenLocation(
-            bottomRight.x + (values.right * horizontalScaling).toInt(),
-            bottomRight.y + (values.bottom * verticalScaling).toInt()
-        )
-    )
 }

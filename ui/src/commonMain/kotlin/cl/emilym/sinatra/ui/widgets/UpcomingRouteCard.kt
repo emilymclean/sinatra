@@ -9,9 +9,9 @@ import cl.emilym.sinatra.data.models.StopTimetableTime
 import org.jetbrains.compose.resources.stringResource
 import sinatra.ui.generated.resources.Res
 import sinatra.ui.generated.resources.estimated_arrival
-import sinatra.ui.generated.resources.scheduled_arrival
-import sinatra.ui.generated.resources.route_with_heading
 import sinatra.ui.generated.resources.route_code_name
+import sinatra.ui.generated.resources.route_with_heading
+import sinatra.ui.generated.resources.scheduled_arrival
 
 @Composable
 fun UpcomingRouteCard(

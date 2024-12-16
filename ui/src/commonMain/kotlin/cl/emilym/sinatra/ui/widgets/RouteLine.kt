@@ -26,11 +26,11 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import cl.emilym.compose.units.rdp
+import cl.emilym.sinatra.asRadians
+import cl.emilym.sinatra.data.models.Degree
 import cl.emilym.sinatra.data.models.Route
 import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.data.models.TimetableStationTime
-import cl.emilym.sinatra.asRadians
-import cl.emilym.sinatra.data.models.Degree
 import cl.emilym.sinatra.degrees
 import cl.emilym.sinatra.ui.color
 import kotlin.math.abs

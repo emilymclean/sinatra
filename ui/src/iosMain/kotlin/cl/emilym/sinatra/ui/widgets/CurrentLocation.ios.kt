@@ -7,6 +7,7 @@ import cl.emilym.sinatra.ui.toShared
 import io.github.aakira.napier.Napier
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.flowOf
@@ -14,6 +15,7 @@ import kotlinx.coroutines.launch
 import platform.CoreLocation.CLLocation
 import platform.CoreLocation.CLLocationManager
 import platform.CoreLocation.CLLocationManagerDelegateProtocol
+import platform.CoreLocation.kCLLocationAccuracyKilometer
 import platform.CoreLocation.kCLLocationAccuracyNearestTenMeters
 import platform.darwin.NSObject
 
@@ -31,12 +33,13 @@ internal actual fun platformCurrentLocation(): Flow<MapLocation?> {
             ) {
                 launch {
                     send(didUpdateToLocation.coordinate.toShared())
+                    delay(10000)
                 }
             }
         }
 
         locationManager.delegate = locationCallback
-        locationManager.desiredAccuracy = kCLLocationAccuracyNearestTenMeters
+        locationManager.desiredAccuracy = kCLLocationAccuracyKilometer
         locationManager.startUpdatingLocation()
 
         awaitClose {

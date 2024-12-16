@@ -42,7 +42,6 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.isSpecified
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.fastAll
 import androidx.compose.ui.util.fastFilter
 import cl.emilym.sinatra.ui.widgets.SuggestedFontSizesStatus.Companion.validSuggestedFontSizes

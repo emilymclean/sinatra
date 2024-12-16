@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.exclude
@@ -19,12 +18,6 @@ import androidx.compose.foundation.layout.onConsumedWindowInsetsChanged
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContent
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBars
-import androidx.compose.foundation.layout.systemBars
-import androidx.compose.foundation.layout.tappableElement
-import androidx.compose.foundation.layout.waterfall
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationRail
@@ -37,13 +30,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.window.core.layout.WindowWidthSizeClass
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.CurrentScreen
 import cafe.adriel.voyager.navigator.Navigator
-import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.ui.maps.MapControl
 import cl.emilym.sinatra.ui.navigation.CurrentBottomSheetContent
 import cl.emilym.sinatra.ui.navigation.CurrentMapOverlayContent
@@ -64,14 +54,13 @@ import cl.emilym.sinatra.ui.widgets.bottomsheet.SinatraBottomSheetScaffoldState
 import cl.emilym.sinatra.ui.widgets.bottomsheet.SinatraSheetValue
 import cl.emilym.sinatra.ui.widgets.bottomsheet.rememberSinatraBottomSheetScaffoldState
 import cl.emilym.sinatra.ui.widgets.bottomsheet.rememberSinatraBottomSheetState
-import cl.emilym.sinatra.ui.widgets.screenHeight
 import cl.emilym.sinatra.ui.widgets.toFloatPx
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import sinatra.ui.generated.resources.Res
-import sinatra.ui.generated.resources.navigation_bar_map
-import sinatra.ui.generated.resources.navigation_bar_favourites
 import sinatra.ui.generated.resources.navigation_bar_about
+import sinatra.ui.generated.resources.navigation_bar_favourites
+import sinatra.ui.generated.resources.navigation_bar_map
 
 @Composable
 expect fun Map(content: @Composable MapControl.(@Composable () -> Unit) -> Unit)

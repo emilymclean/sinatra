@@ -6,7 +6,7 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import cl.emilym.sinatra.data.models.Stop
-import cl.emilym.sinatra.ui.maps.MapScope
+import cl.emilym.sinatra.lib.FloatRange
 import cl.emilym.sinatra.ui.maps.MarkerIcon
 import cl.emilym.sinatra.ui.maps.MarkerItem
 import cl.emilym.sinatra.ui.maps.NativeMapScope
@@ -18,26 +18,25 @@ actual fun NativeMapScope.DrawMapSearchScreenMapNative(stops: List<Stop>) {
 }
 
 @Composable
-actual fun MapScope.mapSearchScreenMapItems(stops: List<Stop>): List<MarkerItem> {
+actual fun mapSearchScreenMapItems(stops: List<Stop>): List<MarkerItem> {
     val navigator = LocalNavigator.currentOrThrow
     val icon = stopMarkerIcon() ?: return listOf()
 
-    val important = remember { stops.filter { it.important }.map {
-        it.toMarkerItem(navigator, icon)
-    } }
-    val all = remember { stops.map {
-        it.toMarkerItem(navigator, icon)
+    val items = remember { stops.map {
+        it.toMarkerItem(
+            navigator,
+            icon,
+            if (it.important) null else FloatRange(14f, Float.MAX_VALUE)
+        )
     } }
 
-    return when {
-        camera.zoom >= zoomThreshold -> all
-        else -> important
-    }
+    return items
 }
 
 private fun Stop.toMarkerItem(
     navigator: Navigator,
-    icon: MarkerIcon
+    icon: MarkerIcon,
+    zoomThreshold: FloatRange?
 ): MarkerItem {
     return MarkerItem(
         location,
@@ -45,6 +44,7 @@ private fun Stop.toMarkerItem(
         onClick = {
             navigator.push(StopDetailScreen(id))
         },
-        id = "mapSearchScreen-stop-${id}"
+        id = "mapSearchScreen-stop-${id}",
+        visibleZoomRange = zoomThreshold
     )
 }

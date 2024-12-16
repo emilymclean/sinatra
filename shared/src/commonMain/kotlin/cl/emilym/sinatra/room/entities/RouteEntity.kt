@@ -9,16 +9,13 @@ import cl.emilym.sinatra.data.models.ColorPair
 import cl.emilym.sinatra.data.models.OnColor
 import cl.emilym.sinatra.data.models.ResourceKey
 import cl.emilym.sinatra.data.models.Route
-import cl.emilym.sinatra.data.models.RouteId
 import cl.emilym.sinatra.data.models.RouteServiceAccessibility
 import cl.emilym.sinatra.data.models.RouteTripInformation
 import cl.emilym.sinatra.data.models.RouteTripStop
 import cl.emilym.sinatra.data.models.RouteType
 import cl.emilym.sinatra.data.models.ServiceBikesAllowed
 import cl.emilym.sinatra.data.models.ServiceWheelchairAccessible
-import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.data.models.StopId
-import cl.emilym.sinatra.data.models.Time
 import cl.emilym.sinatra.data.models.time
 import cl.emilym.sinatra.data.models.toLong
 import kotlin.time.Duration.Companion.milliseconds

@@ -6,7 +6,6 @@ import cl.emilym.sinatra.data.models.CacheCategory
 import cl.emilym.sinatra.data.models.ResourceKey
 import cl.emilym.sinatra.data.models.Service
 import cl.emilym.sinatra.data.models.ServiceId
-import cl.emilym.sinatra.data.persistence.RouteTripTimetablePersistence
 import cl.emilym.sinatra.data.persistence.ServicePersistence
 import kotlinx.datetime.Clock
 import org.koin.core.annotation.Factory

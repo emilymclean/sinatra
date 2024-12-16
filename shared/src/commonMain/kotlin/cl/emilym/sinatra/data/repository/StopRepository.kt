@@ -9,10 +9,8 @@ import cl.emilym.sinatra.data.models.StopId
 import cl.emilym.sinatra.data.models.StopTimetable
 import cl.emilym.sinatra.data.models.flatMap
 import cl.emilym.sinatra.data.models.map
-import cl.emilym.sinatra.data.persistence.ServicePersistence
 import cl.emilym.sinatra.data.persistence.StopPersistence
 import cl.emilym.sinatra.data.persistence.StopTimetablePersistence
-import kotlinx.coroutines.flow.Flow
 import kotlinx.datetime.Clock
 import org.koin.core.annotation.Factory
 

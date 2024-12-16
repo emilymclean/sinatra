@@ -12,9 +12,7 @@ import cl.emilym.sinatra.data.repository.RouteRepository
 import cl.emilym.sinatra.data.repository.ServiceRepository
 import cl.emilym.sinatra.data.repository.TransportMetadataRepository
 import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
 import org.koin.core.annotation.Factory
-import kotlin.time.Duration
 
 data class CurrentTripInformation(
     val tripInformation: RouteTripInformation?,

@@ -1,8 +1,8 @@
 package cl.emilym.sinatra.ui
 
 import android.graphics.Point
-import cl.emilym.sinatra.data.models.MapRegion
 import cl.emilym.sinatra.data.models.MapLocation
+import cl.emilym.sinatra.data.models.MapRegion
 import cl.emilym.sinatra.data.models.ScreenLocation
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
