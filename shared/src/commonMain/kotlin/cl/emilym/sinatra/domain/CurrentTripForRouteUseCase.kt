@@ -42,7 +42,8 @@ class CurrentTripForRouteUseCase(
                 serviceRepository.services(it)
             }
             services.map {
-                it.firstOrNull { it.active(now, transportMetadataRepository.timeZone()) }
+                it.firstOrNull { it.active(now, transportMetadataRepository.timeZone()) } ?:
+                    it.firstOrNull { it.active(now, transportMetadataRepository.timeZone(), ignoreDates = true) }
             }
         } else {
             serviceRepository.services(listOf(serviceId)).map { it.firstOrNull() }
