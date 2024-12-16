@@ -12,6 +12,7 @@ import cl.emilym.sinatra.data.models.RouteId
 import cl.emilym.sinatra.data.models.ServiceId
 import cl.emilym.sinatra.data.models.StopId
 import cl.emilym.sinatra.data.models.TripId
+import com.google.transit.realtime.FeedMessage
 import de.jensklingenberg.ktorfit.http.GET
 import de.jensklingenberg.ktorfit.http.Path
 import de.jensklingenberg.ktorfit.http.Url
@@ -96,5 +97,8 @@ interface GtfsApi {
 
     @GET
     suspend fun markdownContent(@Url url: String): String
+
+    @GET
+    suspend fun getLiveUpdates(@Url url: String): FeedMessage
 
 }

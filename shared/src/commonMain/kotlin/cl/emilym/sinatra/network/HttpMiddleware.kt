@@ -11,6 +11,7 @@ import cl.emilym.gtfs.StopDetailEndpoint
 import cl.emilym.gtfs.StopEndpoint
 import cl.emilym.gtfs.StopTimetable
 import cl.emilym.sinatra.data.repository.RemoteConfigRepository
+import com.google.transit.realtime.FeedMessage
 import de.jensklingenberg.ktorfit.Ktorfit
 import de.jensklingenberg.ktorfit.ktorfitBuilder
 import io.github.aakira.napier.Napier
@@ -71,7 +72,8 @@ fun protobufResponseConverterFactory(): ProtobufResponseConverterFactory {
             RouteServicesEndpoint::class to RouteServicesEndpoint::decodeFromByteArray,
             StopTimetable::class to StopTimetable::decodeFromByteArray,
             RouteCanonicalTimetableEndpoint::class to RouteCanonicalTimetableEndpoint::decodeFromByteArray,
-            RouteTripTimetableEndpoint::class to RouteTripTimetableEndpoint::decodeFromByteArray
+            RouteTripTimetableEndpoint::class to RouteTripTimetableEndpoint::decodeFromByteArray,
+            FeedMessage::class to FeedMessage::decodeFromByteArray
         )
     )
 }

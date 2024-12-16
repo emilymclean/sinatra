@@ -9,6 +9,7 @@ import androidx.compose.runtime.remember
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cafe.adriel.voyager.navigator.Navigator
+import cl.emilym.sinatra.data.repository.LiveServiceRepository
 import cl.emilym.sinatra.data.repository.TransportMetadataRepository
 import cl.emilym.sinatra.domain.CleanupUseCase
 import cl.emilym.sinatra.e
@@ -28,6 +29,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.datetime.TimeZone
 import org.koin.android.annotation.KoinViewModel
@@ -37,7 +39,7 @@ import org.koin.compose.viewmodel.koinViewModel
 @KoinViewModel
 class AppViewModel(
     private val transportMetadataRepository: TransportMetadataRepository,
-    private val cleanupUseCase: CleanupUseCase
+    private val liveServiceRepository: LiveServiceRepository
 ): ViewModel() {
 
     val scheduleTimeZone = MutableStateFlow(TimeZone.currentSystemDefault())
@@ -46,9 +48,11 @@ class AppViewModel(
         viewModelScope.launch {
             scheduleTimeZone.value = transportMetadataRepository.timeZone()
         }
-//        CoroutineScope(Dispatchers.IO).launch {
-//            cleanupUseCase()
-//        }
+        viewModelScope.launch {
+            liveServiceRepository.getRealtimeUpdates("http://files.transport.act.gov.au/feeds/lightrail.pb").collectLatest {
+                Napier.d("Light rail update = $it")
+            }
+        }
     }
 
 }
