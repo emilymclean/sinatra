@@ -60,7 +60,7 @@ data class TimetableServiceRegular(
     }
 
     fun relevant(instant: Instant, timeZone: TimeZone, ignoreDates: Boolean = false): Boolean {
-        return (instant in startDate..endDate || ignoreDates) &&
+        return ((startDate <= instant && instant < (endDate + 1.days)) || ignoreDates) &&
                 lookupDayOfWeek(instant.toLocalDateTime(timeZone).dayOfWeek)
     }
 
