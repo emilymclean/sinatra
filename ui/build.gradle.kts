@@ -112,7 +112,7 @@ android {
     namespace = "cl.emilym.sinatra.ui"
     compileSdk = 35
     defaultConfig {
-        minSdk = 24
+        minSdk = 23
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
