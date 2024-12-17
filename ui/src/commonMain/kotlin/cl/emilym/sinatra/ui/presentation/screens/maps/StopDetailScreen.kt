@@ -8,9 +8,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -20,6 +22,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cafe.adriel.voyager.core.screen.ScreenKey
@@ -31,6 +34,7 @@ import cl.emilym.compose.requeststate.RequestState
 import cl.emilym.compose.requeststate.RequestStateWidget
 import cl.emilym.compose.requeststate.handle
 import cl.emilym.compose.units.rdp
+import cl.emilym.sinatra.FeatureFlags
 import cl.emilym.sinatra.data.models.StationTime
 import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.data.models.StopId
@@ -44,16 +48,19 @@ import cl.emilym.sinatra.ui.maps.MarkerItem
 import cl.emilym.sinatra.ui.maps.stopMarkerIcon
 import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
 import cl.emilym.sinatra.ui.navigation.MapScreen
+import cl.emilym.sinatra.ui.open_maps
 import cl.emilym.sinatra.ui.widgets.AccessibilityIconLockup
 import cl.emilym.sinatra.ui.widgets.FavouriteButton
 import cl.emilym.sinatra.ui.widgets.ListHint
 import cl.emilym.sinatra.ui.widgets.LocalMapControl
+import cl.emilym.sinatra.ui.widgets.MapIcon
 import cl.emilym.sinatra.ui.widgets.NoBusIcon
 import cl.emilym.sinatra.ui.widgets.SheetIosBackButton
 import cl.emilym.sinatra.ui.widgets.UpcomingRouteCard
 import cl.emilym.sinatra.ui.widgets.WheelchairAccessibleIcon
 import cl.emilym.sinatra.ui.widgets.createRequestStateFlowFlow
 import cl.emilym.sinatra.ui.widgets.handleFlowProperly
+import cl.emilym.sinatra.ui.widgets.openMaps
 import cl.emilym.sinatra.ui.widgets.presentable
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.emitAll
@@ -68,6 +75,7 @@ import sinatra.ui.generated.resources.accessibility_wheelchair_accessible
 import sinatra.ui.generated.resources.no_upcoming_vehicles
 import sinatra.ui.generated.resources.stop_not_found
 import sinatra.ui.generated.resources.upcoming_vehicles
+import sinatra.ui.generated.resources.open_maps_android
 
 @KoinViewModel
 class StopDetailViewModel(
@@ -192,6 +200,19 @@ class StopDetailScreen(
                                             true -> stringResource(Res.string.accessibility_wheelchair_accessible)
                                             false -> stringResource(Res.string.accessibility_not_wheelchair_accessible)
                                         })
+                                    }
+                                }
+                            }
+                            if (FeatureFlags.STOP_DETAIL_SHOW_IN_MAPS_BUTTON) {
+                                item {
+                                    val uriHandler = LocalUriHandler.current
+                                    Button(
+                                        onClick = { openMaps(uriHandler, stop.location) },
+                                        modifier = Modifier.fillMaxWidth().padding(horizontal = 1.rdp)
+                                    ) {
+                                        MapIcon()
+                                        Box(Modifier.width(0.5.rdp))
+                                        Text(stringResource(Res.string.open_maps))
                                     }
                                 }
                             }

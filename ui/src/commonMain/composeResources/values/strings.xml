@@ -8,6 +8,9 @@
     <string name="about_app_description">Sinatra is a companion app for the Canberra MyWay+ network made by locals for locals. We aim to provide a simpler experience for finding route and stop information, motivated by the suboptimal flow on the official app. We are unfortunately unable to offer the ticketing feature, nor proper routing.\n\n\nSinatra is open source! You can find and contribute to our codebase at [Github](https://github.com/emilymclean/sinatra).</string>
     <string name="about_app_version">Version %1$s (%2$s)</string>
 
+    <string name="open_maps_android">Show in Google Maps</string>
+    <string name="open_maps_ios">Show in Apple Maps</string>
+
     <string name="search_recently_viewed">Recently viewed</string>
     <string name="search_hint">Search for a stop or route.</string>
     <string name="no_search_results">We couldn't find anything for "%1$s".</string>

@@ -21,6 +21,8 @@ import cl.emilym.sinatra.data.models.forDay
 import cl.emilym.sinatra.degrees
 import cl.emilym.sinatra.ui.widgets.toTodayInstant
 import kotlinx.datetime.Instant
+import org.jetbrains.compose.resources.StringResource
+import sinatra.ui.generated.resources.Res
 import kotlin.math.cos
 import kotlin.math.ln
 import kotlin.math.pow
@@ -125,3 +127,5 @@ fun MapLocation.addCoordinateSpan(span: CoordinateSpan): MapRegion {
         )
     )
 }
+
+internal expect val Res.string.open_maps: StringResource
