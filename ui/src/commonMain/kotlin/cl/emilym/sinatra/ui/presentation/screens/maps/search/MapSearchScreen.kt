@@ -35,6 +35,7 @@ import cl.emilym.sinatra.ui.widgets.viewportHeight
 import org.koin.compose.viewmodel.koinViewModel
 
 const val zoomThreshold = 14f
+const val currentLocationZoom = zoomThreshold + 4f
 
 class MapSearchScreen: MapScreen, NativeMapScreen {
     override val key: ScreenKey = this::class.qualifiedName!!
@@ -58,7 +59,7 @@ class MapSearchScreen: MapScreen, NativeMapScreen {
             val currentLocation = currentLocation ?: return@LaunchedEffect
             if (viewModel.hasZoomedToLocation) return@LaunchedEffect
 
-            mapControl.zoomToPoint(currentLocation, zoomThreshold + 2f)
+            mapControl.zoomToPoint(currentLocation, currentLocationZoom)
             viewModel.hasZoomedToLocation = true
         }
 
@@ -74,7 +75,7 @@ class MapSearchScreen: MapScreen, NativeMapScreen {
                 currentLocation?.let {
                     FloatingActionButton(
                         onClick = {
-                            mapControl.zoomToPoint(it)
+                            mapControl.zoomToPoint(it, currentLocationZoom)
                         }
                     ) { MyLocationIcon() }
                 }

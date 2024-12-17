@@ -135,7 +135,7 @@ class RouteDetailScreen(
     private val tripId: TripId? = null,
     private val stopId: StopId? = null,
 ): MapScreen {
-    override val key: ScreenKey = "${this::class.qualifiedName!!}/$routeId/$serviceId/$tripId"
+    override val key: ScreenKey = "${this::class.qualifiedName!!}/$routeId/$serviceId/$tripId/$stopId"
 
     @Composable
     override fun Content() {}
@@ -341,7 +341,7 @@ class RouteDetailScreen(
             MarkerItem(
                 it.stop?.location ?: return@mapNotNull null,
                 when (it.stopId == stopId && FeatureFlags.ROUTE_DETAIL_HIGHLIGHT_SOURCE_STOP) {
-                    true -> highlightedRouteStopMarkerIcon(route)
+                    true -> highlightedRouteStopMarkerIcon(route, it.stop)
                     false -> icon
                 },
                 id = "routeDetail-${it.stopId}",
