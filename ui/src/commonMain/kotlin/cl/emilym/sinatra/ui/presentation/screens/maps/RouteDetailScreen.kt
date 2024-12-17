@@ -31,6 +31,7 @@ import cl.emilym.compose.requeststate.RequestState
 import cl.emilym.compose.requeststate.RequestStateWidget
 import cl.emilym.compose.requeststate.handle
 import cl.emilym.compose.units.rdp
+import cl.emilym.sinatra.FeatureFlags
 import cl.emilym.sinatra.bounds
 import cl.emilym.sinatra.data.models.Route
 import cl.emilym.sinatra.data.models.RouteId
@@ -318,6 +319,7 @@ class RouteDetailScreen(
     @Composable
     override fun mapItems(): List<MapItem> {
         val viewModel = koinViewModel<RouteDetailViewModel>()
+        val navigator = LocalNavigator.currentOrThrow
         val tripInformationRS by viewModel.tripInformation.collectAsState(RequestState.Initial())
         val info = (tripInformationRS as? RequestState.Success)?.value ?: return listOf()
         val route = info.route
@@ -335,6 +337,10 @@ class RouteDetailScreen(
                 it.stop?.location ?: return@mapNotNull null,
                 icon,
                 id = "routeDetail-${it.stopId}",
+                onClick = when (FeatureFlags.CLICKABLE_ROUTE_DETAIL_STOPS) {
+                    true -> { { navigator.push(StopDetailScreen(it.stopId)) } }
+                    false -> null
+                }
             )
         }
     }
