@@ -41,6 +41,7 @@ import cl.emilym.sinatra.data.models.ServiceBikesAllowed
 import cl.emilym.sinatra.data.models.ServiceId
 import cl.emilym.sinatra.data.models.ServiceWheelchairAccessible
 import cl.emilym.sinatra.data.models.StationTime
+import cl.emilym.sinatra.data.models.StopId
 import cl.emilym.sinatra.data.models.TripId
 import cl.emilym.sinatra.data.repository.FavouriteRepository
 import cl.emilym.sinatra.data.repository.RecentVisitRepository
@@ -54,7 +55,9 @@ import cl.emilym.sinatra.ui.current
 import cl.emilym.sinatra.ui.maps.LineItem
 import cl.emilym.sinatra.ui.maps.MapItem
 import cl.emilym.sinatra.ui.maps.MarkerItem
+import cl.emilym.sinatra.ui.maps.highlightedRouteStopMarkerIcon
 import cl.emilym.sinatra.ui.maps.routeStopMarkerIcon
+import cl.emilym.sinatra.ui.maps.spotMarkerIcon
 import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
 import cl.emilym.sinatra.ui.navigation.MapScreen
 import cl.emilym.sinatra.ui.past
@@ -130,7 +133,8 @@ class RouteDetailViewModel(
 class RouteDetailScreen(
     private val routeId: RouteId,
     private val serviceId: ServiceId? = null,
-    private val tripId: TripId? = null
+    private val tripId: TripId? = null,
+    private val stopId: StopId? = null,
 ): MapScreen {
     override val key: ScreenKey = "${this::class.qualifiedName!!}/$routeId/$serviceId/$tripId"
 
@@ -335,7 +339,10 @@ class RouteDetailScreen(
         ) + stops.mapNotNull {
             MarkerItem(
                 it.stop?.location ?: return@mapNotNull null,
-                icon,
+                when (it.stopId == stopId && FeatureFlags.ROUTE_DETAIL_HIGHLIGHT_SOURCE_STOP) {
+                    true -> highlightedRouteStopMarkerIcon(route)
+                    false -> icon
+                },
                 id = "routeDetail-${it.stopId}",
                 onClick = when (FeatureFlags.CLICKABLE_ROUTE_DETAIL_STOPS) {
                     true -> { { navigator.push(StopDetailScreen(it.stopId)) } }

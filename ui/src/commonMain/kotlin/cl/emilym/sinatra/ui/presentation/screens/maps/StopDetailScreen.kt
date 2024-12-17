@@ -255,7 +255,7 @@ class StopDetailScreen(
                             StationTime.Scheduled(it.arrivalTime),
                             modifier = Modifier.fillMaxWidth(),
                             onClick = { navigator.push(RouteDetailScreen(
-                                it.routeId, it.serviceId, it.tripId
+                                it.routeId, it.serviceId, it.tripId, stopId
                             )) }
                         )
                     }

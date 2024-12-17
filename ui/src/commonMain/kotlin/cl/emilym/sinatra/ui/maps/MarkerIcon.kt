@@ -39,6 +39,11 @@ fun stopMarkerIcon(stop: Stop? = null): MarkerIcon? {
 }
 
 @Composable
+fun highlightedRouteStopMarkerIcon(route: Route, stop: Stop? = null): MarkerIcon? {
+    return spotMarkerIcon(route.color())
+}
+
+@Composable
 fun routeStopMarkerIcon(route: Route): MarkerIcon {
     return circularIcon(route.color(), size = 8.dp, borderWidth = 2.dp)
 }
