@@ -34,7 +34,7 @@ import cl.emilym.sinatra.ui.widgets.currentLocation
 import cl.emilym.sinatra.ui.widgets.viewportHeight
 import org.koin.compose.viewmodel.koinViewModel
 
-val zoomThreshold = 14f
+const val zoomThreshold = 14f
 
 class MapSearchScreen: MapScreen, NativeMapScreen {
     override val key: ScreenKey = this::class.qualifiedName!!
@@ -55,12 +55,11 @@ class MapSearchScreen: MapScreen, NativeMapScreen {
         }
 
         LaunchedEffect(currentLocation) {
-            currentLocation?.let { currentLocation ->
-                if (!viewModel.hasZoomedToLocation) {
-                    mapControl.zoomToPoint(currentLocation)
-                    viewModel.hasZoomedToLocation = true
-                }
-            }
+            val currentLocation = currentLocation ?: return@LaunchedEffect
+            if (viewModel.hasZoomedToLocation) return@LaunchedEffect
+
+            mapControl.zoomToPoint(currentLocation, zoomThreshold + 2f)
+            viewModel.hasZoomedToLocation = true
         }
 
         val halfScreen = viewportHeight() * bottomSheetHalfHeight
