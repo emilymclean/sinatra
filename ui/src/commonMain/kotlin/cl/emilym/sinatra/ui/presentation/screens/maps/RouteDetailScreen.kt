@@ -57,7 +57,6 @@ import cl.emilym.sinatra.ui.maps.MapItem
 import cl.emilym.sinatra.ui.maps.MarkerItem
 import cl.emilym.sinatra.ui.maps.highlightedRouteStopMarkerIcon
 import cl.emilym.sinatra.ui.maps.routeStopMarkerIcon
-import cl.emilym.sinatra.ui.maps.spotMarkerIcon
 import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
 import cl.emilym.sinatra.ui.navigation.MapScreen
 import cl.emilym.sinatra.ui.past
@@ -214,6 +213,8 @@ class RouteDetailScreen(
 
         val zoomPadding = 4.rdp.toIntPx()
         LaunchedEffect(info.stops) {
+            if (FeatureFlags.ROUTE_DETAIL_PREVENT_ZOOM_WHEN_HAVE_SOURCE_STOP && stopId != null)
+                return@LaunchedEffect
             mapControl.zoomToArea(info.stops.mapNotNull { it.stop?.location }.bounds(), zoomPadding)
         }
 
@@ -344,7 +345,7 @@ class RouteDetailScreen(
                     false -> icon
                 },
                 id = "routeDetail-${it.stopId}",
-                onClick = when (FeatureFlags.CLICKABLE_ROUTE_DETAIL_STOPS) {
+                onClick = when (FeatureFlags.ROUTE_DETAIL_CLICKABLE_STOPS) {
                     true -> { { navigator.push(StopDetailScreen(it.stopId)) } }
                     false -> null
                 }
