@@ -16,11 +16,14 @@
     <plurals name="distance_kilometer">
         <item quantity="one">%1$d kilometer</item>
         <item quantity="other">%1$d kilometers</item>
+        <item quantity="other">%1$d kilometers</item>
     </plurals>
     <plurals name="distance_meter">
         <item quantity="one">%1$d meter</item>
         <item quantity="other">%1$d meters</item>
     </plurals>
+
+    <string name="map_search_nearby_stops">Nearby Stops</string>
 
     <string name="search_recently_viewed">Recently viewed</string>
     <string name="search_hint">Search for a stop or route.</string>

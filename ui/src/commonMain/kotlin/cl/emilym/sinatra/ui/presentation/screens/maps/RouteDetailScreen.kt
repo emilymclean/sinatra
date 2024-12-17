@@ -31,11 +31,10 @@ import cl.emilym.compose.requeststate.RequestState
 import cl.emilym.compose.requeststate.RequestStateWidget
 import cl.emilym.compose.requeststate.handle
 import cl.emilym.compose.units.rdp
-import cl.emilym.gtfs.Location
 import cl.emilym.sinatra.FeatureFlags
 import cl.emilym.sinatra.bounds
 import cl.emilym.sinatra.data.models.MapLocation
-import cl.emilym.sinatra.data.models.NearestStop
+import cl.emilym.sinatra.data.models.StopWithDistance
 import cl.emilym.sinatra.data.models.Route
 import cl.emilym.sinatra.data.models.RouteId
 import cl.emilym.sinatra.data.models.RouteTripInformation
@@ -44,7 +43,6 @@ import cl.emilym.sinatra.data.models.ServiceBikesAllowed
 import cl.emilym.sinatra.data.models.ServiceId
 import cl.emilym.sinatra.data.models.ServiceWheelchairAccessible
 import cl.emilym.sinatra.data.models.StationTime
-import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.data.models.StopId
 import cl.emilym.sinatra.data.models.TripId
 import cl.emilym.sinatra.data.models.distance
@@ -84,7 +82,6 @@ import cl.emilym.sinatra.ui.widgets.currentLocation
 import cl.emilym.sinatra.ui.widgets.toIntPx
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.launch
@@ -116,10 +113,10 @@ class RouteDetailViewModel(
     private var lastLocation = MutableStateFlow<MapLocation?>(null)
     val tripInformation = MutableStateFlow<RequestState<CurrentTripInformation?>>(RequestState.Initial())
     val favourited = MutableStateFlow(false)
-    val nearestStop: Flow<NearestStop?> = tripInformation.combine(lastLocation) { tripInformation, lastLocation ->
+    val nearestStop: Flow<StopWithDistance?> = tripInformation.combine(lastLocation) { tripInformation, lastLocation ->
         if (tripInformation !is RequestState.Success || lastLocation == null) return@combine null
         val stops = tripInformation.value?.tripInformation?.stops?.mapNotNull { it.stop }?.nullIfEmpty() ?: return@combine null
-        stops.map { NearestStop(it, distance(lastLocation, it.location)) }
+        stops.map { StopWithDistance(it, distance(lastLocation, it.location)) }
             .filter { it.distance < NEAREST_STOP_RADIUS }
             .nullIfEmpty()
             ?.minBy { it.distance }

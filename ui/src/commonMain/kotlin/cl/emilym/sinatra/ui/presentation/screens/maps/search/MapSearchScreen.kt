@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.ScreenKey
 import cl.emilym.compose.requeststate.RequestState
 import cl.emilym.compose.units.rdp
+import cl.emilym.sinatra.FeatureFlags
 import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.ui.maps.MapItem
 import cl.emilym.sinatra.ui.maps.MarkerItem
@@ -57,10 +58,13 @@ class MapSearchScreen: MapScreen, NativeMapScreen {
 
         LaunchedEffect(currentLocation) {
             val currentLocation = currentLocation ?: return@LaunchedEffect
-            if (viewModel.hasZoomedToLocation) return@LaunchedEffect
-
-            mapControl.zoomToPoint(currentLocation, currentLocationZoom)
-            viewModel.hasZoomedToLocation = true
+            if (!viewModel.hasZoomedToLocation) {
+                mapControl.zoomToPoint(currentLocation, currentLocationZoom)
+                viewModel.hasZoomedToLocation = true
+            }
+            if (FeatureFlags.MAP_SEARCH_SCREEN_NEARBY_STOPS_SEARCH) {
+                viewModel.updateLocation(currentLocation)
+            }
         }
 
         val halfScreen = viewportHeight() * bottomSheetHalfHeight

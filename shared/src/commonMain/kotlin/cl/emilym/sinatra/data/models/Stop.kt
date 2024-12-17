@@ -38,7 +38,7 @@ data class Stop(
 
 }
 
-data class NearestStop(
+data class StopWithDistance(
     val stop: Stop,
     val distance: Kilometer
 )
