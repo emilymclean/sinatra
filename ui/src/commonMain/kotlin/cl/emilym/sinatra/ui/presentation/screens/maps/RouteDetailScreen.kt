@@ -31,8 +31,11 @@ import cl.emilym.compose.requeststate.RequestState
 import cl.emilym.compose.requeststate.RequestStateWidget
 import cl.emilym.compose.requeststate.handle
 import cl.emilym.compose.units.rdp
+import cl.emilym.gtfs.Location
 import cl.emilym.sinatra.FeatureFlags
 import cl.emilym.sinatra.bounds
+import cl.emilym.sinatra.data.models.MapLocation
+import cl.emilym.sinatra.data.models.NearestStop
 import cl.emilym.sinatra.data.models.Route
 import cl.emilym.sinatra.data.models.RouteId
 import cl.emilym.sinatra.data.models.RouteTripInformation
@@ -41,14 +44,17 @@ import cl.emilym.sinatra.data.models.ServiceBikesAllowed
 import cl.emilym.sinatra.data.models.ServiceId
 import cl.emilym.sinatra.data.models.ServiceWheelchairAccessible
 import cl.emilym.sinatra.data.models.StationTime
+import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.data.models.StopId
 import cl.emilym.sinatra.data.models.TripId
+import cl.emilym.sinatra.data.models.distance
 import cl.emilym.sinatra.data.repository.FavouriteRepository
 import cl.emilym.sinatra.data.repository.RecentVisitRepository
 import cl.emilym.sinatra.data.repository.startOfDay
 import cl.emilym.sinatra.domain.CurrentTripForRouteUseCase
 import cl.emilym.sinatra.domain.CurrentTripInformation
 import cl.emilym.sinatra.nullIfEmpty
+import cl.emilym.sinatra.ui.NEAREST_STOP_RADIUS
 import cl.emilym.sinatra.ui.asInstants
 import cl.emilym.sinatra.ui.color
 import cl.emilym.sinatra.ui.current
@@ -60,6 +66,7 @@ import cl.emilym.sinatra.ui.maps.routeStopMarkerIcon
 import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
 import cl.emilym.sinatra.ui.navigation.MapScreen
 import cl.emilym.sinatra.ui.past
+import cl.emilym.sinatra.ui.text
 import cl.emilym.sinatra.ui.widgets.AccessibilityIconLockup
 import cl.emilym.sinatra.ui.widgets.BikeIcon
 import cl.emilym.sinatra.ui.widgets.FavouriteButton
@@ -73,8 +80,12 @@ import cl.emilym.sinatra.ui.widgets.SpecificRecomposeOnInstants
 import cl.emilym.sinatra.ui.widgets.StopCard
 import cl.emilym.sinatra.ui.widgets.Subheading
 import cl.emilym.sinatra.ui.widgets.WheelchairAccessibleIcon
+import cl.emilym.sinatra.ui.widgets.currentLocation
 import cl.emilym.sinatra.ui.widgets.toIntPx
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
@@ -92,6 +103,8 @@ import sinatra.ui.generated.resources.route_heading
 import sinatra.ui.generated.resources.route_not_found
 import sinatra.ui.generated.resources.stops_title
 import sinatra.ui.generated.resources.trip_not_found
+import sinatra.ui.generated.resources.stop_detail_nearest_stop
+import sinatra.ui.generated.resources.stop_detail_distance
 
 @KoinViewModel
 class RouteDetailViewModel(
@@ -100,8 +113,17 @@ class RouteDetailViewModel(
     private val recentVisitRepository: RecentVisitRepository
 ): ViewModel() {
 
+    private var lastLocation = MutableStateFlow<MapLocation?>(null)
     val tripInformation = MutableStateFlow<RequestState<CurrentTripInformation?>>(RequestState.Initial())
     val favourited = MutableStateFlow(false)
+    val nearestStop: Flow<NearestStop?> = tripInformation.combine(lastLocation) { tripInformation, lastLocation ->
+        if (tripInformation !is RequestState.Success || lastLocation == null) return@combine null
+        val stops = tripInformation.value?.tripInformation?.stops?.mapNotNull { it.stop }?.nullIfEmpty() ?: return@combine null
+        stops.map { NearestStop(it, distance(lastLocation, it.location)) }
+            .filter { it.distance < NEAREST_STOP_RADIUS }
+            .nullIfEmpty()
+            ?.minBy { it.distance }
+    }
 
     fun init(routeId: RouteId) {
         viewModelScope.launch {
@@ -118,6 +140,10 @@ class RouteDetailViewModel(
                 currentTripForRouteUseCase(routeId, serviceId, tripId).item
             }
         }
+    }
+
+    fun updateLocation(location: MapLocation) {
+        lastLocation.value = location
     }
 
     fun favourite(routeId: RouteId, favourited: Boolean) {
@@ -158,6 +184,13 @@ class RouteDetailScreen(
             viewModel.retry(routeId, serviceId, tripId)
         }
 
+        if (FeatureFlags.ROUTE_DETAIL_NEAREST_STOP) {
+            val currentLocation = currentLocation()
+            LaunchedEffect(currentLocation) {
+                viewModel.updateLocation(currentLocation ?: return@LaunchedEffect)
+            }
+        }
+
         val tripInformation by viewModel.tripInformation.collectAsState(RequestState.Initial())
         Box(
             Modifier.fillMaxSize(),
@@ -193,6 +226,8 @@ class RouteDetailScreen(
         val clock = LocalClock.current
         val timeZone = LocalScheduleTimeZone.current
         val mapControl = LocalMapControl.current
+
+        val nearestStop by viewModel.nearestStop.collectAsState(null)
 
         val current = if (trigger != null) {
             remember(trigger) {
@@ -282,6 +317,24 @@ class RouteDetailScreen(
                 }
             }
             item { Box(Modifier.height(1.rdp)) }
+            nearestStop?.let { nearestStop ->
+                if (!FeatureFlags.ROUTE_DETAIL_NEAREST_STOP) return@let
+                item {
+                    Column {
+                        Subheading(stringResource(Res.string.stop_detail_nearest_stop))
+                        StopCard(
+                            nearestStop.stop,
+                            Modifier.fillMaxWidth(),
+                            onClick = {
+                                navigator.push(StopDetailScreen(
+                                    nearestStop.stop.id
+                                ))
+                            },
+                            subtitle = stringResource(Res.string.stop_detail_distance, nearestStop.distance.text)
+                        )
+                    }
+                }
+            }
             when {
                 trigger == null -> {
                     item { Subheading(stringResource(Res.string.stops_title)) }

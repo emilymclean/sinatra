@@ -29,7 +29,8 @@ fun StopCard(
     stop: Stop,
     modifier: Modifier = Modifier,
     arrival: StationTime? = null,
-    onClick: (() -> Unit)? = null
+    onClick: (() -> Unit)? = null,
+    subtitle: String? = null
 ) {
     ListCard(
         {},
@@ -59,6 +60,12 @@ fun StopCard(
                     is StationTime.Scheduled -> stringResource(Res.string.scheduled_arrival, time)
                     is StationTime.Live -> stringResource(Res.string.estimated_arrival, time)
                 },
+                style = MaterialTheme.typography.bodySmall
+            )
+        }
+        if (subtitle != null) {
+            Text(
+                subtitle,
                 style = MaterialTheme.typography.bodySmall
             )
         }
