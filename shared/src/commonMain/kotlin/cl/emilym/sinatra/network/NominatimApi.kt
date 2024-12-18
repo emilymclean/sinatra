@@ -13,6 +13,7 @@ interface NominatimApi {
         @Query("format") format: String = "jsonv2",
         @Query("countrycodes") countryCodes: List<String> = listOf("au"),
         @Query("viewbox") viewBox: String = "148.730747,-35.107753,149.227330,-35.928921",
+        @Query("bounded") bounded: Boolean = true,
         @Query("email") email: String? = null,
         @Header("User-Agent") userAgent: String? = null
     ): List<NominatimPlace>
