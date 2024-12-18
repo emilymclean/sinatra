@@ -69,6 +69,7 @@ kotlin {
 
             // Serialization
             implementation(libs.pbandk)
+            implementation(libs.kotlinx.serialization.json)
 
             // Room
             implementation(libs.room.runtime)

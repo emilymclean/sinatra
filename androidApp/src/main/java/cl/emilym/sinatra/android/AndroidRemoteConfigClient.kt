@@ -41,7 +41,7 @@ class AndroidRemoteConfigWrapper(
             Log.e("RemoteConfigWrapper", e.message, e)
             return null
         }
-        return config.getString(key)
+        return config.getString(key).takeIf { it.isNotEmpty() }
     }
 
 }

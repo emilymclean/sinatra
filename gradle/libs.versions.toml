@@ -98,6 +98,7 @@ emily-errorwidget = { module = "cl.emilym.compose:errorwidget", version.ref = "e
 
 # Serialization
 kotlinx-serialization-protobuf = { module = "org.jetbrains.kotlinx:kotlinx-serialization-protobuf", version.ref="kotlinx-serialization" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref="kotlinx-serialization" }
 pbandk = { module = "pro.streem.pbandk:pbandk-runtime", version.ref="pbandk" }
 
 # Voyager

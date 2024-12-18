@@ -3,7 +3,6 @@ package cl.emilym.sinatra.ui
 import cl.emilym.sinatra.data.client.RemoteConfigWrapper
 import cl.emilym.sinatra.e
 import io.github.aakira.napier.Napier
-import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlin.coroutines.resume
@@ -53,7 +52,7 @@ class AppleRemoteConfigWrapper constructor(
             Napier.e(e)
             return null
         }
-        return config.string(key)
+        return config.string(key)?.takeIf { it.isNotEmpty() }
     }
 
 }

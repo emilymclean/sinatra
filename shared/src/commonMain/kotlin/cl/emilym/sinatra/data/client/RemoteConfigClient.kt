@@ -8,6 +8,7 @@ interface RemoteConfigClient {
 
     @Throws(NoApiUrlException::class, CancellationException::class)
     suspend fun apiUrl(): String
+    suspend fun nominatimUrl(): String?
 
     suspend fun privacyPolicyUrl(): String?
     suspend fun termsUrl(): String?
@@ -15,6 +16,7 @@ interface RemoteConfigClient {
 
     companion object {
         const val API_URL_KEY = "api_url"
+        const val NOMINATIM_API_URL_KEY = "nominatim_api_url"
         const val PRIVACY_POLICY_URL_KEY = "privacy_policy_url"
         const val TERMS_URL_KEY = "terms_url"
         const val ABOUT_CONTENT_URL_KEY = "about_content_url"
@@ -33,6 +35,10 @@ class DefaultRemoteConfigClient(
 
     override suspend fun apiUrl(): String {
         return wrapper.string(RemoteConfigClient.API_URL_KEY) ?: throw NoApiUrlException.default()
+    }
+
+    override suspend fun nominatimUrl(): String? {
+        return wrapper.string(RemoteConfigClient.NOMINATIM_API_URL_KEY)
     }
 
     override suspend fun privacyPolicyUrl(): String? {
