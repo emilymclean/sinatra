@@ -37,6 +37,7 @@ import cl.emilym.sinatra.ui.presentation.screens.maps.StopDetailScreen
 import cl.emilym.sinatra.ui.widgets.IosBackButton
 import cl.emilym.sinatra.ui.widgets.ListHint
 import cl.emilym.sinatra.ui.widgets.NoResultsIcon
+import cl.emilym.sinatra.ui.widgets.PlaceCard
 import cl.emilym.sinatra.ui.widgets.RouteCard
 import cl.emilym.sinatra.ui.widgets.SearchIcon
 import cl.emilym.sinatra.ui.widgets.StopCard
@@ -165,6 +166,13 @@ fun MapSearchScreenSearchState() {
                                 arrival = null,
                                 modifier = Modifier.fillMaxWidth(),
                                 onClick = { navigator.push(StopDetailScreen(result.stop.id)) }
+                            )
+                        }
+
+                        is SearchResult.PlaceResult -> {
+                            PlaceCard(
+                                result.place,
+                                modifier = Modifier.fillMaxWidth()
                             )
                         }
                     }

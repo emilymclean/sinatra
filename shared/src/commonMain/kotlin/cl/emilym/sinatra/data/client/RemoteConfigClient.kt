@@ -38,7 +38,7 @@ class DefaultRemoteConfigClient(
     }
 
     override suspend fun nominatimUrl(): String? {
-        return wrapper.string(RemoteConfigClient.NOMINATIM_API_URL_KEY)
+        return wrapper.string(RemoteConfigClient.NOMINATIM_API_URL_KEY) ?: "nominatim.openstreetmap.org"
     }
 
     override suspend fun privacyPolicyUrl(): String? {
