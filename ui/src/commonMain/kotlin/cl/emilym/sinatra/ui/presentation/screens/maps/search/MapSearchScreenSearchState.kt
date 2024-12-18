@@ -120,7 +120,8 @@ fun MapSearchScreenSearchState() {
                             it.stop,
                             arrival = null,
                             modifier = Modifier.fillMaxWidth(),
-                            onClick = { navigator.push(StopDetailScreen(it.stop.id)) }
+                            onClick = { navigator.push(StopDetailScreen(it.stop.id)) },
+                            showStopIcon = true
                         )
 
                         is RecentVisit.Route -> RouteCard(
@@ -165,14 +166,16 @@ fun MapSearchScreenSearchState() {
                                 result.stop,
                                 arrival = null,
                                 modifier = Modifier.fillMaxWidth(),
-                                onClick = { navigator.push(StopDetailScreen(result.stop.id)) }
+                                onClick = { navigator.push(StopDetailScreen(result.stop.id)) },
+                                showStopIcon = true
                             )
                         }
 
                         is SearchResult.PlaceResult -> {
                             PlaceCard(
                                 result.place,
-                                modifier = Modifier.fillMaxWidth()
+                                modifier = Modifier.fillMaxWidth(),
+                                showPlaceIcon = true
                             )
                         }
                     }

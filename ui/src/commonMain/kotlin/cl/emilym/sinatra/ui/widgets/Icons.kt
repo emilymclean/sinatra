@@ -20,6 +20,9 @@ import sinatra.ui.generated.resources.not_accessible
 import sinatra.ui.generated.resources.search
 import sinatra.ui.generated.resources.star
 import sinatra.ui.generated.resources.star_outline
+import sinatra.ui.generated.resources.marker_icon
+import sinatra.ui.generated.resources.bus
+import sinatra.ui.generated.resources.tram
 
 @Composable
 fun AccessibleIcon(
@@ -209,6 +212,45 @@ fun ExternalLinkIcon(
     Icon(
         painterResource(Res.drawable.external_link),
         contentDescription = "An arrow out of a box",
+        modifier = modifier,
+        tint = tint
+    )
+}
+
+@Composable
+fun GenericMarkerIcon(
+    modifier: Modifier = Modifier,
+    tint: Color = LocalContentColor.current
+) {
+    Icon(
+        painterResource(Res.drawable.marker_icon),
+        contentDescription = "A map marker",
+        modifier = modifier,
+        tint = tint
+    )
+}
+
+@Composable
+fun BusIcon(
+    modifier: Modifier = Modifier,
+    tint: Color = LocalContentColor.current
+) {
+    Icon(
+        painterResource(Res.drawable.bus),
+        contentDescription = "A bus",
+        modifier = modifier,
+        tint = tint
+    )
+}
+
+@Composable
+fun TramIcon(
+    modifier: Modifier = Modifier,
+    tint: Color = LocalContentColor.current
+) {
+    Icon(
+        painterResource(Res.drawable.tram),
+        contentDescription = "A tram",
         modifier = modifier,
         tint = tint
     )
