@@ -22,7 +22,12 @@ class RemoteConfigClient(
     private suspend fun <T> getIfExistsAndLoaded(key: String, operation: RemoteConfigGetter<T>): T? {
         if (!load()) return null
         if (!wrapper.exists(key)) return null
-        return operation(key)
+        return try {
+             operation(key)
+        } catch(e: Exception) {
+            Napier.e(e)
+            null
+        }
     }
 
     private val stringGet: RemoteConfigGetter<String> = { wrapper.string(it) }

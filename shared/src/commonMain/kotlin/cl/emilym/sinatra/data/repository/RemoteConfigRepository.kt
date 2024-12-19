@@ -15,6 +15,7 @@ class RemoteConfigRepository(
         const val PRIVACY_POLICY_URL_KEY = "privacy_policy_url"
         const val TERMS_URL_KEY = "terms_url"
         const val ABOUT_CONTENT_URL_KEY = "about_content_url"
+        const val DATA_CACHE_PERIOD_MULTIPLIER_KEY = "data_cache_period_multiplier"
     }
 
     @Throws(NoApiUrlException::class, CancellationException::class)
@@ -32,6 +33,10 @@ class RemoteConfigRepository(
 
     suspend fun aboutContentUrl(): String? {
         return remoteConfigClient.string(ABOUT_CONTENT_URL_KEY)
+    }
+
+    suspend fun dataCachePeriodMultiplier(): Double {
+        return remoteConfigClient.number(DATA_CACHE_PERIOD_MULTIPLIER_KEY) ?: 1.0
     }
 
 }
