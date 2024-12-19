@@ -25,7 +25,7 @@ class RemoteConfigRepository(
     }
 
     suspend fun nominatimUrl(): String? {
-        return remoteConfigClient.string(NOMINATIM_API_URL_KEY) ?: "nominatim.openstreetmap.org" //TODO REMOVE DEFAULT
+        return remoteConfigClient.string(NOMINATIM_API_URL_KEY)
     }
 
     suspend fun privacyPolicyUrl(): String? {
