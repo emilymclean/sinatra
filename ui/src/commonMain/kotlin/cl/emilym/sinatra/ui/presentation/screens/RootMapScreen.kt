@@ -215,7 +215,8 @@ class RootMapScreen: Screen {
                     CurrentBottomSheetContent()
                 }
             },
-            sheetHalfHeight = bottomSheetHalfHeight()
+            sheetHalfHeight = bottomSheetHalfHeight(),
+            sheetContainerColor = MaterialTheme.colorScheme.background
         ) {
             content()
         }

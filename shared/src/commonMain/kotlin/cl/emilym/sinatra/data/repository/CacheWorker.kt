@@ -9,16 +9,27 @@ import cl.emilym.sinatra.data.models.ShaDigest
 import cl.emilym.sinatra.e
 import io.github.aakira.napier.Napier
 import kotlinx.datetime.Clock
+import org.koin.core.annotation.Factory
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.hours
 
+@Factory
+class CacheWorkerDependencies(
+    val shaRepository: ShaRepository,
+    val remoteConfigRepository: RemoteConfigRepository
+)
+
 abstract class CacheWorker<T> {
-    abstract val shaRepository: ShaRepository
+    abstract val cacheWorkerDependencies: CacheWorkerDependencies
+    private val shaRepository: ShaRepository get() = cacheWorkerDependencies.shaRepository
+    private val remoteConfigRepository: RemoteConfigRepository
+        get() = cacheWorkerDependencies.remoteConfigRepository
 
     abstract val clock: Clock
     abstract val cacheCategory: CacheCategory
 
     open val expireTime: Duration = 24.hours
+    private suspend fun adjustedExpireTime() = expireTime * remoteConfigRepository.dataCachePeriodMultiplier()
 
     abstract suspend fun saveToPersistence(data: T, resource: ResourceKey)
     abstract suspend fun getFromPersistence(resource: ResourceKey): T
@@ -44,10 +55,10 @@ abstract class CacheWorker<T> {
         return Cachable(getFromPersistence(resource), CacheState.CACHED)
     }
 
-    private fun CacheInformation.shouldCheckForUpdate(): Boolean {
+    private suspend fun CacheInformation.shouldCheckForUpdate(): Boolean {
         return when (this) {
             is CacheInformation.Unavailable -> true
-            is CacheInformation.Available -> expired(expireTime, clock.now())
+            is CacheInformation.Available -> expired(adjustedExpireTime(), clock.now())
         }
     }
 
@@ -69,7 +80,7 @@ abstract class CacheWorker<T> {
             is CacheInformation.Unavailable -> throw e
             is CacheInformation.Available -> Cachable(
                 getFromPersistence(resource),
-                when (info.expired(expireTime, clock.now())) {
+                when (info.expired(adjustedExpireTime(), clock.now())) {
                     true -> CacheState.EXPIRED_CACHE
                     false -> CacheState.CACHED
                 }

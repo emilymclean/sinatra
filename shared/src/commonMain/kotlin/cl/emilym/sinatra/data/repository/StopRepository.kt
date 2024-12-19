@@ -18,7 +18,7 @@ import org.koin.core.annotation.Factory
 class StopsCacheWorker(
     private val stopPersistence: StopPersistence,
     private val stopClient: StopClient,
-    override val shaRepository: ShaRepository,
+    override val cacheWorkerDependencies: CacheWorkerDependencies,
     override val clock: Clock,
 ): CacheWorker<List<Stop>>() {
     override val cacheCategory: CacheCategory = CacheCategory.STOP
@@ -35,7 +35,7 @@ class StopsCacheWorker(
 class StopTimetableCacheWorker(
     private val stopTimetablePersistence: StopTimetablePersistence,
     private val stopClient: StopClient,
-    override val shaRepository: ShaRepository,
+    override val cacheWorkerDependencies: CacheWorkerDependencies,
     override val clock: Clock,
 ): CacheWorker<StopTimetable>() {
     override val cacheCategory: CacheCategory = CacheCategory.STOP_TIMETABLE

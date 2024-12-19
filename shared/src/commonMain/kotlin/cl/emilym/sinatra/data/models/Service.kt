@@ -14,9 +14,9 @@ data class Service(
     val exception: List<TimetableServiceException>
 ) {
 
-    fun active(instant: Instant, timeZone: TimeZone): Boolean {
+    fun active(instant: Instant, timeZone: TimeZone, ignoreDates: Boolean = false): Boolean {
         val exceptions = exception.filter { it.relevant(instant) }
-        return (regular.any { it.relevant(instant, timeZone) }
+        return (regular.any { it.relevant(instant, timeZone, ignoreDates) }
                 && !exceptions.any { it.type == TimetableServiceExceptionType.REMOVED })
                 || exceptions.any { it.type == TimetableServiceExceptionType.ADDED }
     }
@@ -59,8 +59,8 @@ data class TimetableServiceRegular(
         }
     }
 
-    fun relevant(instant: Instant, timeZone: TimeZone): Boolean {
-        return instant in startDate..endDate &&
+    fun relevant(instant: Instant, timeZone: TimeZone, ignoreDates: Boolean = false): Boolean {
+        return ((startDate <= instant && instant < (endDate + 1.days)) || ignoreDates) &&
                 lookupDayOfWeek(instant.toLocalDateTime(timeZone).dayOfWeek)
     }
 
