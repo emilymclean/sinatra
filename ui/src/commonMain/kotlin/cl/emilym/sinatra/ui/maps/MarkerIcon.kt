@@ -51,6 +51,6 @@ fun routeStopMarkerIcon(route: Route): MarkerIcon {
 @Composable
 fun currentLocationIcon(): MarkerIcon {
     return circularIcon(
-        MaterialTheme.colorScheme.primary,
+        MaterialTheme.colorScheme.secondary,
     )
 }
