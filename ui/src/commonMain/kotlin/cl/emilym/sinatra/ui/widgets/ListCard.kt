@@ -44,10 +44,8 @@ fun ListCard(
             content()
         }
         if (onClick != null) {
-            Icon(
-                painterResource(Res.drawable.forward),
-                contentDescription = "A forward arrow",
-                tint = MaterialTheme.colorScheme.primary,
+            ForwardIcon(
+                tint = MaterialTheme.colorScheme.primary
             )
         }
     }
