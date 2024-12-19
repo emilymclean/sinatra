@@ -26,8 +26,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
 import androidx.window.core.layout.WindowWidthSizeClass
@@ -114,11 +117,13 @@ class RootMapScreen: Screen {
             MapSearchScreen()
         ) { navigator ->
             val adaptiveWindowInfo = currentWindowAdaptiveInfo()
+            var selected by remember { mutableStateOf(0) }
+            val selectedCallback: (Int) -> Unit = remember { { selected = it } }
 
             val items = remember(navigator) {
                 listOf(
                     NavigationItem(
-                        { it is MapScreen },
+                        0,
                         {
                             navigator.replaceAll(MapSearchScreen())
                         },
@@ -126,7 +131,7 @@ class RootMapScreen: Screen {
                         { Text(stringResource(Res.string.navigation_bar_map)) }
                     ),
                     NavigationItem(
-                        { it is FavouriteScreen },
+                        1,
                         {
                             navigator.replaceAll(FavouriteScreen())
                         },
@@ -134,7 +139,7 @@ class RootMapScreen: Screen {
                         { Text(stringResource(Res.string.navigation_bar_favourites)) }
                     ),
                     NavigationItem(
-                        { it is AboutScreen },
+                        2,
                         {
                             navigator.replaceAll(AboutScreen())
                         },
@@ -156,7 +161,7 @@ class RootMapScreen: Screen {
                         NavigationBar {
                             for (item in items) {
                                 with (item) {
-                                    bar(navigator.lastItem)
+                                    bar(selected, selectedCallback = selectedCallback)
                                 }
                             }
                         }
@@ -174,7 +179,7 @@ class RootMapScreen: Screen {
                             ) {
                                 for (item in items) {
                                     with (item) {
-                                        rail(navigator.lastItem)
+                                        rail(selected, selectedCallback = selectedCallback)
                                     }
                                 }
                             }
@@ -210,7 +215,8 @@ class RootMapScreen: Screen {
                     CurrentBottomSheetContent()
                 }
             },
-            sheetHalfHeight = bottomSheetHalfHeight()
+            sheetHalfHeight = bottomSheetHalfHeight(),
+            sheetContainerColor = MaterialTheme.colorScheme.background
         ) {
             content()
         }

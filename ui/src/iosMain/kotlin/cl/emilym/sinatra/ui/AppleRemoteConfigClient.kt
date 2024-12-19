@@ -1,10 +1,9 @@
 package cl.emilym.sinatra.ui
 
 import cl.emilym.sinatra.data.client.RemoteConfigWrapper
-import cl.emilym.sinatra.e
-import io.github.aakira.napier.Napier
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import platform.Foundation.NSNumber
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
@@ -13,11 +12,14 @@ import kotlin.coroutines.suspendCoroutine
 interface RemoteConfigProtocol {
 
     fun fetch(callback: (Boolean) -> Unit)
+    fun exists(key: String): Boolean
     fun string(key: String): String?
+    fun number(key: String): NSNumber?
+    fun boolean(key: String): Boolean?
 
 }
 
-class AppleRemoteConfigWrapper constructor(
+class AppleRemoteConfigWrapper(
     private val config: RemoteConfigProtocol
 ): RemoteConfigWrapper {
 
@@ -36,7 +38,7 @@ class AppleRemoteConfigWrapper constructor(
     }
 
 
-    private suspend fun load() {
+    override suspend fun load() {
         if (loaded) return
         lock.withLock {
             if (loaded) return
@@ -45,14 +47,15 @@ class AppleRemoteConfigWrapper constructor(
         }
     }
 
-    override suspend fun string(key: String): String? {
-        try {
-            load()
-        } catch(e: Exception) {
-            Napier.e(e)
-            return null
-        }
-        return config.string(key)?.takeIf { it.isNotEmpty() }
+    override suspend fun string(key: String): String {
+        return config.string(key) ?: throw DarwinException()
+    }
+    override suspend fun exists(key: String) = config.exists(key)
+    override suspend fun number(key: String): Double {
+        return config.number(key)?.doubleValue ?: throw DarwinException()
     }
 
+    override suspend fun boolean(key: String): Boolean {
+        return config.boolean(key) ?: throw DarwinException()
+    }
 }

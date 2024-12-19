@@ -1,13 +1,9 @@
 package cl.emilym.sinatra.android
 
-import android.util.Log
-import cl.emilym.sinatra.NoApiUrlException
-import cl.emilym.sinatra.data.client.RemoteConfigClient
 import cl.emilym.sinatra.data.client.RemoteConfigWrapper
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig
 import com.google.firebase.remoteconfig.ktx.remoteConfig
-import com.google.firebase.remoteconfig.remoteConfig
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.tasks.await
@@ -25,7 +21,7 @@ class AndroidRemoteConfigWrapper(
     private val lock = Mutex()
     private var loaded = false
 
-    private suspend fun load() {
+    override suspend fun load() {
         if (loaded) return
         lock.withLock {
             if (loaded) return
@@ -34,14 +30,20 @@ class AndroidRemoteConfigWrapper(
         }
     }
 
-    override suspend fun string(key: String): String? {
-        try {
-            load()
-        } catch(e: Exception) {
-            Log.e("RemoteConfigWrapper", e.message, e)
-            return null
-        }
-        return config.getString(key).takeIf { it.isNotEmpty() }
+    override suspend fun exists(key: String): Boolean {
+        return config.getKeysByPrefix("").contains(key)
+    }
+
+    override suspend fun string(key: String): String {
+        return config.getString(key)
+    }
+
+    override suspend fun number(key: String): Double {
+        return config.getDouble(key)
+    }
+
+    override suspend fun boolean(key: String): Boolean {
+        return config.getBoolean(key)
     }
 
 }

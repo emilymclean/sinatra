@@ -8,7 +8,7 @@ import org.koin.core.annotation.Factory
 @Factory
 class PlaceRepository(
     private val placeClient: PlaceClient,
-    private val remoteConfigClient: RemoteConfigClient
+    private val remoteConfigClient: RemoteConfigRepository
 ) {
 
     suspend fun available(): Boolean = remoteConfigClient.nominatimUrl() != null

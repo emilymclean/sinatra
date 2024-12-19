@@ -10,6 +10,7 @@ import cl.emilym.gtfs.ServiceEndpoint
 import cl.emilym.gtfs.StopDetailEndpoint
 import cl.emilym.gtfs.StopEndpoint
 import cl.emilym.gtfs.StopTimetable
+import cl.emilym.gtfs.content.Pages
 import cl.emilym.sinatra.NoApiUrlException
 import cl.emilym.sinatra.data.repository.RemoteConfigRepository
 import de.jensklingenberg.ktorfit.Ktorfit
@@ -78,7 +79,8 @@ fun protobufResponseConverterFactory(): ProtobufResponseConverterFactory {
             RouteServicesEndpoint::class to RouteServicesEndpoint::decodeFromByteArray,
             StopTimetable::class to StopTimetable::decodeFromByteArray,
             RouteCanonicalTimetableEndpoint::class to RouteCanonicalTimetableEndpoint::decodeFromByteArray,
-            RouteTripTimetableEndpoint::class to RouteTripTimetableEndpoint::decodeFromByteArray
+            RouteTripTimetableEndpoint::class to RouteTripTimetableEndpoint::decodeFromByteArray,
+            Pages::class to Pages::decodeFromByteArray
         )
     )
 }

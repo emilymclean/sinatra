@@ -53,6 +53,32 @@ class RemoteConfigWrapper: RemoteConfigProtocol {
             return nil
         }
     }
-
+    
+    func number(key: String) -> NSNumber? {
+        do {
+            return try config.configValue(forKey: key).numberValue
+        } catch let error {
+            print("\(error)")
+            return nil
+        }
+    }
+    
+    func boolean(key: String) -> KotlinBoolean? {
+        do {
+            return try KotlinBoolean(bool: config.configValue(forKey: key).boolValue)
+        } catch let error {
+            print("\(error)")
+            return nil
+        }
+    }
+    
+    func exists(key: String) -> Bool {
+        do {
+            return try config.keys(withPrefix: "").contains(key)
+        } catch let error {
+            print("\(error)")
+            return false
+        }
+    }
     
 }
