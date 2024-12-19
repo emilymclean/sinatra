@@ -19,6 +19,10 @@ import cl.emilym.sinatra.data.models.Route
 import cl.emilym.sinatra.ui.color
 import cl.emilym.sinatra.ui.onColor
 
+val routeRandleSize
+    @Composable
+    get() = 2.5.rdp
+
 @Composable
 fun RouteRandle(
     route: Route,
@@ -32,7 +36,7 @@ fun RouteRandle(
         else -> Modifier
     }
     Box(
-        Modifier.size(2.5.rdp).then(extraModifier).padding(0.3.rdp).then(modifier),
+        Modifier.size(routeRandleSize).then(extraModifier).padding(0.3.rdp).then(modifier),
         contentAlignment = Alignment.Center
     ) {
         AutoSizeText(

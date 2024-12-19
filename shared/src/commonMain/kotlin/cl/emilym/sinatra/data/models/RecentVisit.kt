@@ -7,4 +7,7 @@ sealed interface RecentVisit {
     data class Stop(
         val stop: cl.emilym.sinatra.data.models.Stop
     ): RecentVisit
+    data class Place(
+        val place: cl.emilym.sinatra.data.models.Place
+    ): RecentVisit
 }

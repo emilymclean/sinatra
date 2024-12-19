@@ -141,3 +141,5 @@ iosApp/Pods/
 androidApp/google-services.json
 
 iosApp/iosApp/GoogleService-Info.plist
+
+ui/src/iosMain/kotlin/cl/emilym/sinatra/ui/NominatimInformation.kt

@@ -37,6 +37,7 @@ import cl.emilym.sinatra.ui.presentation.screens.maps.StopDetailScreen
 import cl.emilym.sinatra.ui.widgets.IosBackButton
 import cl.emilym.sinatra.ui.widgets.ListHint
 import cl.emilym.sinatra.ui.widgets.NoResultsIcon
+import cl.emilym.sinatra.ui.widgets.PlaceCard
 import cl.emilym.sinatra.ui.widgets.RouteCard
 import cl.emilym.sinatra.ui.widgets.SearchIcon
 import cl.emilym.sinatra.ui.widgets.StopCard
@@ -119,13 +120,20 @@ fun MapSearchScreenSearchState() {
                             it.stop,
                             arrival = null,
                             modifier = Modifier.fillMaxWidth(),
-                            onClick = { navigator.push(StopDetailScreen(it.stop.id)) }
+                            onClick = { navigator.push(StopDetailScreen(it.stop.id)) },
+                            showStopIcon = true
                         )
 
                         is RecentVisit.Route -> RouteCard(
                             it.route,
                             modifier = Modifier.fillMaxWidth(),
                             onClick = { navigator.push(RouteDetailScreen(it.route.id)) }
+                        )
+
+                        is RecentVisit.Place -> PlaceCard(
+                            it.place,
+                            modifier = Modifier.fillMaxWidth(),
+                            showPlaceIcon = true
                         )
                     }
                 }
@@ -164,7 +172,16 @@ fun MapSearchScreenSearchState() {
                                 result.stop,
                                 arrival = null,
                                 modifier = Modifier.fillMaxWidth(),
-                                onClick = { navigator.push(StopDetailScreen(result.stop.id)) }
+                                onClick = { navigator.push(StopDetailScreen(result.stop.id)) },
+                                showStopIcon = true
+                            )
+                        }
+
+                        is SearchResult.PlaceResult -> {
+                            PlaceCard(
+                                result.place,
+                                modifier = Modifier.fillMaxWidth(),
+                                showPlaceIcon = true
                             )
                         }
                     }

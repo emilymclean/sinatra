@@ -7,6 +7,7 @@ import kotlin.time.Duration.Companion.milliseconds
 typealias ShaDigest = String
 typealias ResourceKey = String
 
+typealias PlaceId = String
 typealias StopId = String
 typealias RouteId = String
 typealias RouteCode = String

@@ -69,6 +69,7 @@ kotlin {
 
             // Serialization
             implementation(libs.pbandk)
+            implementation(libs.kotlinx.serialization.json)
 
             // Room
             implementation(libs.room.runtime)
@@ -101,7 +102,7 @@ android {
     namespace = "cl.emilym.sinatra"
     compileSdk = 35
     defaultConfig {
-        minSdk = 24
+        minSdk = 23
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11

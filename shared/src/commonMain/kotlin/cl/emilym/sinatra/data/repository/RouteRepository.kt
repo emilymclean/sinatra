@@ -25,7 +25,7 @@ import org.koin.core.annotation.Factory
 class RoutesCacheWorker(
     private val routePersistence: RoutePersistence,
     private val routeClient: RouteClient,
-    override val shaRepository: ShaRepository,
+    override val cacheWorkerDependencies: CacheWorkerDependencies,
     override val clock: Clock,
 ): CacheWorker<List<Route>>() {
 
@@ -44,7 +44,7 @@ class RoutesCacheWorker(
 class RouteServicesCacheWorker(
     private val routeClient: RouteClient,
     private val routeServicePersistence: RouteServicePersistence,
-    override val shaRepository: ShaRepository,
+    override val cacheWorkerDependencies: CacheWorkerDependencies,
     override val clock: Clock,
 ): CacheWorker<List<ServiceId>>() {
 
@@ -64,7 +64,7 @@ class RouteServicesCacheWorker(
 class RouteServiceTimetableCacheWorker(
     private val routeClient: RouteClient,
     private val routeServiceTimetablePersistence: RouteServiceTimetablePersistence,
-    override val shaRepository: ShaRepository,
+    override val cacheWorkerDependencies: CacheWorkerDependencies,
     override val clock: Clock,
 ): CacheWorker<RouteServiceTimetable>() {
 
@@ -89,7 +89,7 @@ class RouteServiceTimetableCacheWorker(
 class RouteServiceCanonicalTimetableCacheWorker(
     private val routeClient: RouteClient,
     private val routeServiceCanonicalTimetablePersistence: RouteServiceCanonicalTimetablePersistence,
-    override val shaRepository: ShaRepository,
+    override val cacheWorkerDependencies: CacheWorkerDependencies,
     override val clock: Clock,
 ): CacheWorker<RouteServiceCanonicalTimetable>() {
 
@@ -113,7 +113,7 @@ class RouteServiceCanonicalTimetableCacheWorker(
 class RouteTripTimetableCacheWorker(
     private val routeClient: RouteClient,
     private val routeTripTimetablePersistence: RouteTripTimetablePersistence,
-    override val shaRepository: ShaRepository,
+    override val cacheWorkerDependencies: CacheWorkerDependencies,
     override val clock: Clock,
 ): CacheWorker<RouteTripTimetable>() {
 

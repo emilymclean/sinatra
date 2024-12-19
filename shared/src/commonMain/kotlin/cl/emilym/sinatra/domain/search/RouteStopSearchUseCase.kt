@@ -1,11 +1,14 @@
 package cl.emilym.sinatra.domain.search
 
+import cl.emilym.sinatra.data.models.Place
 import cl.emilym.sinatra.data.models.Route
 import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.data.models.map
 import cl.emilym.sinatra.data.repository.RouteRepository
 import cl.emilym.sinatra.data.repository.StopRepository
+import cl.emilym.sinatra.e
 import cl.emilym.sinatra.lib.Tokenizer
+import io.github.aakira.napier.Napier
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.sync.Mutex
@@ -17,52 +20,39 @@ import kotlin.math.max
 sealed interface SearchResult {
     data class RouteResult(val route: Route): SearchResult
     data class StopResult(val stop: Stop): SearchResult
+    data class PlaceResult(val place: Place): SearchResult
 }
-
-class SearchSpace(
-    val routes: List<Route>,
-    val stops: List<Stop>
-)
 
 @Factory
 class RouteStopSearchUseCase(
-    private val routeRepository: RouteRepository,
-    private val stopRepository: StopRepository,
-    private val routeTypeSearcher: RouteTypeSearcher,
-    private val stopTypeSearcher: StopTypeSearcher,
+    routeTypeSearcher: RouteTypeSearcher,
+    stopTypeSearcher: StopTypeSearcher,
+    placeTypeSearcher: PlaceTypeSearcher,
     private val tokenizer: Tokenizer
 ) {
 
-    private val searchLock = Mutex()
-    private var searchSpace: SearchSpace? = null
+    private val searchers = listOf(routeTypeSearcher, stopTypeSearcher, placeTypeSearcher)
 
     suspend operator fun invoke(query: String): List<SearchResult> {
         val tokens = tokenizer.tokenize(query)
-        val space = get()
         val results = withContext(Dispatchers.IO) {
-            listOf(
-                routeTypeSearcher(tokens, space.routes),
-                stopTypeSearcher(tokens, space.stops)
-            ).flatten()
+            val out = mutableListOf<RankableResult<*>>()
+            for (searcher in searchers) {
+                try {
+                    out.addAll(searcher(tokens))
+                } catch (e: Exception) {
+                    Napier.e(e)
+                }
+            }
+            out.toList()
         }
         return results.sortedByDescending { it.score }.mapNotNull {
             when (it.result) {
                 is Route -> SearchResult.RouteResult(it.result)
                 is Stop -> SearchResult.StopResult(it.result)
+                is Place -> SearchResult.PlaceResult(it.result)
                 else -> null
             }
-        }
-    }
-
-    private suspend fun get(): SearchSpace {
-        searchLock.withLock {
-            searchSpace.also { if (it != null) return it }
-            val removedRoutes = routeRepository.removedRoutes()
-            val routes = routeRepository.routes().map { it.filter { it.id !in removedRoutes } }
-            val stops = stopRepository.stops()
-            return SearchSpace(
-                routes.item, stops.item
-            ).also { searchSpace = it }
         }
     }
 
@@ -73,13 +63,18 @@ data class RankableResult<T>(
     val score: Double
 )
 
-abstract class TypeSearcher<T> {
+interface TypeSearcher<T> {
+    suspend operator fun invoke(tokens: List<String>): List<RankableResult<T>>
+    fun wrap(item: T): SearchResult
+}
+
+abstract class AbstractTypeSearcher<T>: TypeSearcher<T> {
 
     protected abstract fun fields(t: T): List<String>
 
     open fun scoreMultiplier(item: T): Double { return 1.0 }
 
-    operator fun invoke(tokens: List<String>, space: List<T>): List<RankableResult<T>> {
+    protected fun search(tokens: List<String>, space: List<T>): List<RankableResult<T>> {
         return space.mapNotNull {
             match(tokens, it)
         }
@@ -121,6 +116,30 @@ abstract class TypeSearcher<T> {
             highestScore == 0.0 -> null
             else -> RankableResult(item, scoreMultiplier(item) * highestScore)
         }
+    }
+
+}
+
+abstract class LocalTypeSearcher<T>: AbstractTypeSearcher<T>() {
+
+    private var cache: List<T>? = null
+    private val lock = Mutex()
+
+    protected abstract suspend fun load(): List<T>
+
+    private suspend fun space(): List<T> {
+        cache?.let { return it }
+        return lock.withLock {
+            cache?.let { return@withLock it }
+            load().also {
+                cache = it
+            }
+        }
+    }
+
+    override suspend operator fun invoke(tokens: List<String>): List<RankableResult<T>> {
+        val space = space()
+        return search(tokens, space)
     }
 
 }

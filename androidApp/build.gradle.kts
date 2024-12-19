@@ -12,12 +12,14 @@ plugins {
 android {
     val appVersionCode: String by project
     val appVersionName: String by project
+    val nominatimUserAgent: String by project
+    val nominatimEmail: String by project
 
     namespace = "cl.emilym.sinatra.android"
     compileSdk = 35
     defaultConfig {
         applicationId = "cl.emilym.sinatra"
-        minSdk = 24
+        minSdk = 23
         targetSdk = 34
         versionCode = appVersionCode.toInt()+100
         versionName = appVersionName
@@ -35,10 +37,17 @@ android {
         getByName("release") {
             isMinifyEnabled = false
         }
+
+        buildTypes.forEach {
+            it.buildConfigField("String", "NOMINATIM_USER_AGENT", "\"$nominatimUserAgent\"")
+            it.buildConfigField("String", "NOMINATIM_EMAIL", "\"$nominatimEmail\"")
+        }
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
+
+        isCoreLibraryDesugaringEnabled = true
     }
     kotlinOptions {
         jvmTarget = "11"
@@ -51,6 +60,8 @@ android {
 dependencies {
     implementation(project(":ui"))
     implementation(project(":shared"))
+
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.3")
 
     implementation(platform("com.google.firebase:firebase-bom:33.7.0"))
     implementation("com.google.firebase:firebase-crashlytics")
