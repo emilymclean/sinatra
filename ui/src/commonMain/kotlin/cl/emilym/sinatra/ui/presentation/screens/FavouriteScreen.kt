@@ -2,6 +2,7 @@ package cl.emilym.sinatra.ui.presentation.screens
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -28,6 +29,7 @@ import cl.emilym.sinatra.data.repository.FavouriteRepository
 import cl.emilym.sinatra.ui.presentation.screens.maps.RouteDetailScreen
 import cl.emilym.sinatra.ui.presentation.screens.maps.StopDetailScreen
 import cl.emilym.sinatra.ui.widgets.ListHint
+import cl.emilym.sinatra.ui.widgets.PlaceCard
 import cl.emilym.sinatra.ui.widgets.RouteCard
 import cl.emilym.sinatra.ui.widgets.StarOutlineIcon
 import cl.emilym.sinatra.ui.widgets.StopCard
@@ -96,7 +98,8 @@ class FavouriteScreen: Screen {
                                         it.stop,
                                         onClick = {
                                             navigator.push(StopDetailScreen(it.stop.id))
-                                        }
+                                        },
+                                        showStopIcon = true
                                     )
 
                                     is Favourite.Route -> RouteCard(
@@ -110,7 +113,14 @@ class FavouriteScreen: Screen {
                                         it.stop,
                                         onClick = {
                                             navigator.push(StopDetailScreen(it.stop.id))
-                                        }
+                                        },
+                                        showStopIcon = true
+                                    )
+
+                                    is Favourite.Place -> PlaceCard(
+                                        it.place,
+                                        modifier = Modifier.fillMaxWidth(),
+                                        showPlaceIcon = true
                                     )
                                 }
                             }

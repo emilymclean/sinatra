@@ -129,6 +129,12 @@ fun MapSearchScreenSearchState() {
                             modifier = Modifier.fillMaxWidth(),
                             onClick = { navigator.push(RouteDetailScreen(it.route.id)) }
                         )
+
+                        is RecentVisit.Place -> PlaceCard(
+                            it.place,
+                            modifier = Modifier.fillMaxWidth(),
+                            showPlaceIcon = true
+                        )
                     }
                 }
             }

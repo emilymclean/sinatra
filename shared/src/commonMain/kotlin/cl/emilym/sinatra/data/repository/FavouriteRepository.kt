@@ -1,6 +1,7 @@
 package cl.emilym.sinatra.data.repository
 
 import cl.emilym.sinatra.data.models.Favourite
+import cl.emilym.sinatra.data.models.PlaceId
 import cl.emilym.sinatra.data.models.RouteId
 import cl.emilym.sinatra.data.models.StopId
 import cl.emilym.sinatra.data.persistence.FavouritePersistence
@@ -54,6 +55,20 @@ class FavouriteRepository(
         return favouritePersistence.exists(
             FavouriteType.STOP,
             stopId = stopId
+        )
+    }
+
+    suspend fun setPlaceFavourite(placeId: PlaceId, favourited: Boolean) {
+        when (favourited) {
+            true -> favouritePersistence.add(FavouriteType.PLACE, placeId = placeId)
+            false -> favouritePersistence.remove(FavouriteType.PLACE, placeId = placeId)
+        }
+    }
+
+    fun placeIsFavourited(placeId: PlaceId): Flow<Boolean> {
+        return favouritePersistence.exists(
+            FavouriteType.PLACE,
+            placeId = placeId
         )
     }
 

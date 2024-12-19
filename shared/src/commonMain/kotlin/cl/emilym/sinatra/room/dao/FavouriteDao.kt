@@ -26,6 +26,9 @@ interface FavouriteDao {
     @Query("DELETE FROM favouriteEntity WHERE type = \"STOP_ON_ROUTE\" AND stopId = :stopId AND routeId = :routeId")
     suspend fun deleteStopOnRoute(stopId: String, routeId: String)
 
+    @Query("DELETE FROM favouriteEntity WHERE type = \"PLACE\" AND placeId = :placeId")
+    suspend fun deletePlace(placeId: String)
+
     @Query("SELECT * FROM favouriteEntity")
     fun get(): Flow<List<FavouriteEntityEntityWithStopAndRoute>>
 
@@ -37,5 +40,8 @@ interface FavouriteDao {
 
     @Query("SELECT * FROM favouriteEntity WHERE type = \"STOP_ON_ROUTE\" AND routeId = :routeId AND stopId = :stopId")
     fun getStopOnRoute(stopId: String, routeId: String): Flow<FavouriteEntity?>
+
+    @Query("SELECT * FROM favouriteEntity WHERE type = \"PLACE\" AND placeId = :placeId")
+    fun getPlace(placeId: String): Flow<FavouriteEntity?>
 
 }

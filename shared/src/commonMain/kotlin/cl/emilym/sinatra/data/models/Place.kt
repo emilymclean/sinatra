@@ -3,6 +3,7 @@ package cl.emilym.sinatra.data.models
 import cl.emilym.sinatra.data.models.dto.NominatimPlace
 
 data class Place(
+    val id: String,
     val name: String,
     val displayName: String,
     val location: MapLocation
@@ -12,6 +13,7 @@ data class Place(
 
         fun fromDto(nominatimPlace: NominatimPlace): Place {
             return Place(
+                "${nominatimPlace.placeId}",
                 nominatimPlace.name,
                 nominatimPlace.displayName,
                 MapLocation(

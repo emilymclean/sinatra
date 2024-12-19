@@ -11,6 +11,7 @@ data class FavouriteEntity(
     val type: String,
     val routeId: String?,
     val stopId: String?,
+    val placeId: String?,
 )
 
 data class FavouriteEntityEntityWithStopAndRoute(
@@ -24,5 +25,10 @@ data class FavouriteEntityEntityWithStopAndRoute(
         parentColumn = "routeId",
         entityColumn = "id"
     )
-    val route: RouteEntity?
+    val route: RouteEntity?,
+    @Relation(
+        parentColumn = "placeId",
+        entityColumn = "id"
+    )
+    val place: PlaceEntity?
 )

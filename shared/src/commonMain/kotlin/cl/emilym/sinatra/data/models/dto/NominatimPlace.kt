@@ -5,6 +5,8 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class NominatimPlace(
+    @SerialName("place_id")
+    val placeId: Long,
     val lat: String,
     val lon: String,
     val name: String,
