@@ -7,8 +7,7 @@ import org.koin.core.annotation.Factory
 
 @Factory
 class PlaceTypeSearcher(
-    private val placeRepository: PlaceRepository,
-    private val recentVisitPersistence: RecentVisitPersistence
+    private val placeRepository: PlaceRepository
 ): AbstractTypeSearcher<Place>() {
 
     companion object {
