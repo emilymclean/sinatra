@@ -8,6 +8,7 @@ import cl.emilym.gtfs.RouteTripTimetableEndpoint
 import cl.emilym.gtfs.ServiceEndpoint
 import cl.emilym.gtfs.StopEndpoint
 import cl.emilym.gtfs.StopTimetable
+import cl.emilym.gtfs.content.Pages
 import cl.emilym.sinatra.data.models.RouteId
 import cl.emilym.sinatra.data.models.ServiceId
 import cl.emilym.sinatra.data.models.StopId
@@ -96,5 +97,11 @@ interface GtfsApi {
 
     @GET
     suspend fun markdownContent(@Url url: String): String
+
+    @GET("content.pb")
+    suspend fun content(): Pages
+
+    @GET("content.pb.sha")
+    suspend fun contentDigest(): String
 
 }

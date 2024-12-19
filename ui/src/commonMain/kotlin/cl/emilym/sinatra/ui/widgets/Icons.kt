@@ -2,6 +2,7 @@ package cl.emilym.sinatra.ui.widgets
 
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -11,6 +12,7 @@ import sinatra.ui.generated.resources.accessible
 import sinatra.ui.generated.resources.back
 import sinatra.ui.generated.resources.bike
 import sinatra.ui.generated.resources.external_link
+import sinatra.ui.generated.resources.forward
 import sinatra.ui.generated.resources.info
 import sinatra.ui.generated.resources.map
 import sinatra.ui.generated.resources.my_location
@@ -196,6 +198,19 @@ fun BackIcon(
     Icon(
         painterResource(Res.drawable.back),
         contentDescription = "An arrow pointing to the left",
+        modifier = modifier,
+        tint = tint
+    )
+}
+
+@Composable
+fun ForwardIcon(
+    modifier: Modifier = Modifier,
+    tint: Color = LocalContentColor.current
+) {
+    Icon(
+        painterResource(Res.drawable.forward),
+        contentDescription = "A forward arrow",
         modifier = modifier,
         tint = tint
     )
