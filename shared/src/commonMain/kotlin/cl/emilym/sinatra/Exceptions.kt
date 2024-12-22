@@ -28,6 +28,9 @@ class RouterException: Exception {
         fun stopNotFound(stopId: String): RouterException {
             return RouterException("Stop ${stopId} could not be found")
         }
+        fun noJourneyFound(): RouterException {
+            return RouterException("No valid journey could be found")
+        }
     }
 
 }
