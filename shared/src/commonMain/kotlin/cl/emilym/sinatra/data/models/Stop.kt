@@ -10,7 +10,10 @@ data class Stop(
     val name: String,
     val location: MapLocation,
     val accessibility: StopAccessibility,
-) {
+): NavigationLocation {
+
+    override val navigationName: String
+        get() = name
 
     companion object {
         fun fromPB(pb: cl.emilym.gtfs.Stop): Stop {

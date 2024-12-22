@@ -77,3 +77,14 @@ interface ServiceAccessibility {
     val bikesAllowed: ServiceBikesAllowed
     val wheelchairAccessible: ServiceWheelchairAccessible
 }
+
+interface NavigationLocation {
+    val navigationName: String
+}
+
+class CurrentLocation(
+    val location: MapLocation
+): NavigationLocation {
+    override val navigationName: String
+        get() = "Current Location"
+}

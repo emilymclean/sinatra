@@ -10,6 +10,7 @@
 
     <string name="open_maps_android">Show in Google Maps</string>
     <string name="open_maps_ios">Show in Apple Maps</string>
+    <string name="stop_detail_navigate">Navigate to Stop</string>
 
     <string name="stop_detail_nearest_stop">Nearest Stop</string>
     <string name="stop_detail_distance">%1$s away</string>

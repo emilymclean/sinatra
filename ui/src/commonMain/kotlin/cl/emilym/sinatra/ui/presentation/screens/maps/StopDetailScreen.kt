@@ -49,11 +49,13 @@ import cl.emilym.sinatra.ui.maps.stopMarkerIcon
 import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
 import cl.emilym.sinatra.ui.navigation.MapScreen
 import cl.emilym.sinatra.ui.open_maps
+import cl.emilym.sinatra.ui.stopJourneyNavigation
 import cl.emilym.sinatra.ui.widgets.AccessibilityIconLockup
 import cl.emilym.sinatra.ui.widgets.FavouriteButton
 import cl.emilym.sinatra.ui.widgets.ListHint
 import cl.emilym.sinatra.ui.widgets.LocalMapControl
 import cl.emilym.sinatra.ui.widgets.MapIcon
+import cl.emilym.sinatra.ui.widgets.NavigateIcon
 import cl.emilym.sinatra.ui.widgets.NoBusIcon
 import cl.emilym.sinatra.ui.widgets.SheetIosBackButton
 import cl.emilym.sinatra.ui.widgets.UpcomingRouteCard
@@ -75,7 +77,7 @@ import sinatra.ui.generated.resources.accessibility_wheelchair_accessible
 import sinatra.ui.generated.resources.no_upcoming_vehicles
 import sinatra.ui.generated.resources.stop_not_found
 import sinatra.ui.generated.resources.upcoming_vehicles
-import sinatra.ui.generated.resources.open_maps_android
+import sinatra.ui.generated.resources.stop_detail_navigate
 
 @KoinViewModel
 class StopDetailViewModel(
@@ -214,6 +216,19 @@ class StopDetailScreen(
                                         Box(Modifier.width(0.5.rdp))
                                         Text(stringResource(Res.string.open_maps))
                                     }
+                                }
+                                item {
+                                    Box(Modifier.height(0.5.rdp))
+                                }
+                            }
+                            item {
+                                Button(
+                                    onClick = { navigator.stopJourneyNavigation(stop) },
+                                    modifier = Modifier.fillMaxWidth().padding(horizontal = 1.rdp)
+                                ) {
+                                    NavigateIcon()
+                                    Box(Modifier.width(0.5.rdp))
+                                    Text(stringResource(Res.string.stop_detail_navigate))
                                 }
                             }
                             Upcoming(viewModel, upcoming, navigator)

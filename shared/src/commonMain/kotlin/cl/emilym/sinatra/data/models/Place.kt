@@ -7,7 +7,10 @@ data class Place(
     val name: String,
     val displayName: String,
     val location: MapLocation
-) {
+): NavigationLocation {
+
+    override val navigationName: String
+        get() = name
 
     companion object {
 

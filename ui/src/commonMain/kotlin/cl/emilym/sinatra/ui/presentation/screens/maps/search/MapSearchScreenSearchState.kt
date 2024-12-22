@@ -34,8 +34,10 @@ import cl.emilym.sinatra.data.models.RecentVisit
 import cl.emilym.sinatra.domain.search.SearchResult
 import cl.emilym.sinatra.nullIfEmpty
 import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
+import cl.emilym.sinatra.ui.placeCardDefaultNavigation
 import cl.emilym.sinatra.ui.presentation.screens.maps.RouteDetailScreen
 import cl.emilym.sinatra.ui.presentation.screens.maps.StopDetailScreen
+import cl.emilym.sinatra.ui.presentation.screens.maps.navigate.NavigateEntryScreen
 import cl.emilym.sinatra.ui.text
 import cl.emilym.sinatra.ui.widgets.IosBackButton
 import cl.emilym.sinatra.ui.widgets.ListHint
@@ -159,6 +161,7 @@ fun MapSearchScreenSearchState() {
                             is RecentVisit.Place -> PlaceCard(
                                 it.place,
                                 modifier = Modifier.fillMaxWidth(),
+                                onClick = { navigator.placeCardDefaultNavigation(it.place) },
                                 showPlaceIcon = true
                             )
                         }
@@ -208,7 +211,8 @@ fun MapSearchScreenSearchState() {
                             PlaceCard(
                                 result.place,
                                 modifier = Modifier.fillMaxWidth(),
-                                showPlaceIcon = true
+                                showPlaceIcon = true,
+                                onClick = { navigator.placeCardDefaultNavigation(result.place) }
                             )
                         }
                     }

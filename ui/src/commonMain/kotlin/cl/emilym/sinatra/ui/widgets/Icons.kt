@@ -25,6 +25,7 @@ import sinatra.ui.generated.resources.star_outline
 import sinatra.ui.generated.resources.marker_icon
 import sinatra.ui.generated.resources.bus
 import sinatra.ui.generated.resources.tram
+import sinatra.ui.generated.resources.navigate
 
 @Composable
 fun AccessibleIcon(
@@ -175,6 +176,19 @@ fun MapIcon(
     Icon(
         painterResource(Res.drawable.map),
         contentDescription = "A map",
+        modifier = modifier,
+        tint = tint
+    )
+}
+
+@Composable
+fun NavigateIcon(
+    modifier: Modifier = Modifier,
+    tint: Color = LocalContentColor.current
+) {
+    Icon(
+        painterResource(Res.drawable.navigate),
+        contentDescription = "A direction arrow",
         modifier = modifier,
         tint = tint
     )
