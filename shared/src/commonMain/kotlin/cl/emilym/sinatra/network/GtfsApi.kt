@@ -9,6 +9,7 @@ import cl.emilym.gtfs.ServiceEndpoint
 import cl.emilym.gtfs.StopEndpoint
 import cl.emilym.gtfs.StopTimetable
 import cl.emilym.gtfs.content.Pages
+import cl.emilym.gtfs.networkgraph.Graph
 import cl.emilym.sinatra.data.models.RouteId
 import cl.emilym.sinatra.data.models.ServiceId
 import cl.emilym.sinatra.data.models.StopId
@@ -103,5 +104,11 @@ interface GtfsApi {
 
     @GET("content.pb.sha")
     suspend fun contentDigest(): String
+
+    @GET("network-graph.pb")
+    suspend fun networkGraph(): Graph
+
+    @GET("network-graph.pb.sha")
+    suspend fun networkGraphDigest(): String
 
 }

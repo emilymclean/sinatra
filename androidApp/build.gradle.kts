@@ -42,6 +42,10 @@ android {
             it.buildConfigField("String", "NOMINATIM_USER_AGENT", "\"$nominatimUserAgent\"")
             it.buildConfigField("String", "NOMINATIM_EMAIL", "\"$nominatimEmail\"")
         }
+
+        getByName("debug") {
+            applicationIdSuffix = ".develop"
+        }
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11

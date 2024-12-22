@@ -1,11 +1,7 @@
 package cl.emilym.sinatra.router
 
-import cl.emilym.gtfs.networkgraph.EdgeType
 import cl.emilym.gtfs.networkgraph.Graph
-import cl.emilym.gtfs.networkgraph.NodeType
 import cl.emilym.sinatra.RouterException
-import io.github.aakira.napier.DebugAntilog
-import io.github.aakira.napier.Napier
 import pbandk.decodeFromByteArray
 import kotlin.test.BeforeTest
 import kotlin.test.Test

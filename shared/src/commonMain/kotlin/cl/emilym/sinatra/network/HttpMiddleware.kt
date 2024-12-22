@@ -11,6 +11,7 @@ import cl.emilym.gtfs.StopDetailEndpoint
 import cl.emilym.gtfs.StopEndpoint
 import cl.emilym.gtfs.StopTimetable
 import cl.emilym.gtfs.content.Pages
+import cl.emilym.gtfs.networkgraph.Graph
 import cl.emilym.sinatra.NoApiUrlException
 import cl.emilym.sinatra.data.repository.RemoteConfigRepository
 import de.jensklingenberg.ktorfit.Ktorfit
@@ -80,7 +81,8 @@ fun protobufResponseConverterFactory(): ProtobufResponseConverterFactory {
             StopTimetable::class to StopTimetable::decodeFromByteArray,
             RouteCanonicalTimetableEndpoint::class to RouteCanonicalTimetableEndpoint::decodeFromByteArray,
             RouteTripTimetableEndpoint::class to RouteTripTimetableEndpoint::decodeFromByteArray,
-            Pages::class to Pages::decodeFromByteArray
+            Pages::class to Pages::decodeFromByteArray,
+            Graph::class to Graph::decodeFromByteArray,
         )
     )
 }
