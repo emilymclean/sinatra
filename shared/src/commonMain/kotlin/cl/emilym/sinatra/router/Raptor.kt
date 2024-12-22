@@ -96,37 +96,34 @@ class Raptor(
         markedStops.clear()
 
         for (markedStop in currentMarkedStops) {
-            Napier.d("Processing marked stop ${markedStop}")
             val routesForStop = routesForStop(getNode(markedStop))
             for (r in routesForStop) {
                 if (r.node.routeId == null || r.node.headingId == null) continue
                 val routeAndHeading = RouteAndHeading(r.node.routeId, r.node.headingId)
+
                 if (routeAndHeading in visitedRoutes) {
-                    if (!stopBeforeOtherOnRoute(r.node, visitedRoutes[routeAndHeading]!!.node.stopId)) continue
+                    val existing = visitedRoutes[routeAndHeading]!!.node.stopId
+                    if (!stopBeforeOtherOnRoute(r.node, existing)) continue
+                    if (getStopEarliestArrival(r.node.stopId) > getStopEarliestArrival(existing)) continue
                 }
 
                 visitedRoutes[routeAndHeading] = r
             }
         }
 
-        Napier.d("Found ${visitedRoutes.size} connected routes/headings (${
-            visitedRoutes.map { "{${it.key.routeIndex}, ${it.key.headingIndex}}" }
-        })")
-
         for (r in visitedRoutes.keys) {
             val initialStopIndex = visitedRoutes[r]!!
             val currentEarliestArrival = getStopEarliestArrival(initialStopIndex.node.stopId)
             var nextStops = listOf(
                 TravelTime(
-                    getStopRouteNode(initialStopIndex.node.stopId, r.routeIndex, r.headingIndex)!!,
-                    currentEarliestArrival
+                    initialStopIndex.node,
+                    currentEarliestArrival,
+                    0L
                 )
             )
 
-            Napier.d("Searching for next stops starting at ${nextStops[0].arrival}")
             while(nextStops.isNotEmpty()) {
                 nextStops = nextStops.flatMap { travelRoute(it.node, it.arrival) }
-                Napier.d("Found ${nextStops.size} connected stops")
                 for (nextStop in nextStops) {
                     val stopIndex = nextStop.node.stopId
                     if (!nextStop.isEarlier()) continue
@@ -240,7 +237,8 @@ class Raptor(
             .map {
                 TravelTime(
                     getNode(it.toNodeId),
-                    it.penalty + departureTime
+                    it.penalty + departureTime,
+                    departureTime
                 )
             }
     }
@@ -254,7 +252,8 @@ class Raptor(
                 val edge = it.value.minBy { it.penalty + (it.departureTime ?: 0) }
                 TravelTime(
                     getNode(edge.toNodeId),
-                    edge.penalty + (edge.departureTime ?: 0)
+                    edge.penalty + (edge.departureTime ?: 0),
+                    (edge.departureTime ?: 0)
                 )
             }
     }

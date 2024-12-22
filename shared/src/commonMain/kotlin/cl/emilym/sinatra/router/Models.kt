@@ -16,7 +16,13 @@ data class RouteAndHeading(
 
 data class TravelTime<T: Node>(
     val node: T,
-    val arrival: EpochSeconds
+    val arrival: EpochSeconds,
+    val departureTime: EpochSeconds
+)
+
+data class TravelTimeWithRootDepartureTime<T: Node>(
+    val travelTime: TravelTime<T>,
+    val rootDepartureTime: EpochSeconds
 )
 
 sealed interface BoardedFrom {

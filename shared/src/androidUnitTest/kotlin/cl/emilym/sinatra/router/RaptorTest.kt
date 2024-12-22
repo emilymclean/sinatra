@@ -3,6 +3,7 @@ package cl.emilym.sinatra.router
 import cl.emilym.gtfs.networkgraph.EdgeType
 import cl.emilym.gtfs.networkgraph.Graph
 import cl.emilym.gtfs.networkgraph.NodeType
+import cl.emilym.sinatra.RouterException
 import io.github.aakira.napier.DebugAntilog
 import io.github.aakira.napier.Napier
 import pbandk.decodeFromByteArray
@@ -30,7 +31,6 @@ class RaptorTest {
     fun setup() {
         graph = Graph.decodeFromByteArray(this::class.java.classLoader.getResource("network_graph.pb").readBytes())
         raptor = Raptor(graph)
-//        Napier.base(JVMAntilog())
     }
 
     @Test
@@ -55,29 +55,26 @@ class RaptorTest {
 
     @Test
     fun testValidJourneyOnSingleRouteWithTransfer() {
-        val result = raptor.calculate(
-            Duration.parseIsoString("PT09H").inWholeSeconds,
-            STOP_ID_SWINDEN_STREET,
-            STOP_ID_MANNING_CLARK
-        )
-        println(graph.nodes[
-            graph.mappings.stopNodes[STOP_ID_SWINDEN_STREET]!!
-        ].edges.filter { it.type == EdgeType.TRANSFER }.map {
-            val dest = graph.nodes[it.toNodeId]
-            "Stop ${graph.mappings.stopIds[dest.stopId]} (${dest.stopId}) earliest time = ${it.penalty}"
-        })
-        println(raptor.stopInformation[graph.mappings.stopNodes[STOP_ID_SWINDEN_STREET_GGN]!!])
-        println(raptor.stopInformation[graph.mappings.stopNodes["8123"]!!])
-        println("Start time = ${Duration.parseIsoString("PT09H").inWholeSeconds}")
+        val result = try {
+            raptor.calculate(
+                Duration.parseIsoString("PT09H").inWholeSeconds,
+                STOP_ID_SWINDEN_STREET,
+                STOP_ID_MANNING_CLARK
+            )
+        } catch(e: RouterException) { null }
         assertEquals(result, Journey(
-            stops = listOf("8119", "8105"),
+            stops = listOf("SWN", "8119", "8105", "MCK"),
             connections = listOf(
+                JourneyConnection.Transfer(
+                    travelTime = 16
+                ),
                 JourneyConnection.Travel(
                     routeId = "ACTO001",
                     heading = "Gungahlin Pl",
-                    startTime = 32400L,
+                    startTime = 32416L,
                     endTime = 33307L
-                )
+                ),
+                JourneyConnection.Transfer(travelTime = 9)
             )
         ))
     }
