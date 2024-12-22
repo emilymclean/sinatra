@@ -18,6 +18,7 @@ import kotlinx.cinterop.allocArray
 import kotlinx.cinterop.interpretCPointer
 import kotlinx.cinterop.sizeOf
 import kotlinx.cinterop.useContents
+import org.jetbrains.compose.resources.StringResource
 import platform.CoreGraphics.CGPoint
 import platform.CoreGraphics.CGPointMake
 import platform.CoreLocation.CLLocationCoordinate2D
@@ -27,6 +28,8 @@ import platform.MapKit.MKCoordinateSpanMake
 import platform.UIKit.UIColor
 import kotlin.math.pow
 import platform.CoreGraphics.CGColorRef
+import sinatra.ui.generated.resources.Res
+import sinatra.ui.generated.resources.open_maps_ios
 import kotlin.math.ln
 import kotlin.math.log
 
@@ -131,3 +134,6 @@ fun MarkerAnnotation.matches(markerItem: MarkerItem): Boolean {
             markerItem.icon?.reuseIdentifier == icon?.reuseIdentifier &&
             location == markerItem.location
 }
+
+internal actual val Res.string.open_maps: StringResource
+    get() = Res.string.open_maps_ios

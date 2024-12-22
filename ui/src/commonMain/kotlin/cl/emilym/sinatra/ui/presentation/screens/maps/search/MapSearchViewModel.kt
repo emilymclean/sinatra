@@ -4,20 +4,27 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cl.emilym.compose.requeststate.RequestState
 import cl.emilym.compose.requeststate.handle
+import cl.emilym.sinatra.data.models.MapLocation
+import cl.emilym.sinatra.data.models.StopWithDistance
 import cl.emilym.sinatra.data.models.RecentVisit
 import cl.emilym.sinatra.data.models.Stop
+import cl.emilym.sinatra.data.models.distance
 import cl.emilym.sinatra.data.repository.RecentVisitRepository
 import cl.emilym.sinatra.data.repository.StopRepository
 import cl.emilym.sinatra.domain.search.RouteStopSearchUseCase
 import cl.emilym.sinatra.domain.search.SearchResult
+import cl.emilym.sinatra.nullIfEmpty
+import cl.emilym.sinatra.ui.NEAREST_STOP_RADIUS
 import cl.emilym.sinatra.ui.widgets.createRequestStateFlowFlow
 import cl.emilym.sinatra.ui.widgets.handleFlow
 import cl.emilym.sinatra.ui.widgets.handleFlowProperly
 import cl.emilym.sinatra.ui.widgets.presentable
+import io.github.aakira.napier.Napier
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flatMapLatest
@@ -27,6 +34,8 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
 import kotlin.time.Duration.Companion.seconds
+
+const val NEARBY_STOPS_LIMIT = 5
 
 sealed interface MapSearchState {
     data object Browse: MapSearchState
@@ -71,8 +80,19 @@ class MapSearchViewModel(
             }
         }
     }
+    private val lastLocation = MutableStateFlow<MapLocation?>(null)
     val stops = MutableStateFlow<RequestState<List<Stop>>>(RequestState.Initial())
     var hasZoomedToLocation = false
+
+    val nearbyStops: Flow<List<StopWithDistance>?> = stops.combine(lastLocation) { stops, lastLocation ->
+        if (stops !is RequestState.Success || lastLocation == null) return@combine null
+        val stops = stops.value.nullIfEmpty() ?: return@combine null
+        stops.map { StopWithDistance(it, distance(lastLocation, it.location)) }
+            .filter { it.distance < NEAREST_STOP_RADIUS && it.stop.parentStation == null }
+            .nullIfEmpty()
+            ?.sortedBy { it.distance }
+            ?.take(NEARBY_STOPS_LIMIT)
+    }
 
     private val _recentVisits = createRequestStateFlowFlow<List<RecentVisit>>()
     val recentVisits = _recentVisits.presentable()
@@ -110,6 +130,10 @@ class MapSearchViewModel(
     fun openBrowse() {
         query.value = null
         _state.value = State.BROWSE
+    }
+
+    fun updateLocation(location: MapLocation) {
+        lastLocation.value = location
     }
 
     private enum class State {

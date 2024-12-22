@@ -28,3 +28,5 @@ val dayOfWeekDateTimeFormat = LocalDateTime.Format {
     chars(", ")
     time(timeFormat)
 }
+
+const val NEAREST_STOP_RADIUS = 1.0
