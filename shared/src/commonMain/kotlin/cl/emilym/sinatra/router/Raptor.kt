@@ -114,24 +114,25 @@ class Raptor(
         for (r in visitedRoutes.keys) {
             val initialStopIndex = visitedRoutes[r]!!
             val currentEarliestArrival = getStopEarliestArrival(initialStopIndex.node.stopId)
-            var nextStops = listOf(
-                TravelTime(
-                    initialStopIndex.node,
-                    currentEarliestArrival,
-                    0L
+            var nextStops = travelRoute(initialStopIndex.node, currentEarliestArrival).map {
+                TravelTimeWithRootDepartureTime(
+                    it,
+                    it.departureTime
                 )
-            )
+            }
 
             while(nextStops.isNotEmpty()) {
-                nextStops = nextStops.flatMap { travelRoute(it.node, it.arrival) }
                 for (nextStop in nextStops) {
-                    val stopIndex = nextStop.node.stopId
-                    if (!nextStop.isEarlier()) continue
-                    updateEarliestArrival(stopIndex, nextStop.arrival, BoardedFrom.Travel(
+                    val stopIndex = nextStop.travelTime.node.stopId
+                    if (!nextStop.travelTime.isEarlier()) continue
+                    updateEarliestArrival(stopIndex, nextStop.travelTime.arrival, BoardedFrom.Travel(
                         initialStopIndex.index,
-                        currentEarliestArrival
+                        nextStop.rootDepartureTime
                     ))
                 }
+                nextStops = nextStops.flatMap { travelRoute(it.travelTime.node, it.travelTime.arrival).map { tt ->
+                    TravelTimeWithRootDepartureTime(tt, it.rootDepartureTime)
+                } }
             }
         }
 

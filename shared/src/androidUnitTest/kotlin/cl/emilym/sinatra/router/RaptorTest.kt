@@ -40,17 +40,17 @@ class RaptorTest {
             STOP_ID_SWINDEN_STREET_GGN,
             STOP_ID_MANNING_CLARK_GGN
         )
-        assertEquals(result, Journey(
+        assertEquals(Journey(
             stops = listOf("8119", "8105"),
             connections = listOf(
                 JourneyConnection.Travel(
                     routeId = "ACTO001",
                     heading = "Gungahlin Pl",
-                    startTime = 32400L,
+                    startTime = 32476L,
                     endTime = 33307L
                 )
             )
-        ))
+        ), result)
     }
 
     @Test
@@ -71,7 +71,7 @@ class RaptorTest {
                 JourneyConnection.Travel(
                     routeId = "ACTO001",
                     heading = "Gungahlin Pl",
-                    startTime = 32416L,
+                    startTime = 32476L,
                     endTime = 33307L
                 ),
                 JourneyConnection.Transfer(travelTime = 9)
