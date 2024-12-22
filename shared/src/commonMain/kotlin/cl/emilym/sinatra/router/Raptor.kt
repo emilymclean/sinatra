@@ -33,7 +33,7 @@ class Raptor(
     }
 
     fun calculate(
-        departureTime: EpochSeconds,
+        departureTime: DaySeconds,
         departureStop: StopId,
         arrivalStop: StopId
     ): RaptorJourney {
@@ -91,7 +91,7 @@ class Raptor(
         return collection
     }
 
-    private fun initializeDepartureStop(departureTime: EpochSeconds, departureStop: StopId) {
+    private fun initializeDepartureStop(departureTime: DaySeconds, departureStop: StopId) {
         val stopIndex = graph.mappings.stopNodes[departureStop] ?:
             throw RouterException.stopNotFound(departureStop)
         this.departureStop = stopIndex
@@ -167,15 +167,15 @@ class Raptor(
         markedStops += stopIndex
     }
 
-    private fun setStopArrival(stopIndex: StopNodeIndex, trip: Int, time: EpochSeconds) {
+    private fun setStopArrival(stopIndex: StopNodeIndex, trip: Int, time: DaySeconds) {
         stopInformation[stopIndex].earliestArrivalTimeForTrip[trip] = time
     }
 
-    private fun setStopEarliestArrival(stopIndex: StopNodeIndex, time: EpochSeconds) {
+    private fun setStopEarliestArrival(stopIndex: StopNodeIndex, time: DaySeconds) {
         stopInformation[stopIndex].earliestArrivalTime = time
     }
 
-    private fun getStopEarliestArrival(stopIndex: StopNodeIndex): EpochSeconds {
+    private fun getStopEarliestArrival(stopIndex: StopNodeIndex): DaySeconds {
         return stopInformation[stopIndex].earliestArrivalTime
     }
 
@@ -226,7 +226,7 @@ class Raptor(
         return false
     }
 
-    private fun transfersForStop(node: StopNode, departureTime: EpochSeconds): List<TravelTime<StopNode>> {
+    private fun transfersForStop(node: StopNode, departureTime: DaySeconds): List<TravelTime<StopNode>> {
         return node.edges
             .filter { it.type == EdgeType.TRANSFER }
             .map {
@@ -238,7 +238,7 @@ class Raptor(
             }
     }
 
-    private fun travelRoute(node: StopRouteNode, minimumDepartureTime: EpochSeconds = 0): List<TravelTime<StopRouteNode>> {
+    private fun travelRoute(node: StopRouteNode, minimumDepartureTime: DaySeconds = 0): List<TravelTime<StopRouteNode>> {
         return node.edges
             .filter { it.type == EdgeType.TRAVEL && servicesAreActive(it.availableServices) }
             .filter { (it.departureTime ?: 0) > minimumDepartureTime }

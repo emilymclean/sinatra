@@ -10,6 +10,7 @@ typealias RouteIndex = Int
 typealias HeadingIndex = Int
 // StopIndex and StopNodeIndex are always equivalent
 typealias StopIndex = Int
-typealias EpochSeconds = Long
+typealias DaySeconds = Long
+typealias Seconds = Long
 typealias StopRouteNode = Node
 typealias StopNode = Node

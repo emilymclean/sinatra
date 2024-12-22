@@ -16,13 +16,13 @@ data class RouteAndHeading(
 
 data class TravelTime<T: Node>(
     val node: T,
-    val arrival: EpochSeconds,
-    val departureTime: EpochSeconds
+    val arrival: DaySeconds,
+    val departureTime: DaySeconds
 )
 
 data class TravelTimeWithRootDepartureTime<T: Node>(
     val travelTime: TravelTime<T>,
-    val rootDepartureTime: EpochSeconds
+    val rootDepartureTime: DaySeconds
 )
 
 sealed interface BoardedFrom {
@@ -31,7 +31,7 @@ sealed interface BoardedFrom {
     ): BoardedFrom
     data class Travel(
         val node: StopRouteNodeIndex,
-        val boardingTime: EpochSeconds
+        val boardingTime: DaySeconds
     ): BoardedFrom
 }
 
@@ -44,9 +44,9 @@ class StopInformation(
     maximumNumberOfTrips: Int
 ) {
     // τ∗(pi)
-    var earliestArrivalTime: EpochSeconds = Long.MAX_VALUE
+    var earliestArrivalTime: DaySeconds = Long.MAX_VALUE
     // τi(pi)
-    val earliestArrivalTimeForTrip: Array<EpochSeconds> = Array(maximumNumberOfTrips) { Long.MAX_VALUE }
+    val earliestArrivalTimeForTrip: Array<DaySeconds> = Array(maximumNumberOfTrips) { Long.MAX_VALUE }
     var boardedFrom: BoardedFrom? = null
 
     override fun toString(): String {
@@ -57,13 +57,13 @@ class StopInformation(
 
 sealed interface RaptorJourneyConnection {
     data class Transfer(
-        val travelTime: EpochSeconds
+        val travelTime: DaySeconds
     ): RaptorJourneyConnection
     data class Travel(
         val routeId: RouteId,
         val heading: String,
-        val startTime: EpochSeconds,
-        val endTime: EpochSeconds
+        val startTime: DaySeconds,
+        val endTime: DaySeconds
     ): RaptorJourneyConnection
 }
 
