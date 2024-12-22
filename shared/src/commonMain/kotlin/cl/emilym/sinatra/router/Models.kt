@@ -42,6 +42,11 @@ class StopInformation(
     // τi(pi)
     val earliestArrivalTimeForTrip: Array<EpochSeconds> = Array(maximumNumberOfTrips) { Long.MAX_VALUE }
     var boardedFrom: BoardedFrom? = null
+
+    override fun toString(): String {
+        return "StopInformation(boardedFrom=$boardedFrom, earliestArrivalTimeForTrip=${earliestArrivalTimeForTrip.contentToString()}, earliestArrivalTime=$earliestArrivalTime)"
+    }
+
 }
 
 sealed interface JourneyConnection {

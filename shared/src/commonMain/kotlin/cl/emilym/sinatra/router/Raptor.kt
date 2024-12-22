@@ -4,6 +4,7 @@ import cl.emilym.gtfs.networkgraph.EdgeType
 import cl.emilym.gtfs.networkgraph.Graph
 import cl.emilym.sinatra.RouterException
 import cl.emilym.sinatra.data.models.StopId
+import io.github.aakira.napier.Napier
 import kotlin.math.min
 
 class Raptor(
@@ -23,7 +24,7 @@ class Raptor(
 
     // Currently the graph construction always places stop nodes first, take advantage of that by using
     // an array structure to store stop information rather than a map
-    private var stopInformation = Array(graph.mappings.stopIds.size) {
+    var stopInformation = Array(graph.mappings.stopIds.size) {
         StopInformation(MAXIMUM_TRIPS)
     }
 
@@ -37,13 +38,15 @@ class Raptor(
             round++
         }
 
+        Napier.d("Arrival stop was visited = ${stopInformation[this.arrivalStop].boardedFrom != null}")
+
         return calculateJourney()
     }
 
     private fun calculateJourney(): Journey {
         val boardings = collectJourneyBoardings()
         if (boardings.isEmpty()) throw RouterException.noJourneyFound()
-        val stops = boardings.map { it.stop } + arrivalStop
+        val stops = listOf(departureStop) + boardings.map { it.stop }
         val stopArrivals = stops.map { getStopEarliestArrival(it) }
         return Journey(
             stops.map { graph.mappings.stopIds[it] },
@@ -89,8 +92,11 @@ class Raptor(
 
     private fun calculateRound() {
         visitedRoutes.clear()
+        val currentMarkedStops = markedStops.toSet()
+        markedStops.clear()
 
-        for (markedStop in markedStops) {
+        for (markedStop in currentMarkedStops) {
+            Napier.d("Processing marked stop ${markedStop}")
             val routesForStop = routesForStop(getNode(markedStop))
             for (r in routesForStop) {
                 if (r.node.routeId == null || r.node.headingId == null) continue
@@ -101,8 +107,11 @@ class Raptor(
 
                 visitedRoutes[routeAndHeading] = r
             }
-            markedStops.remove(markedStop)
         }
+
+        Napier.d("Found ${visitedRoutes.size} connected routes/headings (${
+            visitedRoutes.map { "{${it.key.routeIndex}, ${it.key.headingIndex}}" }
+        })")
 
         for (r in visitedRoutes.keys) {
             val initialStopIndex = visitedRoutes[r]!!
@@ -114,8 +123,10 @@ class Raptor(
                 )
             )
 
+            Napier.d("Searching for next stops starting at ${nextStops[0].arrival}")
             while(nextStops.isNotEmpty()) {
                 nextStops = nextStops.flatMap { travelRoute(it.node, it.arrival) }
+                Napier.d("Found ${nextStops.size} connected stops")
                 for (nextStop in nextStops) {
                     val stopIndex = nextStop.node.stopId
                     if (!nextStop.isEarlier()) continue
@@ -127,7 +138,7 @@ class Raptor(
             }
         }
 
-        for (markedStop in markedStops) {
+        for (markedStop in currentMarkedStops) {
             val markedStopNode = getNode(markedStop)
             val transfers = transfersForStop(markedStopNode, getStopEarliestArrival(markedStop))
             for (transfer in transfers) {
@@ -200,14 +211,24 @@ class Raptor(
     }
 
     private fun stopBeforeOtherOnRoute(node: StopRouteNode, stopIndex: StopIndex): Boolean {
-        val travels = travelRouteUnique(node)
+        val visited = mutableSetOf<StopRouteNodeIndex>()
+        val toVisit = mutableSetOf<StopRouteNode>()
 
-        for (destinationNode in travels) {
-            if (destinationNode.stopId == stopIndex) return true
+        fun next(node: StopRouteNode) {
+            toVisit.addAll(
+                node.edges
+                    .filter { it.type == EdgeType.TRAVEL && servicesAreActive(it.availableServices) }
+                    .filterNot { it.toNodeId in visited }
+                    .also { visited.addAll(it.map { it.toNodeId }) }
+                    .map { getNode(it.toNodeId) }
+            )
         }
 
-        for (destinationNode in travels) {
-            if (stopBeforeOtherOnRoute(destinationNode, stopIndex)) return true
+        next(node)
+        while(toVisit.isNotEmpty()) {
+            val destination = toVisit.first().also { toVisit.remove(it) }
+            if (destination.stopId == stopIndex) return true
+            next(destination)
         }
 
         return false
@@ -222,13 +243,6 @@ class Raptor(
                     it.penalty + departureTime
                 )
             }
-    }
-
-    private fun travelRouteUnique(node: StopRouteNode): Set<StopRouteNode> {
-        return node.edges
-            .filter { it.type == EdgeType.TRAVEL && servicesAreActive(it.availableServices) }
-            .map { getNode(it.toNodeId) }
-            .toSet()
     }
 
     private fun travelRoute(node: StopRouteNode, minimumDepartureTime: EpochSeconds = 0): List<TravelTime<StopRouteNode>> {
