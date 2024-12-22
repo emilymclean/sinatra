@@ -93,9 +93,10 @@ public data class Graph(
 
 @pbandk.Export
 public data class GraphMappings(
-    val stopNodes: Map<String?, Long?> = emptyMap(),
+    val stopNodes: Map<String?, Int?> = emptyMap(),
     val stopIds: List<String> = emptyList(),
     val routeIds: List<String> = emptyList(),
+    val headings: List<String> = emptyList(),
     val serviceIds: List<String> = emptyList(),
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
 ) : pbandk.Message {
@@ -110,13 +111,13 @@ public data class GraphMappings(
             fullName = "networkgraph.GraphMappings",
             messageClass = cl.emilym.gtfs.networkgraph.GraphMappings::class,
             messageCompanion = this,
-            fields = buildList(4) {
+            fields = buildList(5) {
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
                         name = "stopNodes",
                         number = 1,
-                        type = pbandk.FieldDescriptor.Type.Map<String?, Long?>(keyType = pbandk.FieldDescriptor.Type.Primitive.String(hasPresence = true), valueType = pbandk.FieldDescriptor.Type.Primitive.UInt64(hasPresence = true)),
+                        type = pbandk.FieldDescriptor.Type.Map<String?, Int?>(keyType = pbandk.FieldDescriptor.Type.Primitive.String(hasPresence = true), valueType = pbandk.FieldDescriptor.Type.Primitive.UInt32(hasPresence = true)),
                         jsonName = "stopNodes",
                         value = cl.emilym.gtfs.networkgraph.GraphMappings::stopNodes
                     )
@@ -151,15 +152,25 @@ public data class GraphMappings(
                         value = cl.emilym.gtfs.networkgraph.GraphMappings::serviceIds
                     )
                 )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "headings",
+                        number = 5,
+                        type = pbandk.FieldDescriptor.Type.Repeated<String>(valueType = pbandk.FieldDescriptor.Type.Primitive.String()),
+                        jsonName = "headings",
+                        value = cl.emilym.gtfs.networkgraph.GraphMappings::headings
+                    )
+                )
             }
         )
     }
 
     public data class StopNodesEntry(
         override val key: String? = null,
-        override val value: Long? = null,
+        override val value: Int? = null,
         override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
-    ) : pbandk.Message, Map.Entry<String?, Long?> {
+    ) : pbandk.Message, Map.Entry<String?, Int?> {
         override operator fun plus(other: pbandk.Message?): cl.emilym.gtfs.networkgraph.GraphMappings.StopNodesEntry = protoMergeImpl(other)
         override val descriptor: pbandk.MessageDescriptor<cl.emilym.gtfs.networkgraph.GraphMappings.StopNodesEntry> get() = Companion.descriptor
         override val protoSize: Int by lazy { super.protoSize }
@@ -187,7 +198,7 @@ public data class GraphMappings(
                             messageDescriptor = this@Companion::descriptor,
                             name = "value",
                             number = 2,
-                            type = pbandk.FieldDescriptor.Type.Primitive.UInt64(hasPresence = true),
+                            type = pbandk.FieldDescriptor.Type.Primitive.UInt32(hasPresence = true),
                             jsonName = "value",
                             value = cl.emilym.gtfs.networkgraph.GraphMappings.StopNodesEntry::value
                         )
@@ -242,11 +253,11 @@ public data class GraphConfiguration(
 
 @pbandk.Export
 public data class Edge(
-    val toNodeId: Long,
+    val toNodeId: Int,
     val departureTime: Long? = null,
     val penalty: Long,
     val type: cl.emilym.gtfs.networkgraph.EdgeType,
-    val availableServices: List<Long> = emptyList(),
+    val availableServices: List<Int> = emptyList(),
     val accessibilityFlags: Int? = null,
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
 ) : pbandk.Message {
@@ -266,7 +277,7 @@ public data class Edge(
                         messageDescriptor = this@Companion::descriptor,
                         name = "toNodeId",
                         number = 2,
-                        type = pbandk.FieldDescriptor.Type.Primitive.UInt64(hasPresence = true),
+                        type = pbandk.FieldDescriptor.Type.Primitive.UInt32(hasPresence = true),
                         jsonName = "toNodeId",
                         value = cl.emilym.gtfs.networkgraph.Edge::toNodeId
                     )
@@ -316,7 +327,7 @@ public data class Edge(
                         messageDescriptor = this@Companion::descriptor,
                         name = "availableServices",
                         number = 8,
-                        type = pbandk.FieldDescriptor.Type.Repeated<Long>(valueType = pbandk.FieldDescriptor.Type.Primitive.UInt64()),
+                        type = pbandk.FieldDescriptor.Type.Repeated<Int>(valueType = pbandk.FieldDescriptor.Type.Primitive.UInt32()),
                         jsonName = "availableServices",
                         value = cl.emilym.gtfs.networkgraph.Edge::availableServices
                     )
@@ -329,8 +340,9 @@ public data class Edge(
 @pbandk.Export
 public data class Node(
     val type: cl.emilym.gtfs.networkgraph.NodeType,
-    val stopId: Long,
-    val routeId: Long? = null,
+    val stopId: Int,
+    val routeId: Int? = null,
+    val headingId: Int? = null,
     val edges: List<cl.emilym.gtfs.networkgraph.Edge> = emptyList(),
     val accessibilityFlags: Int? = null,
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
@@ -345,7 +357,7 @@ public data class Node(
             fullName = "networkgraph.Node",
             messageClass = cl.emilym.gtfs.networkgraph.Node::class,
             messageCompanion = this,
-            fields = buildList(5) {
+            fields = buildList(6) {
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
@@ -361,7 +373,7 @@ public data class Node(
                         messageDescriptor = this@Companion::descriptor,
                         name = "stopId",
                         number = 3,
-                        type = pbandk.FieldDescriptor.Type.Primitive.UInt64(hasPresence = true),
+                        type = pbandk.FieldDescriptor.Type.Primitive.UInt32(hasPresence = true),
                         jsonName = "stopId",
                         value = cl.emilym.gtfs.networkgraph.Node::stopId
                     )
@@ -371,7 +383,7 @@ public data class Node(
                         messageDescriptor = this@Companion::descriptor,
                         name = "routeId",
                         number = 4,
-                        type = pbandk.FieldDescriptor.Type.Primitive.UInt64(hasPresence = true),
+                        type = pbandk.FieldDescriptor.Type.Primitive.UInt32(hasPresence = true),
                         jsonName = "routeId",
                         value = cl.emilym.gtfs.networkgraph.Node::routeId
                     )
@@ -394,6 +406,16 @@ public data class Node(
                         type = pbandk.FieldDescriptor.Type.Primitive.UInt32(hasPresence = true),
                         jsonName = "accessibilityFlags",
                         value = cl.emilym.gtfs.networkgraph.Node::accessibilityFlags
+                    )
+                )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "headingId",
+                        number = 7,
+                        type = pbandk.FieldDescriptor.Type.Primitive.UInt32(hasPresence = true),
+                        jsonName = "headingId",
+                        value = cl.emilym.gtfs.networkgraph.Node::headingId
                     )
                 )
             }
@@ -442,6 +464,7 @@ private fun GraphMappings.protoMergeImpl(plus: pbandk.Message?): GraphMappings =
         stopNodes = stopNodes + plus.stopNodes,
         stopIds = stopIds + plus.stopIds,
         routeIds = routeIds + plus.routeIds,
+        headings = headings + plus.headings,
         serviceIds = serviceIds + plus.serviceIds,
         unknownFields = unknownFields + plus.unknownFields
     )
@@ -449,21 +472,24 @@ private fun GraphMappings.protoMergeImpl(plus: pbandk.Message?): GraphMappings =
 
 @Suppress("UNCHECKED_CAST")
 private fun GraphMappings.Companion.decodeWithImpl(u: pbandk.MessageDecoder): GraphMappings {
-    var stopNodes: pbandk.MessageMap.Builder<String?, Long?>? = null
+    var stopNodes: pbandk.MessageMap.Builder<String?, Int?>? = null
     var stopIds: pbandk.ListWithSize.Builder<String>? = null
     var routeIds: pbandk.ListWithSize.Builder<String>? = null
+    var headings: pbandk.ListWithSize.Builder<String>? = null
     var serviceIds: pbandk.ListWithSize.Builder<String>? = null
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
-            1 -> stopNodes = (stopNodes ?: pbandk.MessageMap.Builder()).apply { this.entries += _fieldValue as kotlin.sequences.Sequence<pbandk.MessageMap.Entry<String?, Long?>> }
+            1 -> stopNodes = (stopNodes ?: pbandk.MessageMap.Builder()).apply { this.entries += _fieldValue as kotlin.sequences.Sequence<pbandk.MessageMap.Entry<String?, Int?>> }
             2 -> stopIds = (stopIds ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as kotlin.sequences.Sequence<String> }
             3 -> routeIds = (routeIds ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as kotlin.sequences.Sequence<String> }
             4 -> serviceIds = (serviceIds ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as kotlin.sequences.Sequence<String> }
+            5 -> headings = (headings ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as kotlin.sequences.Sequence<String> }
         }
     }
 
-    return GraphMappings(pbandk.MessageMap.Builder.fixed(stopNodes), pbandk.ListWithSize.Builder.fixed(stopIds), pbandk.ListWithSize.Builder.fixed(routeIds), pbandk.ListWithSize.Builder.fixed(serviceIds), unknownFields)
+    return GraphMappings(pbandk.MessageMap.Builder.fixed(stopNodes), pbandk.ListWithSize.Builder.fixed(stopIds), pbandk.ListWithSize.Builder.fixed(routeIds), pbandk.ListWithSize.Builder.fixed(headings),
+        pbandk.ListWithSize.Builder.fixed(serviceIds), unknownFields)
 }
 
 @pbandk.Export
@@ -481,12 +507,12 @@ private fun GraphMappings.StopNodesEntry.protoMergeImpl(plus: pbandk.Message?): 
 @Suppress("UNCHECKED_CAST")
 private fun GraphMappings.StopNodesEntry.Companion.decodeWithImpl(u: pbandk.MessageDecoder): GraphMappings.StopNodesEntry {
     var key: String? = null
-    var value: Long? = null
+    var value: Int? = null
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
             1 -> key = _fieldValue as String
-            2 -> value = _fieldValue as Long
+            2 -> value = _fieldValue as Int
         }
     }
 
@@ -531,21 +557,21 @@ private fun Edge.protoMergeImpl(plus: pbandk.Message?): Edge = (plus as? Edge)?.
 
 @Suppress("UNCHECKED_CAST")
 private fun Edge.Companion.decodeWithImpl(u: pbandk.MessageDecoder): Edge {
-    var toNodeId: Long? = null
+    var toNodeId: Int? = null
     var departureTime: Long? = null
     var penalty: Long? = null
     var type: cl.emilym.gtfs.networkgraph.EdgeType? = null
-    var availableServices: pbandk.ListWithSize.Builder<Long>? = null
+    var availableServices: pbandk.ListWithSize.Builder<Int>? = null
     var accessibilityFlags: Int? = null
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
-            2 -> toNodeId = _fieldValue as Long
+            2 -> toNodeId = _fieldValue as Int
             3 -> departureTime = _fieldValue as Long
             4 -> penalty = _fieldValue as Long
             6 -> accessibilityFlags = _fieldValue as Int
             7 -> type = _fieldValue as cl.emilym.gtfs.networkgraph.EdgeType
-            8 -> availableServices = (availableServices ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as kotlin.sequences.Sequence<Long> }
+            8 -> availableServices = (availableServices ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as kotlin.sequences.Sequence<Int> }
         }
     }
 
@@ -565,6 +591,7 @@ private fun Edge.Companion.decodeWithImpl(u: pbandk.MessageDecoder): Edge {
 private fun Node.protoMergeImpl(plus: pbandk.Message?): Node = (plus as? Node)?.let {
     it.copy(
         routeId = plus.routeId ?: routeId,
+        headingId = plus.headingId ?: headingId,
         edges = edges + plus.edges,
         accessibilityFlags = plus.accessibilityFlags ?: accessibilityFlags,
         unknownFields = unknownFields + plus.unknownFields
@@ -574,18 +601,20 @@ private fun Node.protoMergeImpl(plus: pbandk.Message?): Node = (plus as? Node)?.
 @Suppress("UNCHECKED_CAST")
 private fun Node.Companion.decodeWithImpl(u: pbandk.MessageDecoder): Node {
     var type: cl.emilym.gtfs.networkgraph.NodeType? = null
-    var stopId: Long? = null
-    var routeId: Long? = null
+    var stopId: Int? = null
+    var routeId: Int? = null
+    var headingId: Int? = null
     var edges: pbandk.ListWithSize.Builder<cl.emilym.gtfs.networkgraph.Edge>? = null
     var accessibilityFlags: Int? = null
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
             2 -> type = _fieldValue as cl.emilym.gtfs.networkgraph.NodeType
-            3 -> stopId = _fieldValue as Long
-            4 -> routeId = _fieldValue as Long
+            3 -> stopId = _fieldValue as Int
+            4 -> routeId = _fieldValue as Int
             5 -> edges = (edges ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as kotlin.sequences.Sequence<cl.emilym.gtfs.networkgraph.Edge> }
             6 -> accessibilityFlags = _fieldValue as Int
+            7 -> headingId = _fieldValue as Int
         }
     }
 
@@ -595,6 +624,6 @@ private fun Node.Companion.decodeWithImpl(u: pbandk.MessageDecoder): Node {
     if (stopId == null) {
         throw pbandk.InvalidProtocolBufferException.missingRequiredField("stopId")
     }
-    return Node(type!!, stopId!!, routeId, pbandk.ListWithSize.Builder.fixed(edges),
-        accessibilityFlags, unknownFields)
+    return Node(type!!, stopId!!, routeId, headingId,
+        pbandk.ListWithSize.Builder.fixed(edges), accessibilityFlags, unknownFields)
 }

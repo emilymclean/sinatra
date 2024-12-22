@@ -16,3 +16,18 @@ class NoApiUrlException: Exception {
     }
 
 }
+
+class RouterException: Exception {
+
+    constructor() : super()
+    constructor(message: String?) : super(message)
+    constructor(message: String?, cause: Throwable?) : super(message, cause)
+    constructor(cause: Throwable?) : super(cause)
+
+    companion object {
+        fun stopNotFound(stopId: String): RouterException {
+            return RouterException("Stop ${stopId} could not be found")
+        }
+    }
+
+}

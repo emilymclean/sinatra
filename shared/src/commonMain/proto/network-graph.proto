@@ -11,9 +11,10 @@ message Graph {
 }
 
 message GraphMappings {
-  map<string, uint64> stopNodes = 1;
+  map<string, uint32> stopNodes = 1;
   repeated string stopIds = 2;
   repeated string routeIds = 3;
+  repeated string headings = 5;
   repeated string serviceIds = 4;
 }
 
@@ -35,14 +36,14 @@ enum EdgeType {
 
 message Edge {
   reserved 1; // Potentially to include fromNodeId in the data structure itself
-  required uint64 toNodeId = 2;
+  required uint32 toNodeId = 2;
   // Used on travel nodes
   optional uint64 departureTime = 3;
   required uint64 penalty = 4;
   required EdgeType type = 7;
 
   // The services on which this edge can be traversed
-  repeated uint64 availableServices = 8;
+  repeated uint32 availableServices = 8;
   /*
   Bit flags about the accessibility of a particular node. The following are defined (lsb to msb).
 
@@ -65,9 +66,11 @@ message Node {
   // Can be either a stop node or a stopRoute node
   required NodeType type = 2;
   // Represents an index into the mappings.stopIds array
-  required uint64 stopId = 3;
+  required uint32 stopId = 3;
   // Represents an index into the mappings.routeIds array
-  optional uint64 routeId = 4;
+  optional uint32 routeId = 4;
+  // Each route direction is represented uniquely
+  optional uint32 headingId = 7;
   repeated Edge edges = 5;
   /*
     Bit flags about the accessibility of a particular node. The following are defined (lsb to msb)
@@ -76,5 +79,5 @@ message Node {
     0: Stop is wheelchair accessible
    */
   optional uint32 accessibilityFlags = 6;
-  reserved 7 to 10; // For possible additional annotations to nodes that would allow a router to exclude or include them.
+  reserved 8 to 10; // For possible additional annotations to nodes that would allow a router to exclude or include them.
 }
