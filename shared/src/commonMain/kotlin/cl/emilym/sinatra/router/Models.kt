@@ -55,19 +55,19 @@ class StopInformation(
 
 }
 
-sealed interface JourneyConnection {
+sealed interface RaptorJourneyConnection {
     data class Transfer(
         val travelTime: EpochSeconds
-    ): JourneyConnection
+    ): RaptorJourneyConnection
     data class Travel(
         val routeId: RouteId,
         val heading: String,
         val startTime: EpochSeconds,
         val endTime: EpochSeconds
-    ): JourneyConnection
+    ): RaptorJourneyConnection
 }
 
-data class Journey(
+data class RaptorJourney(
     val stops: List<StopId>,
-    val connections: List<JourneyConnection>
+    val connections: List<RaptorJourneyConnection>
 )

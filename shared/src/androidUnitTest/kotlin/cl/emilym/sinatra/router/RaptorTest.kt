@@ -35,10 +35,10 @@ class RaptorTest {
             STOP_ID_SWINDEN_STREET_GGN,
             STOP_ID_MANNING_CLARK_GGN
         )
-        assertEquals(Journey(
+        assertEquals(RaptorJourney(
             stops = listOf("8119", "8105"),
             connections = listOf(
-                JourneyConnection.Travel(
+                RaptorJourneyConnection.Travel(
                     routeId = "ACTO001",
                     heading = "Gungahlin Pl",
                     startTime = 32476L,
@@ -57,19 +57,19 @@ class RaptorTest {
                 STOP_ID_MANNING_CLARK
             )
         } catch(e: RouterException) { null }
-        assertEquals(Journey(
+        assertEquals(RaptorJourney(
             stops = listOf("SWN", "8119", "8105", "MCK"),
             connections = listOf(
-                JourneyConnection.Transfer(
+                RaptorJourneyConnection.Transfer(
                     travelTime = 16
                 ),
-                JourneyConnection.Travel(
+                RaptorJourneyConnection.Travel(
                     routeId = "ACTO001",
                     heading = "Gungahlin Pl",
                     startTime = 32476L,
                     endTime = 33307L
                 ),
-                JourneyConnection.Transfer(travelTime = 9)
+                RaptorJourneyConnection.Transfer(travelTime = 9)
             )
         ), result)
     }
@@ -81,28 +81,28 @@ class RaptorTest {
             STOP_ID_CANBERRA_RAILWAY_STATION,
             STOP_ID_MANNING_CLARK
         )
-        assertEquals(result, Journey(
+        assertEquals(result, RaptorJourney(
             stops = listOf("3320", "2232", "3406", "8129", "8105", "MCK"),
             connections = listOf(
-                JourneyConnection.Transfer(
+                RaptorJourneyConnection.Transfer(
                     travelTime = 1040
                 ),
-                JourneyConnection.Travel(
+                RaptorJourneyConnection.Travel(
                     routeId = "6-10647",
                     heading = "City ANU",
                     startTime = 33480L,
                     endTime = 37080L
                 ),
-                JourneyConnection.Transfer(
+                RaptorJourneyConnection.Transfer(
                     travelTime = 109
                 ),
-                JourneyConnection.Travel(
+                RaptorJourneyConnection.Travel(
                     routeId = "ACTO001",
                     heading = "Gungahlin Pl",
                     startTime = 37200L,
                     endTime = 38557
                 ),
-                JourneyConnection.Transfer(
+                RaptorJourneyConnection.Transfer(
                     travelTime = 9
                 )
             )

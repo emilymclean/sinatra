@@ -36,7 +36,7 @@ class Raptor(
         departureTime: EpochSeconds,
         departureStop: StopId,
         arrivalStop: StopId
-    ): Journey {
+    ): RaptorJourney {
         initializeDepartureStop(departureTime, departureStop)
         this.arrivalStop = graph.mappings.stopNodes[arrivalStop] ?:
                 throw RouterException.stopNotFound(arrivalStop)
@@ -51,21 +51,21 @@ class Raptor(
         return calculateJourney()
     }
 
-    private fun calculateJourney(): Journey {
+    private fun calculateJourney(): RaptorJourney {
         val boardings = collectJourneyBoardings()
         if (boardings.isEmpty()) throw RouterException.noJourneyFound()
         val stops = listOf(departureStop) + boardings.map { it.stop }
         val stopArrivals = stops.map { getStopEarliestArrival(it) }
-        return Journey(
+        return RaptorJourney(
             stops.map { graph.mappings.stopIds[it] },
             boardings.mapIndexed { i, it ->
                 when (it.boarding) {
-                    is BoardedFrom.Transfer -> JourneyConnection.Transfer(
+                    is BoardedFrom.Transfer -> RaptorJourneyConnection.Transfer(
                         stopArrivals[i + 1] - stopArrivals[i]
                     )
                     is BoardedFrom.Travel -> {
                         val stopRouteNode = getNode(it.boarding.node)
-                        JourneyConnection.Travel(
+                        RaptorJourneyConnection.Travel(
                             graph.mappings.routeIds[stopRouteNode.routeId!!],
                             graph.mappings.headings[stopRouteNode.headingId!!],
                             it.boarding.boardingTime,

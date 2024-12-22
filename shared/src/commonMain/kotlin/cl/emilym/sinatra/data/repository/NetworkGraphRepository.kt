@@ -2,13 +2,12 @@ package cl.emilym.sinatra.data.repository
 
 import cl.emilym.gtfs.networkgraph.Graph
 import cl.emilym.sinatra.data.client.NetworkGraphClient
-import cl.emilym.sinatra.data.client.StopClient
 import cl.emilym.sinatra.data.models.Cachable
 import cl.emilym.sinatra.data.models.CacheCategory
 import cl.emilym.sinatra.data.models.ResourceKey
 import cl.emilym.sinatra.data.persistence.NetworkGraphPersistence
-import cl.emilym.sinatra.data.persistence.StopPersistence
 import kotlinx.datetime.Clock
+import org.koin.core.annotation.Factory
 
 class NetworkGraphCacheWorker(
     private val networkGraphPersistence: NetworkGraphPersistence,
@@ -31,6 +30,7 @@ class NetworkGraphCacheWorker(
 
 }
 
+@Factory
 class NetworkGraphRepository(
     private val networkGraphCacheWorker: NetworkGraphCacheWorker
 ) {
