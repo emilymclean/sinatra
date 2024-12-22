@@ -29,7 +29,7 @@ class RaptorTest {
     @BeforeTest
     fun setup() {
         graph = Graph.decodeFromByteArray(this::class.java.classLoader.getResource("network_graph.pb").readBytes())
-        raptor = Raptor(graph)
+        raptor = Raptor(graph, graph.mappings.serviceIds)
     }
 
     @Test

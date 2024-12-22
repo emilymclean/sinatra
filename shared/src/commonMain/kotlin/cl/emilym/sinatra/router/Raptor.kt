@@ -3,12 +3,14 @@ package cl.emilym.sinatra.router
 import cl.emilym.gtfs.networkgraph.EdgeType
 import cl.emilym.gtfs.networkgraph.Graph
 import cl.emilym.sinatra.RouterException
+import cl.emilym.sinatra.data.models.ServiceId
 import cl.emilym.sinatra.data.models.StopId
 import io.github.aakira.napier.Napier
 import kotlin.math.min
 
 class Raptor(
-    private val graph: Graph
+    private val graph: Graph,
+    activeServices: List<ServiceId>
 ) {
 
     companion object {
@@ -21,6 +23,8 @@ class Raptor(
     private var visitedRoutes = mutableMapOf<RouteAndHeading, NodeAndIndex<StopRouteNode, StopRouteNodeIndex>>()
     private var arrivalStop: StopNodeIndex = 0
     private var departureStop: StopNodeIndex = 0
+    private val activeServices =
+        activeServices.associate { graph.mappings.serviceIds.indexOf(it) to Unit }
 
     // Currently the graph construction always places stop nodes first, take advantage of that by using
     // an array structure to store stop information rather than a map
@@ -28,7 +32,11 @@ class Raptor(
         StopInformation(MAXIMUM_TRIPS)
     }
 
-    fun calculate(departureTime: EpochSeconds, departureStop: StopId, arrivalStop: StopId): Journey {
+    fun calculate(
+        departureTime: EpochSeconds,
+        departureStop: StopId,
+        arrivalStop: StopId
+    ): Journey {
         initializeDepartureStop(departureTime, departureStop)
         this.arrivalStop = graph.mappings.stopNodes[arrivalStop] ?:
                 throw RouterException.stopNotFound(arrivalStop)
@@ -149,23 +157,6 @@ class Raptor(
         }
     }
 
-    private fun getStopRouteNode(
-        stopNodeIndex: StopNodeIndex,
-        routeIndex: RouteIndex,
-        headingIndex: HeadingIndex
-    ): StopRouteNode? {
-        val stopNode = getNode(stopNodeIndex)
-
-        for (edge in stopNode.edges) {
-            if (edge.type != EdgeType.STOP_ROUTE) continue
-            val stopRouteNode = getNode(edge.toNodeId)
-            if (stopRouteNode.routeId == routeIndex && stopRouteNode.headingId == headingIndex)
-                return stopRouteNode
-        }
-
-        return null
-    }
-
     private fun getNode(index: NodeIndex) = graph.nodes[index]
 
     private fun updateEarliestArrival(stopIndex: StopIndex, arrival: Long, boardedFrom: BoardedFrom?) {
@@ -178,10 +169,6 @@ class Raptor(
 
     private fun setStopArrival(stopIndex: StopNodeIndex, trip: Int, time: EpochSeconds) {
         stopInformation[stopIndex].earliestArrivalTimeForTrip[trip] = time
-    }
-
-    private fun getStopArrival(stopIndex: StopNodeIndex, trip: Int): EpochSeconds {
-        return stopInformation[stopIndex].earliestArrivalTimeForTrip[trip]
     }
 
     private fun setStopEarliestArrival(stopIndex: StopNodeIndex, time: EpochSeconds) {
@@ -200,7 +187,14 @@ class Raptor(
         return stopInformation[stopIndex].boardedFrom
     }
 
-    private fun servicesAreActive(serviceIndices: List<ServiceIndex>): Boolean = true // TODO
+    private fun servicesAreActive(
+        serviceIndices: List<ServiceIndex>
+    ): Boolean {
+        for (i in serviceIndices) {
+            if (activeServices.containsKey(i)) return true
+        }
+        return false
+    }
 
     private fun routesForStop(node: StopNode): List<NodeAndIndex<StopRouteNode, StopRouteNodeIndex>> {
         return node.edges
