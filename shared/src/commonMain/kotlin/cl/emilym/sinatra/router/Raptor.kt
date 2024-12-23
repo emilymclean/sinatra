@@ -3,6 +3,7 @@ package cl.emilym.sinatra.router
 import cl.emilym.gtfs.networkgraph.EdgeType
 import cl.emilym.gtfs.networkgraph.Graph
 import cl.emilym.sinatra.RouterException
+import cl.emilym.sinatra.data.models.Journey
 import cl.emilym.sinatra.data.models.ServiceId
 import cl.emilym.sinatra.data.models.StopId
 import io.github.aakira.napier.Napier
@@ -118,7 +119,7 @@ class Raptor(
 
                 if (routeAndHeading in visitedRoutes) {
                     val existing = visitedRoutes[routeAndHeading]!!.node.stopId
-                    if (!stopBeforeOtherOnRoute(r.node, existing)) continue
+//                    if (!stopBeforeOtherOnRoute(r.node, existing)) continue
                     if (getStopEarliestArrival(r.node.stopId) > getStopEarliestArrival(existing)) continue
                 }
 

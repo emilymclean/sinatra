@@ -81,7 +81,8 @@ class RaptorTest {
             STOP_ID_CANBERRA_RAILWAY_STATION,
             STOP_ID_MANNING_CLARK
         )
-        assertEquals(result, RaptorJourney(
+        println(result)
+        assertEquals(RaptorJourney(
             stops = listOf("3320", "2232", "3406", "8129", "8105", "MCK"),
             connections = listOf(
                 RaptorJourneyConnection.Transfer(
@@ -106,7 +107,7 @@ class RaptorTest {
                     travelTime = 9
                 )
             )
-        ))
+        ), result)
     }
 
     @Test
@@ -117,32 +118,21 @@ class RaptorTest {
             STOP_ID_SWINDEN_STREET,
             STOP_ID_MANNING_CLARK
         )
-        assertEquals(result, RaptorJourney(
-            stops = listOf("3320", "2232", "3406", "8129", "8105", "MCK"),
+        assertEquals(RaptorJourney(
+            stops = listOf("SWN", "8119", "8105", "MCK"),
             connections = listOf(
                 RaptorJourneyConnection.Transfer(
-                    travelTime = 1040
-                ),
-                RaptorJourneyConnection.Travel(
-                    routeId = "6-10647",
-                    heading = "City ANU",
-                    startTime = 33480L,
-                    endTime = 37080L
-                ),
-                RaptorJourneyConnection.Transfer(
-                    travelTime = 109
+                    travelTime = 16
                 ),
                 RaptorJourneyConnection.Travel(
                     routeId = "ACTO001",
                     heading = "Gungahlin Pl",
-                    startTime = 37200L,
-                    endTime = 38557
+                    startTime = 32626L,
+                    endTime = 33457L
                 ),
-                RaptorJourneyConnection.Transfer(
-                    travelTime = 9
-                )
+                RaptorJourneyConnection.Transfer(travelTime = 9)
             )
-        ))
+        ), result)
     }
 
     @Test
