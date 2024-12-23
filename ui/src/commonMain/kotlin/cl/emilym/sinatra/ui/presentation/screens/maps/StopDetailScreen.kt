@@ -217,9 +217,6 @@ class StopDetailScreen(
                                         Text(stringResource(Res.string.open_maps))
                                     }
                                 }
-                                item {
-                                    Box(Modifier.height(0.5.rdp))
-                                }
                             }
                             item {
                                 Button(

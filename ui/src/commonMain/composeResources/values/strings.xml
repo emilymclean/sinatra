@@ -24,6 +24,11 @@
         <item quantity="other">%1$d meters</item>
     </plurals>
 
+    <string name="navigate_lat_lng">%1$d, %2$d</string>
+    <string name="navigate_current_location">Current Location</string>
+    <string name="navigate_downloading_graph">Downloading navigation information...</string>
+    <string name="navigate_calculating_journey">Calculating a journey...</string>
+
     <string name="map_search_nearby_stops">Nearby Stops</string>
 
     <string name="search_recently_viewed">Recently viewed</string>

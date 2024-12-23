@@ -10,12 +10,12 @@ class NetworkGraphClient(
     private val gtfsApi: GtfsApi
 ) {
 
-    val networkGraphEndpointDigestPair = object: EndpointDigestPair<Graph>() {
+    val networkGraphEndpointDigestPair = object: EndpointDigestPair<ByteArray>() {
         override val endpoint = ::networkGraph
         override val digest = ::networkGraphDigest
     }
 
-    suspend fun networkGraph(): Graph {
+    suspend fun networkGraph(): ByteArray {
         return gtfsApi.networkGraph()
     }
 

@@ -1,20 +1,152 @@
 package cl.emilym.sinatra.ui.presentation.screens.maps.navigate
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.core.screen.ScreenKey
-import cl.emilym.sinatra.data.models.MapLocation
-import cl.emilym.sinatra.data.models.NavigationLocation
+import cl.emilym.compose.errorwidget.ErrorWidget
+import cl.emilym.compose.units.rdp
+import cl.emilym.sinatra.ui.presentation.theme.Container
+import cl.emilym.sinatra.ui.widgets.GenericMarkerIcon
+import cl.emilym.sinatra.ui.widgets.NavigatorBackButton
+import cl.emilym.sinatra.ui.widgets.StarOutlineIcon
+import cl.emilym.sinatra.ui.widgets.currentLocation
+import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.viewmodel.koinViewModel
+import sinatra.ui.generated.resources.Res
+import sinatra.ui.generated.resources.navigate_calculating_journey
+import sinatra.ui.generated.resources.navigate_downloading_graph
+
 
 class NavigateEntryScreen(
-    val destination: MapLocation,
-    val destinationNavigation: NavigationLocation?,
+    val destination: NavigationLocation,
+    val origin: NavigationLocation = NavigationLocation.CurrentLocation
 ): Screen {
-    override val key: ScreenKey = "navigateEntryScreen-${destination}-${destinationNavigation?.navigationName}"
+    override val key: ScreenKey = "navigateEntryScreen-${destination.screenKey}-${origin.screenKey}"
 
     @Composable
     override fun Content() {
-        
+        val viewModel = koinViewModel<NavigationEntryViewModel>()
+        val state by viewModel.state.collectAsState(NavigationState.GraphLoading)
+        val currentLocation = currentLocation()
+
+        LaunchedEffect(Unit) {
+            viewModel.init(destination, origin)
+        }
+
+        LaunchedEffect(currentLocation) {
+            if (currentLocation == null) return@LaunchedEffect
+            viewModel.updateCurrentLocation(currentLocation)
+        }
+
+        Scaffold { innerPadding ->
+            Column(
+                Modifier
+                    .padding(innerPadding)
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+            ) {
+                Row(
+                    Modifier.padding(1.rdp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    NavigatorBackButton()
+                    Column(
+                        Modifier
+                            .fillMaxWidth()
+                            .shadow(2.dp, shape = MaterialTheme.shapes.large)
+                            .clip(MaterialTheme.shapes.large)
+                            .background(Container)
+                    ) {
+                        NavigationLocationDisplay(
+                            origin,
+                            false
+                        )
+                        HorizontalDivider(Modifier.padding(start = 2.rdp + 24.dp))
+                        NavigationLocationDisplay(
+                            destination,
+                            true
+                        )
+                    }
+                }
+                Box(
+                    Modifier.weight(1f).fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    state.let { state ->
+                        when (state) {
+                            is NavigationState.GraphLoading, NavigationState.JourneyCalculating -> {
+                                Column(
+                                    Modifier.padding(1.rdp),
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.spacedBy(1.rdp)
+                                ) {
+                                    CircularProgressIndicator()
+                                    Text(stringResource(
+                                        if (state == NavigationState.GraphLoading) {
+                                            Res.string.navigate_downloading_graph
+                                        } else {
+                                            Res.string.navigate_calculating_journey
+                                        }
+                                    ))
+                                }
+                            }
+                            is NavigationState.GraphFailed, is NavigationState.JourneyFailed -> {
+                                Box(Modifier.padding(1.rdp)) {
+                                    ErrorWidget(
+                                        if (state is NavigationState.GraphFailed) state.exception else
+                                            (state as? NavigationState.JourneyFailed)?.exception,
+                                        retry = { viewModel.retryLoadingGraph() }
+                                    )
+                                }
+                            }
+                            is NavigationState.GraphReady -> {}
+                            else -> {}
+                        }
+                    }
+                }
+            }
+        }
     }
 
+}
+
+@Composable
+fun NavigationLocationDisplay(
+    location: NavigationLocation,
+    isDestination: Boolean
+) {
+    Row(
+        Modifier.padding(horizontal = 1.rdp, vertical = 0.75.rdp).fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(1.rdp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        when (isDestination) {
+            true -> GenericMarkerIcon()
+            false -> StarOutlineIcon() // TODO change
+        }
+        Text(location.name)
+    }
 }

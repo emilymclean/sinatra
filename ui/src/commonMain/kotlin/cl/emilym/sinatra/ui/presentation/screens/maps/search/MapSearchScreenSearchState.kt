@@ -45,6 +45,7 @@ import cl.emilym.sinatra.ui.widgets.NoResultsIcon
 import cl.emilym.sinatra.ui.widgets.PlaceCard
 import cl.emilym.sinatra.ui.widgets.RouteCard
 import cl.emilym.sinatra.ui.widgets.SearchIcon
+import cl.emilym.sinatra.ui.widgets.SinatraTextField
 import cl.emilym.sinatra.ui.widgets.StopCard
 import cl.emilym.sinatra.ui.widgets.Subheading
 import cl.emilym.sinatra.ui.widgets.viewportHeight
@@ -86,13 +87,10 @@ fun MapSearchScreenSearchState() {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 IosBackButton { viewModel.openBrowse() }
-                TextField(
+                SinatraTextField(
                     query ?: "",
                     { viewModel.search(it) },
                     modifier = Modifier.fillMaxWidth().focusRequester(focusRequester),
-                    maxLines = 1,
-                    singleLine = true,
-                    shape = MaterialTheme.shapes.large,
                     leadingIcon = {
                         SearchIcon(
                             tint = MaterialTheme.colorScheme.primary
@@ -101,11 +99,6 @@ fun MapSearchScreenSearchState() {
                     placeholder = {
                         Text(stringResource(Res.string.search_hint))
                     },
-                    colors = TextFieldDefaults.colors(
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent,
-                        disabledIndicatorColor = Color.Transparent
-                    )
                 )
             }
             LaunchedEffect(Unit) {

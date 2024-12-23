@@ -1,6 +1,7 @@
 package cl.emilym.sinatra.data.models
 
 import cl.emilym.gtfs.WheelchairStopAccessibility
+import cl.emilym.kmp.serializable.Serializable
 
 private val SIMPLE_TERMINATORS = arrayOf(" Platform", " at", " Plt")
 
@@ -10,10 +11,7 @@ data class Stop(
     val name: String,
     val location: MapLocation,
     val accessibility: StopAccessibility,
-): NavigationLocation {
-
-    override val navigationName: String
-        get() = name
+): Serializable {
 
     companion object {
         fun fromPB(pb: cl.emilym.gtfs.Stop): Stop {
@@ -48,7 +46,7 @@ data class StopWithDistance(
 
 data class StopAccessibility(
     val wheelchair: StopWheelchairAccessibility
-) {
+): Serializable {
 
     companion object {
         fun fromPB(pb: cl.emilym.gtfs.StopAccessibility): StopAccessibility {

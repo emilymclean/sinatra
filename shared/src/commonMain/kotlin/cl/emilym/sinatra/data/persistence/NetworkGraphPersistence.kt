@@ -17,17 +17,15 @@ class NetworkGraphPersistence(
         const val NETWORK_GRAPH_CACHE_FILENAME = "network-graph.pb"
     }
 
-    suspend fun save(graph: Graph) {
+    suspend fun save(graph: ByteArray) {
         withContext(Dispatchers.IO) {
-            cacheFileWriter.save(NETWORK_GRAPH_CACHE_FILENAME, graph.encodeToByteArray())
+            cacheFileWriter.save(NETWORK_GRAPH_CACHE_FILENAME, graph)
         }
     }
 
-    suspend fun get(): Graph? {
+    suspend fun get(): ByteArray? {
         return withContext(Dispatchers.IO) {
-            cacheFileWriter.retrieve(NETWORK_GRAPH_CACHE_FILENAME)?.let {
-                Graph.decodeFromByteArray(it)
-            }
+            cacheFileWriter.retrieve(NETWORK_GRAPH_CACHE_FILENAME)
         }
     }
 

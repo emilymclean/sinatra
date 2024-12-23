@@ -5,27 +5,32 @@ import cl.emilym.sinatra.data.client.NetworkGraphClient
 import cl.emilym.sinatra.data.models.Cachable
 import cl.emilym.sinatra.data.models.CacheCategory
 import cl.emilym.sinatra.data.models.ResourceKey
+import cl.emilym.sinatra.data.models.map
 import cl.emilym.sinatra.data.persistence.NetworkGraphPersistence
 import kotlinx.datetime.Clock
 import org.koin.core.annotation.Factory
+import pbandk.decodeFromByteArray
 
+@Factory
 class NetworkGraphCacheWorker(
     private val networkGraphPersistence: NetworkGraphPersistence,
     private val networkGraphClient: NetworkGraphClient,
     override val cacheWorkerDependencies: CacheWorkerDependencies,
     override val clock: Clock,
-): CacheWorker<Graph>() {
+): CacheWorker<ByteArray>() {
 
     override val cacheCategory = CacheCategory.NETWORK_GRAPH
 
-    override suspend fun saveToPersistence(data: Graph, resource: ResourceKey) =
+    override suspend fun saveToPersistence(data: ByteArray, resource: ResourceKey) =
         networkGraphPersistence.save(data)
     override suspend fun getFromPersistence(resource: ResourceKey) = networkGraphPersistence.get()
     override suspend fun existsInPersistence(resource: ResourceKey) =
         networkGraphPersistence.exists()
 
     suspend fun get(): Cachable<Graph> {
-        return run(networkGraphClient.networkGraphEndpointDigestPair, "network-graph")
+        return run(networkGraphClient.networkGraphEndpointDigestPair, "network-graph").map {
+            Graph.decodeFromByteArray(it)
+        }
     }
 
 }
