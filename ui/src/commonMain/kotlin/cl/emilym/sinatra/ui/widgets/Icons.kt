@@ -26,6 +26,7 @@ import sinatra.ui.generated.resources.marker_icon
 import sinatra.ui.generated.resources.bus
 import sinatra.ui.generated.resources.tram
 import sinatra.ui.generated.resources.navigate
+import sinatra.ui.generated.resources.walk
 
 @Composable
 fun AccessibleIcon(
@@ -280,6 +281,19 @@ fun TramIcon(
     Icon(
         painterResource(Res.drawable.tram),
         contentDescription = "A tram",
+        modifier = modifier,
+        tint = tint
+    )
+}
+
+@Composable
+fun WalkIcon(
+    modifier: Modifier = Modifier,
+    tint: Color = LocalContentColor.current
+) {
+    Icon(
+        painterResource(Res.drawable.walk),
+        contentDescription = "A person walking",
         modifier = modifier,
         tint = tint
     )

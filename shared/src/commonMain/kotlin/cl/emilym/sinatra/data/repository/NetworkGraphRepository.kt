@@ -24,8 +24,6 @@ class NetworkGraphCacheWorker(
     override suspend fun saveToPersistence(data: ByteArray, resource: ResourceKey) =
         networkGraphPersistence.save(data)
     override suspend fun getFromPersistence(resource: ResourceKey) = networkGraphPersistence.get()
-    override suspend fun existsInPersistence(resource: ResourceKey) =
-        networkGraphPersistence.exists()
 
     suspend fun get(): Cachable<Graph> {
         return run(networkGraphClient.networkGraphEndpointDigestPair, "network-graph").map {

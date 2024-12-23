@@ -28,16 +28,22 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.core.screen.ScreenKey
 import cl.emilym.compose.errorwidget.ErrorWidget
 import cl.emilym.compose.units.rdp
+import cl.emilym.sinatra.data.models.Journey
+import cl.emilym.sinatra.data.models.JourneyLeg
 import cl.emilym.sinatra.ui.presentation.theme.Container
 import cl.emilym.sinatra.ui.widgets.GenericMarkerIcon
 import cl.emilym.sinatra.ui.widgets.NavigatorBackButton
 import cl.emilym.sinatra.ui.widgets.StarOutlineIcon
+import cl.emilym.sinatra.ui.widgets.WalkIcon
 import cl.emilym.sinatra.ui.widgets.currentLocation
+import com.mikepenz.markdown.compose.elements.MarkdownText
+import com.mikepenz.markdown.m3.Markdown
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import sinatra.ui.generated.resources.Res
 import sinatra.ui.generated.resources.navigate_calculating_journey
 import sinatra.ui.generated.resources.navigate_downloading_graph
+import sinatra.ui.generated.resources.navigate_walk
 
 
 class NavigateEntryScreen(
@@ -91,13 +97,14 @@ class NavigateEntryScreen(
                         )
                     }
                 }
-                Box(
-                    Modifier.weight(1f).fillMaxWidth(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    state.let { state ->
-                        when (state) {
-                            is NavigationState.GraphLoading, NavigationState.JourneyCalculating -> {
+
+                state.let { state ->
+                    when (state) {
+                        is NavigationState.GraphLoading, NavigationState.JourneyCalculating -> {
+                            Box(
+                                Modifier.weight(1f).fillMaxWidth(),
+                                contentAlignment = Alignment.Center
+                            ) {
                                 Column(
                                     Modifier.padding(1.rdp),
                                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -113,24 +120,64 @@ class NavigateEntryScreen(
                                     ))
                                 }
                             }
-                            is NavigationState.GraphFailed, is NavigationState.JourneyFailed -> {
-                                Box(Modifier.padding(1.rdp)) {
-                                    ErrorWidget(
-                                        if (state is NavigationState.GraphFailed) state.exception else
-                                            (state as? NavigationState.JourneyFailed)?.exception,
-                                        retry = { viewModel.retryLoadingGraph() }
-                                    )
-                                }
-                            }
-                            is NavigationState.GraphReady -> {}
-                            else -> {}
                         }
+                        is NavigationState.GraphFailed, is NavigationState.JourneyFailed -> {
+                            Box(
+                                Modifier.padding(1.rdp).weight(1f).fillMaxWidth(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                ErrorWidget(
+                                    if (state is NavigationState.GraphFailed) state.exception else
+                                        (state as? NavigationState.JourneyFailed)?.exception,
+                                    retry = { viewModel.retryLoadingGraph() }
+                                )
+                            }
+                        }
+                        is NavigationState.GraphReady -> {}
+                        is NavigationState.JourneyFound -> {
+                            DisplayJourney(state.journey)
+                        }
+                        else -> {}
                     }
+                }
+                Box(
+
+                ) {
+
                 }
             }
         }
     }
 
+    @Composable
+    fun DisplayJourney(journey: Journey) {
+        Column(Modifier.fillMaxWidth()) {
+            for (leg in journey.legs) {
+                when (leg) {
+                    is JourneyLeg.Transfer -> TransferLeg(leg)
+                    is JourneyLeg.Travel -> TravelLeg(leg)
+                }
+            }
+        }
+    }
+
+}
+
+@Composable
+fun TransferLeg(leg: JourneyLeg.Transfer) {
+    Row(
+        Modifier.padding(horizontal = 1.rdp, vertical = 0.75.rdp).fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(1.rdp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        WalkIcon()
+        Markdown(stringResource(Res.string.navigate_walk, leg.travelTime.inWholeMinutes))
+    }
+}
+
+@Composable
+fun TravelLeg(leg: JourneyLeg.Travel) {
+    Text("Travel")
 }
 
 @Composable

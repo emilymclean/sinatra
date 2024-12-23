@@ -27,7 +27,9 @@
     <string name="navigate_lat_lng">%1$d, %2$d</string>
     <string name="navigate_current_location">Current Location</string>
     <string name="navigate_downloading_graph">Downloading navigation information...</string>
+    <string name="navigate_loading_graph">Loading navigation information...</string>
     <string name="navigate_calculating_journey">Calculating a journey...</string>
+    <string name="navigate_walk">**Walk** %1$d minutes</string>
 
     <string name="map_search_nearby_stops">Nearby Stops</string>
 

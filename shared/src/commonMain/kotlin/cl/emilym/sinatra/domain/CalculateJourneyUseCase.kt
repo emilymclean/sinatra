@@ -11,6 +11,9 @@ import cl.emilym.sinatra.data.repository.ServiceRepository
 import cl.emilym.sinatra.data.repository.StopRepository
 import cl.emilym.sinatra.router.Raptor
 import cl.emilym.sinatra.router.RaptorJourneyConnection
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
+import kotlinx.coroutines.withContext
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import org.koin.core.annotation.Factory
@@ -44,7 +47,9 @@ class CalculateJourneyUseCase(
             ).seconds
 
         val raptor = Raptor(graph.item, services.item)
-        val raptorJourney = raptor.calculate(departureTime.epochSeconds, departureStop.id, arrivalStop.id)
+        val raptorJourney = withContext(Dispatchers.IO) {
+            raptor.calculate(departureTime.epochSeconds, departureStop.id, arrivalStop.id)
+        }
 
         val routes = routeRepository.routes(
             raptorJourney.connections.filterIsInstance<RaptorJourneyConnection.Travel>().map { it.routeId }
