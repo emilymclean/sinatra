@@ -31,18 +31,26 @@ import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.data.models.Journey
 import cl.emilym.sinatra.data.models.JourneyLeg
 import cl.emilym.sinatra.ui.presentation.theme.Container
+import cl.emilym.sinatra.ui.widgets.BusIcon
 import cl.emilym.sinatra.ui.widgets.GenericMarkerIcon
+import cl.emilym.sinatra.ui.widgets.ListHint
+import cl.emilym.sinatra.ui.widgets.MapIcon
 import cl.emilym.sinatra.ui.widgets.NavigatorBackButton
 import cl.emilym.sinatra.ui.widgets.StarOutlineIcon
 import cl.emilym.sinatra.ui.widgets.WalkIcon
 import cl.emilym.sinatra.ui.widgets.currentLocation
+import cl.emilym.sinatra.ui.widgets.format
 import com.mikepenz.markdown.compose.elements.MarkdownText
 import com.mikepenz.markdown.m3.Markdown
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import sinatra.ui.generated.resources.Res
 import sinatra.ui.generated.resources.navigate_calculating_journey
+import sinatra.ui.generated.resources.navigate_calculating_journey_failed
 import sinatra.ui.generated.resources.navigate_downloading_graph
+import sinatra.ui.generated.resources.navigate_travel
+import sinatra.ui.generated.resources.navigate_travel_arrive
+import sinatra.ui.generated.resources.navigate_travel_depart
 import sinatra.ui.generated.resources.navigate_walk
 
 
@@ -50,6 +58,11 @@ class NavigateEntryScreen(
     val destination: NavigationLocation,
     val origin: NavigationLocation = NavigationLocation.CurrentLocation
 ): Screen {
+
+    private val iconInset
+        @Composable
+        get() = 2.rdp + 24.dp
+
     override val key: ScreenKey = "navigateEntryScreen-${destination.screenKey}-${origin.screenKey}"
 
     @Composable
@@ -90,7 +103,7 @@ class NavigateEntryScreen(
                             origin,
                             false
                         )
-                        HorizontalDivider(Modifier.padding(start = 2.rdp + 24.dp))
+                        HorizontalDivider(Modifier.padding(start = iconInset))
                         NavigationLocationDisplay(
                             destination,
                             true
@@ -121,7 +134,7 @@ class NavigateEntryScreen(
                                 }
                             }
                         }
-                        is NavigationState.GraphFailed, is NavigationState.JourneyFailed -> {
+                        is NavigationState.GraphFailed -> {
                             Box(
                                 Modifier.padding(1.rdp).weight(1f).fillMaxWidth(),
                                 contentAlignment = Alignment.Center
@@ -130,6 +143,17 @@ class NavigateEntryScreen(
                                     if (state is NavigationState.GraphFailed) state.exception else
                                         (state as? NavigationState.JourneyFailed)?.exception,
                                     retry = { viewModel.retryLoadingGraph() }
+                                )
+                            }
+                        }
+                        is NavigationState.JourneyFailed -> {
+                            Box(
+                                Modifier.padding(1.rdp).weight(1f).fillMaxWidth(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                ListHint(
+                                    stringResource(Res.string.navigate_calculating_journey_failed),
+                                    icon = { MapIcon(tint = MaterialTheme.colorScheme.primary) }
                                 )
                             }
                         }
@@ -157,6 +181,7 @@ class NavigateEntryScreen(
                     is JourneyLeg.Transfer -> TransferLeg(leg)
                     is JourneyLeg.Travel -> TravelLeg(leg)
                 }
+                HorizontalDivider(Modifier.padding(start = iconInset, end = 1.rdp))
             }
         }
     }
@@ -164,20 +189,39 @@ class NavigateEntryScreen(
 }
 
 @Composable
-fun TransferLeg(leg: JourneyLeg.Transfer) {
+fun LegScaffold(
+    icon: @Composable () -> Unit,
+    content: @Composable () -> Unit
+) {
     Row(
         Modifier.padding(horizontal = 1.rdp, vertical = 0.75.rdp).fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(1.rdp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        WalkIcon()
+        icon()
+        content()
+    }
+}
+
+@Composable
+fun TransferLeg(leg: JourneyLeg.Transfer) {
+    LegScaffold({ WalkIcon() }) {
         Markdown(stringResource(Res.string.navigate_walk, leg.travelTime.inWholeMinutes))
     }
 }
 
 @Composable
 fun TravelLeg(leg: JourneyLeg.Travel) {
-    Text("Travel")
+    LegScaffold({ BusIcon() }) {
+        Column(
+            Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(0.75.rdp)
+        ) {
+            Markdown(stringResource(Res.string.navigate_travel_depart, leg.stops[0].name, leg.departureTime.format()))
+            Markdown(stringResource(Res.string.navigate_travel, leg.travelTime.inWholeMinutes))
+            Markdown(stringResource(Res.string.navigate_travel_arrive, leg.stops[1].name, leg.arrivalTime.format()))
+        }
+    }
 }
 
 @Composable
@@ -185,15 +229,12 @@ fun NavigationLocationDisplay(
     location: NavigationLocation,
     isDestination: Boolean
 ) {
-    Row(
-        Modifier.padding(horizontal = 1.rdp, vertical = 0.75.rdp).fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(1.rdp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
+    LegScaffold({
         when (isDestination) {
             true -> GenericMarkerIcon()
             false -> StarOutlineIcon() // TODO change
         }
+    }) {
         Text(location.name)
     }
 }

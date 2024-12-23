@@ -17,8 +17,10 @@ data class RouteAndHeading(
 data class TravelTime<T: Node>(
     val node: T,
     val arrival: DaySeconds,
-    val departureTime: DaySeconds
-)
+    val departureTime: DaySeconds,
+) {
+    val travelTime: Seconds get() = arrival - departureTime
+}
 
 data class TravelTimeWithRootDepartureTime<T: Node>(
     val travelTime: TravelTime<T>,

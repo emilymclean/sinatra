@@ -8,9 +8,14 @@ import cl.emilym.sinatra.data.models.StopId
 import io.github.aakira.napier.Napier
 import kotlin.math.min
 
+data class RaptorConfig(
+    val maximumWalkingTime: Seconds
+)
+
 class Raptor(
     private val graph: Graph,
-    activeServices: List<ServiceId>
+    activeServices: List<ServiceId>,
+    private val config: RaptorConfig? = null
 ) {
 
     companion object {
@@ -24,7 +29,9 @@ class Raptor(
     private var arrivalStop: StopNodeIndex = 0
     private var departureStop: StopNodeIndex = 0
     private val activeServices =
-        activeServices.associate { graph.mappings.serviceIds.indexOf(it) to Unit }
+        activeServices.associate { graph.mappings.serviceIds.indexOf(it) to Unit }.also {
+            Napier.d("Active services = ${it}")
+        }
 
     // Currently the graph construction always places stop nodes first, take advantage of that by using
     // an array structure to store stop information rather than a map
@@ -149,7 +156,7 @@ class Raptor(
             val transfers = transfersForStop(markedStopNode, getStopEarliestArrival(markedStop))
             for (transfer in transfers) {
                 val stopIndex = transfer.node.stopId
-                if (!transfer.isEarlier()) continue
+                if (!transfer.isEarlier() || transfer.travelTime > (config?.maximumWalkingTime ?: Long.MAX_VALUE)) continue
                 updateEarliestArrival(stopIndex, transfer.arrival, BoardedFrom.Transfer(
                     markedStopNode.stopId
                 ))

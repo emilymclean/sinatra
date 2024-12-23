@@ -110,6 +110,42 @@ class RaptorTest {
     }
 
     @Test
+    fun testValidJourneyWithFewerServices() {
+        val raptor = Raptor(graph, listOf("2023-COMBVAC-Weekday-05", "WD"))
+        val result = raptor.calculate(
+            Duration.parseIsoString("PT09H").inWholeSeconds,
+            STOP_ID_SWINDEN_STREET,
+            STOP_ID_MANNING_CLARK
+        )
+        assertEquals(result, RaptorJourney(
+            stops = listOf("3320", "2232", "3406", "8129", "8105", "MCK"),
+            connections = listOf(
+                RaptorJourneyConnection.Transfer(
+                    travelTime = 1040
+                ),
+                RaptorJourneyConnection.Travel(
+                    routeId = "6-10647",
+                    heading = "City ANU",
+                    startTime = 33480L,
+                    endTime = 37080L
+                ),
+                RaptorJourneyConnection.Transfer(
+                    travelTime = 109
+                ),
+                RaptorJourneyConnection.Travel(
+                    routeId = "ACTO001",
+                    heading = "Gungahlin Pl",
+                    startTime = 37200L,
+                    endTime = 38557
+                ),
+                RaptorJourneyConnection.Transfer(
+                    travelTime = 9
+                )
+            )
+        ))
+    }
+
+    @Test
     fun testInvalidJourney() {
         assertFails {
             raptor.calculate(

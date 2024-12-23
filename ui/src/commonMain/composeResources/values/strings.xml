@@ -26,10 +26,13 @@
 
     <string name="navigate_lat_lng">%1$d, %2$d</string>
     <string name="navigate_current_location">Current Location</string>
-    <string name="navigate_downloading_graph">Downloading navigation information...</string>
-    <string name="navigate_loading_graph">Loading navigation information...</string>
+    <string name="navigate_downloading_graph">Loading navigation information...</string>
     <string name="navigate_calculating_journey">Calculating a journey...</string>
+    <string name="navigate_calculating_journey_failed">We couldn't find a journey</string>
     <string name="navigate_walk">**Walk** %1$d minutes</string>
+    <string name="navigate_travel_depart">**Depart** from %1$s at %2$s</string>
+    <string name="navigate_travel">Travel for %1$d minutes</string>
+    <string name="navigate_travel_arrive">**Arrive** at %1$s at %2$s</string>
 
     <string name="map_search_nearby_stops">Nearby Stops</string>
 

@@ -10,8 +10,6 @@ class AndroidCacheFileWriter(
 ): CacheFileWriter {
     override fun save(fileName: String, data: ByteArray) {
         val file = File(context.filesDir, fileName)
-        file.delete()
-        file.createNewFile()
         file.writeBytes(data)
     }
 
