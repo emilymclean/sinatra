@@ -67,12 +67,24 @@ class Raptor(
         var connection: RaptorJourneyConnection? = null
         var edgeType: EdgeType? = null
 
+        fun addConnection(c: RaptorJourneyConnection) {
+            val c = when (c) {
+                is RaptorJourneyConnection.Travel -> c.copy(
+                    stops = listOf(graph.mappings.stopIds[getNode(cursor).stopId]) + c.stops
+                )
+                is RaptorJourneyConnection.Transfer -> c.copy(
+                    stops = listOf(graph.mappings.stopIds[getNode(cursor).stopId]) + c.stops
+                )
+            }
+            chain.add(0, c)
+        }
+
         while (cursor != departureStopIndex) {
             val edge = prevEdge[cursor]!!
             val node = getNode(edge.toNodeId)
 
             if (edgeType != edge.type) {
-                if (connection != null) chain.add(0, connection)
+                if (connection != null) addConnection(connection)
                 edgeType = edge.type
                 connection = when (edge.type) {
                     EdgeType.TRAVEL -> {
@@ -118,16 +130,7 @@ class Raptor(
             cursor = prev[cursor]!!
         }
 
-        if (connection != null) chain.add(0, connection)
-        val c = chain[0]
-        chain[0] = when (c) {
-            is RaptorJourneyConnection.Travel -> c.copy(
-                stops = listOf(graph.mappings.stopIds[departureStopIndex]) + c.stops
-            )
-            is RaptorJourneyConnection.Transfer -> c.copy(
-                stops = listOf(graph.mappings.stopIds[departureStopIndex]) + c.stops
-            )
-        }
+        if (connection != null) addConnection(connection)
 
         return RaptorJourney(chain)
     }
