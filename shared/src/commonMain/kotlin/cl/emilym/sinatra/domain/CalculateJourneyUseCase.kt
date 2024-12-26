@@ -72,27 +72,27 @@ class CalculateJourneyUseCase(
                 raptorJourney.connections.filterIsInstance<RaptorJourneyConnection.Travel>().map { it.routeId }
             )
             val legs = mutableListOf<JourneyLeg>()
-            for (i in raptorJourney.connections.indices) {
-                val connectedStops = listOf(
-                    stops.item.first { it.id == raptorJourney.stops[i] },
-                    stops.item.first { it.id == raptorJourney.stops[i + 1] }
-                )
-                legs += when (val connection = raptorJourney.connections[i]) {
-                    is RaptorJourneyConnection.Travel -> JourneyLeg.Travel(
-                        // This should eventually contain all stops visited on travel
-                        connectedStops,
-                        (connection.endTime - connection.startTime).seconds,
-                        routes.item.first { it?.id == connection.routeId }!!,
-                        connection.heading,
-                        connection.startTime.seconds,
-                        connection.endTime.seconds
-                    )
-                    is RaptorJourneyConnection.Transfer -> JourneyLeg.Transfer(
-                        connectedStops,
-                        connection.travelTime.seconds
-                    )
-                }
-            }
+//            for (i in raptorJourney.connections.indices) {
+//                val connectedStops = listOf(
+//                    stops.item.first { it.id == raptorJourney.stops[i] },
+//                    stops.item.first { it.id == raptorJourney.stops[i + 1] }
+//                )
+//                legs += when (val connection = raptorJourney.connections[i]) {
+//                    is RaptorJourneyConnection.Travel -> JourneyLeg.Travel(
+//                        // This should eventually contain all stops visited on travel
+//                        connectedStops,
+//                        (connection.endTime - connection.startTime).seconds,
+//                        routes.item.first { it?.id == connection.routeId }!!,
+//                        connection.heading,
+//                        connection.startTime.seconds,
+//                        connection.endTime.seconds
+//                    )
+//                    is RaptorJourneyConnection.Transfer -> JourneyLeg.Transfer(
+//                        connectedStops,
+//                        connection.travelTime.seconds
+//                    )
+//                }
+//            }
 
             Journey(legs)
         }

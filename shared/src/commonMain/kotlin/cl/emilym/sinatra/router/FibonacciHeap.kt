@@ -1,11 +1,11 @@
 // Based on https://keithschwarz.com/interesting/code/?dir=fibonacci-heap
 package cl.emilym.sinatra.router
 
-class FibonacciHeap<T> {
+class FibonacciHeap<T,P: Comparable<P>> {
 
     companion object {
-        private fun <T> merge(one: FibonacciHeap<T>, two: FibonacciHeap<T>): FibonacciHeap<T> {
-            val out = FibonacciHeap<T>()
+        private fun <T,P: Comparable<P>> merge(one: FibonacciHeap<T,P>, two: FibonacciHeap<T,P>): FibonacciHeap<T,P> {
+            val out = FibonacciHeap<T,P>()
             out.min = mergeLists(one.min, two.min)
             out._size = one.size + two.size
 
@@ -17,7 +17,7 @@ class FibonacciHeap<T> {
             return out
         }
 
-        private fun <T> mergeLists(one: Entry<T>?, two: Entry<T>?): Entry<T>? {
+        private fun <T,P: Comparable<P>> mergeLists(one: Entry<T,P>?, two: Entry<T,P>?): Entry<T,P>? {
             when {
                 one == null && two == null -> return null
                 one == null -> return two
@@ -37,19 +37,19 @@ class FibonacciHeap<T> {
         }
     }
 
-    private class Entry<T>(
+    private class Entry<T,P: Comparable<P>>(
         val element: T,
-        val priority: Double
+        val priority: P
     ) {
-        var next: Entry<T> = this
-        var previous: Entry<T> = this
-        var parent: Entry<T>? = null
-        var child: Entry<T>? = null
+        var next: Entry<T,P> = this
+        var previous: Entry<T,P> = this
+        var parent: Entry<T,P>? = null
+        var child: Entry<T,P>? = null
         var degree: Int = 0
         var marked: Boolean = false
     }
 
-    private var min: Entry<T>? = null
+    private var min: Entry<T,P>? = null
     private var _size: Int = 0
     val size: Int get() = _size
 
@@ -59,7 +59,7 @@ class FibonacciHeap<T> {
         min = null
     }
 
-    fun add(element: T, priority: Double): Boolean {
+    fun add(element: T, priority: P): Boolean {
         val n = Entry(element, priority)
         min = mergeLists(min, n)
         _size += 1
@@ -92,8 +92,8 @@ class FibonacciHeap<T> {
 
         min = mergeLists(min, first.child) ?: return first.element
 
-        val treeTable = mutableListOf<Entry<T>?>()
-        val toVisit = mutableListOf<Entry<T>>()
+        val treeTable = mutableListOf<Entry<T,P>?>()
+        val toVisit = mutableListOf<Entry<T,P>>()
 
         // Thanks kotlin for not adding a regular fucking for loop
         var current = min
@@ -133,7 +133,7 @@ class FibonacciHeap<T> {
                 cursor = min
             }
 
-            if (cursor.priority <= (min?.priority ?: Double.MAX_VALUE)) min = cursor;
+            if (cursor.priority <= min!!.priority) min = cursor;
         }
 
         return first.element
