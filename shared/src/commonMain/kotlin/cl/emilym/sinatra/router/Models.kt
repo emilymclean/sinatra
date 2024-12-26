@@ -6,7 +6,7 @@ import cl.emilym.sinatra.data.models.RouteId
 import cl.emilym.sinatra.data.models.StopId
 
 data class NodeCost(
-    val node: NodeIndex,
+    val index: NodeIndex,
     val cost: Long,
     val edge: Edge
 )

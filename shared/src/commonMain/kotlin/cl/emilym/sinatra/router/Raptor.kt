@@ -3,13 +3,9 @@ package cl.emilym.sinatra.router
 import cl.emilym.gtfs.networkgraph.Edge
 import cl.emilym.gtfs.networkgraph.EdgeType
 import cl.emilym.gtfs.networkgraph.Graph
-import cl.emilym.gtfs.networkgraph.Node
 import cl.emilym.sinatra.RouterException
-import cl.emilym.sinatra.data.models.Journey
 import cl.emilym.sinatra.data.models.ServiceId
 import cl.emilym.sinatra.data.models.StopId
-import io.github.aakira.napier.Napier
-import kotlin.math.min
 
 data class RaptorConfig(
     val maximumWalkingTime: Seconds
@@ -44,14 +40,22 @@ class Raptor(
             val u = Q.pop()!!
             val neighbours = getNeighbours(u, departureTime + dist[u], departureTime)
             for (neighbour in neighbours) {
-                val v = neighbour.node
+                val v = neighbour.index
                 val alt = dist[u] + neighbour.cost
-                if (alt >= dist[v]) continue
-
-                prev[v] = u
-                prevEdge[v] = neighbour.edge
-                dist[v] = alt
-                Q.add(v, alt)
+                if (alt < dist[v]) {
+                    prev[v] = u
+                    prevEdge[v] = neighbour.edge
+                    dist[v] = alt
+                    Q.add(v, alt)
+                }
+                if (neighbour.edge.type == EdgeType.TRAVEL) {
+                    val tV = getNode(neighbour.edge.toNodeId).stopId
+                    if (alt < dist[tV]) {
+                        prev[tV] = u
+                        prevEdge[tV] = neighbour.edge
+                        dist[tV] = alt
+                    }
+                }
             }
         }
 
@@ -65,9 +69,7 @@ class Raptor(
 
         while (cursor != departureStopIndex) {
             val edge = prevEdge[cursor]!!
-            val node = getNode(cursor)
-
-            println("Edge = $edge, Node = $node")
+            val node = getNode(edge.toNodeId)
 
             if (edgeType != edge.type) {
                 if (connection != null) chain.add(0, connection)
@@ -91,6 +93,7 @@ class Raptor(
                     }
                     else -> null
                 }
+                println("Pushed new connection of type ${connection} (edge type = ${edge.type})")
             }
 
             connection = when(edge.type) {
@@ -116,6 +119,15 @@ class Raptor(
         }
 
         if (connection != null) chain.add(0, connection)
+        val c = chain[0]
+        chain[0] = when (c) {
+            is RaptorJourneyConnection.Travel -> c.copy(
+                stops = listOf(graph.mappings.stopIds[departureStopIndex]) + c.stops
+            )
+            is RaptorJourneyConnection.Transfer -> c.copy(
+                stops = listOf(graph.mappings.stopIds[departureStopIndex]) + c.stops
+            )
+        }
 
         return RaptorJourney(chain)
     }
@@ -134,7 +146,7 @@ class Raptor(
                     if (!servicesAreActive(it.availableServices)) return@mapNotNull null
                     val dt = it.departureTime ?: return@mapNotNull null
                     if (dt < departureTime) return@mapNotNull null
-                    NodeCost(it.toNodeId, (dt - referencePoint) + it.penalty, it)
+                    NodeCost(it.toNodeId, (dt - departureTime) + it.penalty, it)
                 }
                 else -> null
             }
