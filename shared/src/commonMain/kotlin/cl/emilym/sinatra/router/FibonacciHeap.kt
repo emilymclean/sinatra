@@ -1,7 +1,46 @@
 // Based on https://keithschwarz.com/interesting/code/?dir=fibonacci-heap
 package cl.emilym.sinatra.router
 
-class FibonacciHeap<T,P: Comparable<P>> {
+interface Heap<T,P: Comparable<P>> {
+    val size: Int
+    val first: T?
+
+    fun clear()
+    fun add(element: T, priority: P): Boolean
+    fun pop(): T?
+    fun isEmpty(): Boolean
+}
+
+class NaiveHeap<T, P: Comparable<P>>: Heap<T,P> {
+
+    private data class Entry<T, P: Comparable<P>>(
+        val element: T,
+        val priority: P
+    )
+
+    private val data = mutableListOf<Entry<T,P>>()
+
+    override val size: Int
+        get() = data.size
+    override val first: T?
+        get() = data.minByOrNull { it.priority }?.element
+
+    override fun clear() = data.clear()
+
+    override fun add(element: T, priority: P): Boolean {
+        return data.add(Entry(element, priority))
+    }
+
+    override fun pop(): T? {
+        return data.minByOrNull { it.priority }?.also {
+            data.remove(it)
+        }?.element
+    }
+
+    override fun isEmpty() = data.isEmpty()
+}
+
+class FibonacciHeap<T,P: Comparable<P>>: Heap<T,P> {
 
     companion object {
         private fun <T,P: Comparable<P>> merge(one: FibonacciHeap<T,P>, two: FibonacciHeap<T,P>): FibonacciHeap<T,P> {
@@ -51,15 +90,15 @@ class FibonacciHeap<T,P: Comparable<P>> {
 
     private var min: Entry<T,P>? = null
     private var _size: Int = 0
-    val size: Int get() = _size
+    override val size: Int get() = _size
 
-    val first: T? get() = min?.element
+    override val first: T? get() = min?.element
 
-    fun clear() {
+    override fun clear() {
         min = null
     }
 
-    fun add(element: T, priority: P): Boolean {
+    override fun add(element: T, priority: P): Boolean {
         val n = Entry(element, priority)
         min = mergeLists(min, n)
         _size += 1
@@ -67,7 +106,7 @@ class FibonacciHeap<T,P: Comparable<P>> {
         return true
     }
 
-    fun pop(): T? {
+    override fun pop(): T? {
         if (isEmpty()) return null
         _size -= 1
 
@@ -139,6 +178,6 @@ class FibonacciHeap<T,P: Comparable<P>> {
         return first.element
     }
 
-    fun isEmpty() = min == null
+    override fun isEmpty() = min == null
 
 }

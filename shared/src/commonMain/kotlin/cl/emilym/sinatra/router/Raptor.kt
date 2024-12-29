@@ -3,6 +3,7 @@ package cl.emilym.sinatra.router
 import cl.emilym.gtfs.networkgraph.Edge
 import cl.emilym.gtfs.networkgraph.EdgeType
 import cl.emilym.gtfs.networkgraph.Graph
+import cl.emilym.gtfs.networkgraph.NodeType
 import cl.emilym.sinatra.RouterException
 import cl.emilym.sinatra.data.models.ServiceId
 import cl.emilym.sinatra.data.models.StopId
@@ -39,6 +40,7 @@ class Raptor(
         while (!Q.isEmpty()) {
             val u = Q.pop()!!
             val neighbours = getNeighbours(u, departureTime + dist[u], departureTime)
+
             for (neighbour in neighbours) {
                 val v = neighbour.index
                 val alt = dist[u] + neighbour.cost
@@ -54,6 +56,7 @@ class Raptor(
                         prev[tV] = u
                         prevEdge[tV] = neighbour.edge
                         dist[tV] = alt
+                        Q.add(tV, alt)
                     }
                 }
             }
@@ -105,7 +108,7 @@ class Raptor(
                     }
                     else -> null
                 }
-                println("Pushed new connection of type ${connection} (edge type = ${edge.type})")
+//                println("Pushed new connection of type ${connection} (edge type = ${edge.type})")
             }
 
             connection = when(edge.type) {
@@ -144,11 +147,14 @@ class Raptor(
         return edges.mapNotNull {
             when (it.type) {
                 EdgeType.STOP_ROUTE -> NodeCost(it.toNodeId, 0L, it)
-                EdgeType.TRANSFER, EdgeType.TRANSFER_NON_ADJUSTABLE -> NodeCost(it.toNodeId, it.penalty, it)
+                EdgeType.TRANSFER, EdgeType.TRANSFER_NON_ADJUSTABLE -> {
+                    if (it.penalty > (config?.maximumWalkingTime ?: Long.MAX_VALUE)) return@mapNotNull null
+                    NodeCost(it.toNodeId, it.penalty, it)
+                }
                 EdgeType.TRAVEL -> {
                     if (!servicesAreActive(it.availableServices)) return@mapNotNull null
                     val dt = it.departureTime ?: return@mapNotNull null
-                    if (dt < departureTime) return@mapNotNull null
+                    if ((dt + 60) < departureTime) return@mapNotNull null
                     NodeCost(it.toNodeId, (dt - departureTime) + it.penalty, it)
                 }
                 else -> null
