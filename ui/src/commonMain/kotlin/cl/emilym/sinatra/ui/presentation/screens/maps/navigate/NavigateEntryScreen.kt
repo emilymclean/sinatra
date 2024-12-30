@@ -33,16 +33,29 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.core.screen.ScreenKey
 import cl.emilym.compose.errorwidget.ErrorWidget
 import cl.emilym.compose.units.rdp
+import cl.emilym.sinatra.bounds
 import cl.emilym.sinatra.data.models.Journey
 import cl.emilym.sinatra.data.models.JourneyLeg
+import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.data.models.Time
+import cl.emilym.sinatra.ui.color
+import cl.emilym.sinatra.ui.maps.LineItem
+import cl.emilym.sinatra.ui.maps.MapItem
+import cl.emilym.sinatra.ui.maps.MarkerItem
+import cl.emilym.sinatra.ui.maps.routeStopMarkerIcon
+import cl.emilym.sinatra.ui.maps.walkingMarkerIcon
+import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
+import cl.emilym.sinatra.ui.navigation.MapScreen
+import cl.emilym.sinatra.ui.presentation.screens.maps.zoomPadding
 import cl.emilym.sinatra.ui.presentation.screens.search.SearchScreen
 import cl.emilym.sinatra.ui.presentation.theme.Container
+import cl.emilym.sinatra.ui.presentation.theme.walkingColor
 import cl.emilym.sinatra.ui.text
 import cl.emilym.sinatra.ui.widgets.CurrentLocationCard
 import cl.emilym.sinatra.ui.widgets.GenericMarkerIcon
 import cl.emilym.sinatra.ui.widgets.ListHint
+import cl.emilym.sinatra.ui.widgets.LocalMapControl
 import cl.emilym.sinatra.ui.widgets.MapIcon
 import cl.emilym.sinatra.ui.widgets.NavigatorBackButton
 import cl.emilym.sinatra.ui.widgets.RouteRandle
@@ -69,7 +82,7 @@ import sinatra.ui.generated.resources.navigate_walk
 class NavigateEntryScreen(
     val destination: NavigationLocation,
     val origin: NavigationLocation = NavigationLocation.CurrentLocation
-): Screen {
+): MapScreen {
 
     private val journeyIconInset
         @Composable
@@ -82,7 +95,75 @@ class NavigateEntryScreen(
     override val key: ScreenKey = "navigateEntryScreen-${destination.screenKey}-${origin.screenKey}"
 
     @Composable
-    override fun Content() {
+    override fun mapItems(): List<MapItem> {
+        val viewModel = koinViewModel<NavigationEntryViewModel>()
+        val state by viewModel.state.collectAsState(null)
+        val journey = ((state as? NavigationEntryState.Journey)?.state as? NavigationState.JourneyFound)?.journey ?: return emptyList()
+        val originLocation by viewModel.originLocation.collectAsState()
+        val destinationLocation by viewModel.destinationLocation.collectAsState()
+
+        val items = mutableListOf<MapItem>()
+
+        @Composable
+        fun addWalking(points: List<MapLocation>) {
+            items.add(
+                LineItem(
+                    points,
+                    walkingColor
+                )
+            )
+            items.addAll(points.drop(1).dropLast(1).map {
+                MarkerItem(
+                    it,
+                    walkingMarkerIcon(),
+                    id = "routeLeg-walking-${it}"
+                )
+            })
+        }
+
+        for (i in journey.legs.indices) {
+            val leg = journey.legs[i]
+
+            when (leg) {
+                is JourneyLeg.Travel -> {
+                    items.add(
+                        LineItem(
+                            leg.stops.map { it.location },
+                            leg.route.color()
+                        )
+                    )
+                    items.addAll(leg.stops.map {
+                        MarkerItem(
+                            it.location,
+                            routeStopMarkerIcon(leg.route),
+                            id = "routeLeg-stop-${it.id}"
+                        )
+                    })
+                }
+                is JourneyLeg.Transfer -> {
+                    addWalking(leg.stops.map { it.location })
+                }
+                is JourneyLeg.TransferPoint -> {
+                    when (i) {
+                        0 -> originLocation?.let {
+                            val next = (journey.legs.getOrNull(1) as? JourneyLeg.RouteJourneyLeg) ?: return@let
+                            addWalking(listOf(it, it, next.stops.first().location))
+                        }
+                        journey.legs.lastIndex -> destinationLocation?.let {
+                            val next = (journey.legs.getOrNull(journey.legs.lastIndex - 1) as? JourneyLeg.RouteJourneyLeg) ?: return@let
+                            addWalking(listOf(next.stops.last().location, it, it))
+                        }
+                    }
+                }
+                else -> {}
+            }
+        }
+
+        return items
+    }
+
+    @Composable
+    override fun BottomSheetContent() {
         val viewModel = koinViewModel<NavigationEntryViewModel>()
         val state by viewModel.state.collectAsState(null)
         val currentLocation = currentLocation()
@@ -96,10 +177,35 @@ class NavigateEntryScreen(
             viewModel.updateCurrentLocation(currentLocation)
         }
 
-        Scaffold { innerPadding ->
+        when (val state = state) {
+            is NavigationEntryState.Journey -> JourneyState(PaddingValues(0.dp), viewModel, state.state)
+            is NavigationEntryState.Search -> SearchState(PaddingValues(0.dp), viewModel)
+            null -> {}
+        }
+
+        val bottomSheet = LocalBottomSheetState.current
+        val mapControl = LocalMapControl.current
+        val originLocation by viewModel.originLocation.collectAsState()
+        val destinationLocation by viewModel.destinationLocation.collectAsState()
+        val zoomPadding = zoomPadding
+
+        LaunchedEffect(state) {
             when (val state = state) {
-                is NavigationEntryState.Journey -> JourneyState(innerPadding, viewModel, state.state)
-                is NavigationEntryState.Search -> SearchState(innerPadding, viewModel)
+                is NavigationEntryState.Journey -> when (state.state) {
+                    is NavigationState.JourneyFound -> {
+                        bottomSheet.bottomSheetState.halfExpand()
+                        mapControl.zoomToArea(
+                            (state.state.journey.legs
+                                .filterIsInstance<JourneyLeg.RouteJourneyLeg>()
+                                .flatMap { it.stops.map { it.location } } +
+                                    listOfNotNull(originLocation, destinationLocation)
+                            ).bounds(),
+                            zoomPadding
+                        )
+                    }
+                    else -> bottomSheet.bottomSheetState.expand()
+                }
+                is NavigationEntryState.Search -> bottomSheet.bottomSheetState.expand()
                 null -> {}
             }
         }

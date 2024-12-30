@@ -103,6 +103,10 @@ import sinatra.ui.generated.resources.trip_not_found
 import sinatra.ui.generated.resources.stop_detail_nearest_stop
 import sinatra.ui.generated.resources.stop_detail_distance
 
+val zoomPadding
+    @Composable
+    get() = 4.rdp.toIntPx()
+
 @KoinViewModel
 class RouteDetailViewModel(
     private val currentTripForRouteUseCase: CurrentTripForRouteUseCase,
@@ -159,9 +163,6 @@ class RouteDetailScreen(
     private val stopId: StopId? = null,
 ): MapScreen {
     override val key: ScreenKey = "${this::class.qualifiedName!!}/$routeId/$serviceId/$tripId/$stopId"
-
-    @Composable
-    override fun Content() {}
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
@@ -243,7 +244,7 @@ class RouteDetailScreen(
             null
         }
 
-        val zoomPadding = 4.rdp.toIntPx()
+        val zoomPadding = zoomPadding
         LaunchedEffect(info.stops) {
             if (FeatureFlags.ROUTE_DETAIL_PREVENT_ZOOM_WHEN_HAVE_SOURCE_STOP && stopId != null)
                 return@LaunchedEffect

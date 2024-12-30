@@ -136,9 +136,6 @@ class StopDetailScreen(
     override val key: ScreenKey = "${this::class.qualifiedName!!}/$stopId"
 
     @Composable
-    override fun Content() {}
-
-    @Composable
     override fun BottomSheetContent() {
         val viewModel = koinViewModel<StopDetailViewModel>()
         val bottomSheetState = LocalBottomSheetState.current
