@@ -30,6 +30,13 @@ class RaptorTest {
     }
 
     @Test
+    fun byteGraph() {
+        val graph = NetworkGraph.forByteArray(this::class.java.classLoader.getResource("network_graph.eng").readBytes())
+        println(graph.metadata)
+        println(graph.node(0))
+    }
+
+    @Test
     fun testValidJourneyOnSingleRoute() {
         val result = raptor.calculate(
             Duration.parseIsoString("PT09H").inWholeSeconds,
