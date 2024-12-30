@@ -16,6 +16,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.ScreenKey
+import cafe.adriel.voyager.navigator.LocalNavigator
+import cafe.adriel.voyager.navigator.currentOrThrow
 import cl.emilym.compose.requeststate.RequestState
 import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.FeatureFlags
@@ -26,6 +28,10 @@ import cl.emilym.sinatra.ui.maps.NativeMapScope
 import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
 import cl.emilym.sinatra.ui.navigation.MapScreen
 import cl.emilym.sinatra.ui.navigation.NativeMapScreen
+import cl.emilym.sinatra.ui.placeCardDefaultNavigation
+import cl.emilym.sinatra.ui.presentation.screens.maps.RouteDetailScreen
+import cl.emilym.sinatra.ui.presentation.screens.maps.StopDetailScreen
+import cl.emilym.sinatra.ui.presentation.screens.search.SearchScreen
 import cl.emilym.sinatra.ui.widgets.LocalMapControl
 import cl.emilym.sinatra.ui.widgets.MyLocationIcon
 import cl.emilym.sinatra.ui.widgets.SearchIcon
@@ -107,11 +113,18 @@ class MapSearchScreen: MapScreen, NativeMapScreen {
     override fun BottomSheetContent() {
         val viewModel = koinViewModel<MapSearchViewModel>()
         val state by viewModel.state.collectAsState(MapSearchState.Browse)
+        val navigator = LocalNavigator.currentOrThrow
 
         Box(modifier = Modifier.heightIn(min = viewportHeight() * 0.5f)) {
             when (state) {
                 is MapSearchState.Browse -> MapSearchScreenBrowseState()
-                is MapSearchState.Search -> MapSearchScreenSearchState()
+                is MapSearchState.Search -> SearchScreen(
+                    viewModel,
+                    { viewModel.openBrowse() },
+                    { navigator.push(StopDetailScreen(it.id)) },
+                    { navigator.push(RouteDetailScreen(it.id)) },
+                    { navigator.placeCardDefaultNavigation(it) }
+                )
             }
         }
     }
