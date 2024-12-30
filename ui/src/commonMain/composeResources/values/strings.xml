@@ -36,6 +36,7 @@
         <item quantity="other">%1$d hours</item>
     </plurals>
 
+    <string name="current_location">Current Location</string>
 
     <string name="navigate_lat_lng">%1$d, %2$d</string>
     <string name="navigate_current_location">Current Location</string>

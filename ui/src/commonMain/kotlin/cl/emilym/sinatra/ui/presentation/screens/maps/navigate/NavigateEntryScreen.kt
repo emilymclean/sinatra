@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -39,6 +40,7 @@ import cl.emilym.sinatra.data.models.Time
 import cl.emilym.sinatra.ui.presentation.screens.search.SearchScreen
 import cl.emilym.sinatra.ui.presentation.theme.Container
 import cl.emilym.sinatra.ui.text
+import cl.emilym.sinatra.ui.widgets.CurrentLocationCard
 import cl.emilym.sinatra.ui.widgets.GenericMarkerIcon
 import cl.emilym.sinatra.ui.widgets.ListHint
 import cl.emilym.sinatra.ui.widgets.MapIcon
@@ -114,7 +116,17 @@ class NavigateEntryScreen(
                 { viewModel.onSearchItemClicked(NavigationLocation.Stop(it)) },
                 {},
                 { viewModel.onSearchItemClicked(NavigationLocation.Place(it)) }
-            ) {}
+            ) {
+                item {
+                    CurrentLocationCard(
+                        onClick = { viewModel.onSearchItemClicked(NavigationLocation.CurrentLocation) },
+                        showCurrentLocationIcon = true
+                    )
+                }
+                item {
+                    Box(Modifier.height(1.rdp))
+                }
+            }
         }
     }
 
