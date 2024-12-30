@@ -2,6 +2,7 @@ package cl.emilym.sinatra.router
 
 import cl.emilym.gtfs.networkgraph.Graph
 import cl.emilym.sinatra.RouterException
+import cl.emilym.sinatra.router.data.NetworkGraph
 import io.github.aakira.napier.Napier
 import pbandk.decodeFromByteArray
 import kotlin.test.BeforeTest
@@ -31,9 +32,10 @@ class RaptorTest {
 
     @Test
     fun byteGraph() {
-        val graph = NetworkGraph.forByteArray(this::class.java.classLoader.getResource("network_graph.eng").readBytes())
+        val graph = NetworkGraph.byteFormatForByteArray(this::class.java.classLoader.getResource("network_graph.eng").readBytes())
         println(graph.metadata)
         println(graph.node(0))
+        println(graph.node(1))
     }
 
     @Test

@@ -1,10 +1,8 @@
-package cl.emilym.sinatra.router
+package cl.emilym.sinatra.router.data
 
-import cl.emilym.gtfs.networkgraph.Edge
 import cl.emilym.sinatra.data.models.RouteId
 import cl.emilym.sinatra.data.models.ServiceId
 import cl.emilym.sinatra.data.models.StopId
-import pbandk.ByteArr
 import kotlin.experimental.and
 
 // The number of bytes used to represent an edge, excluding available services
@@ -12,56 +10,22 @@ const val METADATA_BYTE_SIZE = 5 + 1 + 1 + 4 + 4 + 4 + 4
 const val EDGE_BYTE_SIZE = 4 + 4 + 4 + 1
 const val NODE_BYTE_SIZE = 4 + 4 + 4 + 1 + 4 + 4
 
-data class DataAndSize<T>(
-    val data: T,
-    val size: Int
-)
-
-interface RandomByteReader {
-    fun read(position: Int, out: ByteArray)
-    fun read(position: Int): Byte
-}
-
-class ByteArrayRandomByteReader(
-    val data: ByteArray
-): RandomByteReader {
-
-    override fun read(position: Int, out: ByteArray) {
-        data.copyInto(out, 0, position, position + out.size)
-    }
-
-    override fun read(position: Int): Byte {
-        return data[position]
-    }
-
-}
-
-interface NetworkGraph {
-    val metadata: NetworkGraphMetadata
-    val mappings: NetworkGraphMappings
-
-    fun node(index: Int): NetworkGraphNode
-
-    companion object {
-
-        fun forByteArray(byteArray: ByteArray): NetworkGraph {
-            return DefaultNetworkGraph(ByteArrayRandomByteReader(byteArray))
-        }
-
-    }
-}
-
-private class DefaultNetworkGraph(
+class ByteNetworkGraph(
     private val data: RandomByteReader
 ): NetworkGraph {
 
-    override val metadata: NetworkGraphMetadata by lazy { NetworkGraphMetadata(data) }
-    override val mappings: NetworkGraphMappings by lazy { NetworkGraphMappings(METADATA_BYTE_SIZE, data) }
+    override val metadata: ByteNetworkGraphMetadata by lazy { ByteNetworkGraphMetadata(data) }
+    override val mappings: ByteNetworkGraphMappings by lazy {
+        ByteNetworkGraphMappings(
+            METADATA_BYTE_SIZE,
+            data
+        )
+    }
 
-    override fun node(index: Int): NetworkGraphNode {
+    override fun node(index: Int): ByteNetworkGraphNode {
         val start = metadata.nodesStart.toInt() + (NODE_BYTE_SIZE * index)
         println("Node start = $start")
-        return NetworkGraphNode(
+        return ByteNetworkGraphNode(
             start,
             data,
             metadata.availableServicesLength.toInt(),
@@ -75,7 +39,7 @@ private class DefaultNetworkGraph(
 
 }
 
-abstract class NetworkGraphEntry(
+abstract class ByteNetworkGraphEntry(
     private val position: Int,
     private val data: RandomByteReader
 ) {
@@ -122,15 +86,15 @@ abstract class NetworkGraphEntry(
 
 }
 
-class NetworkGraphMappings(
+class ByteNetworkGraphMappings(
     position: Int,
     data: RandomByteReader
-): NetworkGraphEntry(position, data) {
-    val stopIds: List<StopId>
-    val stopIdToIndex: Map<StopId, Int>
-    val routeIds: List<RouteId>
-    val headings: List<String>
-    val serviceIds: List<ServiceId>
+): ByteNetworkGraphEntry(position, data), NetworkGraphMappings {
+    override val stopIds: List<StopId>
+    override val stopIdToIndex: Map<StopId, Int>
+    override val routeIds: List<RouteId>
+    override val headings: List<String>
+    override val serviceIds: List<ServiceId>
 
     init {
         val stopIds = mutableListOf<StopId>()
@@ -182,16 +146,16 @@ class NetworkGraphMappings(
 
 }
 
-class NetworkGraphMetadata(
+class ByteNetworkGraphMetadata(
     data: RandomByteReader,
-): NetworkGraphEntry(5, data) {
+): ByteNetworkGraphEntry(5, data), NetworkGraphMetadata {
 
-    val version by lazy { readUInt(0x00, 1) }
-    val availableServicesLength by lazy { readUInt(0x01, 1) }
-    val nodesStart by lazy { readUInt(0x02) }
-    val edgesStart by lazy { readUInt(0x06) }
-    val penaltyMultiplier by lazy { readFloat(0x0A) }
-    val assumedWalkingSecondsPerKilometer by lazy { readUInt(0x0E) }
+    override val version by lazy { readUInt(0x00, 1) }
+    override val availableServicesLength by lazy { readUInt(0x01, 1) }
+    override val nodesStart by lazy { readUInt(0x02) }
+    override val edgesStart by lazy { readUInt(0x06) }
+    override val penaltyMultiplier by lazy { readFloat(0x0A) }
+    override val assumedWalkingSecondsPerKilometer by lazy { readUInt(0x0E) }
 
     override fun toString(): String {
         return "NetworkGraphMetadata(version=$version, availableServicesLength=$availableServicesLength, nodesStart=$nodesStart, edgesStart=$edgesStart, penaltyMultiplier=$penaltyMultiplier, assumedWalkingSecondsPerKilometer=$assumedWalkingSecondsPerKilometer)"
@@ -199,38 +163,37 @@ class NetworkGraphMetadata(
 
 }
 
-enum class NodeType {
-    STOP, STOP_ROUTE
-}
-
-class NetworkGraphNode(
+class ByteNetworkGraphNode(
     position: Int,
     data: RandomByteReader,
     private val availableServicesLength: Int,
     private val edgesStartPosition: Int,
-): NetworkGraphEntry(position, data) {
+): ByteNetworkGraphEntry(position, data), NetworkGraphNode {
 
-    val stopIndex by lazy { readUInt(0x00) }
-    val routeIndex by lazy { readUInt(0x04) }
-    val headingIndex by lazy { readUInt(0x08) }
+    override val stopIndex by lazy { readUInt(0x00) }
+    override val routeIndex by lazy { readUInt(0x04) }
+    override val headingIndex by lazy { readUInt(0x08) }
 
     private val flags by lazy { readByte(0x0C) }
     private val edgePointer by lazy { readUInt(0x0D).toInt() }
     private val edgeCount by lazy { readUInt(0x11).toInt() }
 
-    val type: NodeType get() = when (flags and 0b1) {
+    override val type: NodeType
+        get() = when (flags and 0b1) {
         0b0.toByte() -> NodeType.STOP
         else -> NodeType.STOP_ROUTE
     }
 
-    val wheelchairAccessible: Boolean get() = (flags and 0b10) == 0b10.toByte()
+    override val wheelchairAccessible: Boolean get() = (flags and 0b10) == 0b10.toByte()
 
-    val edges: List<NetworkGraphEdge> by lazy {
-        List(edgeCount) { i -> NetworkGraphEdge(
-            edgesStartPosition + edgePointer + ((EDGE_BYTE_SIZE + availableServicesLength) * i),
-            data,
-            availableServicesLength
-        ) }
+    override val edges: List<ByteNetworkGraphEdge> by lazy {
+        List(edgeCount) { i ->
+            ByteNetworkGraphEdge(
+                edgesStartPosition + edgePointer + ((EDGE_BYTE_SIZE + availableServicesLength) * i),
+                data,
+                availableServicesLength
+            )
+        }
     }
 
     override fun toString(): String {
@@ -239,21 +202,17 @@ class NetworkGraphNode(
 
 }
 
-enum class EdgeType {
-    TRAVEL, UNWEIGHTED, TRANSFER, TRANSFER_NON_ADJUSTABLE
-}
-
-class NetworkGraphEdge(
+class ByteNetworkGraphEdge(
     position: Int,
     data: RandomByteReader,
     private val availableServicesLength: Int
-): NetworkGraphEntry(position, data) {
-    val connectedNodeIndex by lazy { readUInt(0x00) }
-    val cost by lazy { readUInt(0x04) }
-    val departureTime by lazy { readUInt(0x08) }
+): ByteNetworkGraphEntry(position, data), NetworkGraphEdge {
+    override val connectedNodeIndex by lazy { readUInt(0x00) }
+    override val cost by lazy { readUInt(0x04) }
+    override val departureTime by lazy { readUInt(0x08) }
     private val flags by lazy { readByte(0x0C + availableServicesLength) }
 
-    val availableServices: List<UInt> by lazy {
+    override val availableServices: List<UInt> by lazy {
         val bytes = readBytes(0x0C, availableServicesLength)
         val active = mutableListOf<UInt>()
         for (byteIndex in bytes.indices) {
@@ -265,15 +224,16 @@ class NetworkGraphEdge(
         active.toList()
     }
 
-    val type: EdgeType get() = when (flags and 0b11) {
+    override val type: EdgeType
+        get() = when (flags and 0b11) {
         0b00.toByte() -> EdgeType.TRAVEL
         0b10.toByte() -> EdgeType.UNWEIGHTED
         0b01.toByte() -> EdgeType.TRANSFER_NON_ADJUSTABLE
         else -> EdgeType.TRANSFER
     }
 
-    val wheelchairAccessible: Boolean get() = (flags and 0b100) == 0b100.toByte()
-    val bikesAllowed: Boolean get() = (flags and 0b1000) == 0b1000.toByte()
+    override val wheelchairAccessible: Boolean get() = (flags and 0b100) == 0b100.toByte()
+    override val bikesAllowed: Boolean get() = (flags and 0b1000) == 0b1000.toByte()
 
     override fun toString(): String {
         return "NetworkGraphEdge(connectedNodeIndex=$connectedNodeIndex, cost=$cost, departureTime=$departureTime, availableServices=$availableServices, type=$type, wheelchairAccessible=$wheelchairAccessible, bikesAllowed=$bikesAllowed)"
