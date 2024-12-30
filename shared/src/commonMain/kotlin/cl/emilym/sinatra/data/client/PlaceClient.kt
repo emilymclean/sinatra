@@ -21,7 +21,10 @@ class PlaceClient(
             userAgent = buildInformation.nominatimUserAgent,
             email = buildInformation.nominatimEmail
         )
-        return response.filterNot { it.type in NOMINATIM_STATION_TYPES }.map { Place.fromDto(it) }
+        return response
+            .filterNot { it.type in NOMINATIM_STATION_TYPES }
+            .distinctBy { it.displayName }
+            .map { Place.fromDto(it) }
     }
 
 }
