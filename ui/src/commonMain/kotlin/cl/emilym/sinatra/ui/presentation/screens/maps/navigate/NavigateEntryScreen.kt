@@ -38,6 +38,7 @@ import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.data.models.Time
 import cl.emilym.sinatra.ui.presentation.screens.search.SearchScreen
 import cl.emilym.sinatra.ui.presentation.theme.Container
+import cl.emilym.sinatra.ui.text
 import cl.emilym.sinatra.ui.widgets.GenericMarkerIcon
 import cl.emilym.sinatra.ui.widgets.ListHint
 import cl.emilym.sinatra.ui.widgets.MapIcon
@@ -265,7 +266,7 @@ fun LegScaffold(
 @Composable
 fun TransferLeg(leg: JourneyLeg.Transfer) {
     LegScaffold({ WalkIcon() }) {
-        Markdown(stringResource(Res.string.navigate_walk, leg.travelTime.inWholeMinutes))
+        Markdown(stringResource(Res.string.navigate_walk, leg.travelTime.text))
     }
 }
 
@@ -277,7 +278,7 @@ fun TravelLeg(leg: JourneyLeg.Travel) {
             verticalArrangement = Arrangement.spacedBy(0.75.rdp)
         ) {
             Markdown(stringResource(Res.string.navigate_travel_depart, leg.stops.first().name, leg.departureTime.format()))
-            Markdown(stringResource(Res.string.navigate_travel, leg.travelTime.inWholeMinutes, leg.route.name, leg.heading))
+            Markdown(stringResource(Res.string.navigate_travel, leg.travelTime.text, leg.route.name, leg.heading))
             Markdown(stringResource(Res.string.navigate_travel_arrive, leg.stops.last().name, leg.arrivalTime.format()))
         }
     }

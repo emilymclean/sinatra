@@ -28,10 +28,14 @@ import org.jetbrains.compose.resources.stringResource
 import sinatra.ui.generated.resources.Res
 import sinatra.ui.generated.resources.distance_kilometer
 import sinatra.ui.generated.resources.distance_meter
+import sinatra.ui.generated.resources.time_hour
+import sinatra.ui.generated.resources.time_minute
+import sinatra.ui.generated.resources.time_second
 import kotlin.math.cos
 import kotlin.math.ln
 import kotlin.math.pow
 import kotlin.math.roundToInt
+import kotlin.time.Duration
 
 fun String.toColor(): Color {
     val trimmed = removePrefix("#")
@@ -148,4 +152,12 @@ val Kilometer.text
             val kilometers = roundToInt()
             pluralStringResource(Res.plurals.distance_kilometer, kilometers, kilometers)
         }
+    }
+
+val Duration.text
+    @Composable
+    get() = when {
+        inWholeSeconds < 60 -> pluralStringResource(Res.plurals.time_second, inWholeSeconds.toInt(), inWholeSeconds)
+        inWholeMinutes < 60 -> pluralStringResource(Res.plurals.time_minute, inWholeMinutes.toInt(), inWholeMinutes)
+        else -> pluralStringResource(Res.plurals.time_hour, inWholeHours.toInt(), inWholeHours)
     }
