@@ -32,7 +32,7 @@ fun PlaceCard(
             horizontalArrangement = Arrangement.spacedBy(0.5.rdp)
         ) {
             Text(
-                place.name,
+                place.displayName,
                 modifier = Modifier.weight(1f, fill = false),
             )
         }

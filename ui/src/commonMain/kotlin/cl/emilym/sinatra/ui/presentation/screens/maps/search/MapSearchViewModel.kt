@@ -16,6 +16,7 @@ import cl.emilym.sinatra.domain.search.SearchResult
 import cl.emilym.sinatra.nullIfEmpty
 import cl.emilym.sinatra.ui.NEAREST_STOP_RADIUS
 import cl.emilym.sinatra.ui.presentation.screens.search.SearchScreenViewModel
+import cl.emilym.sinatra.ui.presentation.screens.search.searchHandler
 import cl.emilym.sinatra.ui.widgets.createRequestStateFlowFlow
 import cl.emilym.sinatra.ui.widgets.handleFlow
 import cl.emilym.sinatra.ui.widgets.handleFlowProperly
@@ -60,26 +61,7 @@ class MapSearchViewModel(
     val state: Flow<MapSearchState> = _state.flatMapLatest {
         when (it) {
             State.BROWSE -> flowOf(MapSearchState.Browse)
-            State.SEARCH -> flow<MapSearchState> {
-                emit(MapSearchState.Search(RequestState.Initial()))
-                emitAll(
-                    query.flatMapLatest {
-                        flow {
-                            emit(MapSearchState.Search(RequestState.Loading()))
-                            emitAll(
-                                query.debounce(1.seconds).flatMapLatest { query ->
-                                    when (query) {
-                                        null, "" -> flowOf(MapSearchState.Search(RequestState.Initial()))
-                                        else -> handleFlow {
-                                            routeStopSearchUseCase(query)
-                                        }.map { MapSearchState.Search(it) }
-                                    }
-                                }
-                            )
-                        }
-                    }
-                )
-            }
+            State.SEARCH -> searchHandler(routeStopSearchUseCase) { MapSearchState.Search(it) }
         }
     }
     override val results: Flow<RequestState<List<SearchResult>>> = state.mapLatest {

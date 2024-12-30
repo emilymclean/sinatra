@@ -11,13 +11,17 @@ class PlaceClient(
     private val buildInformation: BuildInformation
 ) {
 
+    companion object {
+        private val NOMINATIM_STATION_TYPES = listOf("bus_stop", "platform", "railway", "stop", "station")
+    }
+
     suspend fun search(query: String): List<Place> {
         val response = nominatimApi.search(
             query,
             userAgent = buildInformation.nominatimUserAgent,
             email = buildInformation.nominatimEmail
         )
-        return response.map { Place.fromDto(it) }
+        return response.filterNot { it.type in NOMINATIM_STATION_TYPES }.map { Place.fromDto(it) }
     }
 
 }

@@ -58,10 +58,6 @@ class MapSearchScreen: MapScreen, NativeMapScreen {
         val currentLocation = currentLocation()
         val state by viewModel.state.collectAsState(MapSearchState.Browse)
 
-        SinatraBackHandler(state is MapSearchState.Search) {
-            viewModel.openBrowse()
-        }
-
         LaunchedEffect(currentLocation) {
             val currentLocation = currentLocation ?: return@LaunchedEffect
             if (!viewModel.hasZoomedToLocation) {
@@ -120,6 +116,7 @@ class MapSearchScreen: MapScreen, NativeMapScreen {
                 is MapSearchState.Browse -> MapSearchScreenBrowseState()
                 is MapSearchState.Search -> SearchScreen(
                     viewModel,
+                    true,
                     { viewModel.openBrowse() },
                     { navigator.push(StopDetailScreen(it.id)) },
                     { navigator.push(RouteDetailScreen(it.id)) },

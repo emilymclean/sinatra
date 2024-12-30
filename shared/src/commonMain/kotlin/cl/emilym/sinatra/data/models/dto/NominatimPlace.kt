@@ -11,5 +11,6 @@ data class NominatimPlace(
     val lon: String,
     val name: String,
     @SerialName("display_name")
-    val displayName: String
+    val displayName: String,
+    val type: String
 )

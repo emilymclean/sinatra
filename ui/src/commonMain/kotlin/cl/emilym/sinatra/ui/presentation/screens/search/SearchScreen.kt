@@ -47,6 +47,7 @@ import cl.emilym.sinatra.ui.widgets.NoResultsIcon
 import cl.emilym.sinatra.ui.widgets.PlaceCard
 import cl.emilym.sinatra.ui.widgets.RouteCard
 import cl.emilym.sinatra.ui.widgets.SearchIcon
+import cl.emilym.sinatra.ui.widgets.SinatraBackHandler
 import cl.emilym.sinatra.ui.widgets.SinatraTextField
 import cl.emilym.sinatra.ui.widgets.StopCard
 import cl.emilym.sinatra.ui.widgets.Subheading
@@ -63,13 +64,13 @@ import sinatra.ui.generated.resources.stop_detail_distance
 @Composable
 fun SearchScreen(
     viewModel: SearchScreenViewModel,
+    inBottomSheet: Boolean,
     onBackPressed: () -> Unit,
     onStopPressed: (Stop) -> Unit,
     onRoutePressed: (Route) -> Unit,
     onPlacePressed: (Place) -> Unit,
     extraPlaceholderContent: LazyListScope.() -> Unit = {}
 ) {
-    val bottomSheetState = LocalBottomSheetState.current.bottomSheetState
     val focusRequester = remember { FocusRequester() }
 
     val results by viewModel.results.collectAsState(RequestState.Initial())
@@ -77,8 +78,15 @@ fun SearchScreen(
     val recentlyViewed by viewModel.recentVisits.collectAsState(RequestState.Initial())
     val nearbyStops by viewModel.nearbyStops.collectAsState(null)
 
-    LaunchedEffect(Unit) {
-        bottomSheetState.expand()
+    if (inBottomSheet) {
+        val bottomSheetState = LocalBottomSheetState.current.bottomSheetState
+        LaunchedEffect(Unit) {
+            bottomSheetState.expand()
+        }
+    }
+
+    SinatraBackHandler(true) {
+        onBackPressed()
     }
 
     val query by viewModel.query.collectAsState()
