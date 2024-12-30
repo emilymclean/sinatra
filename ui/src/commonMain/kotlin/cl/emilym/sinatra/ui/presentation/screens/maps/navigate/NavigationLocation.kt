@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import cl.emilym.kmp.serializable.Serializable
 import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.data.models.Place
+import cl.emilym.sinatra.data.models.RecentVisit
 import cl.emilym.sinatra.data.models.Stop
 import org.jetbrains.compose.resources.stringResource
 import sinatra.ui.generated.resources.Res
@@ -19,6 +20,8 @@ sealed interface NavigationLocation: Serializable {
     val name: String
     val screenKey: String
 
+    val recentVisit: RecentVisit?
+
     data class Point(
         override val location: MapLocation
     ): LocatableNavigationLocation {
@@ -26,6 +29,8 @@ sealed interface NavigationLocation: Serializable {
             @Composable
             get() = stringResource(Res.string.navigate_lat_lng)
         override val screenKey: String = "point-${location.lng}-${location.lng}"
+
+        override val recentVisit: RecentVisit? get() = null
     }
 
     data class Place(
@@ -37,6 +42,8 @@ sealed interface NavigationLocation: Serializable {
             @Composable
             get() = place.name
         override val screenKey: String = "place-${place.id}"
+
+        override val recentVisit: RecentVisit get() = RecentVisit.Place(place)
     }
 
     data class Stop(
@@ -48,6 +55,8 @@ sealed interface NavigationLocation: Serializable {
             @Composable
             get() = stop.name
         override val screenKey: String = "stop-${stop.id}"
+
+        override val recentVisit: RecentVisit get() = RecentVisit.Stop(stop)
     }
 
     data object CurrentLocation: NavigationLocation {
@@ -55,5 +64,7 @@ sealed interface NavigationLocation: Serializable {
             @Composable
             get() = stringResource(Res.string.navigate_current_location)
         override val screenKey: String = "currentLocation"
+
+        override val recentVisit: RecentVisit? = null
     }
 }

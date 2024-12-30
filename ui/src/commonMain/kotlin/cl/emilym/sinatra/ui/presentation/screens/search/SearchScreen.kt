@@ -149,7 +149,8 @@ fun SearchScreen(
                                 it.stop,
                                 arrival = null,
                                 modifier = Modifier.fillMaxWidth(),
-                                onClick = { onStopPressed(it.stop) }
+                                onClick = { onStopPressed(it.stop) },
+                                showStopIcon = true
                             )
 
                             is RecentVisit.Route -> RouteCard(

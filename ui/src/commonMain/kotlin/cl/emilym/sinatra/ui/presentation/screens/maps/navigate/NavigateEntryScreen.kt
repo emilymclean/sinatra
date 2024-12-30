@@ -25,7 +25,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.core.screen.ScreenKey
 import cl.emilym.compose.errorwidget.ErrorWidget
@@ -35,7 +34,6 @@ import cl.emilym.sinatra.data.models.JourneyLeg
 import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.data.models.Time
 import cl.emilym.sinatra.ui.presentation.theme.Container
-import cl.emilym.sinatra.ui.widgets.BusIcon
 import cl.emilym.sinatra.ui.widgets.GenericMarkerIcon
 import cl.emilym.sinatra.ui.widgets.ListHint
 import cl.emilym.sinatra.ui.widgets.MapIcon
@@ -46,7 +44,6 @@ import cl.emilym.sinatra.ui.widgets.WalkIcon
 import cl.emilym.sinatra.ui.widgets.currentLocation
 import cl.emilym.sinatra.ui.widgets.format
 import cl.emilym.sinatra.ui.widgets.routeRandleSize
-import com.mikepenz.markdown.compose.elements.MarkdownText
 import com.mikepenz.markdown.m3.Markdown
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel

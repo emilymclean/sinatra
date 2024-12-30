@@ -37,4 +37,12 @@ class RecentVisitRepository(
         recentVisitPersistence.addPlaceVisit(placeId)
     }
 
+    suspend fun add(recentVisit: RecentVisit) {
+        when (recentVisit) {
+            is RecentVisit.Stop -> addStopVisit(recentVisit.stop.id)
+            is RecentVisit.Route -> addRouteVisit(recentVisit.route.id)
+            is RecentVisit.Place -> addPlaceVisit(recentVisit.place.id)
+        }
+    }
+
 }

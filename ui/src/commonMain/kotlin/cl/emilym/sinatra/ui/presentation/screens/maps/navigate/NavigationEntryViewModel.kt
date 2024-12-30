@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.data.models.distance
 import cl.emilym.sinatra.data.repository.NetworkGraphRepository
+import cl.emilym.sinatra.data.repository.RecentVisitRepository
 import cl.emilym.sinatra.domain.CalculateJourneyUseCase
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.Dispatchers
@@ -18,7 +19,8 @@ import org.koin.android.annotation.KoinViewModel
 @KoinViewModel
 class NavigationEntryViewModel(
     private val calculateJourneyUseCase: CalculateJourneyUseCase,
-    private val networkGraphRepository: NetworkGraphRepository
+    private val networkGraphRepository: NetworkGraphRepository,
+    private val recentVisitRepository: RecentVisitRepository
 ): ViewModel() {
 
     private var loadedGraph: Boolean = false
@@ -107,6 +109,11 @@ class NavigationEntryViewModel(
             }
             is NavigationLocation.CurrentLocation -> {
                 save(currentLocation, true)
+            }
+        }
+        navigationLocation.recentVisit?.let {
+            viewModelScope.launch {
+                recentVisitRepository.add(it)
             }
         }
     }
