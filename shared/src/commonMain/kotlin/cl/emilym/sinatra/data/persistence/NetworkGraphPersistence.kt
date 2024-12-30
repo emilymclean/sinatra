@@ -1,12 +1,9 @@
 package cl.emilym.sinatra.data.persistence
 
-import cl.emilym.gtfs.networkgraph.Graph
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.withContext
 import org.koin.core.annotation.Factory
-import pbandk.decodeFromByteArray
-import pbandk.encodeToByteArray
 
 @Factory
 class NetworkGraphPersistence(

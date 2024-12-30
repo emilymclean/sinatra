@@ -5,7 +5,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,7 +17,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -29,7 +27,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.unit.dp
-import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.core.screen.ScreenKey
 import cl.emilym.compose.errorwidget.ErrorWidget
 import cl.emilym.compose.units.rdp
@@ -37,7 +34,6 @@ import cl.emilym.sinatra.bounds
 import cl.emilym.sinatra.data.models.Journey
 import cl.emilym.sinatra.data.models.JourneyLeg
 import cl.emilym.sinatra.data.models.MapLocation
-import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.data.models.Time
 import cl.emilym.sinatra.ui.color
 import cl.emilym.sinatra.ui.maps.LineItem
@@ -73,9 +69,9 @@ import sinatra.ui.generated.resources.navigate_calculating_journey_failed
 import sinatra.ui.generated.resources.navigate_downloading_graph
 import sinatra.ui.generated.resources.navigate_travel
 import sinatra.ui.generated.resources.navigate_travel_arrive
+import sinatra.ui.generated.resources.navigate_travel_depart
 import sinatra.ui.generated.resources.navigate_travel_journey_arrive
 import sinatra.ui.generated.resources.navigate_travel_journey_depart
-import sinatra.ui.generated.resources.navigate_travel_depart
 import sinatra.ui.generated.resources.navigate_walk
 
 

@@ -11,12 +11,10 @@ import cl.emilym.gtfs.StopDetailEndpoint
 import cl.emilym.gtfs.StopEndpoint
 import cl.emilym.gtfs.StopTimetable
 import cl.emilym.gtfs.content.Pages
-import cl.emilym.gtfs.networkgraph.Graph
 import cl.emilym.sinatra.NoApiUrlException
 import cl.emilym.sinatra.data.repository.RemoteConfigRepository
 import de.jensklingenberg.ktorfit.Ktorfit
 import de.jensklingenberg.ktorfit.ktorfitBuilder
-import io.github.aakira.napier.Napier
 import io.ktor.client.HttpClient
 import io.ktor.client.call.HttpClientCall
 import io.ktor.client.engine.HttpClientEngine
@@ -82,7 +80,6 @@ fun protobufResponseConverterFactory(): ProtobufResponseConverterFactory {
             RouteCanonicalTimetableEndpoint::class to RouteCanonicalTimetableEndpoint::decodeFromByteArray,
             RouteTripTimetableEndpoint::class to RouteTripTimetableEndpoint::decodeFromByteArray,
             Pages::class to Pages::decodeFromByteArray,
-            Graph::class to Graph::decodeFromByteArray,
         )
     )
 }

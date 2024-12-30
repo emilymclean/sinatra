@@ -1,6 +1,5 @@
 package cl.emilym.sinatra.router
 
-import cl.emilym.gtfs.networkgraph.Edge
 import cl.emilym.sinatra.RouterException
 import cl.emilym.sinatra.data.models.ServiceId
 import cl.emilym.sinatra.data.models.StopId

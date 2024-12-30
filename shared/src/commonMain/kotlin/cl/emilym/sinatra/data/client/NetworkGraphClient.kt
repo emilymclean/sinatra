@@ -1,6 +1,5 @@
 package cl.emilym.sinatra.data.client
 
-import cl.emilym.gtfs.networkgraph.Graph
 import cl.emilym.sinatra.data.models.ShaDigest
 import cl.emilym.sinatra.network.GtfsApi
 import org.koin.core.annotation.Factory

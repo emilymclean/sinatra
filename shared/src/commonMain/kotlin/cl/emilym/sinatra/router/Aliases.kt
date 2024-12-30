@@ -1,6 +1,5 @@
 package cl.emilym.sinatra.router
 
-import cl.emilym.gtfs.networkgraph.Node
 
 typealias NodeIndex = Int
 typealias StopRouteNodeIndex = NodeIndex
@@ -12,5 +11,3 @@ typealias HeadingIndex = Int
 typealias StopIndex = Int
 typealias DaySeconds = Long
 typealias Seconds = Long
-typealias StopRouteNode = Node
-typealias StopNode = Node

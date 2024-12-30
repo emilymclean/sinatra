@@ -1,6 +1,5 @@
 package cl.emilym.sinatra.data.repository
 
-import cl.emilym.gtfs.networkgraph.Graph
 import cl.emilym.sinatra.data.client.NetworkGraphClient
 import cl.emilym.sinatra.data.models.Cachable
 import cl.emilym.sinatra.data.models.CacheCategory
@@ -10,7 +9,6 @@ import cl.emilym.sinatra.data.persistence.NetworkGraphPersistence
 import cl.emilym.sinatra.router.data.NetworkGraph
 import kotlinx.datetime.Clock
 import org.koin.core.annotation.Factory
-import pbandk.decodeFromByteArray
 
 @Factory
 class NetworkGraphCacheWorker(

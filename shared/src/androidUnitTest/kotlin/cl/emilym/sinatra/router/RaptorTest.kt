@@ -1,7 +1,6 @@
 package cl.emilym.sinatra.router
 
 import android.net.Network
-import cl.emilym.gtfs.networkgraph.Graph
 import cl.emilym.sinatra.RouterException
 import cl.emilym.sinatra.router.data.NetworkGraph
 import io.github.aakira.napier.Napier
