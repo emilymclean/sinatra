@@ -264,7 +264,7 @@ fun LegScaffold(
     content: @Composable () -> Unit
 ) {
     Row(
-        Modifier.padding(horizontal = 1.rdp, vertical = 0.75.rdp).fillMaxWidth().then(modifier),
+        Modifier.then(modifier).padding(horizontal = 1.rdp, vertical = 0.75.rdp).fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(1.rdp),
         verticalAlignment = Alignment.CenterVertically
     ) {
