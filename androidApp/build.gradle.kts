@@ -12,8 +12,6 @@ plugins {
 android {
     val appVersionCode: String by project
     val appVersionName: String by project
-    val nominatimUserAgent: String by project
-    val nominatimEmail: String by project
 
     namespace = "cl.emilym.sinatra.android"
     compileSdk = 35
@@ -36,11 +34,6 @@ android {
     buildTypes {
         getByName("release") {
             isMinifyEnabled = false
-        }
-
-        buildTypes.forEach {
-            it.buildConfigField("String", "NOMINATIM_USER_AGENT", "\"$nominatimUserAgent\"")
-            it.buildConfigField("String", "NOMINATIM_EMAIL", "\"$nominatimEmail\"")
         }
 
         getByName("debug") {

@@ -2,13 +2,14 @@ package cl.emilym.sinatra.data.client
 
 import cl.emilym.sinatra.BuildInformation
 import cl.emilym.sinatra.data.models.Place
+import cl.emilym.sinatra.data.repository.RemoteConfigRepository
 import cl.emilym.sinatra.network.NominatimApi
 import org.koin.core.annotation.Factory
 
 @Factory
 class PlaceClient(
     private val nominatimApi: NominatimApi,
-    private val buildInformation: BuildInformation
+    private val remoteConfigRepository: RemoteConfigRepository
 ) {
 
     companion object {
@@ -18,8 +19,8 @@ class PlaceClient(
     suspend fun search(query: String): List<Place> {
         val response = nominatimApi.search(
             query,
-            userAgent = buildInformation.nominatimUserAgent,
-            email = buildInformation.nominatimEmail
+            userAgent = remoteConfigRepository.nominatimUserAgent(),
+            email = remoteConfigRepository.nominatimEmail()
         )
         return response
             .filterNot { it.type in NOMINATIM_STATION_TYPES }

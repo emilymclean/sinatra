@@ -15,9 +15,7 @@ val nativeModule = module {
     single {
         BuildInformation(
             BuildConfig.VERSION_NAME,
-            BuildConfig.VERSION_CODE.toString(),
-            BuildConfig.NOMINATIM_USER_AGENT,
-            BuildConfig.NOMINATIM_EMAIL
+            BuildConfig.VERSION_CODE.toString()
         )
     }
 }

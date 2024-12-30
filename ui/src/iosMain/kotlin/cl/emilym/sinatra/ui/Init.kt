@@ -28,9 +28,7 @@ fun init(
                 single {
                     BuildInformation(
                         versionName,
-                        versionCode,
-                        NOMINATIM_EMAIL,
-                        NOMINATIM_USER_AGENT
+                        versionCode
                     )
                 }
             },

@@ -17,6 +17,8 @@ class RemoteConfigRepository(
         const val ABOUT_CONTENT_URL_KEY = "about_content_url"
         const val DATA_CACHE_PERIOD_MULTIPLIER_KEY = "data_cache_period_multiplier"
         const val NOMINATIM_API_URL_KEY = "nominatim_api_url"
+        const val NOMINATIM_EMAIL_KEY = "nominatim_email"
+        const val NOMINATIM_USER_AGENT_KEY = "nominatim_user_agent"
     }
 
     @Throws(NoApiUrlException::class, CancellationException::class)
@@ -26,6 +28,14 @@ class RemoteConfigRepository(
 
     suspend fun nominatimUrl(): String? {
         return remoteConfigClient.string(NOMINATIM_API_URL_KEY)
+    }
+
+    suspend fun nominatimEmail(): String? {
+        return remoteConfigClient.string(NOMINATIM_EMAIL_KEY)
+    }
+
+    suspend fun nominatimUserAgent(): String? {
+        return remoteConfigClient.string(NOMINATIM_USER_AGENT_KEY)
     }
 
     suspend fun privacyPolicyUrl(): String? {
