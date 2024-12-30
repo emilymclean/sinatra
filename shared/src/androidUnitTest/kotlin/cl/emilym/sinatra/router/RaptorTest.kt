@@ -169,7 +169,8 @@ class RaptorTest {
     fun testInvalidJourney() {
         assertFails {
             val raptor = Raptor(graph, graph.mappings.serviceIds, config = RaptorConfig(
-                maximumWalkingTime = 100
+                maximumWalkingTime = 100,
+                transferPenalty = 5 * 60L
             ))
             raptor.calculate(
                 Duration.parseIsoString("PT25H").inWholeSeconds,
