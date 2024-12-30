@@ -9,7 +9,8 @@ import cl.emilym.sinatra.router.data.NetworkGraph
 import cl.emilym.sinatra.router.data.NetworkGraphEdge
 
 data class RaptorConfig(
-    val maximumWalkingTime: Seconds
+    val maximumWalkingTime: Seconds,
+    val transferPenalty: Seconds
 )
 
 class Raptor(
@@ -149,8 +150,8 @@ class Raptor(
             when (it.type) {
                 EdgeType.UNWEIGHTED -> NodeCost(it.connectedNodeIndex.toInt(), 0L, it)
                 EdgeType.TRANSFER, EdgeType.TRANSFER_NON_ADJUSTABLE -> {
-                    if (it.cost.toInt() > (config?.maximumWalkingTime ?: Long.MAX_VALUE)) return@mapNotNull null
-                    NodeCost(it.connectedNodeIndex.toInt(), it.cost.toLong(), it)
+                    if (it.cost.toLong() > (config?.maximumWalkingTime ?: Long.MAX_VALUE)) return@mapNotNull null
+                    NodeCost(it.connectedNodeIndex.toInt(), it.cost.toLong() + (config?.transferPenalty ?: 0L), it)
                 }
                 EdgeType.TRAVEL -> {
                     if (!servicesAreActive(it.availableServices)) return@mapNotNull null

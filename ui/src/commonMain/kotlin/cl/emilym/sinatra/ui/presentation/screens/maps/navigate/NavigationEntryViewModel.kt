@@ -2,14 +2,10 @@ package cl.emilym.sinatra.ui.presentation.screens.maps.navigate
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import cl.emilym.compose.requeststate.RequestState
-import cl.emilym.compose.requeststate.handle
-import cl.emilym.gtfs.networkgraph.Graph
 import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.data.models.distance
 import cl.emilym.sinatra.data.repository.NetworkGraphRepository
 import cl.emilym.sinatra.domain.CalculateJourneyUseCase
-import cl.emilym.sinatra.ui.widgets.createRequestStateFlow
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -35,17 +31,20 @@ class NavigationEntryViewModel(
     private var currentLocation: MapLocation? = null
 
     private var destinationCurrentLocation = false
-    private var destination: MapLocation? = null
+    private var _destination: MapLocation? = null
         set(value) {
             field = value
             if (value != null) calculate()
         }
     private var originCurrentLocation = false
-    private var origin: MapLocation? = null
+    private var _origin: MapLocation? = null
         set(value) {
             field = value
             if (value != null) calculate()
         }
+
+    val destination = MutableStateFlow<NavigationLocation?>(null)
+    val origin = MutableStateFlow<NavigationLocation?>(null)
 
     val state = MutableStateFlow<NavigationState>(NavigationState.GraphLoading)
 
@@ -71,19 +70,21 @@ class NavigationEntryViewModel(
     }
 
     fun setDestination(navigationLocation: NavigationLocation) {
+        destination.value = navigationLocation
         unpackLocation(
             navigationLocation
         ) { location, current ->
-            destination = location
+            _destination = location
             destinationCurrentLocation = current
         }
     }
 
     fun setOrigin(navigationLocation: NavigationLocation) {
+        origin.value = navigationLocation
         unpackLocation(
             navigationLocation
         ) { location, current ->
-            origin = location
+            _origin = location
             originCurrentLocation = current
         }
     }
@@ -92,8 +93,8 @@ class NavigationEntryViewModel(
         val currentLocation = currentLocation
         if (currentLocation != null && distance(location, currentLocation) < 1.0) return
         this.currentLocation = location
-        if (originCurrentLocation) origin = location
-        if (destinationCurrentLocation) destination = location
+        if (originCurrentLocation) _origin = location
+        if (destinationCurrentLocation) _destination = location
     }
 
     private fun unpackLocation(
@@ -113,8 +114,8 @@ class NavigationEntryViewModel(
     private fun calculate() {
         calculationJob?.cancel()
         if (!loadedGraph) return
-        val destination = destination ?: return
-        val origin = origin ?: return
+        val destination = _destination ?: return
+        val origin = _origin ?: return
 
         viewModelScope.launch {
             state.value = NavigationState.JourneyCalculating

@@ -7,6 +7,7 @@ import cl.emilym.sinatra.data.models.distance
 import cl.emilym.sinatra.data.models.map
 import cl.emilym.sinatra.data.repository.NetworkGraphRepository
 import cl.emilym.sinatra.data.repository.RouteRepository
+import cl.emilym.sinatra.data.repository.RoutingPreferencesRepository
 import cl.emilym.sinatra.data.repository.ServiceRepository
 import cl.emilym.sinatra.data.repository.StopRepository
 import cl.emilym.sinatra.data.repository.TransportMetadataRepository
@@ -21,6 +22,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import org.koin.core.annotation.Factory
+import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
 @Factory
@@ -30,7 +32,8 @@ class CalculateJourneyUseCase(
     private val stopRepository: StopRepository,
     private val routeRepository: RouteRepository,
     private val clock: Clock,
-    private val transportMetadataRepository: TransportMetadataRepository
+    private val transportMetadataRepository: TransportMetadataRepository,
+    private val routingPreferencesRepository: RoutingPreferencesRepository,
 ) {
 
     suspend operator fun invoke(
@@ -43,6 +46,7 @@ class CalculateJourneyUseCase(
             val graph = networkGraphRepository.networkGraph()
             val stops = stopRepository.stops()
             val services = activeServicesUseCase(now).map { it.map { it.id } }
+            val maximumWalkingTime = routingPreferencesRepository.maximumWalkingTime()
 
             Napier.d("Active services = ${services}")
 
@@ -58,12 +62,15 @@ class CalculateJourneyUseCase(
                 graph.item,
                 services.item,
                 RaptorConfig(
-                    maximumWalkingTime = (60 * 10)
+                    maximumWalkingTime = maximumWalkingTime.inWholeSeconds,
+                    transferPenalty = 5.minutes.inWholeSeconds
                 )
             )
+
+            val departureTimeSeconds = (departureTime - clock.startOfDay(transportMetadataRepository.timeZone())).inWholeSeconds
             val raptorJourney =
                 raptor.calculate(
-                    (departureTime - clock.startOfDay(transportMetadataRepository.timeZone())).inWholeSeconds,
+                    departureTimeSeconds,
                     departureStop.id,
                     arrivalStop.id
                 )
@@ -72,6 +79,7 @@ class CalculateJourneyUseCase(
                 raptorJourney.connections.filterIsInstance<RaptorJourneyConnection.Travel>().map { it.routeId }
             )
             val legs = mutableListOf<JourneyLeg>()
+            var lastEndTime = departureTimeSeconds.seconds
             for (i in raptorJourney.connections.indices) {
                 val stops = raptorJourney.connections[i].stops.mapNotNull { s -> stops.item.firstOrNull { it.id == s } }
                 legs += when (val connection = raptorJourney.connections[i]) {
@@ -85,9 +93,11 @@ class CalculateJourneyUseCase(
                     )
                     is RaptorJourneyConnection.Transfer -> JourneyLeg.Transfer(
                         stops,
-                        connection.travelTime.seconds
+                        connection.travelTime.seconds,
+                        lastEndTime,
+                        lastEndTime + connection.travelTime.seconds
                     )
-                }
+                }.also { lastEndTime = it.arrivalTime }
             }
 
             Journey(legs)

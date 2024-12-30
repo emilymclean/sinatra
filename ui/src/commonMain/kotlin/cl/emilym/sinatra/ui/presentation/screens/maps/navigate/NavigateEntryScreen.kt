@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
@@ -24,22 +25,27 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.core.screen.ScreenKey
 import cl.emilym.compose.errorwidget.ErrorWidget
 import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.data.models.Journey
 import cl.emilym.sinatra.data.models.JourneyLeg
+import cl.emilym.sinatra.data.models.Stop
+import cl.emilym.sinatra.data.models.Time
 import cl.emilym.sinatra.ui.presentation.theme.Container
 import cl.emilym.sinatra.ui.widgets.BusIcon
 import cl.emilym.sinatra.ui.widgets.GenericMarkerIcon
 import cl.emilym.sinatra.ui.widgets.ListHint
 import cl.emilym.sinatra.ui.widgets.MapIcon
 import cl.emilym.sinatra.ui.widgets.NavigatorBackButton
+import cl.emilym.sinatra.ui.widgets.RouteRandle
 import cl.emilym.sinatra.ui.widgets.StarOutlineIcon
 import cl.emilym.sinatra.ui.widgets.WalkIcon
 import cl.emilym.sinatra.ui.widgets.currentLocation
 import cl.emilym.sinatra.ui.widgets.format
+import cl.emilym.sinatra.ui.widgets.routeRandleSize
 import com.mikepenz.markdown.compose.elements.MarkdownText
 import com.mikepenz.markdown.m3.Markdown
 import org.jetbrains.compose.resources.stringResource
@@ -58,6 +64,10 @@ class NavigateEntryScreen(
     val destination: NavigationLocation,
     val origin: NavigationLocation = NavigationLocation.CurrentLocation
 ): Screen {
+
+    private val journeyIconInset
+        @Composable
+        get() = 2.rdp + routeRandleSize
 
     private val iconInset
         @Composable
@@ -175,13 +185,25 @@ class NavigateEntryScreen(
 
     @Composable
     fun DisplayJourney(journey: Journey) {
+        if (journey.legs.isEmpty()) return
+        val lastLeg = journey.legs.last()
+        val viewModel = koinViewModel<NavigationEntryViewModel>()
+        val destination by viewModel.destination.collectAsState()
+
         Column(Modifier.fillMaxWidth()) {
-            for (leg in journey.legs) {
+            for (legI in journey.legs.indices) {
+                val leg = journey.legs[legI]
                 when (leg) {
                     is JourneyLeg.Transfer -> TransferLeg(leg)
                     is JourneyLeg.Travel -> TravelLeg(leg)
                 }
-                HorizontalDivider(Modifier.padding(start = iconInset, end = 1.rdp))
+                if (legI < journey.legs.size - 1)
+                    HorizontalDivider(Modifier.padding(start = journeyIconInset, end = 1.rdp))
+            }
+
+            if (lastLeg is JourneyLeg.Transfer || destination !is NavigationLocation.Stop) {
+                HorizontalDivider(Modifier.padding(start = journeyIconInset, end = 1.rdp))
+                ArrivalStopLeg(lastLeg.stops.last(), lastLeg.arrivalTime)
             }
         }
     }
@@ -198,7 +220,9 @@ fun LegScaffold(
         horizontalArrangement = Arrangement.spacedBy(1.rdp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        icon()
+        Box(Modifier.size(routeRandleSize), contentAlignment = Alignment.Center) {
+            icon()
+        }
         content()
     }
 }
@@ -212,14 +236,26 @@ fun TransferLeg(leg: JourneyLeg.Transfer) {
 
 @Composable
 fun TravelLeg(leg: JourneyLeg.Travel) {
-    LegScaffold({ BusIcon() }) {
+    LegScaffold({ RouteRandle(leg.route) }) {
         Column(
             Modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(0.75.rdp)
         ) {
-            Markdown(stringResource(Res.string.navigate_travel_depart, leg.stops[0].name, leg.departureTime.format()))
-            Markdown(stringResource(Res.string.navigate_travel, leg.travelTime.inWholeMinutes))
-            Markdown(stringResource(Res.string.navigate_travel_arrive, leg.stops[1].name, leg.arrivalTime.format()))
+            Markdown(stringResource(Res.string.navigate_travel_depart, leg.stops.first().name, leg.departureTime.format()))
+            Markdown(stringResource(Res.string.navigate_travel, leg.travelTime.inWholeMinutes, leg.route.name, leg.heading))
+            Markdown(stringResource(Res.string.navigate_travel_arrive, leg.stops.last().name, leg.arrivalTime.format()))
+        }
+    }
+}
+
+@Composable
+fun ArrivalStopLeg(stop: Stop, arrivalTime: Time) {
+    LegScaffold({ GenericMarkerIcon() }) {
+        Column(
+            Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(0.75.rdp)
+        ) {
+            Markdown(stringResource(Res.string.navigate_travel_arrive, stop.name, arrivalTime.format()))
         }
     }
 }
