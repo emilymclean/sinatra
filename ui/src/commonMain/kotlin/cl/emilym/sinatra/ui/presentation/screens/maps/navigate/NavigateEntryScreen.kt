@@ -60,6 +60,8 @@ import sinatra.ui.generated.resources.navigate_calculating_journey_failed
 import sinatra.ui.generated.resources.navigate_downloading_graph
 import sinatra.ui.generated.resources.navigate_travel
 import sinatra.ui.generated.resources.navigate_travel_arrive
+import sinatra.ui.generated.resources.navigate_travel_journey_arrive
+import sinatra.ui.generated.resources.navigate_travel_journey_depart
 import sinatra.ui.generated.resources.navigate_travel_depart
 import sinatra.ui.generated.resources.navigate_walk
 
@@ -234,23 +236,55 @@ class NavigateEntryScreen(
     fun DisplayJourney(journey: Journey) {
         if (journey.legs.isEmpty()) return
         val lastLeg = journey.legs.last()
+        val firstLeg = journey.legs.first()
         val viewModel = koinViewModel<NavigationEntryViewModel>()
         val destination by viewModel.destination.collectAsState()
+        val origin by viewModel.origin.collectAsState()
 
         Column(Modifier.fillMaxWidth()) {
+            when (firstLeg) {
+                is JourneyLeg.Transfer -> {
+                    DepartureLeg(firstLeg.stops.last().name)
+                    HorizontalDivider(Modifier.padding(start = journeyIconInset, end = 1.rdp))
+                }
+                is JourneyLeg.TransferPoint -> {
+                    origin?.name?.let {
+                        DepartureLeg(it)
+                        HorizontalDivider(Modifier.padding(start = journeyIconInset, end = 1.rdp))
+                    }
+                }
+                else -> {}
+            }
+
             for (legI in journey.legs.indices) {
                 val leg = journey.legs[legI]
                 when (leg) {
                     is JourneyLeg.Transfer -> TransferLeg(leg)
                     is JourneyLeg.Travel -> TravelLeg(leg)
+                    else -> {
+                        when (legI) {
+                            0 -> TransferLeg(leg)
+                            journey.legs.lastIndex -> TransferLeg(leg)
+                            else -> {}
+                        }
+                    }
                 }
                 if (legI < journey.legs.size - 1)
                     HorizontalDivider(Modifier.padding(start = journeyIconInset, end = 1.rdp))
             }
 
-            if (lastLeg is JourneyLeg.Transfer || destination !is NavigationLocation.Stop) {
-                HorizontalDivider(Modifier.padding(start = journeyIconInset, end = 1.rdp))
-                ArrivalStopLeg(lastLeg.stops.last(), lastLeg.arrivalTime)
+            when (lastLeg) {
+                is JourneyLeg.Transfer -> {
+                    HorizontalDivider(Modifier.padding(start = journeyIconInset, end = 1.rdp))
+                    ArrivalLeg(lastLeg.stops.last().name, lastLeg.arrivalTime)
+                }
+                is JourneyLeg.TransferPoint -> {
+                    destination?.name?.let {
+                        HorizontalDivider(Modifier.padding(start = journeyIconInset, end = 1.rdp))
+                        ArrivalLeg(it, lastLeg.arrivalTime)
+                    }
+                }
+                else -> {}
             }
         }
     }
@@ -276,7 +310,7 @@ fun LegScaffold(
 }
 
 @Composable
-fun TransferLeg(leg: JourneyLeg.Transfer) {
+fun TransferLeg(leg: JourneyLeg) {
     LegScaffold({ WalkIcon() }) {
         Markdown(stringResource(Res.string.navigate_walk, leg.travelTime.text))
     }
@@ -297,13 +331,25 @@ fun TravelLeg(leg: JourneyLeg.Travel) {
 }
 
 @Composable
-fun ArrivalStopLeg(stop: Stop, arrivalTime: Time) {
+fun DepartureLeg(pointName: String) {
     LegScaffold({ GenericMarkerIcon() }) {
         Column(
             Modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(0.75.rdp)
         ) {
-            Markdown(stringResource(Res.string.navigate_travel_arrive, stop.name, arrivalTime.format()))
+            Markdown(stringResource(Res.string.navigate_travel_journey_depart, pointName))
+        }
+    }
+}
+
+@Composable
+fun ArrivalLeg(pointName: String, arrivalTime: Time) {
+    LegScaffold({ GenericMarkerIcon() }) {
+        Column(
+            Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(0.75.rdp)
+        ) {
+            Markdown(stringResource(Res.string.navigate_travel_journey_arrive, pointName, arrivalTime.format()))
         }
     }
 }

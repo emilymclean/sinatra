@@ -7,7 +7,10 @@ data class Journey(
 )
 
 sealed interface JourneyLeg {
-    val stops: List<Stop>
+    interface RouteJourneyLeg: JourneyLeg {
+        val stops: List<Stop>
+    }
+
     val travelTime: Duration
     val departureTime: Time
     val arrivalTime: Time
@@ -17,13 +20,19 @@ sealed interface JourneyLeg {
         override val travelTime: Duration,
         override val departureTime: Time,
         override val arrivalTime: Time
-    ): JourneyLeg
+    ): JourneyLeg, RouteJourneyLeg
 
     data class Travel(
         override val stops: List<Stop>,
         override val travelTime: Duration,
         val route: Route,
         val heading: String,
+        override val departureTime: Time,
+        override val arrivalTime: Time
+    ): JourneyLeg, RouteJourneyLeg
+
+    data class TransferPoint(
+        override val travelTime: Duration,
         override val departureTime: Time,
         override val arrivalTime: Time
     ): JourneyLeg
