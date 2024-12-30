@@ -109,15 +109,21 @@ class NavigateEntryScreen(
                             .clip(MaterialTheme.shapes.large)
                             .background(Container)
                     ) {
-                        NavigationLocationDisplay(
-                            origin,
-                            false
-                        )
+                        val origin by viewModel.origin.collectAsState()
+                        val destination by viewModel.destination.collectAsState()
+                        origin?.let { origin ->
+                            NavigationLocationDisplay(
+                                origin,
+                                false
+                            )
+                        }
                         HorizontalDivider(Modifier.padding(start = iconInset))
-                        NavigationLocationDisplay(
-                            destination,
-                            true
-                        )
+                        destination?.let { destination ->
+                            NavigationLocationDisplay(
+                                destination,
+                                true
+                            )
+                        }
                     }
                 }
 
