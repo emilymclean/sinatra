@@ -1,5 +1,6 @@
 package cl.emilym.sinatra.router
 
+import android.net.Network
 import cl.emilym.gtfs.networkgraph.Graph
 import cl.emilym.sinatra.RouterException
 import cl.emilym.sinatra.router.data.NetworkGraph
@@ -21,21 +22,25 @@ class RaptorTest {
         const val STOP_ID_CANBERRA_RAILWAY_STATION = "3320"
     }
 
-    lateinit var graph: Graph
+    lateinit var graph: NetworkGraph
     lateinit var raptor: Raptor
 
     @BeforeTest
     fun setup() {
-        graph = Graph.decodeFromByteArray(this::class.java.classLoader.getResource("network_graph.pb").readBytes())
-//        raptor = Raptor(graph, graph.mappings.serviceIds)
+        graph = NetworkGraph.byteFormatForByteArray(this::class.java.classLoader.getResource("network_graph.eng").readBytes())
+        raptor = Raptor(graph, graph.mappings.serviceIds)
     }
 
     @Test
     fun byteGraph() {
-        val graph = NetworkGraph.byteFormatForByteArray(this::class.java.classLoader.getResource("network_graph.eng").readBytes())
+        println(graph.mappings.stopIds.take(5))
+        println(graph.mappings.routeIds.take(5))
+        println(graph.mappings.headings.take(5))
+        println(graph.mappings.serviceIds)
         println(graph.metadata)
-        println(graph.node(0))
-        println(graph.node(1))
+//        println(graph.node(0))
+//        println(graph.node(1))
+//        println(graph.node(graph.mappings.stopIds.size))
     }
 
     @Test
@@ -135,7 +140,7 @@ class RaptorTest {
 
     @Test
     fun testValidJourneyWithFewerServices() {
-//        val raptor = Raptor(graph, listOf("2023-COMBVAC-Weekday-05", "WD"))
+        val raptor = Raptor(graph, listOf("2023-COMBVAC-Weekday-05", "WD"))
         val result = raptor.calculate(
             Duration.parseIsoString("PT09H").inWholeSeconds,
             STOP_ID_SWINDEN_STREET,
@@ -164,10 +169,9 @@ class RaptorTest {
     @Test
     fun testInvalidJourney() {
         assertFails {
-//            val raptor = Raptor(graph, graph.mappings.serviceIds, config = RaptorConfig(
-//                maximumWalkingTime = 100
-//            )
-//            )
+            val raptor = Raptor(graph, graph.mappings.serviceIds, config = RaptorConfig(
+                maximumWalkingTime = 100
+            ))
             raptor.calculate(
                 Duration.parseIsoString("PT25H").inWholeSeconds,
                 STOP_ID_CANBERRA_RAILWAY_STATION,

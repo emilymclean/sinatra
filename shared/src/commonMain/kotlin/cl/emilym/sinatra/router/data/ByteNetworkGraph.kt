@@ -49,7 +49,7 @@ abstract class ByteNetworkGraphEntry(
 
     protected fun readString(offset: Int): DataAndSize<String> {
         val strBytes = mutableListOf<Byte>()
-        var position = offset
+        var position = offset + this.position
         while(true) {
             val byte = data.read(position)
             if (byte == STRING_TERMINATOR) break
@@ -106,8 +106,6 @@ class ByteNetworkGraphMappings(
         val routesCount = readUInt(0x04)
         val headingCount = readUInt(0x08)
         val servicesCount = readUInt(0x0C)
-
-        println("Stops count = $stopsCount")
 
         val paired = listOf(
             stopsCount to stopIds,
