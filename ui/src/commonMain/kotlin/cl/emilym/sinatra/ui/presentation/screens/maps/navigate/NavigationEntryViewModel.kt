@@ -13,6 +13,7 @@ import cl.emilym.sinatra.data.repository.NetworkGraphRepository
 import cl.emilym.sinatra.data.repository.RecentVisitRepository
 import cl.emilym.sinatra.data.repository.StopRepository
 import cl.emilym.sinatra.domain.CalculateJourneyUseCase
+import cl.emilym.sinatra.domain.JourneyLocation
 import cl.emilym.sinatra.domain.search.RouteStopSearchUseCase
 import cl.emilym.sinatra.domain.search.SearchResult
 import cl.emilym.sinatra.nullIfEmpty
@@ -78,17 +79,21 @@ class NavigationEntryViewModel(
     private var _destination: MapLocation? = null
         set(value) {
             field = value
+            destinationLocation.value = value
             if (value != null) calculate()
         }
     private var originCurrentLocation = false
     private var _origin: MapLocation? = null
         set(value) {
             field = value
+            originLocation.value = value
             if (value != null) calculate()
         }
 
     val destination = MutableStateFlow<NavigationLocation?>(null)
     val origin = MutableStateFlow<NavigationLocation?>(null)
+    val destinationLocation = MutableStateFlow<MapLocation?>(null)
+    val originLocation = MutableStateFlow<MapLocation?>(null)
 
     private val stops = MutableStateFlow<RequestState<List<Stop>>>(RequestState.Initial())
     private val _recentVisits = createRequestStateFlowFlow<List<RecentVisit>>()
@@ -257,7 +262,16 @@ class NavigationEntryViewModel(
             navigationState.value = NavigationState.JourneyCalculating
             try {
                 navigationState.value = NavigationState.JourneyFound(
-                    calculateJourneyUseCase(origin, destination).also {
+                    calculateJourneyUseCase(
+                        JourneyLocation(
+                            origin,
+                            exact = this@NavigationEntryViewModel.origin.value is NavigationLocation.Stop
+                        ),
+                        JourneyLocation(
+                            destination,
+                            exact = this@NavigationEntryViewModel.destination.value is NavigationLocation.Stop
+                        )
+                    ).also {
                         Napier.d("Journey = $it")
                     }
                 )

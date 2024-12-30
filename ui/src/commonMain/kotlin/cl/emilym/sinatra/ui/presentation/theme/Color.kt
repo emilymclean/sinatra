@@ -1,5 +1,6 @@
 package cl.emilym.sinatra.ui.presentation.theme
 
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
 val Purple80 = Color(0xFFD0BCFF)
@@ -12,3 +13,7 @@ val Pink40 = Color(0xFF7D5260)
 
 val BrandingRed = Color(0xFFBD0021)
 val BrandingBlue = Color(0xFF0042AC)
+
+val walkingColor
+    @Composable
+    get() = BrandingBlue

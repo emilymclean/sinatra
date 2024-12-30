@@ -33,16 +33,29 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.core.screen.ScreenKey
 import cl.emilym.compose.errorwidget.ErrorWidget
 import cl.emilym.compose.units.rdp
+import cl.emilym.sinatra.bounds
 import cl.emilym.sinatra.data.models.Journey
 import cl.emilym.sinatra.data.models.JourneyLeg
+import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.data.models.Time
+import cl.emilym.sinatra.ui.color
+import cl.emilym.sinatra.ui.maps.LineItem
+import cl.emilym.sinatra.ui.maps.MapItem
+import cl.emilym.sinatra.ui.maps.MarkerItem
+import cl.emilym.sinatra.ui.maps.routeStopMarkerIcon
+import cl.emilym.sinatra.ui.maps.walkingMarkerIcon
+import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
+import cl.emilym.sinatra.ui.navigation.MapScreen
+import cl.emilym.sinatra.ui.presentation.screens.maps.zoomPadding
 import cl.emilym.sinatra.ui.presentation.screens.search.SearchScreen
 import cl.emilym.sinatra.ui.presentation.theme.Container
+import cl.emilym.sinatra.ui.presentation.theme.walkingColor
 import cl.emilym.sinatra.ui.text
 import cl.emilym.sinatra.ui.widgets.CurrentLocationCard
 import cl.emilym.sinatra.ui.widgets.GenericMarkerIcon
 import cl.emilym.sinatra.ui.widgets.ListHint
+import cl.emilym.sinatra.ui.widgets.LocalMapControl
 import cl.emilym.sinatra.ui.widgets.MapIcon
 import cl.emilym.sinatra.ui.widgets.NavigatorBackButton
 import cl.emilym.sinatra.ui.widgets.RouteRandle
@@ -60,6 +73,8 @@ import sinatra.ui.generated.resources.navigate_calculating_journey_failed
 import sinatra.ui.generated.resources.navigate_downloading_graph
 import sinatra.ui.generated.resources.navigate_travel
 import sinatra.ui.generated.resources.navigate_travel_arrive
+import sinatra.ui.generated.resources.navigate_travel_journey_arrive
+import sinatra.ui.generated.resources.navigate_travel_journey_depart
 import sinatra.ui.generated.resources.navigate_travel_depart
 import sinatra.ui.generated.resources.navigate_walk
 
@@ -67,7 +82,7 @@ import sinatra.ui.generated.resources.navigate_walk
 class NavigateEntryScreen(
     val destination: NavigationLocation,
     val origin: NavigationLocation = NavigationLocation.CurrentLocation
-): Screen {
+): MapScreen {
 
     private val journeyIconInset
         @Composable
@@ -80,7 +95,75 @@ class NavigateEntryScreen(
     override val key: ScreenKey = "navigateEntryScreen-${destination.screenKey}-${origin.screenKey}"
 
     @Composable
-    override fun Content() {
+    override fun mapItems(): List<MapItem> {
+        val viewModel = koinViewModel<NavigationEntryViewModel>()
+        val state by viewModel.state.collectAsState(null)
+        val journey = ((state as? NavigationEntryState.Journey)?.state as? NavigationState.JourneyFound)?.journey ?: return emptyList()
+        val originLocation by viewModel.originLocation.collectAsState()
+        val destinationLocation by viewModel.destinationLocation.collectAsState()
+
+        val items = mutableListOf<MapItem>()
+
+        @Composable
+        fun addWalking(points: List<MapLocation>) {
+            items.add(
+                LineItem(
+                    points,
+                    walkingColor
+                )
+            )
+            items.addAll(points.drop(1).dropLast(1).map {
+                MarkerItem(
+                    it,
+                    walkingMarkerIcon(),
+                    id = "routeLeg-walking-${it}"
+                )
+            })
+        }
+
+        for (i in journey.legs.indices) {
+            val leg = journey.legs[i]
+
+            when (leg) {
+                is JourneyLeg.Travel -> {
+                    items.add(
+                        LineItem(
+                            leg.stops.map { it.location },
+                            leg.route.color()
+                        )
+                    )
+                    items.addAll(leg.stops.map {
+                        MarkerItem(
+                            it.location,
+                            routeStopMarkerIcon(leg.route),
+                            id = "routeLeg-stop-${it.id}"
+                        )
+                    })
+                }
+                is JourneyLeg.Transfer -> {
+                    addWalking(leg.stops.map { it.location })
+                }
+                is JourneyLeg.TransferPoint -> {
+                    when (i) {
+                        0 -> originLocation?.let {
+                            val next = (journey.legs.getOrNull(1) as? JourneyLeg.RouteJourneyLeg) ?: return@let
+                            addWalking(listOf(it, it, next.stops.first().location))
+                        }
+                        journey.legs.lastIndex -> destinationLocation?.let {
+                            val next = (journey.legs.getOrNull(journey.legs.lastIndex - 1) as? JourneyLeg.RouteJourneyLeg) ?: return@let
+                            addWalking(listOf(next.stops.last().location, it, it))
+                        }
+                    }
+                }
+                else -> {}
+            }
+        }
+
+        return items
+    }
+
+    @Composable
+    override fun BottomSheetContent() {
         val viewModel = koinViewModel<NavigationEntryViewModel>()
         val state by viewModel.state.collectAsState(null)
         val currentLocation = currentLocation()
@@ -94,10 +177,35 @@ class NavigateEntryScreen(
             viewModel.updateCurrentLocation(currentLocation)
         }
 
-        Scaffold { innerPadding ->
+        when (val state = state) {
+            is NavigationEntryState.Journey -> JourneyState(PaddingValues(0.dp), viewModel, state.state)
+            is NavigationEntryState.Search -> SearchState(PaddingValues(0.dp), viewModel)
+            null -> {}
+        }
+
+        val bottomSheet = LocalBottomSheetState.current
+        val mapControl = LocalMapControl.current
+        val originLocation by viewModel.originLocation.collectAsState()
+        val destinationLocation by viewModel.destinationLocation.collectAsState()
+        val zoomPadding = zoomPadding
+
+        LaunchedEffect(state) {
             when (val state = state) {
-                is NavigationEntryState.Journey -> JourneyState(innerPadding, viewModel, state.state)
-                is NavigationEntryState.Search -> SearchState(innerPadding, viewModel)
+                is NavigationEntryState.Journey -> when (state.state) {
+                    is NavigationState.JourneyFound -> {
+                        bottomSheet.bottomSheetState.halfExpand()
+                        mapControl.zoomToArea(
+                            (state.state.journey.legs
+                                .filterIsInstance<JourneyLeg.RouteJourneyLeg>()
+                                .flatMap { it.stops.map { it.location } } +
+                                    listOfNotNull(originLocation, destinationLocation)
+                            ).bounds(),
+                            zoomPadding
+                        )
+                    }
+                    else -> bottomSheet.bottomSheetState.expand()
+                }
+                is NavigationEntryState.Search -> bottomSheet.bottomSheetState.expand()
                 null -> {}
             }
         }
@@ -234,23 +342,55 @@ class NavigateEntryScreen(
     fun DisplayJourney(journey: Journey) {
         if (journey.legs.isEmpty()) return
         val lastLeg = journey.legs.last()
+        val firstLeg = journey.legs.first()
         val viewModel = koinViewModel<NavigationEntryViewModel>()
         val destination by viewModel.destination.collectAsState()
+        val origin by viewModel.origin.collectAsState()
 
         Column(Modifier.fillMaxWidth()) {
+            when (firstLeg) {
+                is JourneyLeg.Transfer -> {
+                    DepartureLeg(firstLeg.stops.last().name)
+                    HorizontalDivider(Modifier.padding(start = journeyIconInset, end = 1.rdp))
+                }
+                is JourneyLeg.TransferPoint -> {
+                    origin?.name?.let {
+                        DepartureLeg(it)
+                        HorizontalDivider(Modifier.padding(start = journeyIconInset, end = 1.rdp))
+                    }
+                }
+                else -> {}
+            }
+
             for (legI in journey.legs.indices) {
                 val leg = journey.legs[legI]
                 when (leg) {
                     is JourneyLeg.Transfer -> TransferLeg(leg)
                     is JourneyLeg.Travel -> TravelLeg(leg)
+                    else -> {
+                        when (legI) {
+                            0 -> TransferLeg(leg)
+                            journey.legs.lastIndex -> TransferLeg(leg)
+                            else -> {}
+                        }
+                    }
                 }
                 if (legI < journey.legs.size - 1)
                     HorizontalDivider(Modifier.padding(start = journeyIconInset, end = 1.rdp))
             }
 
-            if (lastLeg is JourneyLeg.Transfer || destination !is NavigationLocation.Stop) {
-                HorizontalDivider(Modifier.padding(start = journeyIconInset, end = 1.rdp))
-                ArrivalStopLeg(lastLeg.stops.last(), lastLeg.arrivalTime)
+            when (lastLeg) {
+                is JourneyLeg.Transfer -> {
+                    HorizontalDivider(Modifier.padding(start = journeyIconInset, end = 1.rdp))
+                    ArrivalLeg(lastLeg.stops.last().name, lastLeg.arrivalTime)
+                }
+                is JourneyLeg.TransferPoint -> {
+                    destination?.name?.let {
+                        HorizontalDivider(Modifier.padding(start = journeyIconInset, end = 1.rdp))
+                        ArrivalLeg(it, lastLeg.arrivalTime)
+                    }
+                }
+                else -> {}
             }
         }
     }
@@ -276,7 +416,7 @@ fun LegScaffold(
 }
 
 @Composable
-fun TransferLeg(leg: JourneyLeg.Transfer) {
+fun TransferLeg(leg: JourneyLeg) {
     LegScaffold({ WalkIcon() }) {
         Markdown(stringResource(Res.string.navigate_walk, leg.travelTime.text))
     }
@@ -297,13 +437,25 @@ fun TravelLeg(leg: JourneyLeg.Travel) {
 }
 
 @Composable
-fun ArrivalStopLeg(stop: Stop, arrivalTime: Time) {
+fun DepartureLeg(pointName: String) {
     LegScaffold({ GenericMarkerIcon() }) {
         Column(
             Modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(0.75.rdp)
         ) {
-            Markdown(stringResource(Res.string.navigate_travel_arrive, stop.name, arrivalTime.format()))
+            Markdown(stringResource(Res.string.navigate_travel_journey_depart, pointName))
+        }
+    }
+}
+
+@Composable
+fun ArrivalLeg(pointName: String, arrivalTime: Time) {
+    LegScaffold({ GenericMarkerIcon() }) {
+        Column(
+            Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(0.75.rdp)
+        ) {
+            Markdown(stringResource(Res.string.navigate_travel_journey_arrive, pointName, arrivalTime.format()))
         }
     }
 }

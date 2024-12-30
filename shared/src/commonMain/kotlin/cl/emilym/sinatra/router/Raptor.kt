@@ -8,6 +8,11 @@ import cl.emilym.sinatra.router.data.EdgeType
 import cl.emilym.sinatra.router.data.NetworkGraph
 import cl.emilym.sinatra.router.data.NetworkGraphEdge
 
+data class RaptorStop(
+    val id: StopId,
+    val addedTime: Seconds
+)
+
 data class RaptorConfig(
     val maximumWalkingTime: Seconds,
     val transferPenalty: Seconds
@@ -26,8 +31,24 @@ class Raptor(
         departureStop: StopId,
         arrivalStop: StopId
     ): RaptorJourney {
-        val arrivalStopIndex = graph.mappings.stopIdToIndex[arrivalStop] ?: throw RouterException.stopNotFound(arrivalStop)
-        val departureStopIndex = graph.mappings.stopIdToIndex[departureStop] ?: throw RouterException.stopNotFound(departureStop)
+        return calculate(
+            departureTime,
+            listOf(RaptorStop(departureStop, 0L)),
+            listOf(RaptorStop(arrivalStop, 0L))
+        )
+    }
+
+    fun calculate(
+        departureTime: DaySeconds,
+        departureStops: List<RaptorStop>,
+        arrivalStops: List<RaptorStop>
+    ): RaptorJourney {
+        val arrivalStopIndices = arrivalStops.mapNotNull { stop -> graph.mappings.stopIdToIndex[stop.id]?.let { it to stop } }
+        val departureStopIndices = departureStops.mapNotNull { stop -> graph.mappings.stopIdToIndex[stop.id]?.let { it to stop } }
+        if (arrivalStopIndices.isEmpty() || departureStopIndices.isEmpty()) {
+            throw RouterException.stopNotFound()
+        }
+
         val nodeCount = graph.metadata.nodeCount.toInt()
 
         // Dijkstra
@@ -36,8 +57,10 @@ class Raptor(
         val prev = Array<Int?>(nodeCount) { null }
         val prevEdge = Array<NetworkGraphEdge?>(nodeCount) { null }
 
-        dist[departureStopIndex] = 0
-        Q.add(departureStopIndex, 0)
+        for (departureStopIndex in departureStopIndices) {
+            dist[departureStopIndex.first] = departureStopIndex.second.addedTime
+            Q.add(departureStopIndex.first, 0)
+        }
 
         while (!Q.isEmpty()) {
             val u = Q.pop()!!
@@ -64,10 +87,10 @@ class Raptor(
             }
         }
 
-        if (prev[arrivalStopIndex] == null) throw RouterException.noJourneyFound()
+        if (arrivalStopIndices.all { prev[it.first] == null }) throw RouterException.noJourneyFound()
 
         // Reconstruct journey
-        var cursor = arrivalStopIndex
+        var cursor = arrivalStopIndices.filterNot { prev[it.first] == null }.minBy { dist[it.first] + it.second.addedTime }.first
         val chain = mutableListOf<RaptorJourneyConnection>()
         var connection: RaptorJourneyConnection? = null
         var edgeType: EdgeType? = null
@@ -84,7 +107,7 @@ class Raptor(
             chain.add(0, c)
         }
 
-        while (cursor != departureStopIndex) {
+        while (cursor !in departureStopIndices.map { it.first }) {
             val edge = prevEdge[cursor]!!
             val node = getNode(edge.connectedNodeIndex.toInt())
 
@@ -110,7 +133,6 @@ class Raptor(
                     }
                     else -> null
                 }
-//                println("Pushed new connection of type ${connection} (edge type = ${edge.type})")
             }
 
             connection = when(edge.type) {

@@ -25,8 +25,8 @@ class RouterException: Exception {
     constructor(cause: Throwable?) : super(cause)
 
     companion object {
-        fun stopNotFound(stopId: String): RouterException {
-            return RouterException("Stop ${stopId} could not be found")
+        fun stopNotFound(): RouterException {
+            return RouterException("No stops could not be found")
         }
         fun noJourneyFound(): RouterException {
             return RouterException("No valid journey could be found")
