@@ -54,43 +54,44 @@ class CalculateJourneyUseCase(
                             graph.item.config.assumedWalkingSecondsPerKilometer
                     ).seconds
 
-            val raptor = Raptor(
-                graph.item,
-                services.item,
-                RaptorConfig(
-                    maximumWalkingTime = (60 * 10)
-                )
-            )
-            val raptorJourney =
-                raptor.calculate(
-                    (departureTime - clock.startOfDay(transportMetadataRepository.timeZone())).inWholeSeconds,
-                    departureStop.id,
-                    arrivalStop.id
-                )
-
-            val routes = routeRepository.routes(
-                raptorJourney.connections.filterIsInstance<RaptorJourneyConnection.Travel>().map { it.routeId }
-            )
-            val legs = mutableListOf<JourneyLeg>()
-            for (i in raptorJourney.connections.indices) {
-                val stops = raptorJourney.connections[i].stops.mapNotNull { s -> stops.item.firstOrNull { it.id == s } }
-                legs += when (val connection = raptorJourney.connections[i]) {
-                    is RaptorJourneyConnection.Travel -> JourneyLeg.Travel(
-                        stops,
-                        (connection.endTime - connection.startTime).seconds,
-                        routes.item.first { it?.id == connection.routeId }!!,
-                        connection.heading,
-                        connection.startTime.seconds,
-                        connection.endTime.seconds
-                    )
-                    is RaptorJourneyConnection.Transfer -> JourneyLeg.Transfer(
-                        stops,
-                        connection.travelTime.seconds
-                    )
-                }
-            }
-
-            Journey(legs)
+//            val raptor = Raptor(
+//                graph.item,
+//                services.item,
+//                RaptorConfig(
+//                    maximumWalkingTime = (60 * 10)
+//                )
+//            )
+//            val raptorJourney =
+//                raptor.calculate(
+//                    (departureTime - clock.startOfDay(transportMetadataRepository.timeZone())).inWholeSeconds,
+//                    departureStop.id,
+//                    arrivalStop.id
+//                )
+//
+//            val routes = routeRepository.routes(
+//                raptorJourney.connections.filterIsInstance<RaptorJourneyConnection.Travel>().map { it.routeId }
+//            )
+//            val legs = mutableListOf<JourneyLeg>()
+//            for (i in raptorJourney.connections.indices) {
+//                val stops = raptorJourney.connections[i].stops.mapNotNull { s -> stops.item.firstOrNull { it.id == s } }
+//                legs += when (val connection = raptorJourney.connections[i]) {
+//                    is RaptorJourneyConnection.Travel -> JourneyLeg.Travel(
+//                        stops,
+//                        (connection.endTime - connection.startTime).seconds,
+//                        routes.item.first { it?.id == connection.routeId }!!,
+//                        connection.heading,
+//                        connection.startTime.seconds,
+//                        connection.endTime.seconds
+//                    )
+//                    is RaptorJourneyConnection.Transfer -> JourneyLeg.Transfer(
+//                        stops,
+//                        connection.travelTime.seconds
+//                    )
+//                }
+//            }
+//
+//            Journey(legs)
+            Journey(listOf())
         }
     }
 

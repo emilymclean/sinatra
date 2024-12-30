@@ -39,6 +39,7 @@ interface NetworkGraphMetadata {
     val edgesStart: UInt
     val penaltyMultiplier: Float
     val assumedWalkingSecondsPerKilometer: UInt
+    val nodeCount: UInt
 }
 
 enum class NodeType {

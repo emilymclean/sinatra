@@ -1,19 +1,19 @@
 package cl.emilym.sinatra.router
 
 import cl.emilym.gtfs.networkgraph.Edge
-import cl.emilym.gtfs.networkgraph.EdgeType
-import cl.emilym.gtfs.networkgraph.Graph
-import cl.emilym.gtfs.networkgraph.NodeType
 import cl.emilym.sinatra.RouterException
 import cl.emilym.sinatra.data.models.ServiceId
 import cl.emilym.sinatra.data.models.StopId
+import cl.emilym.sinatra.router.data.EdgeType
+import cl.emilym.sinatra.router.data.NetworkGraph
+import cl.emilym.sinatra.router.data.NetworkGraphEdge
 
 data class RaptorConfig(
     val maximumWalkingTime: Seconds
 )
 
 class Raptor(
-    private val graph: Graph,
+    private val graph: NetworkGraph,
     activeServices: List<ServiceId>,
     private val config: RaptorConfig? = null
 ) {
@@ -25,14 +25,15 @@ class Raptor(
         departureStop: StopId,
         arrivalStop: StopId
     ): RaptorJourney {
-        val arrivalStopIndex = graph.mappings.stopNodes[arrivalStop] ?: throw RouterException.stopNotFound(arrivalStop)
-        val departureStopIndex = graph.mappings.stopNodes[departureStop] ?: throw RouterException.stopNotFound(departureStop)
+        val arrivalStopIndex = graph.mappings.stopIdToIndex[arrivalStop] ?: throw RouterException.stopNotFound(arrivalStop)
+        val departureStopIndex = graph.mappings.stopIdToIndex[departureStop] ?: throw RouterException.stopNotFound(departureStop)
+        val nodeCount = graph.metadata.nodeCount.toInt()
 
         // Dijkstra
         val Q = FibonacciHeap<Int,Long>()
-        val dist = Array(graph.nodes.size) { Long.MAX_VALUE }
-        val prev = Array<Int?>(graph.nodes.size) { null }
-        val prevEdge = Array<Edge?>(graph.nodes.size) { null }
+        val dist = Array(nodeCount) { Long.MAX_VALUE }
+        val prev = Array<Int?>(nodeCount) { null }
+        val prevEdge = Array<NetworkGraphEdge?>(nodeCount) { null }
 
         dist[departureStopIndex] = 0
         Q.add(departureStopIndex, 0)
@@ -51,7 +52,7 @@ class Raptor(
                     Q.add(v, alt)
                 }
                 if (neighbour.edge.type == EdgeType.TRAVEL) {
-                    val tV = getNode(neighbour.edge.toNodeId).stopId
+                    val tV = getNode(neighbour.edge.connectedNodeIndex.toInt()).stopIndex.toInt()
                     if (alt < dist[tV]) {
                         prev[tV] = u
                         prevEdge[tV] = neighbour.edge
@@ -73,10 +74,10 @@ class Raptor(
         fun addConnection(c: RaptorJourneyConnection) {
             val c = when (c) {
                 is RaptorJourneyConnection.Travel -> c.copy(
-                    stops = listOf(graph.mappings.stopIds[getNode(cursor).stopId]) + c.stops
+                    stops = listOf(graph.mappings.stopIds[getNode(cursor).stopIndex.toInt()]) + c.stops
                 )
                 is RaptorJourneyConnection.Transfer -> c.copy(
-                    stops = listOf(graph.mappings.stopIds[getNode(cursor).stopId]) + c.stops
+                    stops = listOf(graph.mappings.stopIds[getNode(cursor).stopIndex.toInt()]) + c.stops
                 )
             }
             chain.add(0, c)
@@ -84,7 +85,7 @@ class Raptor(
 
         while (cursor != departureStopIndex) {
             val edge = prevEdge[cursor]!!
-            val node = getNode(edge.toNodeId)
+            val node = getNode(edge.connectedNodeIndex.toInt())
 
             if (edgeType != edge.type) {
                 if (connection != null) addConnection(connection)
@@ -93,10 +94,10 @@ class Raptor(
                     EdgeType.TRAVEL -> {
                         RaptorJourneyConnection.Travel(
                             listOf(),
-                            graph.mappings.routeIds[node.routeId!!],
-                            graph.mappings.headings[node.headingId!!],
+                            graph.mappings.routeIds[node.routeIndex.toInt()],
+                            graph.mappings.headings[node.headingIndex.toInt()],
                             0,
-                            edge.departureTime!! + edge.penalty,
+                            edge.departureTime.toLong() + edge.cost.toLong(),
                             0
                         )
                     }
@@ -115,16 +116,16 @@ class Raptor(
                 EdgeType.TRAVEL -> {
                     val c = (connection as RaptorJourneyConnection.Travel)
                     c.copy(
-                        stops = listOf(graph.mappings.stopIds[node.stopId]) + c.stops,
-                        startTime = edge.departureTime!!,
-                        travelTime = c.endTime - edge.departureTime
+                        stops = listOf(graph.mappings.stopIds[node.stopIndex.toInt()]) + c.stops,
+                        startTime = edge.departureTime.toLong(),
+                        travelTime = c.endTime - edge.departureTime.toLong()
                     )
                 }
                 EdgeType.TRANSFER, EdgeType.TRANSFER_NON_ADJUSTABLE -> {
                     val c = (connection as RaptorJourneyConnection.Transfer)
                     c.copy(
-                        stops = listOf(graph.mappings.stopIds[node.stopId]) + c.stops,
-                        travelTime = c.travelTime + edge.penalty
+                        stops = listOf(graph.mappings.stopIds[node.stopIndex.toInt()]) + c.stops,
+                        travelTime = c.travelTime + edge.cost.toLong()
                     )
                 }
                 else -> null
@@ -138,24 +139,24 @@ class Raptor(
         return RaptorJourney(chain)
     }
 
-    private fun getNode(index: NodeIndex) = graph.nodes[index]
+    private fun getNode(index: NodeIndex) = graph.node(index)
 
     private fun getNeighbours(index: NodeIndex, departureTime: DaySeconds, referencePoint: DaySeconds): List<NodeCost> {
-        val node = getNode(index)
+        val node = graph.node(index)
         val edges = node.edges
 
         return edges.mapNotNull {
             when (it.type) {
-                EdgeType.STOP_ROUTE -> NodeCost(it.toNodeId, 0L, it)
+                EdgeType.UNWEIGHTED -> NodeCost(it.connectedNodeIndex.toInt(), 0L, it)
                 EdgeType.TRANSFER, EdgeType.TRANSFER_NON_ADJUSTABLE -> {
-                    if (it.penalty > (config?.maximumWalkingTime ?: Long.MAX_VALUE)) return@mapNotNull null
-                    NodeCost(it.toNodeId, it.penalty, it)
+                    if (it.cost.toInt() > (config?.maximumWalkingTime ?: Long.MAX_VALUE)) return@mapNotNull null
+                    NodeCost(it.connectedNodeIndex.toInt(), it.cost.toLong(), it)
                 }
                 EdgeType.TRAVEL -> {
                     if (!servicesAreActive(it.availableServices)) return@mapNotNull null
-                    val dt = it.departureTime ?: return@mapNotNull null
+                    val dt = it.departureTime.toInt()
                     if ((dt + 60) < departureTime) return@mapNotNull null
-                    NodeCost(it.toNodeId, (dt - departureTime) + it.penalty, it)
+                    NodeCost(it.connectedNodeIndex.toInt(), (dt - departureTime) + it.cost.toLong(), it)
                 }
                 else -> null
             }
@@ -166,7 +167,7 @@ class Raptor(
         serviceIndices: List<ServiceIndex>
     ): Boolean {
         for (i in serviceIndices) {
-            if (activeServices.containsKey(i)) return true
+            if (activeServices.containsKey(i.toInt())) return true
         }
         return false
     }

@@ -6,7 +6,7 @@ import cl.emilym.sinatra.data.models.StopId
 import kotlin.experimental.and
 
 // The number of bytes used to represent an edge, excluding available services
-const val METADATA_BYTE_SIZE = 5 + 1 + 1 + 4 + 4 + 4 + 4
+const val METADATA_BYTE_SIZE = 5 + 1 + 1 + 4 + 4 + 4 + 4 + 4
 const val EDGE_BYTE_SIZE = 4 + 4 + 4 + 1
 const val NODE_BYTE_SIZE = 4 + 4 + 4 + 1 + 4 + 4
 
@@ -24,7 +24,6 @@ class ByteNetworkGraph(
 
     override fun node(index: Int): ByteNetworkGraphNode {
         val start = metadata.nodesStart.toInt() + (NODE_BYTE_SIZE * index)
-        println("Node start = $start")
         return ByteNetworkGraphNode(
             start,
             data,
@@ -156,9 +155,10 @@ class ByteNetworkGraphMetadata(
     override val edgesStart by lazy { readUInt(0x06) }
     override val penaltyMultiplier by lazy { readFloat(0x0A) }
     override val assumedWalkingSecondsPerKilometer by lazy { readUInt(0x0E) }
+    override val nodeCount: UInt by lazy { readUInt(0x12) }
 
     override fun toString(): String {
-        return "NetworkGraphMetadata(version=$version, availableServicesLength=$availableServicesLength, nodesStart=$nodesStart, edgesStart=$edgesStart, penaltyMultiplier=$penaltyMultiplier, assumedWalkingSecondsPerKilometer=$assumedWalkingSecondsPerKilometer)"
+        return "ByteNetworkGraphMetadata(version=$version, availableServicesLength=$availableServicesLength, nodesStart=$nodesStart, edgesStart=$edgesStart, penaltyMultiplier=$penaltyMultiplier, assumedWalkingSecondsPerKilometer=$assumedWalkingSecondsPerKilometer, nodeCount=$nodeCount)"
     }
 
 }

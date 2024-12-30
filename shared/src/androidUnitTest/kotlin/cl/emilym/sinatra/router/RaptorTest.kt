@@ -27,7 +27,7 @@ class RaptorTest {
     @BeforeTest
     fun setup() {
         graph = Graph.decodeFromByteArray(this::class.java.classLoader.getResource("network_graph.pb").readBytes())
-        raptor = Raptor(graph, graph.mappings.serviceIds)
+//        raptor = Raptor(graph, graph.mappings.serviceIds)
     }
 
     @Test
@@ -135,7 +135,7 @@ class RaptorTest {
 
     @Test
     fun testValidJourneyWithFewerServices() {
-        val raptor = Raptor(graph, listOf("2023-COMBVAC-Weekday-05", "WD"))
+//        val raptor = Raptor(graph, listOf("2023-COMBVAC-Weekday-05", "WD"))
         val result = raptor.calculate(
             Duration.parseIsoString("PT09H").inWholeSeconds,
             STOP_ID_SWINDEN_STREET,
@@ -164,10 +164,10 @@ class RaptorTest {
     @Test
     fun testInvalidJourney() {
         assertFails {
-            val raptor = Raptor(graph, graph.mappings.serviceIds, config = RaptorConfig(
-                maximumWalkingTime = 100
-            )
-            )
+//            val raptor = Raptor(graph, graph.mappings.serviceIds, config = RaptorConfig(
+//                maximumWalkingTime = 100
+//            )
+//            )
             raptor.calculate(
                 Duration.parseIsoString("PT25H").inWholeSeconds,
                 STOP_ID_CANBERRA_RAILWAY_STATION,

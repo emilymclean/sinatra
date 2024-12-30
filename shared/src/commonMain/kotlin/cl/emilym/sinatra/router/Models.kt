@@ -1,17 +1,17 @@
 package cl.emilym.sinatra.router
 
-import cl.emilym.gtfs.networkgraph.Edge
-import cl.emilym.gtfs.networkgraph.Node
 import cl.emilym.sinatra.data.models.RouteId
 import cl.emilym.sinatra.data.models.StopId
+import cl.emilym.sinatra.router.data.NetworkGraphEdge
+import cl.emilym.sinatra.router.data.NetworkGraphNode
 
 data class NodeCost(
     val index: NodeIndex,
     val cost: Long,
-    val edge: Edge
+    val edge: NetworkGraphEdge
 )
 
-data class NodeAndIndex<T: Node, I: NodeIndex>(
+data class NodeAndIndex<T: NetworkGraphNode, I: NodeIndex>(
     val node: T,
     val index: I
 )
@@ -21,7 +21,7 @@ data class RouteAndHeading(
     val headingIndex: HeadingIndex
 )
 
-data class TravelTime<T: Node>(
+data class TravelTime<T: NetworkGraphNode>(
     val node: T,
     val arrival: DaySeconds,
     val departureTime: DaySeconds,
@@ -29,7 +29,7 @@ data class TravelTime<T: Node>(
     val travelTime: Seconds get() = arrival - departureTime
 }
 
-data class TravelTimeWithRootDepartureTime<T: Node>(
+data class TravelTimeWithRootDepartureTime<T: NetworkGraphNode>(
     val travelTime: TravelTime<T>,
     val rootDepartureTime: DaySeconds
 )
