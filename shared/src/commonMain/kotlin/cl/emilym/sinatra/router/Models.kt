@@ -1,10 +1,17 @@
 package cl.emilym.sinatra.router
 
-import cl.emilym.gtfs.networkgraph.Node
 import cl.emilym.sinatra.data.models.RouteId
 import cl.emilym.sinatra.data.models.StopId
+import cl.emilym.sinatra.router.data.NetworkGraphEdge
+import cl.emilym.sinatra.router.data.NetworkGraphNode
 
-data class NodeAndIndex<T: Node, I: NodeIndex>(
+data class NodeCost(
+    val index: NodeIndex,
+    val cost: Long,
+    val edge: NetworkGraphEdge
+)
+
+data class NodeAndIndex<T: NetworkGraphNode, I: NodeIndex>(
     val node: T,
     val index: I
 )
@@ -14,7 +21,7 @@ data class RouteAndHeading(
     val headingIndex: HeadingIndex
 )
 
-data class TravelTime<T: Node>(
+data class TravelTime<T: NetworkGraphNode>(
     val node: T,
     val arrival: DaySeconds,
     val departureTime: DaySeconds,
@@ -22,7 +29,7 @@ data class TravelTime<T: Node>(
     val travelTime: Seconds get() = arrival - departureTime
 }
 
-data class TravelTimeWithRootDepartureTime<T: Node>(
+data class TravelTimeWithRootDepartureTime<T: NetworkGraphNode>(
     val travelTime: TravelTime<T>,
     val rootDepartureTime: DaySeconds
 )
@@ -58,18 +65,23 @@ class StopInformation(
 }
 
 sealed interface RaptorJourneyConnection {
+    val stops: List<StopId>
+    val travelTime: Seconds
+
     data class Transfer(
-        val travelTime: DaySeconds
+        override val stops: List<StopId>,
+        override val travelTime: Seconds
     ): RaptorJourneyConnection
     data class Travel(
+        override val stops: List<StopId>,
         val routeId: RouteId,
         val heading: String,
         val startTime: DaySeconds,
-        val endTime: DaySeconds
+        val endTime: DaySeconds,
+        override val travelTime: Seconds
     ): RaptorJourneyConnection
 }
 
 data class RaptorJourney(
-    val stops: List<StopId>,
     val connections: List<RaptorJourneyConnection>
 )

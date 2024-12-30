@@ -51,7 +51,7 @@ class CalculateJourneyUseCase(
 
             val departureTime = departureTime + (
                     distance(departureLocation, departureStop.location) *
-                            graph.item.config.assumedWalkingSecondsPerKilometer
+                            graph.item.metadata.assumedWalkingSecondsPerKilometer.toInt()
                     ).seconds
 
             val raptor = Raptor(
@@ -73,14 +73,10 @@ class CalculateJourneyUseCase(
             )
             val legs = mutableListOf<JourneyLeg>()
             for (i in raptorJourney.connections.indices) {
-                val connectedStops = listOf(
-                    stops.item.first { it.id == raptorJourney.stops[i] },
-                    stops.item.first { it.id == raptorJourney.stops[i + 1] }
-                )
+                val stops = raptorJourney.connections[i].stops.mapNotNull { s -> stops.item.firstOrNull { it.id == s } }
                 legs += when (val connection = raptorJourney.connections[i]) {
                     is RaptorJourneyConnection.Travel -> JourneyLeg.Travel(
-                        // This should eventually contain all stops visited on travel
-                        connectedStops,
+                        stops,
                         (connection.endTime - connection.startTime).seconds,
                         routes.item.first { it?.id == connection.routeId }!!,
                         connection.heading,
@@ -88,7 +84,7 @@ class CalculateJourneyUseCase(
                         connection.endTime.seconds
                     )
                     is RaptorJourneyConnection.Transfer -> JourneyLeg.Transfer(
-                        connectedStops,
+                        stops,
                         connection.travelTime.seconds
                     )
                 }

@@ -1,280 +1,175 @@
 package cl.emilym.sinatra.router
 
-import cl.emilym.gtfs.networkgraph.EdgeType
-import cl.emilym.gtfs.networkgraph.Graph
+import cl.emilym.gtfs.networkgraph.Edge
 import cl.emilym.sinatra.RouterException
-import cl.emilym.sinatra.data.models.Journey
 import cl.emilym.sinatra.data.models.ServiceId
 import cl.emilym.sinatra.data.models.StopId
-import io.github.aakira.napier.Napier
-import kotlin.math.min
+import cl.emilym.sinatra.router.data.EdgeType
+import cl.emilym.sinatra.router.data.NetworkGraph
+import cl.emilym.sinatra.router.data.NetworkGraphEdge
 
 data class RaptorConfig(
     val maximumWalkingTime: Seconds
 )
 
 class Raptor(
-    private val graph: Graph,
+    private val graph: NetworkGraph,
     activeServices: List<ServiceId>,
     private val config: RaptorConfig? = null
 ) {
 
-    companion object {
-        const val MAXIMUM_TRIPS = 5
-    }
-
-    private var round = 0
-    private val markedStops = mutableSetOf<StopNodeIndex>()
-    // Q
-    private var visitedRoutes = mutableMapOf<RouteAndHeading, NodeAndIndex<StopRouteNode, StopRouteNodeIndex>>()
-    private var arrivalStop: StopNodeIndex = 0
-    private var departureStop: StopNodeIndex = 0
-    private val activeServices =
-        activeServices.associate { graph.mappings.serviceIds.indexOf(it) to Unit }.also {
-            Napier.d("Active services = ${it}")
-        }
-
-    // Currently the graph construction always places stop nodes first, take advantage of that by using
-    // an array structure to store stop information rather than a map
-    var stopInformation = Array(graph.mappings.stopIds.size) {
-        StopInformation(MAXIMUM_TRIPS)
-    }
+    private val activeServices = activeServices.associate { graph.mappings.serviceIds.indexOf(it) to Unit }
 
     fun calculate(
         departureTime: DaySeconds,
         departureStop: StopId,
         arrivalStop: StopId
     ): RaptorJourney {
-        initializeDepartureStop(departureTime, departureStop)
-        this.arrivalStop = graph.mappings.stopNodes[arrivalStop] ?:
-                throw RouterException.stopNotFound(arrivalStop)
+        val arrivalStopIndex = graph.mappings.stopIdToIndex[arrivalStop] ?: throw RouterException.stopNotFound(arrivalStop)
+        val departureStopIndex = graph.mappings.stopIdToIndex[departureStop] ?: throw RouterException.stopNotFound(departureStop)
+        val nodeCount = graph.metadata.nodeCount.toInt()
 
-        while (round < MAXIMUM_TRIPS && markedStops.isNotEmpty()) {
-            calculateRound()
-            round++
-        }
+        // Dijkstra
+        val Q = FibonacciHeap<Int,Long>()
+        val dist = Array(nodeCount) { Long.MAX_VALUE }
+        val prev = Array<Int?>(nodeCount) { null }
+        val prevEdge = Array<NetworkGraphEdge?>(nodeCount) { null }
 
-        Napier.d("Arrival stop was visited = ${stopInformation[this.arrivalStop].boardedFrom != null}")
+        dist[departureStopIndex] = 0
+        Q.add(departureStopIndex, 0)
 
-        return calculateJourney()
-    }
+        while (!Q.isEmpty()) {
+            val u = Q.pop()!!
+            val neighbours = getNeighbours(u, departureTime + dist[u], departureTime)
 
-    private fun calculateJourney(): RaptorJourney {
-        val boardings = collectJourneyBoardings()
-        if (boardings.isEmpty()) throw RouterException.noJourneyFound()
-        val stops = listOf(departureStop) + boardings.map { it.stop }
-        val stopArrivals = stops.map { getStopEarliestArrival(it) }
-        return RaptorJourney(
-            stops.map { graph.mappings.stopIds[it] },
-            boardings.mapIndexed { i, it ->
-                when (it.boarding) {
-                    is BoardedFrom.Transfer -> RaptorJourneyConnection.Transfer(
-                        stopArrivals[i + 1] - stopArrivals[i]
-                    )
-                    is BoardedFrom.Travel -> {
-                        val stopRouteNode = getNode(it.boarding.node)
-                        RaptorJourneyConnection.Travel(
-                            graph.mappings.routeIds[stopRouteNode.routeId!!],
-                            graph.mappings.headings[stopRouteNode.headingId!!],
-                            it.boarding.boardingTime,
-                            stopArrivals[i + 1]
-                        )
+            for (neighbour in neighbours) {
+                val v = neighbour.index
+                val alt = dist[u] + neighbour.cost
+                if (alt < dist[v]) {
+                    prev[v] = u
+                    prevEdge[v] = neighbour.edge
+                    dist[v] = alt
+                    Q.add(v, alt)
+                }
+                if (neighbour.edge.type == EdgeType.TRAVEL) {
+                    val tV = getNode(neighbour.edge.connectedNodeIndex.toInt()).stopIndex.toInt()
+                    if (alt < dist[tV]) {
+                        prev[tV] = u
+                        prevEdge[tV] = neighbour.edge
+                        dist[tV] = alt
+                        Q.add(tV, alt)
                     }
                 }
             }
-        )
-    }
-
-    private fun collectJourneyBoardings(): List<StopAndBoarding> {
-        val collection = mutableListOf<StopAndBoarding>()
-        var stop: StopNodeIndex = arrivalStop
-        while (stop != departureStop) {
-            val from = getStopBoardedFrom(stop) ?: return emptyList()
-            collection.add(0, StopAndBoarding(stop, from))
-            stop = when (from) {
-                is BoardedFrom.Transfer -> from.node
-                is BoardedFrom.Travel -> getNode(from.node).stopId
-            }
-        }
-        return collection
-    }
-
-    private fun initializeDepartureStop(departureTime: DaySeconds, departureStop: StopId) {
-        val stopIndex = graph.mappings.stopNodes[departureStop] ?:
-            throw RouterException.stopNotFound(departureStop)
-        this.departureStop = stopIndex
-        updateEarliestArrival(stopIndex, departureTime, null)
-    }
-
-    private fun calculateRound() {
-        visitedRoutes.clear()
-        val currentMarkedStops = markedStops.toSet()
-        markedStops.clear()
-
-        for (markedStop in currentMarkedStops) {
-            val routesForStop = routesForStop(getNode(markedStop))
-            for (r in routesForStop) {
-                if (r.node.routeId == null || r.node.headingId == null) continue
-                val routeAndHeading = RouteAndHeading(r.node.routeId, r.node.headingId)
-
-                if (routeAndHeading in visitedRoutes) {
-                    val existing = visitedRoutes[routeAndHeading]!!.node.stopId
-//                    if (!stopBeforeOtherOnRoute(r.node, existing)) continue
-                    if (getStopEarliestArrival(r.node.stopId) > getStopEarliestArrival(existing)) continue
-                }
-
-                visitedRoutes[routeAndHeading] = r
-            }
         }
 
-        for (r in visitedRoutes.keys) {
-            val initialStopIndex = visitedRoutes[r]!!
-            val currentEarliestArrival = getStopEarliestArrival(initialStopIndex.node.stopId)
-            var nextStops = travelRoute(initialStopIndex.node, currentEarliestArrival).map {
-                TravelTimeWithRootDepartureTime(
-                    it,
-                    it.departureTime
+        if (prev[arrivalStopIndex] == null) throw RouterException.noJourneyFound()
+
+        // Reconstruct journey
+        var cursor = arrivalStopIndex
+        val chain = mutableListOf<RaptorJourneyConnection>()
+        var connection: RaptorJourneyConnection? = null
+        var edgeType: EdgeType? = null
+
+        fun addConnection(c: RaptorJourneyConnection) {
+            val c = when (c) {
+                is RaptorJourneyConnection.Travel -> c.copy(
+                    stops = listOf(graph.mappings.stopIds[getNode(cursor).stopIndex.toInt()]) + c.stops
+                )
+                is RaptorJourneyConnection.Transfer -> c.copy(
+                    stops = listOf(graph.mappings.stopIds[getNode(cursor).stopIndex.toInt()]) + c.stops
                 )
             }
+            chain.add(0, c)
+        }
 
-            while(nextStops.isNotEmpty()) {
-                for (nextStop in nextStops) {
-                    val stopIndex = nextStop.travelTime.node.stopId
-                    if (!nextStop.travelTime.isEarlier()) continue
-                    updateEarliestArrival(stopIndex, nextStop.travelTime.arrival, BoardedFrom.Travel(
-                        initialStopIndex.index,
-                        nextStop.rootDepartureTime
-                    ))
+        while (cursor != departureStopIndex) {
+            val edge = prevEdge[cursor]!!
+            val node = getNode(edge.connectedNodeIndex.toInt())
+
+            if (edgeType != edge.type) {
+                if (connection != null) addConnection(connection)
+                edgeType = edge.type
+                connection = when (edge.type) {
+                    EdgeType.TRAVEL -> {
+                        RaptorJourneyConnection.Travel(
+                            listOf(),
+                            graph.mappings.routeIds[node.routeIndex.toInt()],
+                            graph.mappings.headings[node.headingIndex.toInt()],
+                            0,
+                            edge.departureTime.toLong() + edge.cost.toLong(),
+                            0
+                        )
+                    }
+                    EdgeType.TRANSFER, EdgeType.TRANSFER_NON_ADJUSTABLE -> {
+                        RaptorJourneyConnection.Transfer(
+                            listOf(),
+                            0
+                        )
+                    }
+                    else -> null
                 }
-                nextStops = nextStops.flatMap { travelRoute(it.travelTime.node, it.travelTime.arrival).map { tt ->
-                    TravelTimeWithRootDepartureTime(tt, it.rootDepartureTime)
-                } }
+//                println("Pushed new connection of type ${connection} (edge type = ${edge.type})")
             }
+
+            connection = when(edge.type) {
+                EdgeType.TRAVEL -> {
+                    val c = (connection as RaptorJourneyConnection.Travel)
+                    c.copy(
+                        stops = listOf(graph.mappings.stopIds[node.stopIndex.toInt()]) + c.stops,
+                        startTime = edge.departureTime.toLong(),
+                        travelTime = c.endTime - edge.departureTime.toLong()
+                    )
+                }
+                EdgeType.TRANSFER, EdgeType.TRANSFER_NON_ADJUSTABLE -> {
+                    val c = (connection as RaptorJourneyConnection.Transfer)
+                    c.copy(
+                        stops = listOf(graph.mappings.stopIds[node.stopIndex.toInt()]) + c.stops,
+                        travelTime = c.travelTime + edge.cost.toLong()
+                    )
+                }
+                else -> null
+            }
+
+            cursor = prev[cursor]!!
         }
 
-        for (markedStop in currentMarkedStops) {
-            val markedStopNode = getNode(markedStop)
-            val transfers = transfersForStop(markedStopNode, getStopEarliestArrival(markedStop))
-            for (transfer in transfers) {
-                val stopIndex = transfer.node.stopId
-                if (!transfer.isEarlier() || transfer.travelTime > (config?.maximumWalkingTime ?: Long.MAX_VALUE)) continue
-                updateEarliestArrival(stopIndex, transfer.arrival, BoardedFrom.Transfer(
-                    markedStopNode.stopId
-                ))
+        if (connection != null) addConnection(connection)
+
+        return RaptorJourney(chain)
+    }
+
+    private fun getNode(index: NodeIndex) = graph.node(index)
+
+    private fun getNeighbours(index: NodeIndex, departureTime: DaySeconds, referencePoint: DaySeconds): List<NodeCost> {
+        val node = graph.node(index)
+        val edges = node.edges
+
+        return edges.mapNotNull {
+            when (it.type) {
+                EdgeType.UNWEIGHTED -> NodeCost(it.connectedNodeIndex.toInt(), 0L, it)
+                EdgeType.TRANSFER, EdgeType.TRANSFER_NON_ADJUSTABLE -> {
+                    if (it.cost.toInt() > (config?.maximumWalkingTime ?: Long.MAX_VALUE)) return@mapNotNull null
+                    NodeCost(it.connectedNodeIndex.toInt(), it.cost.toLong(), it)
+                }
+                EdgeType.TRAVEL -> {
+                    if (!servicesAreActive(it.availableServices)) return@mapNotNull null
+                    val dt = it.departureTime.toInt()
+                    if ((dt + 60) < departureTime) return@mapNotNull null
+                    NodeCost(it.connectedNodeIndex.toInt(), (dt - departureTime) + it.cost.toLong(), it)
+                }
+                else -> null
             }
         }
-    }
-
-    private fun getNode(index: NodeIndex) = graph.nodes[index]
-
-    private fun updateEarliestArrival(stopIndex: StopIndex, arrival: Long, boardedFrom: BoardedFrom?) {
-        setStopArrival(stopIndex, round, arrival)
-        setStopEarliestArrival(stopIndex, arrival)
-        if (boardedFrom != null)
-            setStopBoardedFrom(stopIndex, boardedFrom)
-        markedStops += stopIndex
-    }
-
-    private fun setStopArrival(stopIndex: StopNodeIndex, trip: Int, time: DaySeconds) {
-        stopInformation[stopIndex].earliestArrivalTimeForTrip[trip] = time
-    }
-
-    private fun setStopEarliestArrival(stopIndex: StopNodeIndex, time: DaySeconds) {
-        stopInformation[stopIndex].earliestArrivalTime = time
-    }
-
-    private fun getStopEarliestArrival(stopIndex: StopNodeIndex): DaySeconds {
-        return stopInformation[stopIndex].earliestArrivalTime
-    }
-
-    private fun setStopBoardedFrom(stopIndex: StopNodeIndex, boardedFrom: BoardedFrom) {
-        stopInformation[stopIndex].boardedFrom = boardedFrom
-    }
-
-    private fun getStopBoardedFrom(stopIndex: StopNodeIndex): BoardedFrom? {
-        return stopInformation[stopIndex].boardedFrom
     }
 
     private fun servicesAreActive(
         serviceIndices: List<ServiceIndex>
     ): Boolean {
         for (i in serviceIndices) {
-            if (activeServices.containsKey(i)) return true
+            if (activeServices.containsKey(i.toInt())) return true
         }
         return false
     }
-
-    private fun routesForStop(node: StopNode): List<NodeAndIndex<StopRouteNode, StopRouteNodeIndex>> {
-        return node.edges
-            .filter { it.type == EdgeType.STOP_ROUTE }
-            .map { NodeAndIndex(getNode(it.toNodeId), it.toNodeId) }
-    }
-
-    private fun stopBeforeOtherOnRoute(node: StopRouteNode, stopIndex: StopIndex): Boolean {
-        val visited = mutableSetOf<StopRouteNodeIndex>()
-        val toVisit = mutableSetOf<StopRouteNode>()
-
-        fun next(node: StopRouteNode) {
-            toVisit.addAll(
-                node.edges
-                    .filter { it.type == EdgeType.TRAVEL && servicesAreActive(it.availableServices) }
-                    .filterNot { it.toNodeId in visited }
-                    .also { visited.addAll(it.map { it.toNodeId }) }
-                    .map { getNode(it.toNodeId) }
-            )
-        }
-
-        next(node)
-        while(toVisit.isNotEmpty()) {
-            val destination = toVisit.first().also { toVisit.remove(it) }
-            if (destination.stopId == stopIndex) return true
-            next(destination)
-        }
-
-        return false
-    }
-
-    private fun transfersForStop(node: StopNode, departureTime: DaySeconds): List<TravelTime<StopNode>> {
-        return node.edges
-            .filter { it.type == EdgeType.TRANSFER }
-            .map {
-                TravelTime(
-                    getNode(it.toNodeId),
-                    it.penalty + departureTime,
-                    departureTime
-                )
-            }
-    }
-
-    private fun travelRoute(node: StopRouteNode, minimumDepartureTime: DaySeconds = 0): List<TravelTime<StopRouteNode>> {
-        return node.edges
-            .filter { it.type == EdgeType.TRAVEL && servicesAreActive(it.availableServices) }
-            .filter { (it.departureTime ?: 0) > minimumDepartureTime }
-            .groupBy { it.toNodeId }
-            .map {
-                val edge = it.value.minBy { it.penalty + (it.departureTime ?: 0) }
-                TravelTime(
-                    getNode(edge.toNodeId),
-                    edge.penalty + (edge.departureTime ?: 0),
-                    (edge.departureTime ?: 0)
-                )
-            }
-    }
-
-    private fun TravelTime<*>.isEarlier(): Boolean = arrival < min(
-        getStopEarliestArrival(node.stopId),
-        getStopEarliestArrival(arrivalStop)
-    )
-
-//    private fun travelWholeRoute(node: StopRouteNode): List<TravelTime<StopRouteNode>> {
-//        val destinations = travelRoute(node)
-//        val children = mutableListOf<TravelTime<StopRouteNode>>()
-//
-//        for (destination in destinations) {
-//            children += travelWholeRoute(destination.node)
-//        }
-//
-//        return destinations + children
-//    }
 
 }

@@ -7,6 +7,7 @@ import cl.emilym.sinatra.data.models.CacheCategory
 import cl.emilym.sinatra.data.models.ResourceKey
 import cl.emilym.sinatra.data.models.map
 import cl.emilym.sinatra.data.persistence.NetworkGraphPersistence
+import cl.emilym.sinatra.router.data.NetworkGraph
 import kotlinx.datetime.Clock
 import org.koin.core.annotation.Factory
 import pbandk.decodeFromByteArray
@@ -25,9 +26,9 @@ class NetworkGraphCacheWorker(
         networkGraphPersistence.save(data)
     override suspend fun getFromPersistence(resource: ResourceKey) = networkGraphPersistence.get()
 
-    suspend fun get(): Cachable<Graph> {
-        return run(networkGraphClient.networkGraphEndpointDigestPair, "network-graph").map {
-            Graph.decodeFromByteArray(it)
+    suspend fun get(): Cachable<NetworkGraph> {
+        return run(networkGraphClient.networkGraphEndpointDigestPair, "network-graph-byte").map {
+            NetworkGraph.byteFormatForByteArray(it)
         }
     }
 
@@ -38,7 +39,7 @@ class NetworkGraphRepository(
     private val networkGraphCacheWorker: NetworkGraphCacheWorker
 ) {
 
-    suspend fun networkGraph(): Cachable<Graph> {
+    suspend fun networkGraph(): Cachable<NetworkGraph> {
         return networkGraphCacheWorker.get()
     }
 
