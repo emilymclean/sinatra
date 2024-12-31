@@ -27,6 +27,7 @@ import sinatra.ui.generated.resources.bus
 import sinatra.ui.generated.resources.tram
 import sinatra.ui.generated.resources.navigate
 import sinatra.ui.generated.resources.walk
+import sinatra.ui.generated.resources.journey_start
 
 @Composable
 fun AccessibleIcon(
@@ -294,6 +295,19 @@ fun WalkIcon(
     Icon(
         painterResource(Res.drawable.walk),
         contentDescription = "A person walking",
+        modifier = modifier,
+        tint = tint
+    )
+}
+
+@Composable
+fun JourneyStartIcon(
+    modifier: Modifier = Modifier,
+    tint: Color = LocalContentColor.current
+) {
+    Icon(
+        painterResource(Res.drawable.journey_start),
+        contentDescription = "A circle with a centred dot",
         modifier = modifier,
         tint = tint
     )

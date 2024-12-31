@@ -50,6 +50,7 @@ import cl.emilym.sinatra.ui.presentation.theme.walkingColor
 import cl.emilym.sinatra.ui.text
 import cl.emilym.sinatra.ui.widgets.CurrentLocationCard
 import cl.emilym.sinatra.ui.widgets.GenericMarkerIcon
+import cl.emilym.sinatra.ui.widgets.JourneyStartIcon
 import cl.emilym.sinatra.ui.widgets.ListHint
 import cl.emilym.sinatra.ui.widgets.LocalMapControl
 import cl.emilym.sinatra.ui.widgets.MapIcon
@@ -466,7 +467,7 @@ fun NavigationLocationDisplay(
         {
             when (isDestination) {
                 true -> GenericMarkerIcon()
-                false -> StarOutlineIcon() // TODO change
+                false -> JourneyStartIcon()
             }
         },
         modifier = modifier
