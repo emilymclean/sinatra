@@ -25,6 +25,9 @@ interface RecentVisitDao {
     @Query("DELETE FROM recentVisitEntity WHERE type = \"STOP\" AND stopId = :stopId")
     suspend fun deleteStopVisit(stopId: String)
 
+    @Query("DELETE FROM recentVisitEntity WHERE type = \"PLACE\" AND placeId = :placeId")
+    suspend fun deletePlaceVisit(placeId: String)
+
     @Query("SELECT * FROM recentVisitEntity ORDER BY id DESC LIMIT 10")
     fun getFlow(): Flow<List<RecentVisitEntityWithStopAndRoute>>
 

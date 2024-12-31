@@ -9,6 +9,7 @@ import androidx.compose.runtime.remember
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cafe.adriel.voyager.navigator.Navigator
+import cl.emilym.sinatra.data.client.PlaceClient
 import cl.emilym.sinatra.data.repository.TransportMetadataRepository
 import cl.emilym.sinatra.domain.CleanupUseCase
 import cl.emilym.sinatra.e
@@ -37,7 +38,7 @@ import org.koin.compose.viewmodel.koinViewModel
 @KoinViewModel
 class AppViewModel(
     private val transportMetadataRepository: TransportMetadataRepository,
-    private val cleanupUseCase: CleanupUseCase
+    private val cleanupUseCase: CleanupUseCase,
 ): ViewModel() {
 
     val scheduleTimeZone = MutableStateFlow(TimeZone.currentSystemDefault())

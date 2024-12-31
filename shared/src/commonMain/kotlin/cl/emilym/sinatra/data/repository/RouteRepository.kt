@@ -217,6 +217,10 @@ class RouteRepository(
         val all = routeCacheWorker.get()
         return all.map { routePersistence.get(routeId) }
     }
+    suspend fun routes(routeIds: List<RouteId>): Cachable<List<Route?>> {
+        val all = routeCacheWorker.get()
+        return all.map { routeIds.map { routePersistence.get(it) } }
+    }
 
     suspend fun servicesForRoute(routeId: RouteId) = routeServicesCacheWorker.get(routeId)
 

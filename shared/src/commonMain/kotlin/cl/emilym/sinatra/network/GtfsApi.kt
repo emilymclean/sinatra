@@ -104,4 +104,10 @@ interface GtfsApi {
     @GET("content.pb.sha")
     suspend fun contentDigest(): String
 
+    @GET("network_graph.eng")
+    suspend fun networkGraph(): ByteArray
+
+    @GET("network_graph.eng.sha")
+    suspend fun networkGraphDigest(): String
+
 }

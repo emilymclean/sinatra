@@ -23,17 +23,23 @@ import sinatra.ui.generated.resources.Res
 import sinatra.ui.generated.resources.estimated_arrival
 import sinatra.ui.generated.resources.scheduled_arrival
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun StopCard(
     stop: Stop,
     modifier: Modifier = Modifier,
     arrival: StationTime? = null,
-    onClick: (() -> Unit)? = null,
-    subtitle: String? = null
+    onClick: () -> Unit,
+    subtitle: String? = null,
+    showStopIcon: Boolean = false,
 ) {
     ListCard(
-        {},
+        {
+            if (showStopIcon) {
+                RandleScaffold {
+                    BusIcon()
+                }
+            }
+        },
         modifier,
         onClick,
     ) {

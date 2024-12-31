@@ -11,6 +11,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.platform.LocalUriHandler
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
@@ -22,6 +23,7 @@ import cl.emilym.sinatra.data.repository.ContentRepository
 import cl.emilym.sinatra.ui.minimumTouchTarget
 import cl.emilym.sinatra.ui.presentation.screens.AboutScreen
 import cl.emilym.sinatra.ui.presentation.screens.ContentScreen
+import cl.emilym.sinatra.ui.presentation.theme.Container
 
 fun contentRoute(id: ContentId): Screen {
     return when (id) {
@@ -41,7 +43,7 @@ fun ContentLinkWidget(
     Row(
         modifier = Modifier
             .heightIn(min = minimumTouchTarget)
-            .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f))
+            .background(Container)
             .clickable {
                 when (link) {
                     is ContentLink.External -> {

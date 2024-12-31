@@ -34,14 +34,18 @@ import cl.emilym.sinatra.data.models.RecentVisit
 import cl.emilym.sinatra.domain.search.SearchResult
 import cl.emilym.sinatra.nullIfEmpty
 import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
+import cl.emilym.sinatra.ui.placeCardDefaultNavigation
 import cl.emilym.sinatra.ui.presentation.screens.maps.RouteDetailScreen
 import cl.emilym.sinatra.ui.presentation.screens.maps.StopDetailScreen
+import cl.emilym.sinatra.ui.presentation.screens.maps.navigate.NavigateEntryScreen
 import cl.emilym.sinatra.ui.text
 import cl.emilym.sinatra.ui.widgets.IosBackButton
 import cl.emilym.sinatra.ui.widgets.ListHint
 import cl.emilym.sinatra.ui.widgets.NoResultsIcon
+import cl.emilym.sinatra.ui.widgets.PlaceCard
 import cl.emilym.sinatra.ui.widgets.RouteCard
 import cl.emilym.sinatra.ui.widgets.SearchIcon
+import cl.emilym.sinatra.ui.widgets.SinatraTextField
 import cl.emilym.sinatra.ui.widgets.StopCard
 import cl.emilym.sinatra.ui.widgets.Subheading
 import cl.emilym.sinatra.ui.widgets.viewportHeight
@@ -83,13 +87,10 @@ fun MapSearchScreenSearchState() {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 IosBackButton { viewModel.openBrowse() }
-                TextField(
+                SinatraTextField(
                     query ?: "",
                     { viewModel.search(it) },
                     modifier = Modifier.fillMaxWidth().focusRequester(focusRequester),
-                    maxLines = 1,
-                    singleLine = true,
-                    shape = MaterialTheme.shapes.large,
                     leadingIcon = {
                         SearchIcon(
                             tint = MaterialTheme.colorScheme.primary
@@ -98,11 +99,6 @@ fun MapSearchScreenSearchState() {
                     placeholder = {
                         Text(stringResource(Res.string.search_hint))
                     },
-                    colors = TextFieldDefaults.colors(
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent,
-                        disabledIndicatorColor = Color.Transparent
-                    )
                 )
             }
             LaunchedEffect(Unit) {
@@ -112,7 +108,7 @@ fun MapSearchScreenSearchState() {
         val hasRecentlyViewed = recentlyViewed is RequestState.Success &&
                 !(recentlyViewed as? RequestState.Success)?.value.isNullOrEmpty()
         when {
-            query.isNullOrBlank()-> {
+            query.isNullOrBlank() -> {
                 item {
                     Box(Modifier.height(1.rdp))
                 }
@@ -126,7 +122,8 @@ fun MapSearchScreenSearchState() {
                             it.stop,
                             modifier = Modifier.fillMaxWidth(),
                             onClick = { navigator.push(StopDetailScreen(it.stop.id)) },
-                            subtitle = stringResource(Res.string.stop_detail_distance, it.distance.text)
+                            subtitle = stringResource(Res.string.stop_detail_distance, it.distance.text),
+                            showStopIcon = true
                         )
                     }
                     if (hasRecentlyViewed) {
@@ -152,6 +149,13 @@ fun MapSearchScreenSearchState() {
                                 it.route,
                                 modifier = Modifier.fillMaxWidth(),
                                 onClick = { navigator.push(RouteDetailScreen(it.route.id)) }
+                            )
+
+                            is RecentVisit.Place -> PlaceCard(
+                                it.place,
+                                modifier = Modifier.fillMaxWidth(),
+                                onClick = { navigator.placeCardDefaultNavigation(it.place) },
+                                showPlaceIcon = true
                             )
                         }
                     }
@@ -191,7 +195,17 @@ fun MapSearchScreenSearchState() {
                                 result.stop,
                                 arrival = null,
                                 modifier = Modifier.fillMaxWidth(),
-                                onClick = { navigator.push(StopDetailScreen(result.stop.id)) }
+                                onClick = { navigator.push(StopDetailScreen(result.stop.id)) },
+                                showStopIcon = true
+                            )
+                        }
+
+                        is SearchResult.PlaceResult -> {
+                            PlaceCard(
+                                result.place,
+                                modifier = Modifier.fillMaxWidth(),
+                                showPlaceIcon = true,
+                                onClick = { navigator.placeCardDefaultNavigation(result.place) }
                             )
                         }
                     }

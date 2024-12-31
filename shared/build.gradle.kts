@@ -69,6 +69,7 @@ kotlin {
 
             // Serialization
             implementation(libs.pbandk)
+            implementation(libs.kotlinx.serialization.json)
 
             // Room
             implementation(libs.room.runtime)
@@ -76,6 +77,12 @@ kotlin {
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
+        }
+        commonTest.dependencies {
+            implementation(libs.kotlin.test)
+        }
+        androidUnitTest.dependencies {
+            implementation(libs.kotlin.test)
         }
     }
 }

@@ -7,6 +7,7 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.compositeOver
 
 val DarkColorScheme = darkColorScheme(
     primary = Purple80,
@@ -29,6 +30,10 @@ val LightColorScheme = lightColorScheme(
     onSurface = Color(0xFF1C1B1F),
     */
 )
+
+val Container
+    @Composable
+    get() = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f).compositeOver(MaterialTheme.colorScheme.background)
 
 @Composable
 expect fun pickColorScheme(dynamicColor: Boolean = true, darkTheme: Boolean = isSystemInDarkTheme()): ColorScheme

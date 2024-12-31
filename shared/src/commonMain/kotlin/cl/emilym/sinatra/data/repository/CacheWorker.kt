@@ -32,12 +32,13 @@ abstract class CacheWorker<T> {
     private suspend fun adjustedExpireTime() = expireTime * remoteConfigRepository.dataCachePeriodMultiplier()
 
     abstract suspend fun saveToPersistence(data: T, resource: ResourceKey)
-    abstract suspend fun getFromPersistence(resource: ResourceKey): T
+    abstract suspend fun getFromPersistence(resource: ResourceKey): T?
+    open suspend fun existsInPersistence(resource: ResourceKey): Boolean { return true }
 
     protected suspend fun run(pair: EndpointDigestPair<T>, resource: ResourceKey): Cachable<T> {
         val info = shaRepository.cached(cacheCategory, resource)
 
-        if (info.shouldCheckForUpdate()) {
+        if (info.shouldCheckForUpdate(resource)) {
             val digest = try {
                 pair.digest()
             } catch (e: Throwable) {
@@ -52,13 +53,14 @@ abstract class CacheWorker<T> {
             }
         }
 
-        return Cachable(getFromPersistence(resource), CacheState.CACHED)
+        return getFromPersistence(resource)?.let { Cachable(it, CacheState.CACHED) } ?:
+            throw IllegalStateException("Resource was reported as cached, but could not be retrieved")
     }
 
-    private suspend fun CacheInformation.shouldCheckForUpdate(): Boolean {
+    private suspend fun CacheInformation.shouldCheckForUpdate(resource: ResourceKey): Boolean {
         return when (this) {
             is CacheInformation.Unavailable -> true
-            is CacheInformation.Available -> expired(adjustedExpireTime(), clock.now())
+            is CacheInformation.Available -> expired(adjustedExpireTime(), clock.now()) || existsInPersistence(resource)
         }
     }
 
@@ -71,7 +73,7 @@ abstract class CacheWorker<T> {
         saveToPersistence(data, resource)
         shaRepository.save(digest, cacheCategory, resource)
         // We get from persistence anyway to ensure any joined tables are included
-        return Cachable.live(getFromPersistence(resource))
+        return Cachable.live(getFromPersistence(resource) ?: data)
     }
 
     private suspend fun failure(info: CacheInformation, e: Throwable, resource: ResourceKey): Cachable<T> {
@@ -79,7 +81,7 @@ abstract class CacheWorker<T> {
         return when (info) {
             is CacheInformation.Unavailable -> throw e
             is CacheInformation.Available -> Cachable(
-                getFromPersistence(resource),
+                getFromPersistence(resource) ?: throw e,
                 when (info.expired(adjustedExpireTime(), clock.now())) {
                     true -> CacheState.EXPIRED_CACHE
                     false -> CacheState.CACHED

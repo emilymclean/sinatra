@@ -21,7 +21,7 @@ import cl.emilym.compose.requeststate.RequestState
 import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.data.models.Content
 import cl.emilym.sinatra.data.repository.ContentRepository
-import cl.emilym.sinatra.ui.VersionInformation
+import cl.emilym.sinatra.BuildInformation
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.getKoin
@@ -62,9 +62,9 @@ class AboutScreen: ContentScreen(ContentRepository.ABOUT_ID) {
         Box(Modifier.weight(1f))
 
         val koin = getKoin()
-        val versionInformation = remember { koin.get<VersionInformation>() }
+        val buildInformation = remember { koin.get<BuildInformation>() }
         Text(
-            stringResource(Res.string.about_app_version, versionInformation.name, versionInformation.number),
+            stringResource(Res.string.about_app_version, buildInformation.versionName, buildInformation.versionNumber),
             modifier = Modifier.fillMaxWidth().padding(horizontal = 1.rdp),
             textAlign = TextAlign.Center
         )

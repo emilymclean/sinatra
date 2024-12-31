@@ -15,6 +15,8 @@ import cl.emilym.sinatra.domain.search.RouteStopSearchUseCase
 import cl.emilym.sinatra.domain.search.SearchResult
 import cl.emilym.sinatra.nullIfEmpty
 import cl.emilym.sinatra.ui.NEAREST_STOP_RADIUS
+import cl.emilym.sinatra.ui.presentation.screens.search.SearchScreenViewModel
+import cl.emilym.sinatra.ui.presentation.screens.search.searchHandler
 import cl.emilym.sinatra.ui.widgets.createRequestStateFlowFlow
 import cl.emilym.sinatra.ui.widgets.handleFlow
 import cl.emilym.sinatra.ui.widgets.handleFlowProperly
@@ -31,6 +33,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
 import kotlin.time.Duration.Companion.seconds
@@ -49,42 +52,30 @@ class MapSearchViewModel(
     private val stopRepository: StopRepository,
     private val routeStopSearchUseCase: RouteStopSearchUseCase,
     private val recentVisitRepository: RecentVisitRepository
-): ViewModel() {
+): ViewModel(), SearchScreenViewModel {
 
     private val _state = MutableStateFlow(State.BROWSE)
-    val query = MutableStateFlow<String?>(null)
+    override val query = MutableStateFlow<String?>(null)
 
     @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
     val state: Flow<MapSearchState> = _state.flatMapLatest {
         when (it) {
             State.BROWSE -> flowOf(MapSearchState.Browse)
-            State.SEARCH -> flow<MapSearchState> {
-                emit(MapSearchState.Search(RequestState.Initial()))
-                emitAll(
-                    query.flatMapLatest {
-                        flow {
-                            emit(MapSearchState.Search(RequestState.Loading()))
-                            emitAll(
-                                query.debounce(1.seconds).flatMapLatest { query ->
-                                    when (query) {
-                                        null, "" -> flowOf(MapSearchState.Search(RequestState.Initial()))
-                                        else -> handleFlow {
-                                            routeStopSearchUseCase(query)
-                                        }.map { MapSearchState.Search(it) }
-                                    }
-                                }
-                            )
-                        }
-                    }
-                )
-            }
+            State.SEARCH -> searchHandler(routeStopSearchUseCase) { MapSearchState.Search(it) }
         }
     }
+    override val results: Flow<RequestState<List<SearchResult>>> = state.mapLatest {
+        when (it) {
+            is MapSearchState.Search -> it.results
+            else -> RequestState.Initial()
+        }
+    }
+
     private val lastLocation = MutableStateFlow<MapLocation?>(null)
     val stops = MutableStateFlow<RequestState<List<Stop>>>(RequestState.Initial())
     var hasZoomedToLocation = false
 
-    val nearbyStops: Flow<List<StopWithDistance>?> = stops.combine(lastLocation) { stops, lastLocation ->
+    override val nearbyStops: Flow<List<StopWithDistance>?> = stops.combine(lastLocation) { stops, lastLocation ->
         if (stops !is RequestState.Success || lastLocation == null) return@combine null
         val stops = stops.value.nullIfEmpty() ?: return@combine null
         stops.map { StopWithDistance(it, distance(lastLocation, it.location)) }
@@ -95,7 +86,7 @@ class MapSearchViewModel(
     }
 
     private val _recentVisits = createRequestStateFlowFlow<List<RecentVisit>>()
-    val recentVisits = _recentVisits.presentable()
+    override val recentVisits = _recentVisits.presentable()
 
     init {
         retry()
@@ -110,7 +101,7 @@ class MapSearchViewModel(
         }
     }
 
-    fun retryRecentVisits() {
+    override fun retryRecentVisits() {
         viewModelScope.launch {
             _recentVisits.handleFlowProperly {
                 recentVisitRepository.all()
@@ -118,7 +109,7 @@ class MapSearchViewModel(
         }
     }
 
-    fun search(query: String) {
+    override fun search(query: String) {
         this.query.value = query
     }
 

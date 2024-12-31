@@ -1,0 +1,83 @@
+syntax = "proto2";
+
+package networkgraph;
+
+option java_package = "cl.emilym.gtfs.networkgraph";
+
+message Graph {
+  repeated Node nodes = 1;
+  required GraphConfiguration config = 2;
+  required GraphMappings mappings = 3;
+}
+
+message GraphMappings {
+  map<string, uint32> stopNodes = 1;
+  repeated string stopIds = 2;
+  repeated string routeIds = 3;
+  repeated string headings = 5;
+  repeated string serviceIds = 4;
+}
+
+message GraphConfiguration {
+  required double penaltyMultiplier = 2;
+  required uint64 assumedWalkingSecondsPerKilometer = 3;
+}
+
+enum EdgeType {
+  // Represents an edge connecting a stop to its associated routes.
+  EDGE_TYPE_STOP_ROUTE = 0;
+  // Represents a connection between two STOP_ROUTE nodes through a vehicle.
+  EDGE_TYPE_TRAVEL = 1;
+  // Represents a connection between two TRANSFER nodes through walking (or bike, or wheelchair).
+  EDGE_TYPE_TRANSFER = 2;
+  // Same as above but marks that the penalty should not be adjusted by mode of transfer.
+  EDGE_TYPE_TRANSFER_NON_ADJUSTABLE = 3;
+}
+
+message Edge {
+  reserved 1; // Potentially to include fromNodeId in the data structure itself
+  required uint32 toNodeId = 2;
+  // Used on travel nodes
+  optional uint64 departureTime = 3;
+  required uint64 penalty = 4;
+  required EdgeType type = 7;
+
+  // The services on which this edge can be traversed
+  repeated uint32 availableServices = 8;
+  /*
+  Bit flags about the accessibility of a particular node. The following are defined (lsb to msb).
+
+  EDGE_TYPE_TRAVEL:
+  0: Wheelchair accessible
+  1: Bikes allowed
+   */
+  optional uint32 accessibilityFlags = 6;
+}
+
+enum NodeType {
+  // Represents a stop in the network
+  NODE_TYPE_STOP = 0;
+  // Represents a route associated with a stop
+  NODE_TYPE_STOP_ROUTE = 1;
+}
+
+message Node {
+  reserved 1; // Potentially to include nodeId in the data structure itself
+  // Can be either a stop node or a stopRoute node
+  required NodeType type = 2;
+  // Represents an index into the mappings.stopIds array
+  required uint32 stopId = 3;
+  // Represents an index into the mappings.routeIds array
+  optional uint32 routeId = 4;
+  // Each route direction is represented uniquely
+  optional uint32 headingId = 7;
+  repeated Edge edges = 5;
+  /*
+    Bit flags about the accessibility of a particular node. The following are defined (lsb to msb)
+
+    NODE_TYPE_STOP:
+    0: Stop is wheelchair accessible
+   */
+  optional uint32 accessibilityFlags = 6;
+  reserved 8 to 10; // For possible additional annotations to nodes that would allow a router to exclude or include them.
+}
