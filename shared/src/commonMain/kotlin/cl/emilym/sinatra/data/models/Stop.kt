@@ -38,6 +38,11 @@ data class Stop(
 
 }
 
+data class StopWithDistance(
+    val stop: Stop,
+    val distance: Kilometer
+)
+
 data class StopAccessibility(
     val wheelchair: StopWheelchairAccessibility
 ) {

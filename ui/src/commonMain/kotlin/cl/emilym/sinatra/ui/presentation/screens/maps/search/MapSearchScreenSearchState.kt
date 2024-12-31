@@ -29,11 +29,14 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import cl.emilym.compose.requeststate.RequestState
 import cl.emilym.compose.requeststate.RequestStateWidget
 import cl.emilym.compose.units.rdp
+import cl.emilym.sinatra.FeatureFlags
 import cl.emilym.sinatra.data.models.RecentVisit
 import cl.emilym.sinatra.domain.search.SearchResult
+import cl.emilym.sinatra.nullIfEmpty
 import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
 import cl.emilym.sinatra.ui.presentation.screens.maps.RouteDetailScreen
 import cl.emilym.sinatra.ui.presentation.screens.maps.StopDetailScreen
+import cl.emilym.sinatra.ui.text
 import cl.emilym.sinatra.ui.widgets.IosBackButton
 import cl.emilym.sinatra.ui.widgets.ListHint
 import cl.emilym.sinatra.ui.widgets.NoResultsIcon
@@ -48,6 +51,8 @@ import sinatra.ui.generated.resources.Res
 import sinatra.ui.generated.resources.no_search_results
 import sinatra.ui.generated.resources.search_hint
 import sinatra.ui.generated.resources.search_recently_viewed
+import sinatra.ui.generated.resources.map_search_nearby_stops
+import sinatra.ui.generated.resources.stop_detail_distance
 
 @Composable
 fun MapSearchScreenSearchState() {
@@ -60,6 +65,7 @@ fun MapSearchScreenSearchState() {
     val results = (state as? MapSearchState.Search)?.results ?: return
 
     val recentlyViewed by viewModel.recentVisits.collectAsState(RequestState.Initial())
+    val nearbyStops by viewModel.nearbyStops.collectAsState(null)
 
     LaunchedEffect(Unit) {
         bottomSheetState.expand()
@@ -103,30 +109,51 @@ fun MapSearchScreenSearchState() {
                 focusRequester.requestFocus()
             }
         }
+        val hasRecentlyViewed = recentlyViewed is RequestState.Success &&
+                !(recentlyViewed as? RequestState.Success)?.value.isNullOrEmpty()
         when {
-            query.isNullOrBlank() &&
-                    recentlyViewed is RequestState.Success &&
-                    !(recentlyViewed as? RequestState.Success)?.value.isNullOrEmpty() -> {
+            query.isNullOrBlank()-> {
                 item {
                     Box(Modifier.height(1.rdp))
                 }
-                item {
-                    Subheading(stringResource(Res.string.search_recently_viewed))
-                }
-                items((recentlyViewed as? RequestState.Success)?.value ?: listOf()) {
-                    when (it) {
-                        is RecentVisit.Stop -> StopCard(
+                nearbyStops?.nullIfEmpty()?.let { nearbyStops ->
+                    if (!FeatureFlags.MAP_SEARCH_SCREEN_NEARBY_STOPS_SEARCH) return@let
+                    item {
+                        Subheading(stringResource(Res.string.map_search_nearby_stops))
+                    }
+                    items(nearbyStops) {
+                        StopCard(
                             it.stop,
-                            arrival = null,
                             modifier = Modifier.fillMaxWidth(),
-                            onClick = { navigator.push(StopDetailScreen(it.stop.id)) }
+                            onClick = { navigator.push(StopDetailScreen(it.stop.id)) },
+                            subtitle = stringResource(Res.string.stop_detail_distance, it.distance.text)
                         )
+                    }
+                    if (hasRecentlyViewed) {
+                        item {
+                            Box(Modifier.height(1.rdp))
+                        }
+                    }
+                }
+                if (hasRecentlyViewed) {
+                    item {
+                        Subheading(stringResource(Res.string.search_recently_viewed))
+                    }
+                    items((recentlyViewed as? RequestState.Success)?.value ?: listOf()) {
+                        when (it) {
+                            is RecentVisit.Stop -> StopCard(
+                                it.stop,
+                                arrival = null,
+                                modifier = Modifier.fillMaxWidth(),
+                                onClick = { navigator.push(StopDetailScreen(it.stop.id)) }
+                            )
 
-                        is RecentVisit.Route -> RouteCard(
-                            it.route,
-                            modifier = Modifier.fillMaxWidth(),
-                            onClick = { navigator.push(RouteDetailScreen(it.route.id)) }
-                        )
+                            is RecentVisit.Route -> RouteCard(
+                                it.route,
+                                modifier = Modifier.fillMaxWidth(),
+                                onClick = { navigator.push(RouteDetailScreen(it.route.id)) }
+                            )
+                        }
                     }
                 }
             }

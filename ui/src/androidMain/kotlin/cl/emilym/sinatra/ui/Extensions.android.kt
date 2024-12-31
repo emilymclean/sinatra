@@ -6,6 +6,9 @@ import cl.emilym.sinatra.data.models.MapRegion
 import cl.emilym.sinatra.data.models.ScreenLocation
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
+import org.jetbrains.compose.resources.StringResource
+import sinatra.ui.generated.resources.Res
+import sinatra.ui.generated.resources.open_maps_android
 
 fun MapLocation.toNative(): LatLng {
     return LatLng(
@@ -41,3 +44,6 @@ fun LatLngBounds.toShared(): MapRegion {
         MapLocation(southwest.latitude, northeast.longitude),
     )
 }
+
+internal actual val Res.string.open_maps: StringResource
+    get() = Res.string.open_maps_android

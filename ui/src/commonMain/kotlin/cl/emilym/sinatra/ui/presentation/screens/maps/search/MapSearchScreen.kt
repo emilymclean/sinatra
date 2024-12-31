@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.ScreenKey
 import cl.emilym.compose.requeststate.RequestState
 import cl.emilym.compose.units.rdp
+import cl.emilym.sinatra.FeatureFlags
 import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.ui.maps.MapItem
 import cl.emilym.sinatra.ui.maps.MarkerItem
@@ -34,7 +35,8 @@ import cl.emilym.sinatra.ui.widgets.currentLocation
 import cl.emilym.sinatra.ui.widgets.viewportHeight
 import org.koin.compose.viewmodel.koinViewModel
 
-val zoomThreshold = 14f
+const val zoomThreshold = 14f
+const val currentLocationZoom = zoomThreshold + 4f
 
 class MapSearchScreen: MapScreen, NativeMapScreen {
     override val key: ScreenKey = this::class.qualifiedName!!
@@ -55,11 +57,13 @@ class MapSearchScreen: MapScreen, NativeMapScreen {
         }
 
         LaunchedEffect(currentLocation) {
-            currentLocation?.let { currentLocation ->
-                if (!viewModel.hasZoomedToLocation) {
-                    mapControl.zoomToPoint(currentLocation)
-                    viewModel.hasZoomedToLocation = true
-                }
+            val currentLocation = currentLocation ?: return@LaunchedEffect
+            if (!viewModel.hasZoomedToLocation) {
+                mapControl.zoomToPoint(currentLocation, currentLocationZoom)
+                viewModel.hasZoomedToLocation = true
+            }
+            if (FeatureFlags.MAP_SEARCH_SCREEN_NEARBY_STOPS_SEARCH) {
+                viewModel.updateLocation(currentLocation)
             }
         }
 
@@ -75,7 +79,7 @@ class MapSearchScreen: MapScreen, NativeMapScreen {
                 currentLocation?.let {
                     FloatingActionButton(
                         onClick = {
-                            mapControl.zoomToPoint(it)
+                            mapControl.zoomToPoint(it, currentLocationZoom)
                         }
                     ) { MyLocationIcon() }
                 }

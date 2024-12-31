@@ -6,6 +6,7 @@ import cl.emilym.sinatra.asRadians
 import cl.emilym.sinatra.degrees
 import cl.emilym.sinatra.radians
 import kotlin.math.abs
+import kotlin.math.acos
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.max
@@ -59,6 +60,8 @@ data class MapRegion(
 
 }
 
+const val EARTH_RADIUS = 6371.0
+
 fun List<MapLocation>.findMidpoint(): MapLocation {
     val latR = map { it.lat.degrees.asRadians }
     val lngR = map { it.lng.degrees.asRadians }
@@ -76,6 +79,13 @@ fun List<MapLocation>.findMidpoint(): MapLocation {
     val oLat = atan2(z,hyp)
 
     return MapLocation(oLat.radians.asDegrees, oLng.radians.asDegrees)
+}
+
+fun distance(m1: MapLocation, m2: MapLocation): Double {
+    return acos(
+        (sin(m1.lat.asRadians) * sin(m2.lat.asRadians)) +
+                (cos(m1.lat.asRadians) * cos(m2.lat.asRadians) * cos(m2.lng.asRadians - m1.lng.asRadians))) *
+            EARTH_RADIUS
 }
 
 data class ScreenLocation(

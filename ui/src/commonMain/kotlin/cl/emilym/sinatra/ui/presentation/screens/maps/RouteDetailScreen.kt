@@ -31,7 +31,10 @@ import cl.emilym.compose.requeststate.RequestState
 import cl.emilym.compose.requeststate.RequestStateWidget
 import cl.emilym.compose.requeststate.handle
 import cl.emilym.compose.units.rdp
+import cl.emilym.sinatra.FeatureFlags
 import cl.emilym.sinatra.bounds
+import cl.emilym.sinatra.data.models.MapLocation
+import cl.emilym.sinatra.data.models.StopWithDistance
 import cl.emilym.sinatra.data.models.Route
 import cl.emilym.sinatra.data.models.RouteId
 import cl.emilym.sinatra.data.models.RouteTripInformation
@@ -40,23 +43,28 @@ import cl.emilym.sinatra.data.models.ServiceBikesAllowed
 import cl.emilym.sinatra.data.models.ServiceId
 import cl.emilym.sinatra.data.models.ServiceWheelchairAccessible
 import cl.emilym.sinatra.data.models.StationTime
+import cl.emilym.sinatra.data.models.StopId
 import cl.emilym.sinatra.data.models.TripId
+import cl.emilym.sinatra.data.models.distance
 import cl.emilym.sinatra.data.repository.FavouriteRepository
 import cl.emilym.sinatra.data.repository.RecentVisitRepository
 import cl.emilym.sinatra.data.repository.startOfDay
 import cl.emilym.sinatra.domain.CurrentTripForRouteUseCase
 import cl.emilym.sinatra.domain.CurrentTripInformation
 import cl.emilym.sinatra.nullIfEmpty
+import cl.emilym.sinatra.ui.NEAREST_STOP_RADIUS
 import cl.emilym.sinatra.ui.asInstants
 import cl.emilym.sinatra.ui.color
 import cl.emilym.sinatra.ui.current
 import cl.emilym.sinatra.ui.maps.LineItem
 import cl.emilym.sinatra.ui.maps.MapItem
 import cl.emilym.sinatra.ui.maps.MarkerItem
+import cl.emilym.sinatra.ui.maps.highlightedRouteStopMarkerIcon
 import cl.emilym.sinatra.ui.maps.routeStopMarkerIcon
 import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
 import cl.emilym.sinatra.ui.navigation.MapScreen
 import cl.emilym.sinatra.ui.past
+import cl.emilym.sinatra.ui.text
 import cl.emilym.sinatra.ui.widgets.AccessibilityIconLockup
 import cl.emilym.sinatra.ui.widgets.BikeIcon
 import cl.emilym.sinatra.ui.widgets.FavouriteButton
@@ -70,8 +78,11 @@ import cl.emilym.sinatra.ui.widgets.SpecificRecomposeOnInstants
 import cl.emilym.sinatra.ui.widgets.StopCard
 import cl.emilym.sinatra.ui.widgets.Subheading
 import cl.emilym.sinatra.ui.widgets.WheelchairAccessibleIcon
+import cl.emilym.sinatra.ui.widgets.currentLocation
 import cl.emilym.sinatra.ui.widgets.toIntPx
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
@@ -89,6 +100,8 @@ import sinatra.ui.generated.resources.route_heading
 import sinatra.ui.generated.resources.route_not_found
 import sinatra.ui.generated.resources.stops_title
 import sinatra.ui.generated.resources.trip_not_found
+import sinatra.ui.generated.resources.stop_detail_nearest_stop
+import sinatra.ui.generated.resources.stop_detail_distance
 
 @KoinViewModel
 class RouteDetailViewModel(
@@ -97,8 +110,17 @@ class RouteDetailViewModel(
     private val recentVisitRepository: RecentVisitRepository
 ): ViewModel() {
 
+    private var lastLocation = MutableStateFlow<MapLocation?>(null)
     val tripInformation = MutableStateFlow<RequestState<CurrentTripInformation?>>(RequestState.Initial())
     val favourited = MutableStateFlow(false)
+    val nearestStop: Flow<StopWithDistance?> = tripInformation.combine(lastLocation) { tripInformation, lastLocation ->
+        if (tripInformation !is RequestState.Success || lastLocation == null) return@combine null
+        val stops = tripInformation.value?.tripInformation?.stops?.mapNotNull { it.stop }?.nullIfEmpty() ?: return@combine null
+        stops.map { StopWithDistance(it, distance(lastLocation, it.location)) }
+            .filter { it.distance < NEAREST_STOP_RADIUS }
+            .nullIfEmpty()
+            ?.minBy { it.distance }
+    }
 
     fun init(routeId: RouteId) {
         viewModelScope.launch {
@@ -117,6 +139,10 @@ class RouteDetailViewModel(
         }
     }
 
+    fun updateLocation(location: MapLocation) {
+        lastLocation.value = location
+    }
+
     fun favourite(routeId: RouteId, favourited: Boolean) {
         this.favourited.value = favourited
         viewModelScope.launch {
@@ -129,9 +155,10 @@ class RouteDetailViewModel(
 class RouteDetailScreen(
     private val routeId: RouteId,
     private val serviceId: ServiceId? = null,
-    private val tripId: TripId? = null
+    private val tripId: TripId? = null,
+    private val stopId: StopId? = null,
 ): MapScreen {
-    override val key: ScreenKey = "${this::class.qualifiedName!!}/$routeId/$serviceId/$tripId"
+    override val key: ScreenKey = "${this::class.qualifiedName!!}/$routeId/$serviceId/$tripId/$stopId"
 
     @Composable
     override fun Content() {}
@@ -152,6 +179,13 @@ class RouteDetailScreen(
 
         LaunchedEffect(routeId, serviceId, tripId) {
             viewModel.retry(routeId, serviceId, tripId)
+        }
+
+        if (FeatureFlags.ROUTE_DETAIL_NEAREST_STOP) {
+            val currentLocation = currentLocation()
+            LaunchedEffect(currentLocation) {
+                viewModel.updateLocation(currentLocation ?: return@LaunchedEffect)
+            }
         }
 
         val tripInformation by viewModel.tripInformation.collectAsState(RequestState.Initial())
@@ -190,6 +224,8 @@ class RouteDetailScreen(
         val timeZone = LocalScheduleTimeZone.current
         val mapControl = LocalMapControl.current
 
+        val nearestStop by viewModel.nearestStop.collectAsState(null)
+
         val current = if (trigger != null) {
             remember(trigger) {
                 val now = clock.now()
@@ -209,6 +245,8 @@ class RouteDetailScreen(
 
         val zoomPadding = 4.rdp.toIntPx()
         LaunchedEffect(info.stops) {
+            if (FeatureFlags.ROUTE_DETAIL_PREVENT_ZOOM_WHEN_HAVE_SOURCE_STOP && stopId != null)
+                return@LaunchedEffect
             mapControl.zoomToArea(info.stops.mapNotNull { it.stop?.location }.bounds(), zoomPadding)
         }
 
@@ -276,6 +314,24 @@ class RouteDetailScreen(
                 }
             }
             item { Box(Modifier.height(1.rdp)) }
+            nearestStop?.let { nearestStop ->
+                if (!FeatureFlags.ROUTE_DETAIL_NEAREST_STOP) return@let
+                item {
+                    Column {
+                        Subheading(stringResource(Res.string.stop_detail_nearest_stop))
+                        StopCard(
+                            nearestStop.stop,
+                            Modifier.fillMaxWidth(),
+                            onClick = {
+                                navigator.push(StopDetailScreen(
+                                    nearestStop.stop.id
+                                ))
+                            },
+                            subtitle = stringResource(Res.string.stop_detail_distance, nearestStop.distance.text)
+                        )
+                    }
+                }
+            }
             when {
                 trigger == null -> {
                     item { Subheading(stringResource(Res.string.stops_title)) }
@@ -318,6 +374,7 @@ class RouteDetailScreen(
     @Composable
     override fun mapItems(): List<MapItem> {
         val viewModel = koinViewModel<RouteDetailViewModel>()
+        val navigator = LocalNavigator.currentOrThrow
         val tripInformationRS by viewModel.tripInformation.collectAsState(RequestState.Initial())
         val info = (tripInformationRS as? RequestState.Success)?.value ?: return listOf()
         val route = info.route
@@ -333,8 +390,15 @@ class RouteDetailScreen(
         ) + stops.mapNotNull {
             MarkerItem(
                 it.stop?.location ?: return@mapNotNull null,
-                icon,
+                when (it.stopId == stopId && FeatureFlags.ROUTE_DETAIL_HIGHLIGHT_SOURCE_STOP) {
+                    true -> highlightedRouteStopMarkerIcon(route, it.stop)
+                    false -> icon
+                },
                 id = "routeDetail-${it.stopId}",
+                onClick = when (FeatureFlags.ROUTE_DETAIL_CLICKABLE_STOPS) {
+                    true -> { { navigator.push(StopDetailScreen(it.stopId)) } }
+                    false -> null
+                }
             )
         }
     }

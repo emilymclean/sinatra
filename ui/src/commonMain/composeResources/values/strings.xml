@@ -8,6 +8,23 @@
     <string name="about_app_description">Sinatra is a companion app for the Canberra MyWay+ network made by locals for locals. We aim to provide a simpler experience for finding route and stop information, motivated by the suboptimal flow on the official app. We are unfortunately unable to offer the ticketing feature, nor proper routing.\n\n\nSinatra is open source! You can find and contribute to our codebase at [Github](https://github.com/emilymclean/sinatra).</string>
     <string name="about_app_version">Version %1$s (%2$s)</string>
 
+    <string name="open_maps_android">Show in Google Maps</string>
+    <string name="open_maps_ios">Show in Apple Maps</string>
+
+    <string name="stop_detail_nearest_stop">Nearest Stop</string>
+    <string name="stop_detail_distance">%1$s away</string>
+    <plurals name="distance_kilometer">
+        <item quantity="one">%1$d kilometer</item>
+        <item quantity="other">%1$d kilometers</item>
+        <item quantity="other">%1$d kilometers</item>
+    </plurals>
+    <plurals name="distance_meter">
+        <item quantity="one">%1$d meter</item>
+        <item quantity="other">%1$d meters</item>
+    </plurals>
+
+    <string name="map_search_nearby_stops">Nearby Stops</string>
+
     <string name="search_recently_viewed">Recently viewed</string>
     <string name="search_hint">Search for a stop or route.</string>
     <string name="no_search_results">We couldn't find anything for "%1$s".</string>
@@ -29,7 +46,7 @@
     <string name="route_heading">Towards %1$s</string>
     <string name="route_code_name">Route %1$s</string>
     <string name="upcoming_vehicles">Upcoming routes</string>
-    <string name="no_upcoming_vehicles">There a no routes scheduled.</string>
+    <string name="no_upcoming_vehicles">There are no routes scheduled for the rest of today.</string>
 
     <string name="accessibility_wheelchair_accessible">Wheelchair accessible</string>
     <string name="accessibility_not_wheelchair_accessible">Not wheelchair accessible</string>
