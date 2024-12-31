@@ -132,7 +132,7 @@ class CalculateJourneyUseCase(
                     if (legs.isEmpty()) return@run
                     val lastLeg = legs.last { it is JourneyLeg.RouteJourneyLeg } as JourneyLeg.RouteJourneyLeg
                     val attachedStop = lastLeg.stops.last()
-                    val time = distance(departureLocation.location, attachedStop.location) * graph.item.metadata.assumedWalkingSecondsPerKilometer.toLong()
+                    val time = distance(arrivalLocation.location, attachedStop.location) * graph.item.metadata.assumedWalkingSecondsPerKilometer.toLong()
                     legs.add(JourneyLeg.TransferPoint(
                         time.seconds,
                         lastLeg.arrivalTime,
