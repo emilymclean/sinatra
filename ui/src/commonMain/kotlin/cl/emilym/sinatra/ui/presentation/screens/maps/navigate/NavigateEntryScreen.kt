@@ -138,7 +138,11 @@ class NavigateEntryScreen(
                     })
                 }
                 is JourneyLeg.Transfer -> {
-                    addWalking(leg.stops.map { it.location })
+                    when (i) {
+                        0 -> addWalking(listOf(leg.stops.first().location) + leg.stops.map { it.location })
+                        journey.legs.lastIndex -> addWalking(leg.stops.map { it.location } + listOf(leg.stops.last().location))
+                        else -> addWalking(leg.stops.map { it.location })
+                    }
                 }
                 is JourneyLeg.TransferPoint -> {
                     when (i) {
@@ -347,7 +351,7 @@ class NavigateEntryScreen(
         Column(Modifier.fillMaxWidth()) {
             when (firstLeg) {
                 is JourneyLeg.Transfer -> {
-                    DepartureLeg(firstLeg.stops.last().name)
+                    DepartureLeg(firstLeg.stops.first().name)
                     HorizontalDivider(Modifier.padding(start = journeyIconInset, end = 1.rdp))
                 }
                 is JourneyLeg.TransferPoint -> {
