@@ -43,12 +43,14 @@ import cl.emilym.sinatra.data.repository.FavouriteRepository
 import cl.emilym.sinatra.data.repository.RecentVisitRepository
 import cl.emilym.sinatra.data.repository.StopRepository
 import cl.emilym.sinatra.domain.UpcomingRoutesForStopUseCase
+import cl.emilym.sinatra.ui.maps.DEFAULT_ZOOM
 import cl.emilym.sinatra.ui.maps.MapItem
 import cl.emilym.sinatra.ui.maps.MarkerItem
 import cl.emilym.sinatra.ui.maps.stopMarkerIcon
 import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
 import cl.emilym.sinatra.ui.navigation.MapScreen
 import cl.emilym.sinatra.ui.open_maps
+import cl.emilym.sinatra.ui.presentation.screens.maps.search.currentLocationZoom
 import cl.emilym.sinatra.ui.stopJourneyNavigation
 import cl.emilym.sinatra.ui.widgets.AccessibilityIconLockup
 import cl.emilym.sinatra.ui.widgets.FavouriteButton
@@ -163,7 +165,7 @@ class StopDetailScreen(
                     }
                     else -> {
                         LaunchedEffect(stop.location) {
-                            mapControl.zoomToPoint(stop.location)
+                            mapControl.zoomToPoint(stop.location, currentLocationZoom + 2f)
                         }
 
                         LazyColumn(

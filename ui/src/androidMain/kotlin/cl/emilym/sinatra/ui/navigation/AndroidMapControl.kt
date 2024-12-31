@@ -53,4 +53,8 @@ class AndroidMapControl(
         }
     }
 
+    override fun currentZoom(): Float {
+        return cameraPositionState.position.zoom
+    }
+
 }

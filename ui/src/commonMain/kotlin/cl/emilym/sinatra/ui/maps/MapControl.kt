@@ -8,11 +8,15 @@ import cl.emilym.sinatra.data.models.ScreenRegion
 import cl.emilym.sinatra.ui.addCoordinateSpan
 import cl.emilym.sinatra.ui.toCoordinateSpan
 import io.github.aakira.napier.Napier
+import kotlin.math.max
+
+const val DEFAULT_ZOOM = 16f
 
 interface MapControl {
     fun zoomToArea(bounds: MapRegion, padding: Int)
     fun zoomToArea(topLeft: MapLocation, bottomRight: MapLocation, padding: Int)
-    fun zoomToPoint(location: MapLocation, zoom: Float = 16f)
+    fun zoomToPoint(location: MapLocation, zoom: Float = DEFAULT_ZOOM)
+    fun moveToPoint(location: MapLocation, minZoom: Float? = null)
 }
 
 abstract class AbstractMapControl: MapControl {
@@ -49,6 +53,8 @@ abstract class AbstractMapControl: MapControl {
 
     abstract fun showBounds(bounds: MapRegion)
     abstract fun showPoint(center: MapLocation, zoom: Float)
+
+    abstract fun currentZoom(): Float
 
     override fun zoomToArea(
         topLeft: MapLocation,
@@ -111,6 +117,12 @@ abstract class AbstractMapControl: MapControl {
             region,
             0
         )
+    }
+
+    override fun moveToPoint(location: MapLocation, minZoom: Float?) {
+        // TODO don't hack in + 3f, calculate zoom from view box
+        val newZoom = max(currentZoom() + 3f, minZoom ?: 0f)
+        zoomToPoint(location, newZoom)
     }
 
 }

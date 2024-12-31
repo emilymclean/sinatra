@@ -9,6 +9,7 @@ import cl.emilym.sinatra.ui.adjustForLatitude
 import cl.emilym.sinatra.ui.toCoordinateSpan
 import cl.emilym.sinatra.ui.toNative
 import cl.emilym.sinatra.ui.toShared
+import cl.emilym.sinatra.ui.toZoom
 import io.github.aakira.napier.Napier
 import kotlinx.cinterop.ExperimentalForeignApi
 
@@ -48,8 +49,7 @@ class AppleMapControl(
         ))
     }
 
-    override fun zoomToPoint(location: MapLocation, zoom: Float) {
-        Napier.d("Zooming to point = $location")
-        super.zoomToPoint(location, zoom)
+    override fun currentZoom(): Float {
+        return state.cameraDescription.coordinateSpan.toZoom()
     }
 }
