@@ -9,6 +9,7 @@ import cl.emilym.sinatra.datastore.SETTINGS_QUALIFIER
 import cl.emilym.sinatra.datastore.createDataStore
 import cl.emilym.sinatra.documentDirectory
 import org.koin.core.module.Module
+import org.koin.core.qualifier.named
 import org.koin.dsl.binds
 import org.koin.dsl.module
 
@@ -23,6 +24,6 @@ actual val databaseBuilderModule: Module = module {
     single { createDatabaseBuilder<AppDatabase>(appDatabaseName) }
     factory { AppleCacheFileWriter() } binds arrayOf(CacheFileWriter::class)
     single(
-        qualifier = SETTINGS_QUALIFIER
+        qualifier = named(SETTINGS_QUALIFIER)
     ) { createDataStore(SETTINGS_DATASTORE) }
 }

@@ -29,6 +29,6 @@ actual val databaseBuilderModule: Module = module {
     single { createDatabaseBuilder<AppDatabase>(androidContext(), appDatabaseName) }
     factory { AndroidCacheFileWriter(androidContext()) } binds arrayOf(CacheFileWriter::class)
     single(
-        qualifier = SETTINGS_QUALIFIER
+        qualifier = named(SETTINGS_QUALIFIER)
     ) { createDataStore(androidContext(), SETTINGS_DATASTORE) }
 }
