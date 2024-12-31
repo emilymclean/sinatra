@@ -14,6 +14,9 @@ val Pink40 = Color(0xFF7D5260)
 val BrandingRed = Color(0xFFBD0021)
 val BrandingBlue = Color(0xFF0042AC)
 
+val TransBlue = Color(0xFF5BCEFA)
+val TransPink = Color(0xFFF5A9B8)
+
 val walkingColor
     @Composable
     get() = BrandingBlue

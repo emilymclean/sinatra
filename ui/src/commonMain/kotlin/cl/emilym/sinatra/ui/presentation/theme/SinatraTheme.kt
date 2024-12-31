@@ -36,16 +36,21 @@ val Container
     get() = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f).compositeOver(MaterialTheme.colorScheme.background)
 
 @Composable
-expect fun pickColorScheme(dynamicColor: Boolean = true, darkTheme: Boolean = isSystemInDarkTheme()): ColorScheme
+expect fun dynamicColorScheme(darkTheme: Boolean, fallback: ColorScheme): ColorScheme
 
 @Composable
 fun SinatraTheme(
+    colorSchemeOption: ColorSchemeOption = ColorSchemeOption.Default,
     darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = true,
+    contrastSetting: ContrastSetting = ContrastSetting.DEFAULT,
     content: @Composable () -> Unit
 ) {
+    val color = colorSchemeOption.provider(darkTheme, contrastSetting)
     MaterialTheme(
-        colorScheme = pickColorScheme(dynamicColor, darkTheme),
+        colorScheme = when (colorSchemeOption.overrideDynamic) {
+            false -> dynamicColorScheme(darkTheme, color)
+            true -> color
+        },
         typography = Typography,
         content = content
     )
