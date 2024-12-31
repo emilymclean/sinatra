@@ -23,3 +23,26 @@ To resolve addresses, [Nominatim](https://nominatim.openstreetmap.org/ui/search.
 
 Both APIs are configured through Firebase Remote Config, although another implementation may
 be provided.
+
+### Routing
+Routing is calculated on device and uses a simple 
+[Dijkstra algorithm](https://en.wikipedia.org/wiki/Dijkstra's_algorithm) backed by a stripped back 
+[Fibonacci Heap](https://en.wikipedia.org/wiki/Fibonacci_heap) priority queue implementation (credit 
+to [Keith Schwarz](https://keithschwarz.com/interesting/code/?dir=fibonacci-heap), on which the 
+implementation is based). 
+
+The algorithm explores a time-dependent graph that represents the entire transport network. In this 
+implementation, each stop is represented by a single node and each pair of (route, heading) associated
+with the stop is a unique node. From there, edges connect each stop by "transfer" (walking, biking, 
+etc) and each (route, heading) associated with a stop into trips with information about the conditions 
+under which the edge is active.
+
+The router uses a custom byte format to store the graph on disk, and lazily deserializes nodes and
+edges on demand. The specification for the byte format can be found [here](https://github.com/emilymclean/gtfs-api/blob/main/script/network-graph-format.md).
+Essentially, the network graph is always stored in memory as an unstructured byte array, with only
+some metadata being permanently deserialized. Node and edge objects are in fact facades with a
+pointer to a position in the byte array and knowledge of how to fetch fields from the array. When
+a field is requested, the necessary data is fetched, reconstructed, and then cached. 
+
+Compared to a previously experimented format that used a more conventional protobuf format, this 
+implementation proved to significantly reduce memory pressure.
