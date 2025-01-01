@@ -60,7 +60,7 @@ abstract class CacheWorker<T> {
     private suspend fun CacheInformation.shouldCheckForUpdate(resource: ResourceKey): Boolean {
         return when (this) {
             is CacheInformation.Unavailable -> true
-            is CacheInformation.Available -> expired(adjustedExpireTime(), clock.now()) || existsInPersistence(resource)
+            is CacheInformation.Available -> expired(adjustedExpireTime(), clock.now()) || !existsInPersistence(resource)
         }
     }
 

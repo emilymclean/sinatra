@@ -15,6 +15,7 @@ import cl.emilym.sinatra.NoApiUrlException
 import cl.emilym.sinatra.data.repository.RemoteConfigRepository
 import de.jensklingenberg.ktorfit.Ktorfit
 import de.jensklingenberg.ktorfit.ktorfitBuilder
+import io.github.aakira.napier.Napier
 import io.ktor.client.HttpClient
 import io.ktor.client.call.HttpClientCall
 import io.ktor.client.engine.HttpClientEngine
@@ -24,6 +25,7 @@ import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.plugin
 import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.request.url
+import io.ktor.client.statement.HttpResponse
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 import org.koin.core.annotation.Factory
@@ -52,6 +54,13 @@ fun urlReplaceInterceptor(
     }
 }
 
+fun loggingInterceptor(): suspend Sender.(HttpRequestBuilder) -> HttpClientCall {
+    return { request ->
+        Napier.d("Requesting ${request.url}", tag = "Http")
+        execute(request)
+    }
+}
+
 @Factory
 fun ktorDependency(
     remoteConfigRepository: RemoteConfigRepository
@@ -63,6 +72,7 @@ fun ktorDependency(
     }
 }.apply {
     plugin(HttpSend).intercept(urlReplaceInterceptor(remoteConfigRepository))
+    plugin(HttpSend).intercept(loggingInterceptor())
 }
 
 @Factory
