@@ -63,7 +63,11 @@ class Raptor(
 
         while (!Q.isEmpty()) {
             val u = Q.pop()!!
-            val neighbours = getNeighbours(u, departureTime + dist[u], departureTime)
+            val neighbours = getNeighbours(
+                u,
+                departureTime + dist[u],
+                prevEdge[u]?.type == EdgeType.TRANSFER
+            )
 
             for (neighbour in neighbours) {
                 val v = neighbour.index
@@ -163,7 +167,7 @@ class Raptor(
 
     private fun getNode(index: NodeIndex) = graph.node(index)
 
-    private fun getNeighbours(index: NodeIndex, departureTime: DaySeconds, referencePoint: DaySeconds): List<NodeCost> {
+    private fun getNeighbours(index: NodeIndex, departureTime: DaySeconds, ignoreTransfer: Boolean = false): List<NodeCost> {
         val node = graph.node(index)
         val edges = node.edges
 
@@ -171,6 +175,7 @@ class Raptor(
             when (it.type) {
                 EdgeType.UNWEIGHTED -> NodeCost(it.connectedNodeIndex.toInt(), 0L, it)
                 EdgeType.TRANSFER, EdgeType.TRANSFER_NON_ADJUSTABLE -> {
+                    if (ignoreTransfer) return@mapNotNull null
                     if (it.cost.toLong() > (config?.maximumWalkingTime ?: Long.MAX_VALUE)) return@mapNotNull null
                     NodeCost(it.connectedNodeIndex.toInt(), it.cost.toLong() + (config?.transferPenalty ?: 0L), it)
                 }
