@@ -7,6 +7,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onStart
@@ -27,17 +28,21 @@ class LiveServicePersistence constructor() {
     }
 
     private val lock = Mutex()
-    private val tracked = mutableMapOf<String, SharedFlow<FeedMessage>>()
+    private val tracked = mutableMapOf<String, SharedFlow<Result<FeedMessage>>>()
 
-    suspend fun get(url: String, create: (Flow<Unit>) -> SharedFlow<FeedMessage>): Flow<FeedMessage> {
-        tracked[url]?.let { return@let it }
+    suspend fun get(url: String, create: (Flow<Unit>) -> SharedFlow<Result<FeedMessage>>): Flow<FeedMessage> {
+        tracked[url]?.let { return@let it.throwIfNeeded() }
         return lock.withLock {
             val current = tracked[url]
-            if (current != null) return@withLock current
+            if (current != null) return@withLock current.throwIfNeeded()
             create(periodicFlow(REFRESH_RATE)).also {
                 tracked[url] = it
-            }
+            }.throwIfNeeded()
         }
     }
 
+}
+
+fun <T> Flow<Result<T>>.throwIfNeeded() = map {
+    it.getOrThrow()
 }

@@ -52,7 +52,8 @@ class UpcomingRoutesForStopUseCase(
                 emit(timetable.flatMap { services.map { active.toList() } })
                 delay(1.minutes)
             }
-        }.flatMapLatest { original ->
+        }
+        .flatMapLatest { original ->
             liveStopTimetableUseCase(
                 stopId,
                 original.item

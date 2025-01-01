@@ -15,8 +15,12 @@ import cl.emilym.sinatra.data.models.toTodayTime
 import cl.emilym.sinatra.data.repository.LiveServiceRepository
 import cl.emilym.sinatra.data.repository.RouteRepository
 import cl.emilym.sinatra.data.repository.TransportMetadataRepository
+import cl.emilym.sinatra.e
+import com.google.transit.realtime.FeedMessage
 import com.google.transit.realtime.TripUpdate
+import io.github.aakira.napier.Napier
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 import kotlinx.datetime.Instant
 import org.koin.core.annotation.Factory
@@ -56,8 +60,8 @@ class LiveTripInformationUseCase(
         serviceId: ServiceId,
         tripId: TripId
     ): Flow<Cachable<IRouteTripInformation>> {
-        return liveServiceRepository.getRealtimeUpdates(liveInformationUrl).map {
-            val scheduledTimetable = routeRepository.tripTimetable(routeId, serviceId, tripId)
+        val scheduledTimetable = routeRepository.tripTimetable(routeId, serviceId, tripId)
+        return liveServiceRepository.getRealtimeUpdates(liveInformationUrl).map<FeedMessage, Cachable<IRouteTripInformation>> {
             val scheduleStartOfDay = transportMetadataRepository.scheduleStartOfDay()
 
             val updates = it.entity
@@ -90,6 +94,9 @@ class LiveTripInformationUseCase(
                     }
                 )
             }
+        }.catch {
+            Napier.e(it)
+            emit(scheduledTimetable.map { it.trip })
         }
     }
 
