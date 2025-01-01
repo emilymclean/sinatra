@@ -10,6 +10,7 @@ import cl.emilym.sinatra.e
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
@@ -68,7 +69,7 @@ class LiveStopTimetableUseCase(
                         emit(groups.value)
                     }
                 }
-            }.let { merge(*it.toTypedArray()) }.map {
+            }.let { combine(*it.toTypedArray()) { it.toList().flatten() } }.map {
                 it.sortedBy { it.arrivalTime }
             }
             emitAll(out)

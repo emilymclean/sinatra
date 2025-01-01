@@ -14,6 +14,8 @@ import sinatra.ui.generated.resources.bike
 import sinatra.ui.generated.resources.external_link
 import sinatra.ui.generated.resources.forward
 import sinatra.ui.generated.resources.info
+import sinatra.ui.generated.resources.warning
+import sinatra.ui.generated.resources.severe_warning
 import sinatra.ui.generated.resources.map
 import sinatra.ui.generated.resources.my_location
 import sinatra.ui.generated.resources.no_results
@@ -208,6 +210,33 @@ fun InfoIcon(
         tint = tint
     )
 }
+
+@Composable
+fun WarningIcon(
+    modifier: Modifier = Modifier,
+    tint: Color = LocalContentColor.current
+) {
+    Icon(
+        painterResource(Res.drawable.warning),
+        contentDescription = "An \"!\" in a triangle",
+        modifier = modifier,
+        tint = tint
+    )
+}
+
+@Composable
+fun SevereWarningIcon(
+    modifier: Modifier = Modifier,
+    tint: Color = LocalContentColor.current
+) {
+    Icon(
+        painterResource(Res.drawable.severe_warning),
+        contentDescription = "An \"!\" in an octogon",
+        modifier = modifier,
+        tint = tint
+    )
+}
+
 
 @Composable
 fun BackIcon(

@@ -33,6 +33,7 @@ import cl.emilym.compose.requeststate.handle
 import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.FeatureFlags
 import cl.emilym.sinatra.bounds
+import cl.emilym.sinatra.data.models.Alert
 import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.data.models.StopWithDistance
 import cl.emilym.sinatra.data.models.IRouteTripInformation
@@ -48,6 +49,7 @@ import cl.emilym.sinatra.data.models.StationTime
 import cl.emilym.sinatra.data.models.StopId
 import cl.emilym.sinatra.data.models.TripId
 import cl.emilym.sinatra.data.models.distance
+import cl.emilym.sinatra.data.repository.AlertRepository
 import cl.emilym.sinatra.data.repository.FavouriteRepository
 import cl.emilym.sinatra.data.repository.RecentVisitRepository
 import cl.emilym.sinatra.data.repository.startOfDay
@@ -68,6 +70,7 @@ import cl.emilym.sinatra.ui.navigation.MapScreen
 import cl.emilym.sinatra.ui.past
 import cl.emilym.sinatra.ui.text
 import cl.emilym.sinatra.ui.widgets.AccessibilityIconLockup
+import cl.emilym.sinatra.ui.widgets.AlertScaffold
 import cl.emilym.sinatra.ui.widgets.BikeIcon
 import cl.emilym.sinatra.ui.widgets.FavouriteButton
 import cl.emilym.sinatra.ui.widgets.LocalClock
@@ -120,7 +123,8 @@ val zoomPadding
 class RouteDetailViewModel(
     private val currentTripForRouteUseCase: CurrentTripForRouteUseCase,
     private val favouriteRepository: FavouriteRepository,
-    private val recentVisitRepository: RecentVisitRepository
+    private val recentVisitRepository: RecentVisitRepository,
+    private val alertRepository: AlertRepository,
 ): ViewModel() {
 
     private var lastLocation = MutableStateFlow<MapLocation?>(null)
@@ -136,19 +140,32 @@ class RouteDetailViewModel(
             ?.minBy { it.distance }
     }
 
-    fun init(routeId: RouteId) {
+    private val _alerts = createRequestStateFlowFlow<List<Alert>>()
+    val alerts = _alerts.presentable()
+
+    fun init(routeId: RouteId, serviceId: ServiceId?, tripId: TripId?) {
         viewModelScope.launch {
             favourited.emitAll(favouriteRepository.routeIsFavourited(routeId))
         }
         viewModelScope.launch {
             recentVisitRepository.addRouteVisit(routeId)
         }
+        retry(routeId, serviceId, tripId)
+        retryAlerts(routeId, serviceId, tripId)
     }
 
     fun retry(routeId: RouteId, serviceId: ServiceId?, tripId: TripId?) {
         viewModelScope.launch {
             _tripInformation.handleFlowProperly {
                 currentTripForRouteUseCase(routeId, serviceId, tripId).map { it.item }
+            }
+        }
+    }
+
+    fun retryAlerts(routeId: RouteId, serviceId: ServiceId?, tripId: TripId?) {
+        viewModelScope.launch {
+            _alerts.handleFlowProperly {
+                alertRepository.alerts(routeId = routeId, tripId = tripId)
             }
         }
     }
@@ -184,12 +201,8 @@ class RouteDetailScreen(
             bottomSheetState.bottomSheetState.halfExpand()
         }
 
-        LaunchedEffect(routeId) {
-            viewModel.init(routeId)
-        }
-
         LaunchedEffect(routeId, serviceId, tripId) {
-            viewModel.retry(routeId, serviceId, tripId)
+            viewModel.init(routeId, serviceId, tripId)
         }
 
         if (FeatureFlags.ROUTE_DETAIL_NEAREST_STOP) {
@@ -236,6 +249,7 @@ class RouteDetailScreen(
         val mapControl = LocalMapControl.current
 
         val nearestStop by viewModel.nearestStop.collectAsState(null)
+        val alerts by viewModel.alerts.collectAsState(RequestState.Initial())
 
         val current = if (trigger != null) {
             remember(trigger) {
@@ -298,6 +312,9 @@ class RouteDetailScreen(
                 )
             } }
             item { Box(Modifier.height(2.rdp)) }
+            item {
+                AlertScaffold((alerts as? RequestState.Success)?.value)
+            }
             item {
                 Subheading(stringResource(Res.string.accessibility_title))
             }
