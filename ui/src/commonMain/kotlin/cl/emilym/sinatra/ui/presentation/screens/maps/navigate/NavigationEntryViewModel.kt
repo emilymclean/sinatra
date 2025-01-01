@@ -30,10 +30,12 @@ import kotlinx.coroutines.IO
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.koin.android.annotation.KoinViewModel
@@ -127,7 +129,7 @@ class NavigationEntryViewModel(
                 }
             ) }
         }
-    }
+    }.shareIn(viewModelScope, SharingStarted.Eagerly)
 
     override val results = state.mapLatest {
         when (it) {
