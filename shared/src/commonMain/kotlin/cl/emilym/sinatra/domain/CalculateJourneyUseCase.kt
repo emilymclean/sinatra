@@ -28,6 +28,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import org.koin.core.annotation.Factory
+import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
@@ -47,10 +48,6 @@ class CalculateJourneyUseCase(
     private val routingPreferencesRepository: RoutingPreferencesRepository,
 ) {
 
-    companion object {
-        val NEARBY_STOP_RADIUS = 1.0
-    }
-
     private lateinit var graph: Cachable<NetworkGraph>
 
     suspend operator fun invoke(
@@ -67,8 +64,8 @@ class CalculateJourneyUseCase(
 
             Napier.d("Active services = ${services}")
 
-            val departureStops = stops.map { it.nearbyStops(departureLocation) }
-            val arrivalStops = stops.item.nearbyStops(arrivalLocation)
+            val departureStops = stops.map { it.nearbyStops(departureLocation, maximumWalkingTime) }
+            val arrivalStops = stops.item.nearbyStops(arrivalLocation, maximumWalkingTime)
 
             val raptor = Raptor(
                 graph.item,
@@ -145,13 +142,13 @@ class CalculateJourneyUseCase(
         }
     }
 
-    fun List<Stop>.nearbyStops(location: JourneyLocation): List<RaptorStop> {
+    fun List<Stop>.nearbyStops(location: JourneyLocation, maximumWalkingTime: Duration): List<RaptorStop> {
         if (location.exact) {
             return listOf(RaptorStop(minBy { distance(location.location, it.location) }.id, 0L))
         }
 
         return map { StopWithDistance(it, distance(location.location, it.location)) }
-                .filter { it.distance < NEARBY_STOP_RADIUS }
+                .filter { (it.distance * graph.item.metadata.assumedWalkingSecondsPerKilometer.toLong()) < maximumWalkingTime.inWholeSeconds}
                 .map { RaptorStop(
                     it.stop.id,
                     (it.distance * graph.item.metadata.assumedWalkingSecondsPerKilometer.toInt()).toLong()
