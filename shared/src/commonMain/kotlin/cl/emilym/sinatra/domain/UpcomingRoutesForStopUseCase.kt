@@ -14,6 +14,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.datetime.Clock
 import org.koin.core.annotation.Factory
@@ -54,10 +55,13 @@ class UpcomingRoutesForStopUseCase(
             }
         }
         .flatMapLatest { original ->
-            liveStopTimetableUseCase(
-                stopId,
-                original.item
-            ).map { live -> original.map { live } }
+            when (original.item.isEmpty()) {
+                true -> flowOf(original.map { it })
+                false -> liveStopTimetableUseCase(
+                    stopId,
+                    original.item
+                ).map { live -> original.map { live } }
+            }
         }
     }
 
