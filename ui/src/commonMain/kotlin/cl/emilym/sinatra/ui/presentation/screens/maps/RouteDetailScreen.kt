@@ -78,11 +78,13 @@ import cl.emilym.sinatra.ui.widgets.RouteRandle
 import cl.emilym.sinatra.ui.widgets.SheetIosBackButton
 import cl.emilym.sinatra.ui.widgets.SpecificRecomposeOnInstants
 import cl.emilym.sinatra.ui.widgets.StopCard
+import cl.emilym.sinatra.ui.widgets.StopStationTime
 import cl.emilym.sinatra.ui.widgets.Subheading
 import cl.emilym.sinatra.ui.widgets.WheelchairAccessibleIcon
 import cl.emilym.sinatra.ui.widgets.currentLocation
 import cl.emilym.sinatra.ui.widgets.createRequestStateFlowFlow
 import cl.emilym.sinatra.ui.widgets.handleFlowProperly
+import cl.emilym.sinatra.ui.widgets.isInPast
 import cl.emilym.sinatra.ui.widgets.presentable
 import cl.emilym.sinatra.ui.widgets.toIntPx
 import kotlinx.coroutines.flow.Flow
@@ -369,7 +371,12 @@ class RouteDetailScreen(
             StopCard(
                 it.stop!!,
                 Modifier.fillMaxWidth(),
-                it.stationTime?.arrival,
+                it.stationTime?.let {
+                    when (it.arrival.time.isInPast()) {
+                        true -> StopStationTime.Departure(it.departure)
+                        false -> StopStationTime.Arrival(it.arrival)
+                    }
+                },
                 onClick = {
                     navigator.push(StopDetailScreen(
                         it.stopId

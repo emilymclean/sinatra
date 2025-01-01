@@ -132,7 +132,8 @@ sealed interface StationTime {
         override val time: Time
     ): StationTime
     class Live(
-        override val time: Time
+        override val time: Time,
+        val delay: Duration
     ): StationTime
 }
 

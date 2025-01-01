@@ -82,7 +82,10 @@ class LiveTripInformationUseCase(
             specific?.time?.let {
                 Instant.fromEpochSeconds(it).toTodayTime(scheduleStartOfDay)
             } ?: specific?.delay?.seconds?.let { it + expected } ?:
-            delay?.seconds?.let { it + expected } ?: expected
+            delay?.seconds?.let { it + expected } ?: expected,
+            specific?.time?.let {
+                Instant.fromEpochSeconds(it).toTodayTime(scheduleStartOfDay) - expected
+            } ?: specific?.delay?.seconds ?: delay?.seconds ?: 0.seconds
         )
     }
 
