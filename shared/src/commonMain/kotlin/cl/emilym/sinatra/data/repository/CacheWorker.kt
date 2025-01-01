@@ -8,15 +8,32 @@ import cl.emilym.sinatra.data.models.ResourceKey
 import cl.emilym.sinatra.data.models.ShaDigest
 import cl.emilym.sinatra.e
 import io.github.aakira.napier.Napier
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.datetime.Clock
 import org.koin.core.annotation.Factory
+import org.koin.core.annotation.Single
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.hours
+
+@Single
+class CacheWorkerLockProvider {
+    private val locks = mutableMapOf<ResourceKey, Mutex>()
+    private val accessLock = Mutex()
+
+    suspend fun lock(resource: ResourceKey): Mutex {
+        locks[resource]?.let { return it }
+        return accessLock.withLock {
+            locks.getOrPut(resource) { Mutex() }
+        }
+    }
+}
 
 @Factory
 class CacheWorkerDependencies(
     val shaRepository: ShaRepository,
-    val remoteConfigRepository: RemoteConfigRepository
+    val remoteConfigRepository: RemoteConfigRepository,
+    val cacheWorkerLockProvider: CacheWorkerLockProvider,
 )
 
 abstract class CacheWorker<T> {
@@ -38,7 +55,10 @@ abstract class CacheWorker<T> {
     protected suspend fun run(pair: EndpointDigestPair<T>, resource: ResourceKey): Cachable<T> {
         val info = shaRepository.cached(cacheCategory, resource)
 
-        if (info.shouldCheckForUpdate(resource)) {
+        if (!info.shouldCheckForUpdate(resource))
+            return getCached(resource)
+
+        return cacheWorkerDependencies.cacheWorkerLockProvider.lock(resource).withLock {
             val digest = try {
                 pair.digest()
             } catch (e: Throwable) {
@@ -46,13 +66,16 @@ abstract class CacheWorker<T> {
             }
 
             when(info) {
-                is CacheInformation.Unavailable -> return fetch(digest, info, pair, resource)
+                is CacheInformation.Unavailable -> fetch(digest, info, pair, resource)
                 is CacheInformation.Available -> when {
-                    digest != info.digest -> return fetch(digest, info, pair, resource)
+                    digest != info.digest -> fetch(digest, info, pair, resource)
+                    else -> getCached(resource)
                 }
             }
         }
+    }
 
+    private suspend fun getCached(resource: ResourceKey): Cachable<T> {
         return getFromPersistence(resource)?.let { Cachable(it, CacheState.CACHED) } ?:
             throw IllegalStateException("Resource was reported as cached, but could not be retrieved")
     }
