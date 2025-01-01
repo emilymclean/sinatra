@@ -45,9 +45,7 @@ class AlertRepository(
                                     (it.routeId == routeId && routeId != null) ||
                                             (it.stopId == stopId && stopId != null)
                                 }
-
-                            else -> it.severityLevel == com.google.transit.realtime.Alert.SeverityLevel.SEVERE ||
-                                    it.informedEntity.any { it.trip == null && it.stopId == null && it.routeId == null }
+                            else -> it.informedEntity.any { it.agencyId != null && it.stopId == null && it.trip == null && it.routeId == null }
                         }
                     }
                     .mapNotNull {
@@ -99,14 +97,7 @@ class AlertRepository(
                                 )
                             }
                         )
-                    }.toList() + listOf(
-                        Alert(
-                            "Test Alert",
-                            "This is a test alert",
-                            AlertSeverity.SEVERE,
-                            ContentLink.external("Find out more", "https://emilym.cl")
-                        )
-                    )
+                    }.toList()
             }
 
             emitAll(out)

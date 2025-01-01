@@ -18,7 +18,6 @@ import androidx.compose.ui.draw.clip
 import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.data.models.Alert
 import cl.emilym.sinatra.data.models.AlertSeverity
-import cl.emilym.sinatra.ui.presentation.theme.Container
 
 @Composable
 fun AlertWidget(
@@ -33,17 +32,23 @@ fun AlertWidget(
                 when (alert.severity) {
                     AlertSeverity.SEVERE -> MaterialTheme.colorScheme.errorContainer
                     AlertSeverity.WARNING -> MaterialTheme.colorScheme.secondaryContainer
-                    AlertSeverity.INFO -> Container
+                    AlertSeverity.INFO -> MaterialTheme.colorScheme.primaryContainer
                 }
-            ).padding(1.rdp).fillMaxWidth()
+            ).padding(1.rdp).fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(0.5.rdp)
         ) {
             CompositionLocalProvider(
                 LocalContentColor provides when (alert.severity) {
                     AlertSeverity.SEVERE -> MaterialTheme.colorScheme.onErrorContainer
                     AlertSeverity.WARNING -> MaterialTheme.colorScheme.onSecondaryContainer
-                    AlertSeverity.INFO -> MaterialTheme.colorScheme.onBackground
+                    AlertSeverity.INFO -> MaterialTheme.colorScheme.onPrimaryContainer
                 }
             ) {
+                when (alert.severity) {
+                    AlertSeverity.SEVERE -> SevereWarningIcon()
+                    AlertSeverity.WARNING -> WarningIcon()
+                    AlertSeverity.INFO -> InfoIcon()
+                }
                 Column(
                     verticalArrangement = Arrangement.spacedBy(0.25.rdp)
                 ) {
