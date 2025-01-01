@@ -30,6 +30,8 @@ typealias Time = Duration
 typealias MarkdownString = String
 typealias ContentId = String
 
+typealias BCP47LanguageCode = String
+
 fun parseTime(time: String): Time {
     return Duration.parseIsoString(time)
 }

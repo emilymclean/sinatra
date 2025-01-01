@@ -4,11 +4,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cl.emilym.compose.requeststate.RequestState
 import cl.emilym.compose.requeststate.handle
+import cl.emilym.sinatra.data.models.Alert
 import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.data.models.StopWithDistance
 import cl.emilym.sinatra.data.models.RecentVisit
 import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.data.models.distance
+import cl.emilym.sinatra.data.repository.AlertRepository
 import cl.emilym.sinatra.data.repository.RecentVisitRepository
 import cl.emilym.sinatra.data.repository.StopRepository
 import cl.emilym.sinatra.domain.search.RouteStopSearchUseCase
@@ -39,6 +41,7 @@ import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
+import org.koin.core.KoinApplication.Companion.init
 import kotlin.time.Duration.Companion.seconds
 
 const val NEARBY_STOPS_LIMIT = 5
@@ -54,7 +57,8 @@ sealed interface MapSearchState {
 class MapSearchViewModel(
     private val stopRepository: StopRepository,
     private val routeStopSearchUseCase: RouteStopSearchUseCase,
-    private val recentVisitRepository: RecentVisitRepository
+    private val recentVisitRepository: RecentVisitRepository,
+    private val alertRepository: AlertRepository
 ): ViewModel(), SearchScreenViewModel {
 
     private val _state = MutableStateFlow(State.BROWSE)
@@ -92,9 +96,13 @@ class MapSearchViewModel(
     private val _recentVisits = createRequestStateFlowFlow<List<RecentVisit>>()
     override val recentVisits = _recentVisits.presentable()
 
+    private val _alerts = createRequestStateFlowFlow<List<Alert>>()
+    val alerts = _alerts.presentable()
+
     init {
         retry()
         retryRecentVisits()
+        retryAlerts()
     }
 
     fun retry() {
@@ -109,6 +117,14 @@ class MapSearchViewModel(
         viewModelScope.launch {
             _recentVisits.handleFlowProperly {
                 recentVisitRepository.all()
+            }
+        }
+    }
+
+    fun retryAlerts() {
+        viewModelScope.launch {
+            _alerts.handleFlowProperly {
+                alertRepository.alerts()
             }
         }
     }

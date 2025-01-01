@@ -16,12 +16,14 @@ import cl.emilym.compose.requeststate.RequestStateWidget
 import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
 import cl.emilym.sinatra.ui.presentation.screens.maps.RouteDetailScreen
 import cl.emilym.sinatra.ui.presentation.screens.maps.RouteListViewModel
+import cl.emilym.sinatra.ui.widgets.AlertScaffold
 import cl.emilym.sinatra.ui.widgets.RouteCard
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun MapSearchScreenBrowseState() {
     val viewModel = koinViewModel<RouteListViewModel>()
+    val mainViewModel = koinViewModel<MapSearchViewModel>()
     val bottomSheetState = LocalBottomSheetState.current.bottomSheetState
 
     LaunchedEffect(Unit) {
@@ -35,8 +37,14 @@ fun MapSearchScreenBrowseState() {
     ) {
         val navigator = LocalNavigator.currentOrThrow
         val routes by viewModel.routes.collectAsState(RequestState.Initial())
+        val alerts by mainViewModel.alerts.collectAsState(RequestState.Initial())
         RequestStateWidget(routes, { viewModel.retry() }) { routes ->
             LazyColumn {
+                (alerts as? RequestState.Success)?.let {
+                    item {
+                        AlertScaffold(it.value)
+                    }
+                }
                 items(routes.size) {
                     RouteCard(
                         routes[it],

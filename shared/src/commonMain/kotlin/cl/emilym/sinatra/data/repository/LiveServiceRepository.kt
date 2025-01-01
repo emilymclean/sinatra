@@ -11,8 +11,10 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.isActive
 import org.koin.core.annotation.Factory
@@ -35,6 +37,14 @@ class LiveServiceRepository(
                 }
             }.shareIn(coroutineScope, SharingStarted.WhileSubscribed(), replay = 1)
         }
+    }
+
+    suspend fun getMultipleRealtimeUpdates(vararg url: String): Flow<List<FeedMessage>> {
+        return return combine(
+            *url.map { url ->
+                getRealtimeUpdates(url)
+            }.toTypedArray()
+        ) { it.toList() }
     }
 
 }
