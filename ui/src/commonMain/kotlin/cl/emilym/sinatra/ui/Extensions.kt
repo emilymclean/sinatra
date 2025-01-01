@@ -8,6 +8,7 @@ import androidx.compose.ui.graphics.Color
 import cl.emilym.sinatra.asRadians
 import cl.emilym.sinatra.data.models.ColorPair
 import cl.emilym.sinatra.data.models.CoordinateSpan
+import cl.emilym.sinatra.data.models.Kilometer
 import cl.emilym.sinatra.data.models.IRouteTripStop
 import cl.emilym.sinatra.data.models.Latitude
 import cl.emilym.sinatra.data.models.MapLocation
@@ -22,9 +23,20 @@ import cl.emilym.sinatra.data.models.forDay
 import cl.emilym.sinatra.degrees
 import cl.emilym.sinatra.ui.widgets.toTodayInstant
 import kotlinx.datetime.Instant
+import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.pluralStringResource
+import org.jetbrains.compose.resources.stringResource
+import sinatra.ui.generated.resources.Res
+import sinatra.ui.generated.resources.distance_kilometer
+import sinatra.ui.generated.resources.distance_meter
+import sinatra.ui.generated.resources.time_hour
+import sinatra.ui.generated.resources.time_minute
+import sinatra.ui.generated.resources.time_second
 import kotlin.math.cos
 import kotlin.math.ln
 import kotlin.math.pow
+import kotlin.math.roundToInt
+import kotlin.time.Duration
 
 fun String.toColor(): Color {
     val trimmed = removePrefix("#")
@@ -126,3 +138,27 @@ fun MapLocation.addCoordinateSpan(span: CoordinateSpan): MapRegion {
         )
     )
 }
+
+internal expect val Res.string.open_maps: StringResource
+
+
+val Kilometer.text
+    @Composable
+    get() = when {
+        this < 1 -> {
+            val meters = (this * 1000).roundToInt()
+            pluralStringResource(Res.plurals.distance_meter, meters, meters)
+        }
+        else -> {
+            val kilometers = roundToInt()
+            pluralStringResource(Res.plurals.distance_kilometer, kilometers, kilometers)
+        }
+    }
+
+val Duration.text
+    @Composable
+    get() = when {
+        inWholeSeconds < 60 -> pluralStringResource(Res.plurals.time_second, inWholeSeconds.toInt(), inWholeSeconds)
+        inWholeMinutes < 60 -> pluralStringResource(Res.plurals.time_minute, inWholeMinutes.toInt(), inWholeMinutes)
+        else -> pluralStringResource(Res.plurals.time_hour, inWholeHours.toInt(), inWholeHours)
+    }

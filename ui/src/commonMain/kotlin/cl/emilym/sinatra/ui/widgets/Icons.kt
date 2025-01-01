@@ -2,6 +2,7 @@ package cl.emilym.sinatra.ui.widgets
 
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -11,6 +12,7 @@ import sinatra.ui.generated.resources.accessible
 import sinatra.ui.generated.resources.back
 import sinatra.ui.generated.resources.bike
 import sinatra.ui.generated.resources.external_link
+import sinatra.ui.generated.resources.forward
 import sinatra.ui.generated.resources.info
 import sinatra.ui.generated.resources.map
 import sinatra.ui.generated.resources.my_location
@@ -20,6 +22,12 @@ import sinatra.ui.generated.resources.not_accessible
 import sinatra.ui.generated.resources.search
 import sinatra.ui.generated.resources.star
 import sinatra.ui.generated.resources.star_outline
+import sinatra.ui.generated.resources.marker_icon
+import sinatra.ui.generated.resources.bus
+import sinatra.ui.generated.resources.tram
+import sinatra.ui.generated.resources.navigate
+import sinatra.ui.generated.resources.walk
+import sinatra.ui.generated.resources.journey_start
 
 @Composable
 fun AccessibleIcon(
@@ -176,6 +184,19 @@ fun MapIcon(
 }
 
 @Composable
+fun NavigateIcon(
+    modifier: Modifier = Modifier,
+    tint: Color = LocalContentColor.current
+) {
+    Icon(
+        painterResource(Res.drawable.navigate),
+        contentDescription = "A direction arrow",
+        modifier = modifier,
+        tint = tint
+    )
+}
+
+@Composable
 fun InfoIcon(
     modifier: Modifier = Modifier,
     tint: Color = LocalContentColor.current
@@ -202,6 +223,19 @@ fun BackIcon(
 }
 
 @Composable
+fun ForwardIcon(
+    modifier: Modifier = Modifier,
+    tint: Color = LocalContentColor.current
+) {
+    Icon(
+        painterResource(Res.drawable.forward),
+        contentDescription = "A forward arrow",
+        modifier = modifier,
+        tint = tint
+    )
+}
+
+@Composable
 fun ExternalLinkIcon(
     modifier: Modifier = Modifier,
     tint: Color = LocalContentColor.current
@@ -209,6 +243,71 @@ fun ExternalLinkIcon(
     Icon(
         painterResource(Res.drawable.external_link),
         contentDescription = "An arrow out of a box",
+        modifier = modifier,
+        tint = tint
+    )
+}
+
+@Composable
+fun GenericMarkerIcon(
+    modifier: Modifier = Modifier,
+    tint: Color = LocalContentColor.current
+) {
+    Icon(
+        painterResource(Res.drawable.marker_icon),
+        contentDescription = "A map marker",
+        modifier = modifier,
+        tint = tint
+    )
+}
+
+@Composable
+fun BusIcon(
+    modifier: Modifier = Modifier,
+    tint: Color = LocalContentColor.current
+) {
+    Icon(
+        painterResource(Res.drawable.bus),
+        contentDescription = "A bus",
+        modifier = modifier,
+        tint = tint
+    )
+}
+
+@Composable
+fun TramIcon(
+    modifier: Modifier = Modifier,
+    tint: Color = LocalContentColor.current
+) {
+    Icon(
+        painterResource(Res.drawable.tram),
+        contentDescription = "A tram",
+        modifier = modifier,
+        tint = tint
+    )
+}
+
+@Composable
+fun WalkIcon(
+    modifier: Modifier = Modifier,
+    tint: Color = LocalContentColor.current
+) {
+    Icon(
+        painterResource(Res.drawable.walk),
+        contentDescription = "A person walking",
+        modifier = modifier,
+        tint = tint
+    )
+}
+
+@Composable
+fun JourneyStartIcon(
+    modifier: Modifier = Modifier,
+    tint: Color = LocalContentColor.current
+) {
+    Icon(
+        painterResource(Res.drawable.journey_start),
+        contentDescription = "A circle with a centred dot",
         modifier = modifier,
         tint = tint
     )

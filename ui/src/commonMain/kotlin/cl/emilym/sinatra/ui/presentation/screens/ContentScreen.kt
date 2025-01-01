@@ -131,7 +131,7 @@ open class ContentScreen(
             }
             else -> {
                 TopAppBar(
-                    title = { Text("Content") },
+                    title = {},
                     navigationIcon = { NavigationIcon() }
                 )
             }

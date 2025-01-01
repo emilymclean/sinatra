@@ -1,6 +1,7 @@
 package cl.emilym.sinatra.data.models
 
 import cl.emilym.gtfs.WheelchairStopAccessibility
+import cl.emilym.kmp.serializable.Serializable
 import kotlin.time.Duration
 
 private val SIMPLE_TERMINATORS = arrayOf(" Platform", " at", " Plt")
@@ -11,7 +12,7 @@ data class Stop(
     val name: String,
     val location: MapLocation,
     val accessibility: StopAccessibility,
-) {
+): Serializable {
 
     companion object {
         fun fromPB(pb: cl.emilym.gtfs.Stop): Stop {
@@ -39,9 +40,14 @@ data class Stop(
 
 }
 
+data class StopWithDistance(
+    val stop: Stop,
+    val distance: Kilometer
+)
+
 data class StopAccessibility(
     val wheelchair: StopWheelchairAccessibility
-) {
+): Serializable {
 
     companion object {
         fun fromPB(pb: cl.emilym.gtfs.StopAccessibility): StopAccessibility {

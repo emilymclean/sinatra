@@ -8,6 +8,51 @@
     <string name="about_app_description">Sinatra is a companion app for the Canberra MyWay+ network made by locals for locals. We aim to provide a simpler experience for finding route and stop information, motivated by the suboptimal flow on the official app. We are unfortunately unable to offer the ticketing feature, nor proper routing.\n\n\nSinatra is open source! You can find and contribute to our codebase at [Github](https://github.com/emilymclean/sinatra).</string>
     <string name="about_app_version">Version %1$s (%2$s)</string>
 
+    <string name="open_maps_android">Show in Google Maps</string>
+    <string name="open_maps_ios">Show in Apple Maps</string>
+    <string name="stop_detail_navigate">Navigate to Stop</string>
+
+    <string name="stop_detail_nearest_stop">Nearest Stop</string>
+    <string name="stop_detail_distance">%1$s away</string>
+    <plurals name="distance_kilometer">
+        <item quantity="one">%1$d kilometer</item>
+        <item quantity="other">%1$d kilometers</item>
+        <item quantity="other">%1$d kilometers</item>
+    </plurals>
+    <plurals name="distance_meter">
+        <item quantity="one">%1$d meter</item>
+        <item quantity="other">%1$d meters</item>
+    </plurals>
+    <plurals name="time_minute">
+        <item quantity="one">%1$d minute</item>
+        <item quantity="other">%1$d minutes</item>
+    </plurals>
+    <plurals name="time_second">
+        <item quantity="one">%1$d second</item>
+        <item quantity="other">%1$d seconds</item>
+    </plurals>
+    <plurals name="time_hour">
+        <item quantity="one">%1$d hour</item>
+        <item quantity="other">%1$d hours</item>
+    </plurals>
+
+    <string name="current_location">Current Location</string>
+
+    <string name="navigate_lat_lng">%1$d, %2$d</string>
+    <string name="navigate_current_location">Current Location</string>
+    <string name="navigate_downloading_graph">Loading navigation information...</string>
+    <string name="navigate_calculating_journey">Calculating a journey...</string>
+    <string name="navigate_calculating_journey_failed">We couldn't find a journey</string>
+    <string name="navigate_walk">**Walk** %1$s</string>
+    <string name="navigate_walk_to_stop">**Walk** %1$s to %1$s</string>
+    <string name="navigate_travel_depart">**Depart** from %1$s at %2$s</string>
+    <string name="navigate_travel_arrive">**Arrive** at %1$s at %2$s</string>
+    <string name="navigate_travel">Travel for %1$s on %2$s towards %3$s</string>
+    <string name="navigate_travel_journey_arrive">**Arrive** at %1$s at %2$s</string>
+    <string name="navigate_travel_journey_depart">**Depart** from %1$s</string>
+
+    <string name="map_search_nearby_stops">Nearby Stops</string>
+
     <string name="search_recently_viewed">Recently viewed</string>
     <string name="search_hint">Search for a stop or route.</string>
     <string name="no_search_results">We couldn't find anything for "%1$s".</string>
@@ -29,7 +74,7 @@
     <string name="route_heading">Towards %1$s</string>
     <string name="route_code_name">Route %1$s</string>
     <string name="upcoming_vehicles">Upcoming routes</string>
-    <string name="no_upcoming_vehicles">There a no routes scheduled.</string>
+    <string name="no_upcoming_vehicles">There are no routes scheduled for the rest of today.</string>
 
     <string name="accessibility_wheelchair_accessible">Wheelchair accessible</string>
     <string name="accessibility_not_wheelchair_accessible">Not wheelchair accessible</string>

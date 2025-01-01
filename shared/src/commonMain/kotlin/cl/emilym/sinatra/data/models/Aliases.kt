@@ -10,15 +10,18 @@ import kotlin.time.Duration.Companion.milliseconds
 typealias ShaDigest = String
 typealias ResourceKey = String
 
+typealias PlaceId = String
 typealias StopId = String
 typealias RouteId = String
 typealias RouteCode = String
 typealias ServiceId = String
 typealias TripId = String
+
 typealias Latitude = Double
 typealias Longitude = Double
-typealias Pixel = Int
+typealias Kilometer = Double
 
+typealias Pixel = Int
 typealias Radian = Double
 typealias Degree = Double
 

@@ -1,17 +1,16 @@
 package cl.emilym.sinatra.data.repository
 
+import cl.emilym.sinatra.data.client.ContentClient
 import cl.emilym.sinatra.data.models.Content
 import cl.emilym.sinatra.data.models.ContentId
-import cl.emilym.sinatra.data.models.ContentLink
 import cl.emilym.sinatra.data.persistence.ContentPersistence
-import cl.emilym.sinatra.network.GtfsApi
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import org.koin.core.annotation.Factory
 
 @Factory
 class ContentRepository(
-    private val remoteConfigRepository: RemoteConfigRepository,
-    // Shouldn't be accessing this directly, but it's kinda a quick things so it's fine
-    private val gtfsApi: GtfsApi,
+    private val contentClient: ContentClient,
     private val contentPersistence: ContentPersistence
 ) {
 
@@ -19,31 +18,19 @@ class ContentRepository(
         const val ABOUT_ID = "about"
     }
 
-    private suspend fun aboutUsContent(): Content? {
-        contentPersistence.get(ABOUT_ID)?.let { return it }
+    private val lock = Mutex()
 
-        val contentUrl = remoteConfigRepository.aboutContentUrl() ?: return null
-        val termsUrl = remoteConfigRepository.termsUrl()
-        val privacyUrl = remoteConfigRepository.privacyPolicyUrl()
-        val content = gtfsApi.markdownContent(contentUrl)
-
-        return Content(
-            "About",
-            content,
-            listOfNotNull(
-                ContentLink.external("Terms & Conditions", termsUrl),
-                ContentLink.external("Privacy Policy", privacyUrl)
-            )
-        ).also {
-            contentPersistence.store(ABOUT_ID, it)
+    private suspend fun load() {
+        if (contentPersistence.cached) return
+        lock.withLock {
+            if (contentPersistence.cached) return
+            contentPersistence.store(contentClient.content())
         }
     }
 
     suspend fun content(id: ContentId): Content? {
-        return when (id) {
-            ABOUT_ID -> aboutUsContent()
-            else -> null
-        }
+        load()
+        return contentPersistence.get(id)
     }
 
 }

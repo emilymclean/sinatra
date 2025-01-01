@@ -1,5 +1,6 @@
 package cl.emilym.sinatra.ui
 
+import cl.emilym.sinatra.BuildInformation
 import cl.emilym.sinatra.SharedModule
 import cl.emilym.sinatra.data.client.RemoteConfigWrapper
 import cl.emilym.sinatra.manualModule
@@ -24,7 +25,12 @@ fun init(
         modules(
             module {
                 single { AppleRemoteConfigWrapper(remoteConfig) } bind RemoteConfigWrapper::class
-                single { VersionInformation(versionName, versionCode) }
+                single {
+                    BuildInformation(
+                        versionName,
+                        versionCode
+                    )
+                }
             },
             SharedModule().module,
             UIModule().module,

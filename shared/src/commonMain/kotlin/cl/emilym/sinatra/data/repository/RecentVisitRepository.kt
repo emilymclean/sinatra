@@ -1,5 +1,6 @@
 package cl.emilym.sinatra.data.repository
 
+import cl.emilym.sinatra.data.models.PlaceId
 import cl.emilym.sinatra.data.models.RecentVisit
 import cl.emilym.sinatra.data.models.RouteId
 import cl.emilym.sinatra.data.models.StopId
@@ -30,6 +31,18 @@ class RecentVisitRepository(
 
     suspend fun addStopVisit(stopId: StopId) {
         recentVisitPersistence.addStopVisit(stopId)
+    }
+
+    suspend fun addPlaceVisit(placeId: PlaceId) {
+        recentVisitPersistence.addPlaceVisit(placeId)
+    }
+
+    suspend fun add(recentVisit: RecentVisit) {
+        when (recentVisit) {
+            is RecentVisit.Stop -> addStopVisit(recentVisit.stop.id)
+            is RecentVisit.Route -> addRouteVisit(recentVisit.route.id)
+            is RecentVisit.Place -> addPlaceVisit(recentVisit.place.id)
+        }
     }
 
 }

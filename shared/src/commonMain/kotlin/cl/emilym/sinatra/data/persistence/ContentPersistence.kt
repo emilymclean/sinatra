@@ -8,13 +8,14 @@ import org.koin.core.annotation.Single
 class ContentPersistence {
 
     private val contents = mutableMapOf<String, Content>()
+    val cached: Boolean get() = contents.isNotEmpty()
 
     fun get(id: ContentId): Content? {
         return contents[id]
     }
 
-    fun store(id: ContentId, content: Content) {
-        contents[id] = content
+    fun store(content: List<Content>) {
+        content.forEach { contents[it.id] = it }
     }
 
 }
