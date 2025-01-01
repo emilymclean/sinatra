@@ -30,6 +30,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
@@ -117,7 +118,7 @@ class RootMapScreen: Screen {
             MapSearchScreen()
         ) { navigator ->
             val adaptiveWindowInfo = currentWindowAdaptiveInfo()
-            var selected by remember { mutableStateOf(0) }
+            var selected by rememberSaveable { mutableStateOf(0) }
             val selectedCallback: (Int) -> Unit = remember { { selected = it } }
 
             val items = remember(navigator) {
