@@ -12,13 +12,16 @@ import cl.emilym.sinatra.data.repository.TransportMetadataRepository
 import cl.emilym.sinatra.data.repository.startOfDay
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
 import kotlinx.datetime.Clock
 import org.koin.core.annotation.Factory
 import kotlin.time.Duration.Companion.minutes
 
 @Factory
 class UpcomingRoutesForStopUseCase(
+    private val liveStopTimetableUseCase: LiveStopTimetableUseCase,
     private val stopRepository: StopRepository,
     private val serviceRepository: ServiceRepository,
     private val clock: Clock,
@@ -46,12 +49,15 @@ class UpcomingRoutesForStopUseCase(
                     if (active.size == number) break
                 }
 
-                emit(timetable.flatMap { services.map { active } })
+                emit(timetable.flatMap { services.map { active.toList() } })
                 delay(1.minutes)
             }
+        }.flatMapLatest { original ->
+            liveStopTimetableUseCase(
+                stopId,
+                original.item
+            ).map { live -> original.map { live } }
         }
-
-
     }
 
 }

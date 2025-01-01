@@ -85,6 +85,7 @@ import cl.emilym.sinatra.ui.widgets.currentLocation
 import cl.emilym.sinatra.ui.widgets.createRequestStateFlowFlow
 import cl.emilym.sinatra.ui.widgets.handleFlowProperly
 import cl.emilym.sinatra.ui.widgets.isInPast
+import cl.emilym.sinatra.ui.widgets.pick
 import cl.emilym.sinatra.ui.widgets.presentable
 import cl.emilym.sinatra.ui.widgets.toIntPx
 import kotlinx.coroutines.flow.Flow
@@ -371,12 +372,7 @@ class RouteDetailScreen(
             StopCard(
                 it.stop!!,
                 Modifier.fillMaxWidth(),
-                it.stationTime?.let {
-                    when (it.arrival.time.isInPast()) {
-                        true -> StopStationTime.Departure(it.departure)
-                        false -> StopStationTime.Arrival(it.arrival)
-                    }
-                },
+                it.stationTime?.pick(),
                 onClick = {
                     navigator.push(StopDetailScreen(
                         it.stopId

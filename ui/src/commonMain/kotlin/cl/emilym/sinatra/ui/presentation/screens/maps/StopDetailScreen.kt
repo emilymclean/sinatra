@@ -64,7 +64,9 @@ import cl.emilym.sinatra.ui.widgets.WheelchairAccessibleIcon
 import cl.emilym.sinatra.ui.widgets.createRequestStateFlowFlow
 import cl.emilym.sinatra.ui.widgets.handleFlowProperly
 import cl.emilym.sinatra.ui.widgets.openMaps
+import cl.emilym.sinatra.ui.widgets.pick
 import cl.emilym.sinatra.ui.widgets.presentable
+import io.github.aakira.napier.Napier
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.map
@@ -283,7 +285,7 @@ class StopDetailScreen(
                     upcoming.value.isNotEmpty() -> items(upcoming.value) {
                         UpcomingRouteCard(
                             it,
-                            StationTime.Scheduled(it.arrivalTime),
+                            it.stationTime.pick(),
                             modifier = Modifier.fillMaxWidth(),
                             onClick = { navigator.push(RouteDetailScreen(
                                 it.routeId, it.serviceId, it.tripId, stopId

@@ -47,6 +47,14 @@ sealed interface StopStationTime {
 }
 
 @Composable
+fun TimetableStationTime.pick(): StopStationTime {
+    return when (arrival.time.isInPast()) {
+        true -> StopStationTime.Departure(departure)
+        false -> StopStationTime.Arrival(arrival)
+    }
+}
+
+@Composable
 fun StopCard(
     stop: Stop,
     modifier: Modifier = Modifier,
@@ -82,57 +90,14 @@ fun StopCard(
 //                stop.accessibility.icons()
 //            }
         }
-        if (stopStationTime != null) {
-            val time = stopStationTime.stationTime.time.format()
-            val stationTime = stopStationTime.stationTime
-            val isInPast = stopStationTime.stationTime.time.isInPast()
+
+        stopStationTime?.let {
             Text(
-                when (stationTime) {
-                    is StationTime.Scheduled -> stringResource(when (stopStationTime) {
-                        is StopStationTime.Arrival -> Res.string.scheduled_arrival
-                        is StopStationTime.Departure -> when (isInPast) {
-                            true -> Res.string.past_departure
-                            false -> Res.string.future_scheduled_departure
-                        }
-                    }, time)
-                    is StationTime.Live -> when {
-                        stationTime.delay.inWholeSeconds < -60L -> stringResource(
-                            when (stopStationTime) {
-                                is StopStationTime.Arrival -> Res.string.estimated_arrival_early
-                                is StopStationTime.Departure -> when (isInPast) {
-                                    true -> Res.string.past_departure_early
-                                    else -> Res.string.future_estimated_departure_early
-                                }
-                            },
-                            time,
-                            (-stationTime.delay).text
-                        )
-                        stationTime.delay.inWholeSeconds > 60L -> stringResource(
-                            when (stopStationTime) {
-                                is StopStationTime.Arrival -> Res.string.estimated_arrival_late
-                                is StopStationTime.Departure -> when (isInPast) {
-                                    true -> Res.string.past_departure_late
-                                    else -> Res.string.future_estimated_departure_late
-                                }
-                            },
-                            time,
-                            stationTime.delay.text
-                        )
-                        else -> stringResource(
-                            when (stopStationTime) {
-                                is StopStationTime.Arrival -> Res.string.estimated_arrival
-                                is StopStationTime.Departure -> when (isInPast) {
-                                    true -> Res.string.past_departure
-                                    else -> Res.string.future_estimated_departure
-                                }
-                            },
-                            time
-                        )
-                    }
-                },
+                it.text,
                 style = MaterialTheme.typography.bodySmall
             )
         }
+
         if (subtitle != null) {
             Text(
                 subtitle,
@@ -141,6 +106,58 @@ fun StopCard(
         }
     }
 }
+
+
+val StopStationTime.text: String
+    @Composable
+    get() {
+        val time = stationTime.time.format()
+        val stationTime = stationTime
+        val isInPast = stationTime.time.isInPast()
+        return when (stationTime) {
+            is StationTime.Scheduled -> stringResource(when (this) {
+                is StopStationTime.Arrival -> Res.string.scheduled_arrival
+                is StopStationTime.Departure -> when (isInPast) {
+                    true -> Res.string.past_departure
+                    false -> Res.string.future_scheduled_departure
+                }
+            }, time)
+            is StationTime.Live -> when {
+                stationTime.delay.inWholeSeconds < -60L -> stringResource(
+                    when (this) {
+                        is StopStationTime.Arrival -> Res.string.estimated_arrival_early
+                        is StopStationTime.Departure -> when (isInPast) {
+                            true -> Res.string.past_departure_early
+                            else -> Res.string.future_estimated_departure_early
+                        }
+                    },
+                    time,
+                    (-stationTime.delay).text
+                )
+                stationTime.delay.inWholeSeconds > 60L -> stringResource(
+                    when (this) {
+                        is StopStationTime.Arrival -> Res.string.estimated_arrival_late
+                        is StopStationTime.Departure -> when (isInPast) {
+                            true -> Res.string.past_departure_late
+                            else -> Res.string.future_estimated_departure_late
+                        }
+                    },
+                    time,
+                    stationTime.delay.text
+                )
+                else -> stringResource(
+                    when (this) {
+                        is StopStationTime.Arrival -> Res.string.estimated_arrival
+                        is StopStationTime.Departure -> when (isInPast) {
+                            true -> Res.string.past_departure
+                            else -> Res.string.future_estimated_departure
+                        }
+                    },
+                    time
+                )
+            }
+        }
+    }
 
 @Composable
 fun StopAccessibility.icons() {

@@ -17,7 +17,7 @@ import sinatra.ui.generated.resources.scheduled_arrival
 @Composable
 fun UpcomingRouteCard(
     timetableTime: IStopTimetableTime,
-    arrivalTime: StationTime?,
+    stopStationTime: StopStationTime?,
     modifier: Modifier = Modifier,
     onClick: (() -> Unit)? = null
 ) {
@@ -37,13 +37,11 @@ fun UpcomingRouteCard(
                 ), timetableTime.heading
             )
         )
-        val time = arrivalTime?.time?.format() ?: timetableTime.arrivalTime.format()
-        Text(
-            when (arrivalTime) {
-                is StationTime.Scheduled, null -> stringResource(Res.string.scheduled_arrival, time)
-                is StationTime.Live -> stringResource(Res.string.estimated_arrival, time)
-            },
-            style = MaterialTheme.typography.bodySmall
-        )
+        stopStationTime?.let {
+            Text(
+                it.text,
+                style = MaterialTheme.typography.bodySmall
+            )
+        }
     }
 }

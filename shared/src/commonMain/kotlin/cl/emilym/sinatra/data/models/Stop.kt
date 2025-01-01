@@ -128,16 +128,16 @@ data class StopTimetableTime(
 sealed interface StationTime {
     val time: Time
 
-    class Scheduled(
+    data class Scheduled(
         override val time: Time
     ): StationTime
-    class Live(
+    data class Live(
         override val time: Time,
         val delay: Duration
     ): StationTime
 }
 
-class TimetableStationTime(
+data class TimetableStationTime(
     val arrival: StationTime,
     val departure: StationTime
 ) {

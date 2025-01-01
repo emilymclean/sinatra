@@ -22,12 +22,33 @@ import kotlinx.datetime.Instant
 import org.koin.core.annotation.Factory
 import kotlin.time.Duration.Companion.seconds
 
+abstract class LiveUseCase {
+
+    protected fun decodeTime(
+        specific: TripUpdate.StopTimeEvent?,
+        delay: Int?,
+        expected: Time,
+        scheduleStartOfDay: Instant
+    ): StationTime {
+        return StationTime.Live(
+            specific?.time?.let {
+                Instant.fromEpochSeconds(it).toTodayTime(scheduleStartOfDay)
+            } ?: specific?.delay?.seconds?.let { it + expected } ?:
+            delay?.seconds?.let { it + expected } ?: expected,
+            specific?.time?.let {
+                Instant.fromEpochSeconds(it).toTodayTime(scheduleStartOfDay) - expected
+            } ?: specific?.delay?.seconds ?: delay?.seconds ?: 0.seconds
+        )
+    }
+
+}
+
 @Factory
 class LiveTripInformationUseCase(
     private val liveServiceRepository: LiveServiceRepository,
     private val routeRepository: RouteRepository,
     private val transportMetadataRepository: TransportMetadataRepository
-) {
+): LiveUseCase() {
 
     suspend fun invoke(
         liveInformationUrl: String,
@@ -70,23 +91,6 @@ class LiveTripInformationUseCase(
                 )
             }
         }
-    }
-
-    private fun decodeTime(
-        specific: TripUpdate.StopTimeEvent?,
-        delay: Int?,
-        expected: Time,
-        scheduleStartOfDay: Instant
-    ): StationTime {
-        return StationTime.Live(
-            specific?.time?.let {
-                Instant.fromEpochSeconds(it).toTodayTime(scheduleStartOfDay)
-            } ?: specific?.delay?.seconds?.let { it + expected } ?:
-            delay?.seconds?.let { it + expected } ?: expected,
-            specific?.time?.let {
-                Instant.fromEpochSeconds(it).toTodayTime(scheduleStartOfDay) - expected
-            } ?: specific?.delay?.seconds ?: delay?.seconds ?: 0.seconds
-        )
     }
 
 }
