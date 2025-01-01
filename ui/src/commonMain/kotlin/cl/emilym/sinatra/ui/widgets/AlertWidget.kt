@@ -1,5 +1,6 @@
 package cl.emilym.sinatra.ui.widgets
 
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.content.MediaType.Companion.Text
 import androidx.compose.foundation.layout.Arrangement
@@ -7,6 +8,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
@@ -15,6 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import cl.emilym.compose.units.px
 import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.data.models.Alert
 import cl.emilym.sinatra.data.models.AlertSeverity
@@ -67,14 +70,16 @@ fun AlertWidget(
 
 @Composable
 fun AlertScaffold(
-    alerts: List<Alert>
+    alerts: List<Alert>?
 ) {
     Box(
         Modifier
             .fillMaxWidth()
-            .then(if(alerts.isNotEmpty()) Modifier.padding(1.rdp) else Modifier)
+            .animateContentSize()
+            .heightIn(min = 1.px) // Animation doesn't work if starting from 0 height >:P
+            .then(if(alerts.isNullOrEmpty()) Modifier else Modifier.padding(1.rdp))
     ) {
-        alerts.maxByOrNull { it.severity.ordinal }?.let {
+        alerts?.maxByOrNull { it.severity.ordinal }?.let {
             AlertWidget(it)
         }
     }

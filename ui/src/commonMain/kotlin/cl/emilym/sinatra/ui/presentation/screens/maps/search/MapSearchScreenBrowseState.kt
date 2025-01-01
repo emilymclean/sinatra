@@ -40,10 +40,8 @@ fun MapSearchScreenBrowseState() {
         val alerts by mainViewModel.alerts.collectAsState(RequestState.Initial())
         RequestStateWidget(routes, { viewModel.retry() }) { routes ->
             LazyColumn {
-                (alerts as? RequestState.Success)?.let {
-                    item {
-                        AlertScaffold(it.value)
-                    }
+                item {
+                    AlertScaffold((alerts as? RequestState.Success)?.value)
                 }
                 items(routes.size) {
                     RouteCard(
