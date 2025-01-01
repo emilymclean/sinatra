@@ -87,14 +87,14 @@ fun <T: IRouteTripStop> List<T>.current(
     now: Instant,
     startOfDay: Instant
 ): List<T> {
-    return filter { it.departureTime != null }.filter { it.departureTime!!.forDay(startOfDay) > now }
+    return filter { it.departureTime != null }.filter { (it.stationTime?.departure?.time ?: it.departureTime!!).forDay(startOfDay) > now }
 }
 
 fun <T: IRouteTripStop> List<T>.past(
     now: Instant,
     startOfDay: Instant
 ): List<T> {
-    return filter { it.departureTime != null }.filter { it.departureTime!!.forDay(startOfDay) < now }
+    return filter { it.departureTime != null }.filter { (it.stationTime?.departure?.time ?: it.departureTime)!!.forDay(startOfDay) <= now }
 }
 
 @Composable
