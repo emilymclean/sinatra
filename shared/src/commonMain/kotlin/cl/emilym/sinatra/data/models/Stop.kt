@@ -114,8 +114,8 @@ data class StopTimetableTime(
                 pb.routeCode,
                 pb.serviceId,
                 pb.tripId,
-                parseTime(pb.arrivalTime),
-                parseTime(pb.departureTime),
+                Time.parse(pb.arrivalTime),
+                Time.parse(pb.departureTime),
                 pb.heading,
                 pb.sequence,
                 null

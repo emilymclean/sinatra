@@ -6,15 +6,15 @@ import cl.emilym.sinatra.data.models.JourneyLeg
 import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.data.models.StopWithDistance
+import cl.emilym.sinatra.data.models.Time
 import cl.emilym.sinatra.data.models.distance
 import cl.emilym.sinatra.data.models.map
+import cl.emilym.sinatra.data.models.startOfDay
 import cl.emilym.sinatra.data.repository.NetworkGraphRepository
 import cl.emilym.sinatra.data.repository.RouteRepository
 import cl.emilym.sinatra.data.repository.RoutingPreferencesRepository
-import cl.emilym.sinatra.data.repository.ServiceRepository
 import cl.emilym.sinatra.data.repository.StopRepository
 import cl.emilym.sinatra.data.repository.TransportMetadataRepository
-import cl.emilym.sinatra.data.repository.startOfDay
 import cl.emilym.sinatra.router.Raptor
 import cl.emilym.sinatra.router.RaptorConfig
 import cl.emilym.sinatra.router.RaptorJourneyConnection
@@ -61,6 +61,7 @@ class CalculateJourneyUseCase(
             val stops = stopRepository.stops()
             val services = activeServicesUseCase(now).map { it.map { it.id } }
             val maximumWalkingTime = routingPreferencesRepository.maximumWalkingTime()
+            val startOfDay = transportMetadataRepository.scheduleStartOfDay()
 
             Napier.d("Active services = ${services}")
 
@@ -98,16 +99,16 @@ class CalculateJourneyUseCase(
                         (connection.endTime - connection.startTime).seconds,
                         routes.item.first { it?.id == connection.routeId }!!,
                         connection.heading,
-                        connection.startTime.seconds,
-                        connection.endTime.seconds
+                        Time.create(connection.startTime.seconds, startOfDay),
+                        Time.create(connection.endTime.seconds, startOfDay)
                     )
                     is RaptorJourneyConnection.Transfer -> JourneyLeg.Transfer(
                         stops,
                         connection.travelTime.seconds,
-                        lastEndTime,
-                        lastEndTime + connection.travelTime.seconds
+                        Time.create(lastEndTime, startOfDay),
+                        Time.create(lastEndTime + connection.travelTime.seconds, startOfDay)
                     )
-                }.also { lastEndTime = it.arrivalTime }
+                }.also { lastEndTime = it.arrivalTime.durationThroughDay }
             }
 
             if (!departureLocation.exact) {
@@ -118,8 +119,8 @@ class CalculateJourneyUseCase(
                     val time = distance(departureLocation.location, attachedStop.location) * graph.item.metadata.assumedWalkingSecondsPerKilometer.toLong()
                     legs.add(0, JourneyLeg.TransferPoint(
                         time.seconds,
-                        departureTimeSeconds.seconds,
-                        (departureTimeSeconds + time).seconds
+                        Time.create(departureTimeSeconds.seconds, startOfDay),
+                        Time.create((departureTimeSeconds + time).seconds, startOfDay)
                     ))
                 }
             }

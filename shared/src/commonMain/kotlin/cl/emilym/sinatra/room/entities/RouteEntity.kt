@@ -16,8 +16,10 @@ import cl.emilym.sinatra.data.models.RouteType
 import cl.emilym.sinatra.data.models.ServiceBikesAllowed
 import cl.emilym.sinatra.data.models.ServiceWheelchairAccessible
 import cl.emilym.sinatra.data.models.StopId
-import cl.emilym.sinatra.data.models.time
-import cl.emilym.sinatra.data.models.toLong
+import cl.emilym.sinatra.room.referenced
+import cl.emilym.sinatra.room.time
+import cl.emilym.sinatra.room.toLong
+import kotlinx.datetime.Instant
 import kotlin.time.Duration.Companion.milliseconds
 
 @Entity
@@ -84,10 +86,10 @@ data class RouteTripInformationEntity(
     val heading: String?
 ) {
 
-    fun toModel(stops: List<RouteTripStop>): RouteTripInformation {
+    fun toModel(stops: List<RouteTripStop>, startOfDay: Instant? = null): RouteTripInformation {
         return RouteTripInformation(
-            startTime?.milliseconds,
-            endTime?.milliseconds,
+            startTime?.time?.referenced(startOfDay),
+            endTime?.time?.referenced(startOfDay),
             RouteServiceAccessibility(
                 ServiceBikesAllowed.valueOf(bikesAllowed),
                 ServiceWheelchairAccessible.valueOf(wheelchairAccessible)
@@ -134,11 +136,11 @@ data class RouteTripStopEntity(
     val sequence: Int
 ) {
 
-    fun toModel(): RouteTripStop {
+    fun toModel(startOfDay: Instant? = null): RouteTripStop {
         return RouteTripStop(
             stopId,
-            arrivalTime?.time,
-            departureTime?.time,
+            arrivalTime?.time?.referenced(startOfDay),
+            departureTime?.time?.referenced(startOfDay),
             sequence,
             null
         )
