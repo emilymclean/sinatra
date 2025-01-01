@@ -36,6 +36,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.shareIn
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
 import kotlin.time.Duration.Companion.seconds
@@ -65,7 +66,7 @@ class MapSearchViewModel(
             State.BROWSE -> flowOf(MapSearchState.Browse)
             State.SEARCH -> searchHandler(routeStopSearchUseCase) { MapSearchState.Search(it) }
         }
-    }.shareIn(viewModelScope, SharingStarted.Eagerly)
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, MapSearchState.Browse)
 
     override val results: Flow<RequestState<List<SearchResult>>> = state.mapLatest {
         when (it) {
