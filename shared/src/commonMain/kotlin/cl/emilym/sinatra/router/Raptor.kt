@@ -3,6 +3,7 @@ package cl.emilym.sinatra.router
 import cl.emilym.sinatra.RouterException
 import cl.emilym.sinatra.data.models.ServiceId
 import cl.emilym.sinatra.data.models.StopId
+import cl.emilym.sinatra.nullIfEmpty
 import cl.emilym.sinatra.router.data.EdgeType
 import cl.emilym.sinatra.router.data.NetworkGraph
 import cl.emilym.sinatra.router.data.NetworkGraphEdge
@@ -92,8 +93,18 @@ class Raptor(
 
         if (arrivalStopIndices.all { prev[it.first] == null }) throw RouterException.noJourneyFound()
 
+        val options = arrivalStopIndices
+            .filterNot { prev[it.first] == null }
+
         // Reconstruct journey
-        var cursor = arrivalStopIndices.filterNot { prev[it.first] == null }.minBy { dist[it.first] + it.second.addedTime }.first
+        var cursor = (
+            options.filter {
+                prevEdge[it.first]?.type != EdgeType.TRANSFER ||
+                        (prevEdge[it.first]?.type == EdgeType.TRANSFER &&
+                                (dist[it.first] + it.second.addedTime) >= (config?.maximumWalkingTime ?: Long.MAX_VALUE))
+            }.nullIfEmpty()
+        )?.minBy { dist[it.first] + it.second.addedTime }?.first ?: throw RouterException.noJourneyFound()
+
         val chain = mutableListOf<RaptorJourneyConnection>()
         var connection: RaptorJourneyConnection? = null
         var edgeType: EdgeType? = null

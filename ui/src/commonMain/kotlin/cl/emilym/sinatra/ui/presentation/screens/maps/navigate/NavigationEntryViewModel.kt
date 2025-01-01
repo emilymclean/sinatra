@@ -16,6 +16,7 @@ import cl.emilym.sinatra.domain.CalculateJourneyUseCase
 import cl.emilym.sinatra.domain.JourneyLocation
 import cl.emilym.sinatra.domain.search.RouteStopSearchUseCase
 import cl.emilym.sinatra.domain.search.SearchResult
+import cl.emilym.sinatra.e
 import cl.emilym.sinatra.nullIfEmpty
 import cl.emilym.sinatra.ui.NEAREST_STOP_RADIUS
 import cl.emilym.sinatra.ui.presentation.screens.maps.search.NEARBY_STOPS_LIMIT
@@ -278,6 +279,7 @@ class NavigationEntryViewModel(
                     }
                 )
             } catch (e: Exception) {
+                Napier.e(e)
                 navigationState.value = NavigationState.JourneyFailed(e)
             }
         }
