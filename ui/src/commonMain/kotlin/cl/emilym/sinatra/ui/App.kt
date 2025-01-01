@@ -38,8 +38,7 @@ import org.koin.compose.viewmodel.koinViewModel
 
 @KoinViewModel
 class AppViewModel(
-    private val transportMetadataRepository: TransportMetadataRepository,
-    private val liveServiceRepository: LiveServiceRepository
+    private val transportMetadataRepository: TransportMetadataRepository
 ): ViewModel() {
 
     val scheduleTimeZone = MutableStateFlow(TimeZone.currentSystemDefault())
@@ -47,11 +46,6 @@ class AppViewModel(
     init {
         viewModelScope.launch {
             scheduleTimeZone.value = transportMetadataRepository.timeZone()
-        }
-        viewModelScope.launch {
-            liveServiceRepository.getRealtimeUpdates("http://files.transport.act.gov.au/feeds/lightrail.pb").collectLatest {
-                Napier.d("Light rail update = $it")
-            }
         }
     }
 

@@ -72,9 +72,13 @@ import cl.emilym.sinatra.ui.widgets.SpecificRecomposeOnInstants
 import cl.emilym.sinatra.ui.widgets.StopCard
 import cl.emilym.sinatra.ui.widgets.Subheading
 import cl.emilym.sinatra.ui.widgets.WheelchairAccessibleIcon
+import cl.emilym.sinatra.ui.widgets.createRequestStateFlowFlow
+import cl.emilym.sinatra.ui.widgets.handleFlowProperly
+import cl.emilym.sinatra.ui.widgets.presentable
 import cl.emilym.sinatra.ui.widgets.toIntPx
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.koin.android.annotation.KoinViewModel
@@ -99,7 +103,8 @@ class RouteDetailViewModel(
     private val recentVisitRepository: RecentVisitRepository
 ): ViewModel() {
 
-    val tripInformation = MutableStateFlow<RequestState<CurrentTripInformation?>>(RequestState.Initial())
+    private val _tripInformation = createRequestStateFlowFlow<CurrentTripInformation?>()
+    val tripInformation = _tripInformation.presentable()
     val favourited = MutableStateFlow(false)
 
     fun init(routeId: RouteId) {
@@ -113,8 +118,8 @@ class RouteDetailViewModel(
 
     fun retry(routeId: RouteId, serviceId: ServiceId?, tripId: TripId?) {
         viewModelScope.launch {
-            tripInformation.handle {
-                currentTripForRouteUseCase(routeId, serviceId, tripId).item
+            _tripInformation.handleFlowProperly {
+                currentTripForRouteUseCase(routeId, serviceId, tripId).map { it.item }
             }
         }
     }
@@ -307,7 +312,7 @@ class RouteDetailScreen(
             StopCard(
                 it.stop!!,
                 Modifier.fillMaxWidth(),
-                it.arrivalTime?.let { StationTime.Scheduled(it) },
+                it.stationTime?.arrival,
                 onClick = {
                     navigator.push(StopDetailScreen(
                         it.stopId

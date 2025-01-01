@@ -1,6 +1,7 @@
 package cl.emilym.sinatra.data.repository
 
 import cl.emilym.sinatra.data.client.LiveServiceClient
+import cl.emilym.sinatra.data.models.StopId
 import cl.emilym.sinatra.data.persistence.LiveServicePersistence
 import com.google.transit.realtime.FeedMessage
 import kotlinx.coroutines.CoroutineScope

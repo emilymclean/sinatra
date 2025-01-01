@@ -1,6 +1,9 @@
 package cl.emilym.sinatra.data.models
 
 import kotlinx.datetime.Instant
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -36,4 +39,8 @@ fun Time.forDay(instant: Instant): Instant {
 
 fun Time.toLong(): Long {
     return inWholeMilliseconds
+}
+
+fun Instant.toTodayTime(startOfDay: Instant): Time {
+    return this - startOfDay
 }

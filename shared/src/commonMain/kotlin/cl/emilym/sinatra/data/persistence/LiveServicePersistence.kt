@@ -18,7 +18,7 @@ import org.koin.core.annotation.Single
 import kotlin.time.Duration.Companion.minutes
 
 @Single
-class LiveServicePersistence {
+class LiveServicePersistence constructor() {
 
     companion object {
 

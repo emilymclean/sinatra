@@ -1,6 +1,7 @@
 package cl.emilym.sinatra.data.models
 
 import cl.emilym.gtfs.WheelchairStopAccessibility
+import kotlin.time.Duration
 
 private val SIMPLE_TERMINATORS = arrayOf(" Platform", " at", " Plt")
 
