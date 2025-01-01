@@ -1,6 +1,7 @@
 package cl.emilym.sinatra.domain
 
 import cl.emilym.sinatra.data.models.Cachable
+import cl.emilym.sinatra.data.models.IStopTimetableTime
 import cl.emilym.sinatra.data.models.StopId
 import cl.emilym.sinatra.data.models.StopTimetableTime
 import cl.emilym.sinatra.data.models.flatMap
@@ -27,7 +28,7 @@ class UpcomingRoutesForStopUseCase(
     operator fun invoke(
         stopId: StopId,
         number: Int = 10
-    ): Flow<Cachable<List<StopTimetableTime>>> {
+    ): Flow<Cachable<List<IStopTimetableTime>>> {
         return flow {
             val scheduleTimeZone = metadataRepository.timeZone()
             val timetable = stopRepository.timetable(stopId)

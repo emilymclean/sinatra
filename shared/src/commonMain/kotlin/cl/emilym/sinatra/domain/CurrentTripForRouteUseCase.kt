@@ -1,6 +1,7 @@
 package cl.emilym.sinatra.domain
 
 import cl.emilym.sinatra.data.models.Cachable
+import cl.emilym.sinatra.data.models.IRouteTripInformation
 import cl.emilym.sinatra.data.models.Route
 import cl.emilym.sinatra.data.models.RouteId
 import cl.emilym.sinatra.data.models.RouteTripInformation
@@ -15,7 +16,7 @@ import kotlinx.datetime.Clock
 import org.koin.core.annotation.Factory
 
 data class CurrentTripInformation(
-    val tripInformation: RouteTripInformation?,
+    val tripInformation: IRouteTripInformation?,
     val route: Route,
 )
 

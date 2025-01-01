@@ -73,40 +73,31 @@ enum class StopWheelchairAccessibility(
 }
 
 data class StopTimetable(
-    val times: List<StopTimetableTime>
-) {
+    override val times: List<StopTimetableTime>
+) : IStopTimetable {
 
     companion object {
-
         fun fromPB(pb: cl.emilym.gtfs.StopTimetable): StopTimetable {
             return StopTimetable(
                 pb.times.map { StopTimetableTime.fromPB(it) }
             )
         }
-
     }
-
-    val stationTimes: List<TimetableStationTime> get() = times.map {
-            TimetableStationTime(
-                StationTime.Scheduled(it.arrivalTime),
-                StationTime.Scheduled(it.departureTime),
-            )
-        }
 
 }
 
 data class StopTimetableTime(
-    val childStopId: StopId?,
-    val routeId: RouteId,
-    val routeCode: RouteCode,
-    val serviceId: ServiceId,
-    val tripId: TripId,
+    override val childStopId: StopId?,
+    override val routeId: RouteId,
+    override val routeCode: RouteCode,
+    override val serviceId: ServiceId,
+    override val tripId: TripId,
     override val arrivalTime: Time,
     override val departureTime: Time,
-    val heading: String,
-    val sequence: Int,
-    val route: Route?
-): StopTime {
+    override val heading: String,
+    override val sequence: Int,
+    override val route: Route?
+): IStopTimetableTime {
 
     companion object {
         fun fromPB(pb: cl.emilym.gtfs.StopTimetableTime): StopTimetableTime {

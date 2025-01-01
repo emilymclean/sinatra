@@ -5,6 +5,13 @@ import kotlinx.datetime.Instant
 interface StopTime {
     val arrivalTime: Time?
     val departureTime: Time?
+    val stationTime: TimetableStationTime?
+        get() = arrivalTime?.let { arrivalTime -> departureTime?.let { departureTime ->
+            TimetableStationTime(
+                StationTime.Scheduled(arrivalTime),
+                StationTime.Scheduled(departureTime),
+            )
+        } }
 
     fun arrivalTime(startOfDay: Instant): Instant? {
         return arrivalTime?.forDay(startOfDay)

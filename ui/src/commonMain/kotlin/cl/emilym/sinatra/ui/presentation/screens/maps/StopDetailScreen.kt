@@ -31,6 +31,7 @@ import cl.emilym.compose.requeststate.RequestState
 import cl.emilym.compose.requeststate.RequestStateWidget
 import cl.emilym.compose.requeststate.handle
 import cl.emilym.compose.units.rdp
+import cl.emilym.sinatra.data.models.IStopTimetableTime
 import cl.emilym.sinatra.data.models.StationTime
 import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.data.models.StopId
@@ -80,7 +81,7 @@ class StopDetailViewModel(
     val favourited = MutableStateFlow(false)
     val stop = MutableStateFlow<RequestState<Stop?>>(RequestState.Initial())
 
-    val _upcoming = createRequestStateFlowFlow<List<StopTimetableTime>>()
+    val _upcoming = createRequestStateFlowFlow<List<IStopTimetableTime>>()
     val upcoming = _upcoming.presentable()
 
     fun init(stopId: StopId) {
@@ -206,7 +207,7 @@ class StopDetailScreen(
 
     fun LazyListScope.Upcoming(
         viewModel: StopDetailViewModel,
-        upcoming: RequestState<List<StopTimetableTime>>,
+        upcoming: RequestState<List<IStopTimetableTime>>,
         navigator: Navigator
     ) {
         when (upcoming) {

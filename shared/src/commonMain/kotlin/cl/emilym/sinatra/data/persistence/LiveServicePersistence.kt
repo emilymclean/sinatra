@@ -30,6 +30,7 @@ class LiveServicePersistence {
     private val tracked = mutableMapOf<String, SharedFlow<FeedMessage>>()
 
     suspend fun get(url: String, create: (Flow<Unit>) -> SharedFlow<FeedMessage>): Flow<FeedMessage> {
+        tracked[url]?.let { return@let it }
         return lock.withLock {
             val current = tracked[url]
             if (current != null) return@withLock current

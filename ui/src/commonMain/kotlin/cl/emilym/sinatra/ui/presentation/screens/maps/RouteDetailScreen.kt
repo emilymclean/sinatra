@@ -32,6 +32,8 @@ import cl.emilym.compose.requeststate.RequestStateWidget
 import cl.emilym.compose.requeststate.handle
 import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.bounds
+import cl.emilym.sinatra.data.models.IRouteTripInformation
+import cl.emilym.sinatra.data.models.IRouteTripStop
 import cl.emilym.sinatra.data.models.Route
 import cl.emilym.sinatra.data.models.RouteId
 import cl.emilym.sinatra.data.models.RouteTripInformation
@@ -183,7 +185,7 @@ class RouteDetailScreen(
     }
 
     @Composable
-    fun TripDetails(route: Route, info: RouteTripInformation, trigger: Int?) {
+    fun TripDetails(route: Route, info: IRouteTripInformation, trigger: Int?) {
         val viewModel = koinViewModel<RouteDetailViewModel>()
         val navigator = LocalNavigator.currentOrThrow
         val clock = LocalClock.current
@@ -298,7 +300,7 @@ class RouteDetailScreen(
 
     private fun LazyListScope.Cards(
         navigator: Navigator,
-        stops: List<RouteTripStop>
+        stops: List<IRouteTripStop>
     ) {
         items(stops) {
             if (it.stop == null) return@items
