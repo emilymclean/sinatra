@@ -35,11 +35,13 @@ import cl.emilym.compose.requeststate.RequestStateWidget
 import cl.emilym.compose.requeststate.handle
 import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.FeatureFlags
+import cl.emilym.sinatra.data.models.Alert
 import cl.emilym.sinatra.data.models.IStopTimetableTime
 import cl.emilym.sinatra.data.models.StationTime
 import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.data.models.StopId
 import cl.emilym.sinatra.data.models.StopTimetableTime
+import cl.emilym.sinatra.data.repository.AlertRepository
 import cl.emilym.sinatra.data.repository.FavouriteRepository
 import cl.emilym.sinatra.data.repository.RecentVisitRepository
 import cl.emilym.sinatra.data.repository.StopRepository
@@ -52,6 +54,7 @@ import cl.emilym.sinatra.ui.navigation.MapScreen
 import cl.emilym.sinatra.ui.open_maps
 import cl.emilym.sinatra.ui.stopJourneyNavigation
 import cl.emilym.sinatra.ui.widgets.AccessibilityIconLockup
+import cl.emilym.sinatra.ui.widgets.AlertScaffold
 import cl.emilym.sinatra.ui.widgets.FavouriteButton
 import cl.emilym.sinatra.ui.widgets.ListHint
 import cl.emilym.sinatra.ui.widgets.LocalMapControl
@@ -87,8 +90,12 @@ class StopDetailViewModel(
     private val stopRepository: StopRepository,
     private val upcomingRoutesForStopUseCase: UpcomingRoutesForStopUseCase,
     private val favouriteRepository: FavouriteRepository,
-    private val recentVisitRepository: RecentVisitRepository
+    private val recentVisitRepository: RecentVisitRepository,
+    private val alertRepository: AlertRepository
 ): ViewModel() {
+
+    private val _alerts = createRequestStateFlowFlow<List<Alert>>()
+    val alerts = _alerts.presentable()
 
     val favourited = MutableStateFlow(false)
     val stop = MutableStateFlow<RequestState<Stop?>>(RequestState.Initial())
@@ -99,6 +106,7 @@ class StopDetailViewModel(
     fun init(stopId: StopId) {
         retryStop(stopId)
         retryUpcoming(stopId)
+        retryAlerts(stopId)
 
         viewModelScope.launch {
             favourited.emitAll(favouriteRepository.stopIsFavourited(stopId))
@@ -120,6 +128,14 @@ class StopDetailViewModel(
         viewModelScope.launch {
             _upcoming.handleFlowProperly {
                 upcomingRoutesForStopUseCase(stopId).map { it.item }
+            }
+        }
+    }
+
+    fun retryAlerts(stopId: StopId) {
+        viewModelScope.launch {
+            _alerts.handleFlowProperly {
+                alertRepository.alerts(stopId = stopId)
             }
         }
     }
@@ -155,6 +171,7 @@ class StopDetailScreen(
 
         val stop by viewModel.stop.collectAsState(RequestState.Initial())
         val upcoming by viewModel.upcoming.collectAsState(RequestState.Initial())
+        val alerts by viewModel.alerts.collectAsState(RequestState.Initial())
         Box(
             Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center,
@@ -171,7 +188,6 @@ class StopDetailScreen(
 
                         LazyColumn(
                             Modifier.fillMaxSize(),
-                            verticalArrangement = Arrangement.spacedBy(1.rdp)
                         ) {
                             item { Box(Modifier.height(1.rdp)) }
                             item {
@@ -192,6 +208,10 @@ class StopDetailScreen(
                                 }
                             }
                             item {
+                                AlertScaffold((alerts as? RequestState.Success)?.value)
+                            }
+                            item { Box(Modifier.height(1.rdp)) }
+                            item {
                                 Column(Modifier.padding(horizontal = 1.rdp)) {
                                     AccessibilityIconLockup(
                                         {
@@ -205,6 +225,7 @@ class StopDetailScreen(
                                     }
                                 }
                             }
+                            item { Box(Modifier.height(1.rdp)) }
                             if (FeatureFlags.STOP_DETAIL_SHOW_IN_MAPS_BUTTON) {
                                 item {
                                     val uriHandler = LocalUriHandler.current
@@ -217,6 +238,7 @@ class StopDetailScreen(
                                         Text(stringResource(Res.string.open_maps))
                                     }
                                 }
+                                item { Box(Modifier.height(1.rdp)) }
                             }
                             item {
                                 Button(
@@ -228,6 +250,7 @@ class StopDetailScreen(
                                     Text(stringResource(Res.string.stop_detail_navigate))
                                 }
                             }
+                            item { Box(Modifier.height(1.rdp)) }
                             Upcoming(viewModel, upcoming, navigator)
                             item { Box(Modifier.height(1.rdp)) }
                         }
