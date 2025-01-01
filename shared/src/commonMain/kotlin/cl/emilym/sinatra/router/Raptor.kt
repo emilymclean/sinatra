@@ -15,7 +15,8 @@ data class RaptorStop(
 
 data class RaptorConfig(
     val maximumWalkingTime: Seconds,
-    val transferPenalty: Seconds
+    val transferPenalty: Seconds,
+    val changeOverPenalty: Seconds
 )
 
 class Raptor(
@@ -81,10 +82,22 @@ class Raptor(
                 }
                 if (neighbour.edge.type == EdgeType.TRAVEL) {
                     val tV = getNode(neighbour.edge.connectedNodeIndex.toInt()).stopIndex.toInt()
-                    if (alt < dist[tV]) {
+                    val penalty = config?.changeOverPenalty?.let {
+                        with(prevEdge[tV]) {
+                            when (this?.type) {
+                                EdgeType.TRAVEL -> with(getNode(prev[tV]!!)) {
+                                    if (routeIndex != getNode(u).routeIndex)
+                                        it
+                                    else 0L
+                                }
+                                else -> 0L
+                            }
+                        }
+                    } ?: 0L
+                    if ((alt + penalty) < dist[tV]) {
                         prev[tV] = u
                         prevEdge[tV] = neighbour.edge
-                        dist[tV] = alt
+                        dist[tV] = alt + penalty
                         Q.add(tV, alt)
                     }
                 }

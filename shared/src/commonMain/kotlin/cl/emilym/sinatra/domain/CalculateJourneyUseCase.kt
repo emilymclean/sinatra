@@ -72,7 +72,8 @@ class CalculateJourneyUseCase(
                 services.item,
                 RaptorConfig(
                     maximumWalkingTime = maximumWalkingTime.inWholeSeconds,
-                    transferPenalty = 5.minutes.inWholeSeconds
+                    transferPenalty = 5.minutes.inWholeSeconds,
+                    changeOverPenalty = 5.minutes.inWholeSeconds
                 )
             )
 
