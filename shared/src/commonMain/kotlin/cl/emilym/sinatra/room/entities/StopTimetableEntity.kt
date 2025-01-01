@@ -72,8 +72,8 @@ class StopTimetableTimeEntityWithRouteEntity(
     val route: RouteEntity?
 ) {
 
-    fun toModel(): StopTimetableTime {
-        return stopTimetableTimeEntity.toModel().copy(
+    fun toModel(startOfDay: Instant? = null): StopTimetableTime {
+        return stopTimetableTimeEntity.toModel(startOfDay).copy(
             route = route?.toModel()
         )
     }

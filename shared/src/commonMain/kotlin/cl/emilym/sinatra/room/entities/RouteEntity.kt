@@ -171,8 +171,8 @@ data class RouteTripStopEntityWithStop(
     val stop: StopEntity?
 ) {
 
-    fun toModel(): RouteTripStop {
-        return routeTripStop.toModel().copy(
+    fun toModel(startOfDay: Instant? = null): RouteTripStop {
+        return routeTripStop.toModel(startOfDay).copy(
             stop = stop?.toModel()
         )
     }

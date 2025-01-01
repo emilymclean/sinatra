@@ -12,6 +12,7 @@ import cl.emilym.sinatra.data.models.map
 import cl.emilym.sinatra.data.persistence.StopPersistence
 import cl.emilym.sinatra.data.persistence.StopTimetablePersistence
 import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 import org.koin.core.annotation.Factory
 
 @Factory
@@ -37,17 +38,17 @@ class StopTimetableCacheWorker(
     private val stopClient: StopClient,
     override val cacheWorkerDependencies: CacheWorkerDependencies,
     override val clock: Clock,
-): CacheWorker<StopTimetable>() {
+): TimeCacheWorker<StopTimetable>() {
     override val cacheCategory: CacheCategory = CacheCategory.STOP_TIMETABLE
 
     override suspend fun saveToPersistence(data: StopTimetable, resource: ResourceKey) {
         stopTimetablePersistence.save(data, resource)
     }
-    override suspend fun getFromPersistence(resource: ResourceKey) =
-        stopTimetablePersistence.get(resource)
+    override suspend fun getFromPersistence(resource: ResourceKey, extras: Instant) =
+        stopTimetablePersistence.get(resource, extras)
 
-    suspend fun get(stopId: StopId): Cachable<StopTimetable> {
-        return run(stopClient.timetableEndpointPair(stopId), "stop/${stopId}/timetable")
+    suspend fun get(stopId: StopId, startOfDay: Instant): Cachable<StopTimetable> {
+        return run(stopClient.timetableEndpointPair(stopId), "stop/${stopId}/timetable", startOfDay)
     }
 }
 
@@ -84,7 +85,8 @@ class StopRepository(
     private val stopTimetableCacheWorker: StopTimetableCacheWorker,
     private val stopsCleanupWorker: StopsCleanupWorker,
     private val stopTimetableCleanupWorker: StopTimetableCleanupWorker,
-    private val stopPersistence: StopPersistence
+    private val stopPersistence: StopPersistence,
+    private val transportMetadataRepository: TransportMetadataRepository
 ) {
 
     suspend fun stops() = stopsCacheWorker.get()
@@ -92,9 +94,14 @@ class StopRepository(
         val all = stopsCacheWorker.get()
         return all.map { stopPersistence.get(stopId) }
     }
-    suspend fun timetable(stopId: StopId): Cachable<StopTimetable> {
+    suspend fun timetable(
+        stopId: StopId,
+        startOfDay: Instant? = null
+    ): Cachable<StopTimetable> {
         val routes = routesCacheWorker.get()
-        return routes.flatMap { stopTimetableCacheWorker.get(stopId) }
+        return routes.flatMap { stopTimetableCacheWorker.get(
+            stopId, startOfDay ?: transportMetadataRepository.scheduleStartOfDay()
+        ) }
     }
 
     suspend fun cleanup() {

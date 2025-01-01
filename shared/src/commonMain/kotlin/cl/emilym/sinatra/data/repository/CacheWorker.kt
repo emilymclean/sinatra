@@ -11,6 +11,7 @@ import io.github.aakira.napier.Napier
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 import org.koin.core.annotation.Factory
 import org.koin.core.annotation.Single
 import kotlin.time.Duration
@@ -36,7 +37,7 @@ class CacheWorkerDependencies(
     val cacheWorkerLockProvider: CacheWorkerLockProvider,
 )
 
-abstract class CacheWorker<T> {
+abstract class BaseCacheWorker<T, E> {
     abstract val cacheWorkerDependencies: CacheWorkerDependencies
     private val shaRepository: ShaRepository get() = cacheWorkerDependencies.shaRepository
     private val remoteConfigRepository: RemoteConfigRepository
@@ -49,34 +50,34 @@ abstract class CacheWorker<T> {
     private suspend fun adjustedExpireTime() = expireTime * remoteConfigRepository.dataCachePeriodMultiplier()
 
     abstract suspend fun saveToPersistence(data: T, resource: ResourceKey)
-    abstract suspend fun getFromPersistence(resource: ResourceKey): T?
+    abstract suspend fun getFromPersistence(resource: ResourceKey, extras: E): T?
     open suspend fun existsInPersistence(resource: ResourceKey): Boolean { return true }
 
-    protected suspend fun run(pair: EndpointDigestPair<T>, resource: ResourceKey): Cachable<T> {
+    protected suspend fun run(pair: EndpointDigestPair<T>, resource: ResourceKey, extras: E): Cachable<T> {
         val info = shaRepository.cached(cacheCategory, resource)
 
         if (!info.shouldCheckForUpdate(resource))
-            return getCached(resource)
+            return getCached(resource, extras)
 
         return cacheWorkerDependencies.cacheWorkerLockProvider.lock(resource).withLock {
             val digest = try {
                 pair.digest()
             } catch (e: Throwable) {
-                return failure(info, e, resource)
+                return failure(info, e, resource, extras)
             }
 
             when(info) {
-                is CacheInformation.Unavailable -> fetch(digest, info, pair, resource)
+                is CacheInformation.Unavailable -> fetch(digest, info, pair, resource, extras)
                 is CacheInformation.Available -> when {
-                    digest != info.digest -> fetch(digest, info, pair, resource)
-                    else -> getCached(resource)
+                    digest != info.digest -> fetch(digest, info, pair, resource, extras)
+                    else -> getCached(resource, extras)
                 }
             }
         }
     }
 
-    private suspend fun getCached(resource: ResourceKey): Cachable<T> {
-        return getFromPersistence(resource)?.let { Cachable(it, CacheState.CACHED) } ?:
+    private suspend fun getCached(resource: ResourceKey, extras: E): Cachable<T> {
+        return getFromPersistence(resource, extras)?.let { Cachable(it, CacheState.CACHED) } ?:
             throw IllegalStateException("Resource was reported as cached, but could not be retrieved")
     }
 
@@ -87,24 +88,35 @@ abstract class CacheWorker<T> {
         }
     }
 
-    private suspend fun fetch(digest: ShaDigest, info: CacheInformation, pair: EndpointDigestPair<T>, resource: ResourceKey): Cachable<T> {
+    private suspend fun fetch(
+        digest: ShaDigest,
+        info: CacheInformation,
+        pair: EndpointDigestPair<T>,
+        resource: ResourceKey,
+        extras: E
+    ): Cachable<T> {
         val data = try {
             pair.endpoint()
         } catch (e: Throwable) {
-            return failure(info, e, resource)
+            return failure(info, e, resource, extras)
         }
         saveToPersistence(data, resource)
         shaRepository.save(digest, cacheCategory, resource)
         // We get from persistence anyway to ensure any joined tables are included
-        return Cachable.live(getFromPersistence(resource) ?: data)
+        return Cachable.live(getFromPersistence(resource, extras) ?: data)
     }
 
-    private suspend fun failure(info: CacheInformation, e: Throwable, resource: ResourceKey): Cachable<T> {
+    private suspend fun failure(
+        info: CacheInformation,
+        e: Throwable,
+        resource: ResourceKey,
+        extras: E
+    ): Cachable<T> {
         Napier.e(e)
         return when (info) {
             is CacheInformation.Unavailable -> throw e
             is CacheInformation.Available -> Cachable(
-                getFromPersistence(resource) ?: throw e,
+                getFromPersistence(resource, extras) ?: throw e,
                 when (info.expired(adjustedExpireTime(), clock.now())) {
                     true -> CacheState.EXPIRED_CACHE
                     false -> CacheState.CACHED
@@ -114,3 +126,17 @@ abstract class CacheWorker<T> {
     }
 
 }
+
+abstract class CacheWorker<T>: BaseCacheWorker<T, Unit>() {
+    abstract suspend fun getFromPersistence(resource: ResourceKey): T?
+
+    override suspend fun getFromPersistence(resource: ResourceKey, extras: Unit): T? {
+        return getFromPersistence(resource)
+    }
+
+    protected suspend fun run(pair: EndpointDigestPair<T>, resource: ResourceKey): Cachable<T> {
+        return run(pair, resource, Unit)
+    }
+}
+
+typealias TimeCacheWorker<T> = BaseCacheWorker<T, Instant>
