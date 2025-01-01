@@ -18,16 +18,47 @@ import cl.emilym.sinatra.data.models.StationTime
 import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.data.models.StopAccessibility
 import cl.emilym.sinatra.data.models.StopWheelchairAccessibility
+import cl.emilym.sinatra.data.models.TimetableStationTime
+import cl.emilym.sinatra.ui.text
 import org.jetbrains.compose.resources.stringResource
 import sinatra.ui.generated.resources.Res
 import sinatra.ui.generated.resources.estimated_arrival
+import sinatra.ui.generated.resources.estimated_arrival_early
+import sinatra.ui.generated.resources.estimated_arrival_late
+import sinatra.ui.generated.resources.future_estimated_departure
+import sinatra.ui.generated.resources.future_estimated_departure_early
+import sinatra.ui.generated.resources.future_estimated_departure_late
+import sinatra.ui.generated.resources.future_scheduled_departure
+import sinatra.ui.generated.resources.past_departure
+import sinatra.ui.generated.resources.past_departure_early
+import sinatra.ui.generated.resources.past_departure_late
 import sinatra.ui.generated.resources.scheduled_arrival
+
+sealed interface StopStationTime {
+    val stationTime: StationTime
+
+    data class Arrival(
+        override val stationTime: StationTime
+    ): StopStationTime
+
+    data class Departure(
+        override val stationTime: StationTime
+    ): StopStationTime
+}
+
+@Composable
+fun TimetableStationTime.pick(): StopStationTime {
+    return when (arrival.time.isInPast()) {
+        true -> StopStationTime.Departure(departure)
+        false -> StopStationTime.Arrival(arrival)
+    }
+}
 
 @Composable
 fun StopCard(
     stop: Stop,
     modifier: Modifier = Modifier,
-    arrival: StationTime? = null,
+    stopStationTime: StopStationTime? = null,
     onClick: () -> Unit,
     subtitle: String? = null,
     showStopIcon: Boolean = false,
@@ -59,16 +90,14 @@ fun StopCard(
 //                stop.accessibility.icons()
 //            }
         }
-        if (arrival != null) {
-            val time = arrival.time.format()
+
+        stopStationTime?.let {
             Text(
-                when (arrival) {
-                    is StationTime.Scheduled -> stringResource(Res.string.scheduled_arrival, time)
-                    is StationTime.Live -> stringResource(Res.string.estimated_arrival, time)
-                },
+                it.text,
                 style = MaterialTheme.typography.bodySmall
             )
         }
+
         if (subtitle != null) {
             Text(
                 subtitle,
@@ -77,6 +106,58 @@ fun StopCard(
         }
     }
 }
+
+
+val StopStationTime.text: String
+    @Composable
+    get() {
+        val time = stationTime.time.format()
+        val stationTime = stationTime
+        val isInPast = stationTime.time.isInPast()
+        return when (stationTime) {
+            is StationTime.Scheduled -> stringResource(when (this) {
+                is StopStationTime.Arrival -> Res.string.scheduled_arrival
+                is StopStationTime.Departure -> when (isInPast) {
+                    true -> Res.string.past_departure
+                    false -> Res.string.future_scheduled_departure
+                }
+            }, time)
+            is StationTime.Live -> when {
+                stationTime.delay.inWholeSeconds < -60L -> stringResource(
+                    when (this) {
+                        is StopStationTime.Arrival -> Res.string.estimated_arrival_early
+                        is StopStationTime.Departure -> when (isInPast) {
+                            true -> Res.string.past_departure_early
+                            else -> Res.string.future_estimated_departure_early
+                        }
+                    },
+                    time,
+                    (-stationTime.delay).text
+                )
+                stationTime.delay.inWholeSeconds > 60L -> stringResource(
+                    when (this) {
+                        is StopStationTime.Arrival -> Res.string.estimated_arrival_late
+                        is StopStationTime.Departure -> when (isInPast) {
+                            true -> Res.string.past_departure_late
+                            else -> Res.string.future_estimated_departure_late
+                        }
+                    },
+                    time,
+                    stationTime.delay.text
+                )
+                else -> stringResource(
+                    when (this) {
+                        is StopStationTime.Arrival -> Res.string.estimated_arrival
+                        is StopStationTime.Departure -> when (isInPast) {
+                            true -> Res.string.past_departure
+                            else -> Res.string.future_estimated_departure
+                        }
+                    },
+                    time
+                )
+            }
+        }
+    }
 
 @Composable
 fun StopAccessibility.icons() {

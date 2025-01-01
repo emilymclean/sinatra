@@ -35,6 +35,7 @@ import cl.emilym.compose.requeststate.RequestStateWidget
 import cl.emilym.compose.requeststate.handle
 import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.FeatureFlags
+import cl.emilym.sinatra.data.models.IStopTimetableTime
 import cl.emilym.sinatra.data.models.StationTime
 import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.data.models.StopId
@@ -63,7 +64,9 @@ import cl.emilym.sinatra.ui.widgets.WheelchairAccessibleIcon
 import cl.emilym.sinatra.ui.widgets.createRequestStateFlowFlow
 import cl.emilym.sinatra.ui.widgets.handleFlowProperly
 import cl.emilym.sinatra.ui.widgets.openMaps
+import cl.emilym.sinatra.ui.widgets.pick
 import cl.emilym.sinatra.ui.widgets.presentable
+import io.github.aakira.napier.Napier
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.map
@@ -90,7 +93,7 @@ class StopDetailViewModel(
     val favourited = MutableStateFlow(false)
     val stop = MutableStateFlow<RequestState<Stop?>>(RequestState.Initial())
 
-    val _upcoming = createRequestStateFlowFlow<List<StopTimetableTime>>()
+    val _upcoming = createRequestStateFlowFlow<List<IStopTimetableTime>>()
     val upcoming = _upcoming.presentable()
 
     fun init(stopId: StopId) {
@@ -236,7 +239,7 @@ class StopDetailScreen(
 
     fun LazyListScope.Upcoming(
         viewModel: StopDetailViewModel,
-        upcoming: RequestState<List<StopTimetableTime>>,
+        upcoming: RequestState<List<IStopTimetableTime>>,
         navigator: Navigator
     ) {
         when (upcoming) {
@@ -282,7 +285,7 @@ class StopDetailScreen(
                     upcoming.value.isNotEmpty() -> items(upcoming.value) {
                         UpcomingRouteCard(
                             it,
-                            StationTime.Scheduled(it.arrivalTime),
+                            it.stationTime.pick(),
                             modifier = Modifier.fillMaxWidth(),
                             onClick = { navigator.push(RouteDetailScreen(
                                 it.routeId, it.serviceId, it.tripId, stopId

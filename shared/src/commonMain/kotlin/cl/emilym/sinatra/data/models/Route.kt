@@ -103,22 +103,12 @@ data class RouteServiceAccessibility(
 }
 
 data class RouteTripInformation(
-    val startTime: Time?,
-    val endTime: Time?,
-    val accessibility: RouteServiceAccessibility,
-    val heading: String?,
-    val stops: List<RouteTripStop>
-) {
-
-    fun startTime(startOfDay: Instant) = startTime?.forDay(startOfDay)
-    fun endTime(startOfDay: Instant) = endTime?.forDay(startOfDay)
-
-    fun active(current: Instant, startOfDay: Instant): Boolean? {
-        val start = startTime(startOfDay)
-        val end = endTime(startOfDay)
-        if (start == null || end == null) return null
-        return start <= current && end >= current
-    }
+    override val startTime: Time?,
+    override val endTime: Time?,
+    override val accessibility: RouteServiceAccessibility,
+    override val heading: String?,
+    override val stops: List<RouteTripStop>
+) : IRouteTripInformation {
 
     companion object {
         fun fromPB(pb: cl.emilym.gtfs.RouteTripInformation): RouteTripInformation {
@@ -132,19 +122,15 @@ data class RouteTripInformation(
         }
     }
 
-    val stationTimes: List<TimetableStationTime>? get() = stops.mapNotNull {
-        it.stationTime
-    }.nullIfEmpty()
-
 }
 
 data class RouteTripStop(
-    val stopId: StopId,
+    override val stopId: StopId,
     override val arrivalTime: Time?,
     override val departureTime: Time?,
-    val sequence: Int,
-    val stop: Stop?
-): StopTime {
+    override val sequence: Int,
+    override val stop: Stop?
+): IRouteTripStop {
 
     companion object {
         fun fromPB(pb: cl.emilym.gtfs.RouteTripStop): RouteTripStop {
@@ -156,14 +142,6 @@ data class RouteTripStop(
                 null
             )
         }
-    }
-
-    val stationTime: TimetableStationTime? get() = when {
-        arrivalTime != null && departureTime != null -> TimetableStationTime(
-            StationTime.Scheduled(arrivalTime),
-            StationTime.Scheduled(departureTime),
-        )
-        else -> null
     }
 
 }

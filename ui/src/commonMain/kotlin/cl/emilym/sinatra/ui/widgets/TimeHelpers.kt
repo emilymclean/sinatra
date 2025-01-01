@@ -35,6 +35,11 @@ fun Time.toTodayInstant(): Instant {
 }
 
 @Composable
+fun Time.isInPast(): Boolean {
+    return toTodayInstant() < LocalClock.current.now()
+}
+
+@Composable
 fun Instant.format(): String {
     val tz = LocalLocalTimeZone.current
     val inTz = toLocalDateTime(tz)

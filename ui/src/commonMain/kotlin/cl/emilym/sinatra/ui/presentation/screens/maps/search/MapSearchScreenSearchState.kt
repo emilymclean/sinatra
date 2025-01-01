@@ -140,7 +140,6 @@ fun MapSearchScreenSearchState() {
                         when (it) {
                             is RecentVisit.Stop -> StopCard(
                                 it.stop,
-                                arrival = null,
                                 modifier = Modifier.fillMaxWidth(),
                                 onClick = { navigator.push(StopDetailScreen(it.stop.id)) }
                             )
@@ -193,7 +192,6 @@ fun MapSearchScreenSearchState() {
                         is SearchResult.StopResult -> {
                             StopCard(
                                 result.stop,
-                                arrival = null,
                                 modifier = Modifier.fillMaxWidth(),
                                 onClick = { navigator.push(StopDetailScreen(result.stop.id)) },
                                 showStopIcon = true

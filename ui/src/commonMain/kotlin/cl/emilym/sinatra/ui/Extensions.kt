@@ -9,6 +9,7 @@ import cl.emilym.sinatra.asRadians
 import cl.emilym.sinatra.data.models.ColorPair
 import cl.emilym.sinatra.data.models.CoordinateSpan
 import cl.emilym.sinatra.data.models.Kilometer
+import cl.emilym.sinatra.data.models.IRouteTripStop
 import cl.emilym.sinatra.data.models.Latitude
 import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.data.models.MapRegion
@@ -82,18 +83,18 @@ fun Route.onColor(): Color? {
     }
 }
 
-fun List<RouteTripStop>.current(
+fun <T: IRouteTripStop> List<T>.current(
     now: Instant,
     startOfDay: Instant
-): List<RouteTripStop> {
-    return filter { it.departureTime != null }.filter { it.departureTime!!.forDay(startOfDay) > now }
+): List<T> {
+    return filter { it.departureTime != null }.filter { (it.stationTime?.departure?.time ?: it.departureTime!!).forDay(startOfDay) > now }
 }
 
-fun List<RouteTripStop>.past(
+fun <T: IRouteTripStop> List<T>.past(
     now: Instant,
     startOfDay: Instant
-): List<RouteTripStop> {
-    return filter { it.departureTime != null }.filter { it.departureTime!!.forDay(startOfDay) < now }
+): List<T> {
+    return filter { it.departureTime != null }.filter { (it.stationTime?.departure?.time ?: it.departureTime)!!.forDay(startOfDay) <= now }
 }
 
 @Composable

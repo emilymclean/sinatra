@@ -4,6 +4,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import cl.emilym.sinatra.data.models.IStopTimetableTime
 import cl.emilym.sinatra.data.models.StationTime
 import cl.emilym.sinatra.data.models.StopTimetableTime
 import org.jetbrains.compose.resources.stringResource
@@ -15,8 +16,8 @@ import sinatra.ui.generated.resources.scheduled_arrival
 
 @Composable
 fun UpcomingRouteCard(
-    timetableTime: StopTimetableTime,
-    arrivalTime: StationTime?,
+    timetableTime: IStopTimetableTime,
+    stopStationTime: StopStationTime?,
     modifier: Modifier = Modifier,
     onClick: (() -> Unit)? = null
 ) {
@@ -36,13 +37,11 @@ fun UpcomingRouteCard(
                 ), timetableTime.heading
             )
         )
-        val time = arrivalTime?.time?.format() ?: timetableTime.arrivalTime.format()
-        Text(
-            when (arrivalTime) {
-                is StationTime.Scheduled, null -> stringResource(Res.string.scheduled_arrival, time)
-                is StationTime.Live -> stringResource(Res.string.estimated_arrival, time)
-            },
-            style = MaterialTheme.typography.bodySmall
-        )
+        stopStationTime?.let {
+            Text(
+                it.text,
+                style = MaterialTheme.typography.bodySmall
+            )
+        }
     }
 }

@@ -155,7 +155,6 @@ fun SearchScreen(
                         when (it) {
                             is RecentVisit.Stop -> StopCard(
                                 it.stop,
-                                arrival = null,
                                 modifier = Modifier.fillMaxWidth(),
                                 onClick = { onStopPressed(it.stop) },
                                 showStopIcon = true
@@ -211,7 +210,6 @@ fun SearchScreen(
                             is SearchResult.StopResult -> {
                                 StopCard(
                                     result.stop,
-                                    arrival = null,
                                     modifier = Modifier.fillMaxWidth(),
                                     onClick = { onStopPressed(result.stop) },
                                     showStopIcon = true

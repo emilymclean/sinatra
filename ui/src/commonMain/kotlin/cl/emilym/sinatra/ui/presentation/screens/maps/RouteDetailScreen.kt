@@ -35,6 +35,8 @@ import cl.emilym.sinatra.FeatureFlags
 import cl.emilym.sinatra.bounds
 import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.data.models.StopWithDistance
+import cl.emilym.sinatra.data.models.IRouteTripInformation
+import cl.emilym.sinatra.data.models.IRouteTripStop
 import cl.emilym.sinatra.data.models.Route
 import cl.emilym.sinatra.data.models.RouteId
 import cl.emilym.sinatra.data.models.RouteTripInformation
@@ -76,14 +78,21 @@ import cl.emilym.sinatra.ui.widgets.RouteRandle
 import cl.emilym.sinatra.ui.widgets.SheetIosBackButton
 import cl.emilym.sinatra.ui.widgets.SpecificRecomposeOnInstants
 import cl.emilym.sinatra.ui.widgets.StopCard
+import cl.emilym.sinatra.ui.widgets.StopStationTime
 import cl.emilym.sinatra.ui.widgets.Subheading
 import cl.emilym.sinatra.ui.widgets.WheelchairAccessibleIcon
 import cl.emilym.sinatra.ui.widgets.currentLocation
+import cl.emilym.sinatra.ui.widgets.createRequestStateFlowFlow
+import cl.emilym.sinatra.ui.widgets.handleFlowProperly
+import cl.emilym.sinatra.ui.widgets.isInPast
+import cl.emilym.sinatra.ui.widgets.pick
+import cl.emilym.sinatra.ui.widgets.presentable
 import cl.emilym.sinatra.ui.widgets.toIntPx
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.koin.android.annotation.KoinViewModel
@@ -115,7 +124,8 @@ class RouteDetailViewModel(
 ): ViewModel() {
 
     private var lastLocation = MutableStateFlow<MapLocation?>(null)
-    val tripInformation = MutableStateFlow<RequestState<CurrentTripInformation?>>(RequestState.Initial())
+    private val _tripInformation = createRequestStateFlowFlow<CurrentTripInformation?>()
+    val tripInformation = _tripInformation.presentable()
     val favourited = MutableStateFlow(false)
     val nearestStop: Flow<StopWithDistance?> = tripInformation.combine(lastLocation) { tripInformation, lastLocation ->
         if (tripInformation !is RequestState.Success || lastLocation == null) return@combine null
@@ -137,8 +147,8 @@ class RouteDetailViewModel(
 
     fun retry(routeId: RouteId, serviceId: ServiceId?, tripId: TripId?) {
         viewModelScope.launch {
-            tripInformation.handle {
-                currentTripForRouteUseCase(routeId, serviceId, tripId).item
+            _tripInformation.handleFlowProperly {
+                currentTripForRouteUseCase(routeId, serviceId, tripId).map { it.item }
             }
         }
     }
@@ -218,7 +228,7 @@ class RouteDetailScreen(
     }
 
     @Composable
-    fun TripDetails(route: Route, info: RouteTripInformation, trigger: Int?) {
+    fun TripDetails(route: Route, info: IRouteTripInformation, trigger: Int?) {
         val viewModel = koinViewModel<RouteDetailViewModel>()
         val navigator = LocalNavigator.currentOrThrow
         val clock = LocalClock.current
@@ -355,14 +365,14 @@ class RouteDetailScreen(
 
     private fun LazyListScope.Cards(
         navigator: Navigator,
-        stops: List<RouteTripStop>
+        stops: List<IRouteTripStop>
     ) {
         items(stops) {
             if (it.stop == null) return@items
             StopCard(
                 it.stop!!,
                 Modifier.fillMaxWidth(),
-                it.arrivalTime?.let { StationTime.Scheduled(it) },
+                it.stationTime?.pick(),
                 onClick = {
                     navigator.push(StopDetailScreen(
                         it.stopId
