@@ -290,7 +290,8 @@ jobs = new Mapping {
           descriptor.appModule.split(":").last,
           descriptor.flavor,
           descriptor.variant,
-          "universal"
+          "universal",
+          if (descriptor.variant == "release" && !descriptor.release) "unsigned" else null
         ).filterNonNull().join("-"),
         "apk_from_bundle"
       )

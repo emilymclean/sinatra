@@ -63,7 +63,7 @@ jobs:
           variant: release
           release: false
           path: ./androidApp/build/outputs/apk_from_bundle/release
-          fileName: androidApp-release-universal
+          fileName: androidApp-release-universal-unsigned
           name: androidApp-release
           instant: false
           hasMappingFile: false
