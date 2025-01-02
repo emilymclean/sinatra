@@ -19,7 +19,12 @@ function debugUniversalBuildDescriptor(_appModule: String) = new BuildDescriptor
 }
 
 hidden apkBuildDescriptors: List<BuildDescriptor> = List(
-  debugBuildDescriptor("androidApp")
+  debugBuildDescriptor("androidApp"),
+  new BuildDescriptor {
+    appModule = "androidApp"
+    variant = "release"
+    release = false
+  }
 )
 hidden aabBuildDescriptors: List<BuildDescriptor> = List(
   releaseBuildDescriptor("androidApp", false)
@@ -158,7 +163,7 @@ function releaseJob(
       with = new Mapping {
         ["upload_url"] = "${{ needs.release.outputs.upload_url }}"
         ["asset_path"] = "./${{ matrix.build.name }}.\(extension)"
-        ["asset_name"] = "${{ matrix.build.name }}-v${{ needs.version.outputs.version }}.\(extension)"
+        ["asset_name"] = "sinatra-android-${{ matrix.build.variant }}-v${{ needs.version.outputs.version }}.\(extension)"
         ["asset_content_type"] = "application/zip"
       }
     }
@@ -172,7 +177,7 @@ function releaseJob(
       with = new Mapping {
         ["upload_url"] = "${{ needs.release.outputs.upload_url }}"
         ["asset_path"] = "./mapping.txt"
-        ["asset_name"] = "mapping-${{ matrix.build.name }}-v${{ needs.version.outputs.version }}.txt"
+        ["asset_name"] = "mapping-sinatra-android-${{ matrix.build.variant }}-v${{ needs.version.outputs.version }}.txt"
         ["asset_content_type"] = "text/plain"
       }
     }
