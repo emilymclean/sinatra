@@ -19,6 +19,9 @@ interface MapScreen: Screen {
         get() = DEFAULT_HALF_HEIGHT
 
     @Composable
+    override fun Content() {}
+
+    @Composable
     fun BottomSheetContent() {}
 
     @Composable

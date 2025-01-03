@@ -14,7 +14,7 @@ import org.koin.core.annotation.Factory
 class ServiceCacheWorker(
     private val serviceClient: ServiceClient,
     private val servicePersistence: ServicePersistence,
-    override val shaRepository: ShaRepository,
+    override val cacheWorkerDependencies: CacheWorkerDependencies,
     override val clock: Clock,
 ): CacheWorker<List<Service>>() {
     override val cacheCategory: CacheCategory = CacheCategory.SERVICE

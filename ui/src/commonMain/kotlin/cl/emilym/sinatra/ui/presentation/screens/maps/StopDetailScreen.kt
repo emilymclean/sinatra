@@ -8,9 +8,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -20,6 +22,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cafe.adriel.voyager.core.screen.ScreenKey
@@ -31,10 +34,14 @@ import cl.emilym.compose.requeststate.RequestState
 import cl.emilym.compose.requeststate.RequestStateWidget
 import cl.emilym.compose.requeststate.handle
 import cl.emilym.compose.units.rdp
+import cl.emilym.sinatra.FeatureFlags
+import cl.emilym.sinatra.data.models.Alert
+import cl.emilym.sinatra.data.models.IStopTimetableTime
 import cl.emilym.sinatra.data.models.StationTime
 import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.data.models.StopId
 import cl.emilym.sinatra.data.models.StopTimetableTime
+import cl.emilym.sinatra.data.repository.AlertRepository
 import cl.emilym.sinatra.data.repository.FavouriteRepository
 import cl.emilym.sinatra.data.repository.RecentVisitRepository
 import cl.emilym.sinatra.data.repository.StopRepository
@@ -44,17 +51,25 @@ import cl.emilym.sinatra.ui.maps.MarkerItem
 import cl.emilym.sinatra.ui.maps.stopMarkerIcon
 import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
 import cl.emilym.sinatra.ui.navigation.MapScreen
+import cl.emilym.sinatra.ui.open_maps
+import cl.emilym.sinatra.ui.stopJourneyNavigation
 import cl.emilym.sinatra.ui.widgets.AccessibilityIconLockup
+import cl.emilym.sinatra.ui.widgets.AlertScaffold
 import cl.emilym.sinatra.ui.widgets.FavouriteButton
 import cl.emilym.sinatra.ui.widgets.ListHint
 import cl.emilym.sinatra.ui.widgets.LocalMapControl
+import cl.emilym.sinatra.ui.widgets.MapIcon
+import cl.emilym.sinatra.ui.widgets.NavigateIcon
 import cl.emilym.sinatra.ui.widgets.NoBusIcon
 import cl.emilym.sinatra.ui.widgets.SheetIosBackButton
 import cl.emilym.sinatra.ui.widgets.UpcomingRouteCard
 import cl.emilym.sinatra.ui.widgets.WheelchairAccessibleIcon
 import cl.emilym.sinatra.ui.widgets.createRequestStateFlowFlow
 import cl.emilym.sinatra.ui.widgets.handleFlowProperly
+import cl.emilym.sinatra.ui.widgets.openMaps
+import cl.emilym.sinatra.ui.widgets.pick
 import cl.emilym.sinatra.ui.widgets.presentable
+import io.github.aakira.napier.Napier
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.map
@@ -68,24 +83,30 @@ import sinatra.ui.generated.resources.accessibility_wheelchair_accessible
 import sinatra.ui.generated.resources.no_upcoming_vehicles
 import sinatra.ui.generated.resources.stop_not_found
 import sinatra.ui.generated.resources.upcoming_vehicles
+import sinatra.ui.generated.resources.stop_detail_navigate
 
 @KoinViewModel
 class StopDetailViewModel(
     private val stopRepository: StopRepository,
     private val upcomingRoutesForStopUseCase: UpcomingRoutesForStopUseCase,
     private val favouriteRepository: FavouriteRepository,
-    private val recentVisitRepository: RecentVisitRepository
+    private val recentVisitRepository: RecentVisitRepository,
+    private val alertRepository: AlertRepository
 ): ViewModel() {
+
+    private val _alerts = createRequestStateFlowFlow<List<Alert>>()
+    val alerts = _alerts.presentable()
 
     val favourited = MutableStateFlow(false)
     val stop = MutableStateFlow<RequestState<Stop?>>(RequestState.Initial())
 
-    val _upcoming = createRequestStateFlowFlow<List<StopTimetableTime>>()
+    val _upcoming = createRequestStateFlowFlow<List<IStopTimetableTime>>()
     val upcoming = _upcoming.presentable()
 
     fun init(stopId: StopId) {
         retryStop(stopId)
         retryUpcoming(stopId)
+        retryAlerts(stopId)
 
         viewModelScope.launch {
             favourited.emitAll(favouriteRepository.stopIsFavourited(stopId))
@@ -111,6 +132,14 @@ class StopDetailViewModel(
         }
     }
 
+    fun retryAlerts(stopId: StopId) {
+        viewModelScope.launch {
+            _alerts.handleFlowProperly {
+                alertRepository.alerts(stopId = stopId)
+            }
+        }
+    }
+
     fun favourite(stopId: StopId, favourited: Boolean) {
         this.favourited.value = favourited
         viewModelScope.launch {
@@ -124,9 +153,6 @@ class StopDetailScreen(
     val stopId: StopId
 ): MapScreen {
     override val key: ScreenKey = "${this::class.qualifiedName!!}/$stopId"
-
-    @Composable
-    override fun Content() {}
 
     @Composable
     override fun BottomSheetContent() {
@@ -145,6 +171,7 @@ class StopDetailScreen(
 
         val stop by viewModel.stop.collectAsState(RequestState.Initial())
         val upcoming by viewModel.upcoming.collectAsState(RequestState.Initial())
+        val alerts by viewModel.alerts.collectAsState(RequestState.Initial())
         Box(
             Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center,
@@ -161,7 +188,6 @@ class StopDetailScreen(
 
                         LazyColumn(
                             Modifier.fillMaxSize(),
-                            verticalArrangement = Arrangement.spacedBy(1.rdp)
                         ) {
                             item { Box(Modifier.height(1.rdp)) }
                             item {
@@ -182,6 +208,10 @@ class StopDetailScreen(
                                 }
                             }
                             item {
+                                AlertScaffold((alerts as? RequestState.Success)?.value)
+                            }
+                            item { Box(Modifier.height(1.rdp)) }
+                            item {
                                 Column(Modifier.padding(horizontal = 1.rdp)) {
                                     AccessibilityIconLockup(
                                         {
@@ -195,6 +225,32 @@ class StopDetailScreen(
                                     }
                                 }
                             }
+                            item { Box(Modifier.height(1.rdp)) }
+                            if (FeatureFlags.STOP_DETAIL_SHOW_IN_MAPS_BUTTON) {
+                                item {
+                                    val uriHandler = LocalUriHandler.current
+                                    Button(
+                                        onClick = { openMaps(uriHandler, stop.location) },
+                                        modifier = Modifier.fillMaxWidth().padding(horizontal = 1.rdp)
+                                    ) {
+                                        MapIcon()
+                                        Box(Modifier.width(0.5.rdp))
+                                        Text(stringResource(Res.string.open_maps))
+                                    }
+                                }
+                                item { Box(Modifier.height(1.rdp)) }
+                            }
+                            item {
+                                Button(
+                                    onClick = { navigator.stopJourneyNavigation(stop) },
+                                    modifier = Modifier.fillMaxWidth().padding(horizontal = 1.rdp)
+                                ) {
+                                    NavigateIcon()
+                                    Box(Modifier.width(0.5.rdp))
+                                    Text(stringResource(Res.string.stop_detail_navigate))
+                                }
+                            }
+                            item { Box(Modifier.height(1.rdp)) }
                             Upcoming(viewModel, upcoming, navigator)
                             item { Box(Modifier.height(1.rdp)) }
                         }
@@ -206,7 +262,7 @@ class StopDetailScreen(
 
     fun LazyListScope.Upcoming(
         viewModel: StopDetailViewModel,
-        upcoming: RequestState<List<StopTimetableTime>>,
+        upcoming: RequestState<List<IStopTimetableTime>>,
         navigator: Navigator
     ) {
         when (upcoming) {
@@ -252,10 +308,10 @@ class StopDetailScreen(
                     upcoming.value.isNotEmpty() -> items(upcoming.value) {
                         UpcomingRouteCard(
                             it,
-                            StationTime.Scheduled(it.arrivalTime),
+                            it.stationTime.pick(),
                             modifier = Modifier.fillMaxWidth(),
                             onClick = { navigator.push(RouteDetailScreen(
-                                it.routeId, it.serviceId, it.tripId
+                                it.routeId, it.serviceId, it.tripId, stopId
                             )) }
                         )
                     }

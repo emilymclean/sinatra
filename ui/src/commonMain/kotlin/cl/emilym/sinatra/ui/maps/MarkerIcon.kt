@@ -8,6 +8,7 @@ import androidx.compose.ui.unit.dp
 import cl.emilym.sinatra.data.models.Route
 import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.ui.color
+import cl.emilym.sinatra.ui.presentation.theme.walkingColor
 
 expect fun platformSizeAdjustment(): Float
 
@@ -39,13 +40,23 @@ fun stopMarkerIcon(stop: Stop? = null): MarkerIcon? {
 }
 
 @Composable
+fun highlightedRouteStopMarkerIcon(route: Route, stop: Stop? = null): MarkerIcon? {
+    return spotMarkerIcon(route.color())
+}
+
+@Composable
 fun routeStopMarkerIcon(route: Route): MarkerIcon {
     return circularIcon(route.color(), size = 8.dp, borderWidth = 2.dp)
 }
 
 @Composable
+fun walkingMarkerIcon(): MarkerIcon {
+    return circularIcon(walkingColor, size = 8.dp, borderWidth = 2.dp)
+}
+
+@Composable
 fun currentLocationIcon(): MarkerIcon {
     return circularIcon(
-        MaterialTheme.colorScheme.primary,
+        MaterialTheme.colorScheme.secondary,
     )
 }

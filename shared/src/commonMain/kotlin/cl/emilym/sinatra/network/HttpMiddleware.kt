@@ -10,7 +10,10 @@ import cl.emilym.gtfs.ServiceEndpoint
 import cl.emilym.gtfs.StopDetailEndpoint
 import cl.emilym.gtfs.StopEndpoint
 import cl.emilym.gtfs.StopTimetable
+import cl.emilym.gtfs.content.Pages
+import cl.emilym.sinatra.NoApiUrlException
 import cl.emilym.sinatra.data.repository.RemoteConfigRepository
+import com.google.transit.realtime.FeedMessage
 import de.jensklingenberg.ktorfit.Ktorfit
 import de.jensklingenberg.ktorfit.ktorfitBuilder
 import io.github.aakira.napier.Napier
@@ -23,12 +26,14 @@ import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.plugin
 import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.request.url
+import io.ktor.client.statement.HttpResponse
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 import org.koin.core.annotation.Factory
 import pbandk.decodeFromByteArray
 
-const val TEMPORARY_URL = "replaceable.com"
+const val TEMPORARY_URL_GTFS = "replaceable-main-api.com"
+const val TEMPORARY_URL_NOMINATIM = "replaceable-nomatim.com"
 
 expect val engine: HttpClientEngine
 
@@ -36,11 +41,23 @@ fun urlReplaceInterceptor(
     remoteConfigRepository: RemoteConfigRepository
 ): suspend Sender.(HttpRequestBuilder) -> HttpClientCall {
     return { request ->
-        if (request.url.host == "replaceable.com") {
-            val realUrl = remoteConfigRepository.apiUrl()
-            request.url(request.url.buildString().replace(TEMPORARY_URL, realUrl))
-            Napier.d("Url = ${request.url.buildString()}")
+        when(request.url.host) {
+            TEMPORARY_URL_GTFS -> {
+                val realUrl = remoteConfigRepository.apiUrl()
+                request.url(request.url.buildString().replace(TEMPORARY_URL_GTFS, realUrl))
+            }
+            TEMPORARY_URL_NOMINATIM -> {
+                val realUrl = remoteConfigRepository.nominatimUrl()
+                request.url(request.url.buildString().replace(TEMPORARY_URL_NOMINATIM, realUrl ?: throw NoApiUrlException()))
+            }
         }
+        execute(request)
+    }
+}
+
+fun loggingInterceptor(): suspend Sender.(HttpRequestBuilder) -> HttpClientCall {
+    return { request ->
+        Napier.d("Requesting ${request.url}", tag = "Http")
         execute(request)
     }
 }
@@ -56,6 +73,7 @@ fun ktorDependency(
     }
 }.apply {
     plugin(HttpSend).intercept(urlReplaceInterceptor(remoteConfigRepository))
+    plugin(HttpSend).intercept(loggingInterceptor())
 }
 
 @Factory
@@ -71,7 +89,9 @@ fun protobufResponseConverterFactory(): ProtobufResponseConverterFactory {
             RouteServicesEndpoint::class to RouteServicesEndpoint::decodeFromByteArray,
             StopTimetable::class to StopTimetable::decodeFromByteArray,
             RouteCanonicalTimetableEndpoint::class to RouteCanonicalTimetableEndpoint::decodeFromByteArray,
-            RouteTripTimetableEndpoint::class to RouteTripTimetableEndpoint::decodeFromByteArray
+            RouteTripTimetableEndpoint::class to RouteTripTimetableEndpoint::decodeFromByteArray,
+            Pages::class to Pages::decodeFromByteArray,
+            FeedMessage::class to FeedMessage::decodeFromByteArray
         )
     )
 }
@@ -87,9 +107,18 @@ fun ktorfitBuilderDependency(
 
 @Factory
 fun gtfsApi(
-    ktorfitBuilder: Ktorfit.Builder
+    ktorfitBuilder: Ktorfit.Builder,
 ): GtfsApi {
     return ktorfitBuilder.build {
-        baseUrl("https://replaceable.com/canberra/v1/")
+        baseUrl("https://$TEMPORARY_URL_GTFS/canberra/v1/")
     }.createGtfsApi()
+}
+
+@Factory
+fun nominatimApi(
+    ktorfitBuilder: Ktorfit.Builder
+): NominatimApi {
+    return ktorfitBuilder.build {
+        baseUrl("https://$TEMPORARY_URL_NOMINATIM/")
+    }.createNominatimApi()
 }

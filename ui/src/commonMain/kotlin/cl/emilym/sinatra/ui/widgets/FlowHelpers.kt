@@ -1,6 +1,8 @@
 package cl.emilym.sinatra.ui.widgets
 
 import cl.emilym.compose.requeststate.RequestState
+import cl.emilym.sinatra.e
+import io.github.aakira.napier.Napier
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.catch
@@ -31,6 +33,7 @@ suspend fun <T> MutableStateFlow<Flow<RequestState<T>>>.handleFlowProperly(
         operation().map<T, RequestState<T>> {
             RequestState.Success(it)
         }.catch {
+            Napier.e(it)
             emit(RequestState.Failure(it as? Exception ?: Exception(it)))
         }
     )

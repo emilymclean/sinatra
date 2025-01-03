@@ -11,4 +11,7 @@ sealed interface Favourite {
         val stop: cl.emilym.sinatra.data.models.Stop,
         val route: cl.emilym.sinatra.data.models.Route
     ): Favourite
+    data class Place(
+        val place: cl.emilym.sinatra.data.models.Place
+    ): Favourite
 }

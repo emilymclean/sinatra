@@ -1,5 +1,6 @@
 package cl.emilym.sinatra.data.persistence
 
+import cl.emilym.sinatra.data.models.PlaceId
 import cl.emilym.sinatra.data.models.RecentVisit
 import cl.emilym.sinatra.data.models.RouteId
 import cl.emilym.sinatra.data.models.StopId
@@ -10,13 +11,14 @@ import kotlinx.coroutines.flow.map
 import org.koin.core.annotation.Factory
 
 enum class RecentVisitType {
-    ROUTE, STOP;
+    ROUTE, STOP, PLACE;
 
     companion object {
         fun fromRecentVisit(recentVisit: RecentVisit): RecentVisitType {
             return when (recentVisit) {
                 is RecentVisit.Route -> ROUTE
                 is RecentVisit.Stop -> STOP
+                is RecentVisit.Place -> PLACE
             }
         }
     }
@@ -38,6 +40,7 @@ class RecentVisitPersistence(
                 when (type) {
                     RecentVisitType.ROUTE -> it.route?.let { RecentVisit.Route(it.toModel()) }
                     RecentVisitType.STOP -> it.stop?.let { RecentVisit.Stop(it.toModel()) }
+                    RecentVisitType.PLACE -> it.place?.let { RecentVisit.Place(it.toModel()) }
                 }
             }
         }
@@ -50,6 +53,7 @@ class RecentVisitPersistence(
                 0,
                 RecentVisitType.ROUTE.name,
                 routeId,
+                null,
                 null
             )
         )
@@ -63,7 +67,22 @@ class RecentVisitPersistence(
                 0,
                 RecentVisitType.STOP.name,
                 null,
-                stopId
+                stopId,
+                null
+            )
+        )
+        limit(dbId)
+    }
+
+    suspend fun addPlaceVisit(placeId: PlaceId) {
+        recentVisitDao.deletePlaceVisit(placeId)
+        val dbId = recentVisitDao.insert(
+            RecentVisitEntity(
+                0,
+                RecentVisitType.PLACE.name,
+                null,
+                null,
+                placeId
             )
         )
         limit(dbId)

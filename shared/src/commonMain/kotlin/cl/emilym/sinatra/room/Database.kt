@@ -1,11 +1,13 @@
 package cl.emilym.sinatra.room
 
+import androidx.room.AutoMigration
 import androidx.room.ConstructedBy
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.RoomDatabaseConstructor
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import cl.emilym.sinatra.room.dao.FavouriteDao
+import cl.emilym.sinatra.room.dao.PlaceDao
 import cl.emilym.sinatra.room.dao.RecentVisitDao
 import cl.emilym.sinatra.room.dao.RouteDao
 import cl.emilym.sinatra.room.dao.RouteServiceEntityDao
@@ -17,6 +19,7 @@ import cl.emilym.sinatra.room.dao.StopTimetableTimeEntityDao
 import cl.emilym.sinatra.room.dao.TimetableServiceExceptionEntityDao
 import cl.emilym.sinatra.room.dao.TimetableServiceRegularEntityDao
 import cl.emilym.sinatra.room.entities.FavouriteEntity
+import cl.emilym.sinatra.room.entities.PlaceEntity
 import cl.emilym.sinatra.room.entities.RecentVisitEntity
 import cl.emilym.sinatra.room.entities.RouteEntity
 import cl.emilym.sinatra.room.entities.RouteServiceEntity
@@ -54,11 +57,13 @@ expect object AppDatabaseConstructor : RoomDatabaseConstructor<AppDatabase> {
         TimetableServiceRegularEntity::class,
         TimetableServiceExceptionEntity::class,
         FavouriteEntity::class,
-        RecentVisitEntity::class
+        RecentVisitEntity::class,
+        PlaceEntity::class
     ],
     autoMigrations = [
+        AutoMigration(from = 1, to = 2)
     ],
-    version = 1
+    version = 2
 )
 @ConstructedBy(AppDatabaseConstructor::class)
 abstract class AppDatabase: RoomDatabase() {
@@ -73,6 +78,7 @@ abstract class AppDatabase: RoomDatabase() {
     abstract fun routeTripStopDao(): RouteTripStopEntityDao
     abstract fun favouriteDao(): FavouriteDao
     abstract fun recentVisitDao(): RecentVisitDao
+    abstract fun placeDao(): PlaceDao
 }
 
 @Single
@@ -137,4 +143,9 @@ fun favouriteDao(db: AppDatabase): FavouriteDao {
 @Factory
 fun recentVisitDao(db: AppDatabase): RecentVisitDao {
     return db.recentVisitDao()
+}
+
+@Factory
+fun placeDao(db: AppDatabase): PlaceDao {
+    return db.placeDao()
 }

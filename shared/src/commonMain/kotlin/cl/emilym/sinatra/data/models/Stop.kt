@@ -1,6 +1,8 @@
 package cl.emilym.sinatra.data.models
 
 import cl.emilym.gtfs.WheelchairStopAccessibility
+import cl.emilym.kmp.serializable.Serializable
+import kotlin.time.Duration
 
 private val SIMPLE_TERMINATORS = arrayOf(" Platform", " at", " Plt")
 
@@ -10,7 +12,7 @@ data class Stop(
     val name: String,
     val location: MapLocation,
     val accessibility: StopAccessibility,
-) {
+): Serializable {
 
     companion object {
         fun fromPB(pb: cl.emilym.gtfs.Stop): Stop {
@@ -38,9 +40,14 @@ data class Stop(
 
 }
 
+data class StopWithDistance(
+    val stop: Stop,
+    val distance: Kilometer
+)
+
 data class StopAccessibility(
     val wheelchair: StopWheelchairAccessibility
-) {
+): Serializable {
 
     companion object {
         fun fromPB(pb: cl.emilym.gtfs.StopAccessibility): StopAccessibility {
@@ -73,40 +80,31 @@ enum class StopWheelchairAccessibility(
 }
 
 data class StopTimetable(
-    val times: List<StopTimetableTime>
-) {
+    override val times: List<StopTimetableTime>
+) : IStopTimetable {
 
     companion object {
-
         fun fromPB(pb: cl.emilym.gtfs.StopTimetable): StopTimetable {
             return StopTimetable(
                 pb.times.map { StopTimetableTime.fromPB(it) }
             )
         }
-
     }
-
-    val stationTimes: List<TimetableStationTime> get() = times.map {
-            TimetableStationTime(
-                StationTime.Scheduled(it.arrivalTime),
-                StationTime.Scheduled(it.departureTime),
-            )
-        }
 
 }
 
 data class StopTimetableTime(
-    val childStopId: StopId?,
-    val routeId: RouteId,
-    val routeCode: RouteCode,
-    val serviceId: ServiceId,
-    val tripId: TripId,
+    override val childStopId: StopId?,
+    override val routeId: RouteId,
+    override val routeCode: RouteCode,
+    override val serviceId: ServiceId,
+    override val tripId: TripId,
     override val arrivalTime: Time,
     override val departureTime: Time,
-    val heading: String,
-    val sequence: Int,
-    val route: Route?
-): StopTime {
+    override val heading: String,
+    override val sequence: Int,
+    override val route: Route?
+): IStopTimetableTime {
 
     companion object {
         fun fromPB(pb: cl.emilym.gtfs.StopTimetableTime): StopTimetableTime {
@@ -130,15 +128,16 @@ data class StopTimetableTime(
 sealed interface StationTime {
     val time: Time
 
-    class Scheduled(
+    data class Scheduled(
         override val time: Time
     ): StationTime
-    class Live(
-        override val time: Time
+    data class Live(
+        override val time: Time,
+        val delay: Duration
     ): StationTime
 }
 
-class TimetableStationTime(
+data class TimetableStationTime(
     val arrival: StationTime,
     val departure: StationTime
 ) {

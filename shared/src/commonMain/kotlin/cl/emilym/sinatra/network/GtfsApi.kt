@@ -8,11 +8,14 @@ import cl.emilym.gtfs.RouteTripTimetableEndpoint
 import cl.emilym.gtfs.ServiceEndpoint
 import cl.emilym.gtfs.StopEndpoint
 import cl.emilym.gtfs.StopTimetable
+import cl.emilym.gtfs.content.Pages
 import cl.emilym.sinatra.data.models.RouteId
 import cl.emilym.sinatra.data.models.ServiceId
 import cl.emilym.sinatra.data.models.StopId
 import cl.emilym.sinatra.data.models.TripId
+import com.google.transit.realtime.FeedMessage
 import de.jensklingenberg.ktorfit.http.GET
+import de.jensklingenberg.ktorfit.http.Headers
 import de.jensklingenberg.ktorfit.http.Path
 import de.jensklingenberg.ktorfit.http.Url
 
@@ -96,5 +99,21 @@ interface GtfsApi {
 
     @GET
     suspend fun markdownContent(@Url url: String): String
+
+    @GET("content.pb")
+    suspend fun content(): Pages
+
+    @GET("content.pb.sha")
+    suspend fun contentDigest(): String
+
+    @GET("network_graph.eng")
+    suspend fun networkGraph(): ByteArray
+
+    @GET("network_graph.eng.sha")
+    suspend fun networkGraphDigest(): String
+
+    @GET
+    @Headers("Accept: */*")
+    suspend fun getLiveUpdates(@Url url: String): FeedMessage
 
 }
