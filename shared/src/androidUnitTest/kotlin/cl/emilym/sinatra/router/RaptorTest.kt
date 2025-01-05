@@ -170,7 +170,8 @@ class RaptorTest {
         assertFails {
             val raptor = Raptor(graph, graph.mappings.serviceIds, config = RaptorConfig(
                 maximumWalkingTime = 100,
-                transferPenalty = 5 * 60L
+                transferPenalty = 5 * 60L,
+                changeOverPenalty = 5 * 60L
             ))
             raptor.calculate(
                 Duration.parseIsoString("PT25H").inWholeSeconds,

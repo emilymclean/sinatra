@@ -83,6 +83,8 @@ kotlin {
         }
         androidUnitTest.dependencies {
             implementation(libs.kotlin.test)
+            implementation(libs.kotlin.test.coroutines)
+            implementation(libs.mockk)
         }
     }
 }
