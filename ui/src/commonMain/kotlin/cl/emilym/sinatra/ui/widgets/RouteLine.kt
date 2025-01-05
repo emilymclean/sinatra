@@ -32,6 +32,7 @@ import cl.emilym.sinatra.data.models.Route
 import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.data.models.TimetableStationTime
 import cl.emilym.sinatra.degrees
+import cl.emilym.sinatra.sumOfIndexed
 import cl.emilym.sinatra.ui.color
 import kotlin.math.abs
 import kotlin.math.cos
@@ -206,11 +207,12 @@ class RouteLineMeasurePolicy(
             abs(it.width * sin(textRotation)) + abs(it.height * cos(textRotation))
         }
         val maxTextHeight = rotatedTextHeights.max()
-        val totalTextWidth = rotatedTextWidths.sumOf {
-            min(
-                max(it.toInt(), nodeWidth),
-                spaceBetweenNodes + nodeWidth
-            )
+        val totalTextWidth = rotatedTextWidths.sumOfIndexed { i,it ->
+            val textWidth = max(it.toInt(), nodeWidth)
+            when (i) {
+                rotatedTextWidths.lastIndex -> textWidth
+                else -> min(textWidth, spaceBetweenNodes + nodeWidth)
+            }
         }
         val totalNodeWidth = stopNode.sumOf { it.width }
 
