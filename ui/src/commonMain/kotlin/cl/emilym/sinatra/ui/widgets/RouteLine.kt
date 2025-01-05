@@ -1,5 +1,6 @@
 package cl.emilym.sinatra.ui.widgets
 
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.horizontalScroll
@@ -71,12 +72,13 @@ fun RouteLine(
     stops: List<Stop>,
     timetable: List<TimetableStationTime>? = null
 ) {
+    val scrollState = rememberScrollState()
     if (stops.isEmpty()) return
     if (timetable == null) {
-        _RouteLine(route, stops, timetable)
+        _RouteLine(route, stops, timetable, scrollState)
     } else {
         RecomposeOnInstants(timetable.flatMap { it.times.map { it.time.toTodayInstant() } }) {
-            _RouteLine(route, stops, timetable)
+            _RouteLine(route, stops, timetable, scrollState)
         }
     }
 }
@@ -85,7 +87,8 @@ fun RouteLine(
 private fun _RouteLine(
     route: Route,
     stops: List<Stop>,
-    timetable: List<TimetableStationTime>? = null
+    timetable: List<TimetableStationTime>? = null,
+    scrollState: ScrollState = rememberScrollState()
 ) {
     val arrivalProgress = when {
         timetable == null -> -1
@@ -105,7 +108,7 @@ private fun _RouteLine(
     }
 
     val color = route.color()
-    Box(Modifier.horizontalScroll(rememberScrollState())) {
+    Box(Modifier.horizontalScroll(scrollState)) {
         RouteLine(
             {
                 for (i in stops.indices) {
