@@ -38,16 +38,16 @@ class StopTimetableCacheWorker(
     private val stopClient: StopClient,
     override val cacheWorkerDependencies: CacheWorkerDependencies,
     override val clock: Clock,
-): TimeCacheWorker<StopTimetable>() {
+): BaseCacheWorker<StopTimetable, Instant?>() {
     override val cacheCategory: CacheCategory = CacheCategory.STOP_TIMETABLE
 
     override suspend fun saveToPersistence(data: StopTimetable, resource: ResourceKey) {
         stopTimetablePersistence.save(data, resource)
     }
-    override suspend fun getFromPersistence(resource: ResourceKey, extras: Instant) =
+    override suspend fun getFromPersistence(resource: ResourceKey, extras: Instant?) =
         stopTimetablePersistence.get(resource, extras)
 
-    suspend fun get(stopId: StopId, startOfDay: Instant): Cachable<StopTimetable> {
+    suspend fun get(stopId: StopId, startOfDay: Instant?): Cachable<StopTimetable> {
         return run(stopClient.timetableEndpointPair(stopId), "stop/${stopId}/timetable", startOfDay)
     }
 }
@@ -100,7 +100,7 @@ class StopRepository(
     ): Cachable<StopTimetable> {
         val routes = routesCacheWorker.get()
         return routes.flatMap { stopTimetableCacheWorker.get(
-            stopId, startOfDay ?: transportMetadataRepository.scheduleStartOfDay()
+            stopId, startOfDay
         ) }
     }
 

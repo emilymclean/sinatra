@@ -19,7 +19,7 @@ class StopTimetablePersistence(
         }.toTypedArray())
     }
 
-    suspend fun get(resource: ResourceKey, startOfDay: Instant): StopTimetable {
+    suspend fun get(resource: ResourceKey, startOfDay: Instant?): StopTimetable {
         return StopTimetable(
             stopTimetableTimeEntityDao.get(resource).map { it.toModel(startOfDay) }
         )

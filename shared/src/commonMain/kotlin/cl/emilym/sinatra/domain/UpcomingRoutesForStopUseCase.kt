@@ -6,6 +6,7 @@ import cl.emilym.sinatra.data.models.StopId
 import cl.emilym.sinatra.data.models.StopTimetableTime
 import cl.emilym.sinatra.data.models.flatMap
 import cl.emilym.sinatra.data.models.map
+import cl.emilym.sinatra.data.models.startOfDay
 import cl.emilym.sinatra.data.repository.ServiceRepository
 import cl.emilym.sinatra.data.repository.StopRepository
 import cl.emilym.sinatra.data.repository.TransportMetadataRepository
@@ -17,6 +18,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.datetime.Clock
 import org.koin.core.annotation.Factory
+import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.minutes
 
 @Factory
@@ -40,12 +42,20 @@ class UpcomingRoutesForStopUseCase(
 
             while (true) {
                 val now = clock.now()
+                val checkTimes = listOf(now - 1.days, now)
+
                 val active = mutableListOf<StopTimetableTime>()
-                for (time in times) {
-                    val service = services.item.firstOrNull { it.id == time.serviceId } ?: continue
-                    if (!service.active(now, scheduleTimeZone)) continue
-                    if (time.arrivalTime < now) continue
-                    active.add(time)
+
+                for (checkTime in checkTimes) {
+                    for (time in times) {
+                        val time = time.withTimeReference(checkTime.startOfDay(metadataRepository.timeZone()))
+
+                        val service = services.item.firstOrNull { it.id == time.serviceId } ?: continue
+                        if (!service.active(checkTime, scheduleTimeZone)) continue
+                        if (time.arrivalTime < now) continue
+                        active.add(time)
+                        if (active.size == number) break
+                    }
                     if (active.size == number) break
                 }
 
