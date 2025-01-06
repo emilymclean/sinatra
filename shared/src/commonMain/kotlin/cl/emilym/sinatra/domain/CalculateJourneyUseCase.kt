@@ -29,6 +29,7 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import org.koin.core.annotation.Factory
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
@@ -59,7 +60,9 @@ class CalculateJourneyUseCase(
             val now = departureTime
             graph = networkGraphRepository.networkGraph()
             val stops = stopRepository.stops()
-            val services = activeServicesUseCase(now).map { it.map { it.id } }
+            val services = (-1..1).map {
+                activeServicesUseCase(now + (1 * it).days).map { it.map { it.id } }
+            }
             val maximumWalkingTime = routingPreferencesRepository.maximumWalkingTime()
             val startOfDay = transportMetadataRepository.scheduleStartOfDay()
 
@@ -70,7 +73,7 @@ class CalculateJourneyUseCase(
 
             val raptor = Raptor(
                 graph.item,
-                services.item,
+                services.map { it.item },
                 RaptorConfig(
                     maximumWalkingTime = maximumWalkingTime.inWholeSeconds,
                     transferPenalty = 5.minutes.inWholeSeconds,

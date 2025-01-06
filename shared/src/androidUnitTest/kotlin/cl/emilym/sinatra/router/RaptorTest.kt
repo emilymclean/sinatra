@@ -23,11 +23,17 @@ class RaptorTest {
 
     lateinit var graph: NetworkGraph
     lateinit var raptor: Raptor
+    lateinit var config: RaptorConfig
 
     @BeforeTest
     fun setup() {
         graph = NetworkGraph.byteFormatForByteArray(this::class.java.classLoader.getResource("network_graph.eng").readBytes())
-        raptor = Raptor(graph, graph.mappings.serviceIds)
+        config = RaptorConfig(
+            maximumWalkingTime = 10 * 60L,
+            transferPenalty = 0 * 60L,
+            changeOverPenalty = 0 * 60L
+        )
+        raptor = Raptor(graph, List(3) { graph.mappings.serviceIds }, config)
     }
 
     @Test
@@ -139,7 +145,7 @@ class RaptorTest {
 
     @Test
     fun testValidJourneyWithFewerServices() {
-        val raptor = Raptor(graph, listOf("2023-COMBVAC-Weekday-05", "WD"))
+        val raptor = Raptor(graph, List(3) { listOf("2023-COMBVAC-Weekday-05", "WD") }, config)
         val result = raptor.calculate(
             Duration.parseIsoString("PT09H").inWholeSeconds,
             STOP_ID_SWINDEN_STREET,
@@ -168,9 +174,10 @@ class RaptorTest {
     @Test
     fun testInvalidJourney() {
         assertFails {
-            val raptor = Raptor(graph, graph.mappings.serviceIds, config = RaptorConfig(
-                maximumWalkingTime = 100,
-                transferPenalty = 5 * 60L
+            val raptor = Raptor(graph, List(3) { graph.mappings.serviceIds }, config = RaptorConfig(
+                maximumWalkingTime = 0 * 60L,
+                transferPenalty = 0 * 60L,
+                changeOverPenalty = 0 * 60L
             ))
             raptor.calculate(
                 Duration.parseIsoString("PT25H").inWholeSeconds,
