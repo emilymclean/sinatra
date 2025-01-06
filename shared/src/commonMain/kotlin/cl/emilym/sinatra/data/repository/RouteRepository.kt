@@ -19,6 +19,7 @@ import cl.emilym.sinatra.data.persistence.RouteServicePersistence
 import cl.emilym.sinatra.data.persistence.RouteServiceTimetablePersistence
 import cl.emilym.sinatra.data.persistence.RouteTripTimetablePersistence
 import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 import org.koin.core.annotation.Factory
 
 @Factory
@@ -115,20 +116,21 @@ class RouteTripTimetableCacheWorker(
     private val routeTripTimetablePersistence: RouteTripTimetablePersistence,
     override val cacheWorkerDependencies: CacheWorkerDependencies,
     override val clock: Clock,
-): CacheWorker<RouteTripTimetable>() {
+): TimeCacheWorker<RouteTripTimetable>() {
 
     override val cacheCategory = CacheCategory.ROUTE_TRIP_TIMETABLE
 
     override suspend fun saveToPersistence(data: RouteTripTimetable, resource: ResourceKey) =
         routeTripTimetablePersistence.save(data, resource)
 
-    override suspend fun getFromPersistence(resource: ResourceKey) =
-        routeTripTimetablePersistence.get(resource)!!
+    override suspend fun getFromPersistence(resource: ResourceKey, extras: Instant) =
+        routeTripTimetablePersistence.get(resource, extras)!!
 
-    suspend fun get(routeId: RouteId, serviceId: ServiceId, tripId: TripId): Cachable<RouteTripTimetable> {
+    suspend fun get(routeId: RouteId, serviceId: ServiceId, tripId: TripId, startOfDay: Instant): Cachable<RouteTripTimetable> {
         return run(
             routeClient.routeTripTimetableEndpointPair(routeId, serviceId, tripId),
-            "route/${routeId}/service/${serviceId}/trip/${tripId}/timetable"
+            "route/${routeId}/service/${serviceId}/trip/${tripId}/timetable",
+            startOfDay
         )
     }
 }
@@ -210,6 +212,7 @@ class RouteRepository(
     private val routeServiceCanonicalTimetableCleanupWorker: RouteServiceCanonicalTimetableCleanupWorker,
     private val routeTripTimetableCleanupWorker: RouteTripTimetableCleanupWorker,
     private val routePersistence: RoutePersistence,
+    private val transportMetadataRepository: TransportMetadataRepository
 ) {
 
     suspend fun routes() = routeCacheWorker.get()
@@ -224,6 +227,7 @@ class RouteRepository(
 
     suspend fun servicesForRoute(routeId: RouteId) = routeServicesCacheWorker.get(routeId)
 
+    @Deprecated("Use tripTimetable")
     suspend fun serviceTimetable(routeId: RouteId, serviceId: ServiceId): Cachable<RouteServiceTimetable> {
         val stops = stopsCacheWorker.get()
         return stops.flatMap { routeServiceTimetableCacheWorker.get(routeId, serviceId) }
@@ -234,9 +238,19 @@ class RouteRepository(
         return stops.flatMap { routeServiceCanonicalTimetableCacheWorker.get(routeId, serviceId) }
     }
 
-    suspend fun tripTimetable(routeId: RouteId, serviceId: ServiceId, tripId: TripId): Cachable<RouteTripTimetable> {
+    suspend fun tripTimetable(
+        routeId: RouteId,
+        serviceId: ServiceId,
+        tripId: TripId,
+        startOfDay: Instant? = null
+    ): Cachable<RouteTripTimetable> {
         val stops = stopsCacheWorker.get()
-        return stops.flatMap { routeTripTimetableCacheWorker.get(routeId, serviceId, tripId) }
+        return stops.flatMap { routeTripTimetableCacheWorker.get(
+            routeId,
+            serviceId,
+            tripId,
+            startOfDay ?: transportMetadataRepository.scheduleStartOfDay()
+        ) }
     }
 
     suspend fun ignoredRoutes(): List<RouteId> {

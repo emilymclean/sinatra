@@ -6,15 +6,15 @@ import cl.emilym.sinatra.data.models.JourneyLeg
 import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.data.models.StopWithDistance
+import cl.emilym.sinatra.data.models.Time
 import cl.emilym.sinatra.data.models.distance
 import cl.emilym.sinatra.data.models.map
+import cl.emilym.sinatra.data.models.startOfDay
 import cl.emilym.sinatra.data.repository.NetworkGraphRepository
 import cl.emilym.sinatra.data.repository.RouteRepository
 import cl.emilym.sinatra.data.repository.RoutingPreferencesRepository
-import cl.emilym.sinatra.data.repository.ServiceRepository
 import cl.emilym.sinatra.data.repository.StopRepository
 import cl.emilym.sinatra.data.repository.TransportMetadataRepository
-import cl.emilym.sinatra.data.repository.startOfDay
 import cl.emilym.sinatra.router.Raptor
 import cl.emilym.sinatra.router.RaptorConfig
 import cl.emilym.sinatra.router.RaptorJourneyConnection
@@ -29,6 +29,7 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import org.koin.core.annotation.Factory
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
@@ -59,8 +60,11 @@ class CalculateJourneyUseCase(
             val now = departureTime
             graph = networkGraphRepository.networkGraph()
             val stops = stopRepository.stops()
-            val services = activeServicesUseCase(now).map { it.map { it.id } }
+            val services = (-1..1).map {
+                activeServicesUseCase(now + (1 * it).days).map { it.map { it.id } }
+            }
             val maximumWalkingTime = routingPreferencesRepository.maximumWalkingTime()
+            val startOfDay = transportMetadataRepository.scheduleStartOfDay()
 
             Napier.d("Active services = ${services}")
 
@@ -69,7 +73,7 @@ class CalculateJourneyUseCase(
 
             val raptor = Raptor(
                 graph.item,
-                services.item,
+                services.map { it.item },
                 RaptorConfig(
                     maximumWalkingTime = maximumWalkingTime.inWholeSeconds,
                     transferPenalty = 5.minutes.inWholeSeconds,
@@ -98,16 +102,16 @@ class CalculateJourneyUseCase(
                         (connection.endTime - connection.startTime).seconds,
                         routes.item.first { it?.id == connection.routeId }!!,
                         connection.heading,
-                        connection.startTime.seconds,
-                        connection.endTime.seconds
+                        Time.create(connection.startTime.seconds, startOfDay),
+                        Time.create(connection.endTime.seconds, startOfDay)
                     )
                     is RaptorJourneyConnection.Transfer -> JourneyLeg.Transfer(
                         stops,
                         connection.travelTime.seconds,
-                        lastEndTime,
-                        lastEndTime + connection.travelTime.seconds
+                        Time.create(lastEndTime, startOfDay),
+                        Time.create(lastEndTime + connection.travelTime.seconds, startOfDay)
                     )
-                }.also { lastEndTime = it.arrivalTime }
+                }.also { lastEndTime = it.arrivalTime.durationThroughDay }
             }
 
             if (!departureLocation.exact) {
@@ -118,8 +122,8 @@ class CalculateJourneyUseCase(
                     val time = distance(departureLocation.location, attachedStop.location) * graph.item.metadata.assumedWalkingSecondsPerKilometer.toLong()
                     legs.add(0, JourneyLeg.TransferPoint(
                         time.seconds,
-                        departureTimeSeconds.seconds,
-                        (departureTimeSeconds + time).seconds
+                        Time.create(departureTimeSeconds.seconds, startOfDay),
+                        Time.create((departureTimeSeconds + time).seconds, startOfDay)
                     ))
                 }
             }

@@ -1,5 +1,6 @@
 package cl.emilym.sinatra.data.repository
 
+import cl.emilym.sinatra.data.models.startOfDay
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDateTime
@@ -22,18 +23,4 @@ class TransportMetadataRepository(
         return clock.startOfDay(timeZone)
     }
 
-}
-
-fun Clock.startOfDay(timeZone: TimeZone): Instant {
-    return now().startOfDay(timeZone)
-}
-
-fun Instant.startOfDay(timeZone: TimeZone): Instant {
-    val inTz = toLocalDateTime(timeZone)
-
-    return LocalDateTime(inTz.year, inTz.month, inTz.dayOfMonth, 0, 0, 0, 0).toInstant(timeZone)
-}
-
-fun LocalDateTime.isSameDay(other: LocalDateTime): Boolean {
-    return year == other.year && month == other.month && dayOfMonth == other.dayOfMonth
 }
