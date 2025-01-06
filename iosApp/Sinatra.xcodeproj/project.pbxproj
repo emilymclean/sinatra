@@ -11,7 +11,8 @@
 		058557D9273AAEEB004C7B11 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 058557D8273AAEEB004C7B11 /* Preview Assets.xcassets */; };
 		2152FB042600AC8F00CF470E /* iOSApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2152FB032600AC8F00CF470E /* iOSApp.swift */; };
 		23E820D16B5E6032EC4B470C /* Pods_iosApp.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 05718B41F64AB618F4BD9D71 /* Pods_iosApp.framework */; };
-		5144DD9C2D0C219F002C42B2 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 5144DD9B2D0C219F002C42B2 /* GoogleService-Info.plist */; };
+		51BEA8682D2B8230007C8516 /* GoogleService-Info-Release.plist in Resources */ = {isa = PBXBuildFile; fileRef = 51BEA8662D2B8230007C8516 /* GoogleService-Info-Release.plist */; };
+		51BEA8692D2B8230007C8516 /* GoogleService-Info-Debug.plist in Resources */ = {isa = PBXBuildFile; fileRef = 51BEA8652D2B8230007C8516 /* GoogleService-Info-Debug.plist */; };
 		7555FF83242A565900829871 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7555FF82242A565900829871 /* ContentView.swift */; };
 /* End PBXBuildFile section */
 
@@ -20,9 +21,10 @@
 		058557BA273AAA24004C7B11 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		058557D8273AAEEB004C7B11 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		2152FB032600AC8F00CF470E /* iOSApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSApp.swift; sourceTree = "<group>"; };
-		5144DD9B2D0C219F002C42B2 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		51BEA8652D2B8230007C8516 /* GoogleService-Info-Debug.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info-Debug.plist"; sourceTree = "<group>"; };
+		51BEA8662D2B8230007C8516 /* GoogleService-Info-Release.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info-Release.plist"; sourceTree = "<group>"; };
 		75529B80CBC0212E8CC489DA /* Pods-iosApp.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-iosApp.debug.xcconfig"; path = "Target Support Files/Pods-iosApp/Pods-iosApp.debug.xcconfig"; sourceTree = "<group>"; };
-		7555FF7B242A565900829871 /* Sinatra.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Sinatra.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		7555FF7B242A565900829871 /* Sinatra Develop.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Sinatra Develop.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		7555FF82242A565900829871 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		7555FF8C242A565B00829871 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		EE2BF68D339E5DAF21FA101A /* Pods-iosApp.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-iosApp.release.xcconfig"; path = "Target Support Files/Pods-iosApp/Pods-iosApp.release.xcconfig"; sourceTree = "<group>"; };
@@ -57,6 +59,15 @@
 			path = Pods;
 			sourceTree = "<group>";
 		};
+		51BEA8672D2B8230007C8516 /* Firebase */ = {
+			isa = PBXGroup;
+			children = (
+				51BEA8652D2B8230007C8516 /* GoogleService-Info-Debug.plist */,
+				51BEA8662D2B8230007C8516 /* GoogleService-Info-Release.plist */,
+			);
+			path = Firebase;
+			sourceTree = "<group>";
+		};
 		7555FF72242A565900829871 = {
 			isa = PBXGroup;
 			children = (
@@ -70,7 +81,7 @@
 		7555FF7C242A565900829871 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				7555FF7B242A565900829871 /* Sinatra.app */,
+				7555FF7B242A565900829871 /* Sinatra Develop.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -78,7 +89,7 @@
 		7555FF7D242A565900829871 /* iosApp */ = {
 			isa = PBXGroup;
 			children = (
-				5144DD9B2D0C219F002C42B2 /* GoogleService-Info.plist */,
+				51BEA8672D2B8230007C8516 /* Firebase */,
 				058557BA273AAA24004C7B11 /* Assets.xcassets */,
 				7555FF82242A565900829871 /* ContentView.swift */,
 				7555FF8C242A565B00829871 /* Info.plist */,
@@ -104,6 +115,7 @@
 			buildConfigurationList = 7555FFA5242A565B00829871 /* Build configuration list for PBXNativeTarget "iosApp" */;
 			buildPhases = (
 				73A79CC6459144E12482259C /* [CP] Check Pods Manifest.lock */,
+				51BEA8642D2B804D007C8516 /* Copy GoogleServices */,
 				5104D8122D099A1D003C36ED /* Compile Kotlin Framework */,
 				7555FF77242A565900829871 /* Sources */,
 				7555FF79242A565900829871 /* Resources */,
@@ -118,7 +130,7 @@
 			);
 			name = iosApp;
 			productName = iosApp;
-			productReference = 7555FF7B242A565900829871 /* Sinatra.app */;
+			productReference = 7555FF7B242A565900829871 /* Sinatra Develop.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -161,7 +173,8 @@
 			files = (
 				058557D9273AAEEB004C7B11 /* Preview Assets.xcassets in Resources */,
 				058557BB273AAA24004C7B11 /* Assets.xcassets in Resources */,
-				5144DD9C2D0C219F002C42B2 /* GoogleService-Info.plist in Resources */,
+				51BEA8682D2B8230007C8516 /* GoogleService-Info-Release.plist in Resources */,
+				51BEA8692D2B8230007C8516 /* GoogleService-Info-Debug.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -225,6 +238,24 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "\"${PODS_ROOT}/FirebaseCrashlytics/run\"\n";
+		};
+		51BEA8642D2B804D007C8516 /* Copy GoogleServices */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Copy GoogleServices";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "if [ -z \"${GOOGLESERVICES_PATH}\" ]; then\n    echo \"GOOGLESERVICES_PATH is unset or set to the empty string\"\n    exit 1\nfi\n\nif [ ! -f \"${GOOGLESERVICES_PATH}\" ]; then\n    echo \"GOOGLESERVICES_PATH does not exist\"\n    exit 2\nfi\n\nPLIST_DESTINATION=\"${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}.app/GoogleService-Info.plist\"\ncp \"${GOOGLESERVICES_PATH}\" \"${PLIST_DESTINATION}\"\n\necho \"Copied ${GOOGLESERVICES_PATH} to final destination: ${PLIST_DESTINATION}\"\n";
 		};
 		73A79CC6459144E12482259C /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -405,16 +436,17 @@
 				DEVELOPMENT_ASSET_PATHS = "\"iosApp/Preview Content\"";
 				DEVELOPMENT_TEAM = DQHF8K8AMX;
 				ENABLE_PREVIEWS = YES;
+				GOOGLESERVICES_PATH = "${SRCROOT}/iosApp/Firebase/GoogleService-Info-Debug.plist";
 				INFOPLIST_FILE = iosApp/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = Sinatra;
+				INFOPLIST_KEY_CFBundleDisplayName = "Sinatra Develop";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.navigation";
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = cl.emilym.sinatra;
-				PRODUCT_NAME = Sinatra;
+				PRODUCT_BUNDLE_IDENTIFIER = cl.emilym.sinatra.develop;
+				PRODUCT_NAME = "Sinatra Develop";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -429,6 +461,7 @@
 				DEVELOPMENT_ASSET_PATHS = "\"iosApp/Preview Content\"";
 				DEVELOPMENT_TEAM = DQHF8K8AMX;
 				ENABLE_PREVIEWS = YES;
+				GOOGLESERVICES_PATH = "${SRCROOT}/iosApp/Firebase/GoogleService-Info-Release.plist";
 				INFOPLIST_FILE = iosApp/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Sinatra;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.navigation";
