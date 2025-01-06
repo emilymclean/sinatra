@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
@@ -124,11 +125,17 @@ actual fun Map(content: @Composable MapControl.(@Composable () -> Unit) -> Unit)
 @Composable
 @GoogleMapComposable
 fun DrawMarker(item: MarkerItem) {
+    val state = rememberMarkerState(
+        item.id,
+        item.location.toNative()
+    )
+
+    LaunchedEffect(item) {
+        state.position = item.location.toNative()
+    }
+
     Marker(
-        rememberMarkerState(
-            item.id,
-            item.location.toNative()
-        ),
+        state,
         icon = item.icon?.bitmapDescriptor,
         anchor = (item.icon?.anchor ?: defaultMarkerOffset).toNative(),
         onClick = {
