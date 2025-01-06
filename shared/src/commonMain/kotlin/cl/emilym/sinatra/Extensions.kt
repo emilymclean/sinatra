@@ -54,3 +54,11 @@ fun TranslatedString.pick(language: BCP47LanguageCode = "en-AU"): String {
         translation.firstOrNull { it.language == null } ?:
         translation.first()).text
 }
+
+public inline fun <T> Iterable<T>.sumOfIndexed(selector: (Int,T) -> Int): Int {
+    var sum: Int = 0.toInt()
+    for (element in this.withIndex()) {
+        sum += selector(element.index, element.value)
+    }
+    return sum
+}

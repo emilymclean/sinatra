@@ -1,5 +1,6 @@
 package cl.emilym.sinatra.ui.widgets
 
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.horizontalScroll
@@ -32,6 +33,7 @@ import cl.emilym.sinatra.data.models.Route
 import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.data.models.TimetableStationTime
 import cl.emilym.sinatra.degrees
+import cl.emilym.sinatra.sumOfIndexed
 import cl.emilym.sinatra.ui.color
 import kotlin.math.abs
 import kotlin.math.cos
@@ -71,12 +73,13 @@ fun RouteLine(
     stops: List<Stop>,
     timetable: List<TimetableStationTime>? = null
 ) {
+    val scrollState = rememberScrollState()
     if (stops.isEmpty()) return
     if (timetable == null) {
-        _RouteLine(route, stops, timetable)
+        _RouteLine(route, stops, timetable, scrollState)
     } else {
         RecomposeOnInstants(timetable.flatMap { it.times.map { it.time.toTodayInstant() } }) {
-            _RouteLine(route, stops, timetable)
+            _RouteLine(route, stops, timetable, scrollState)
         }
     }
 }
@@ -85,7 +88,8 @@ fun RouteLine(
 private fun _RouteLine(
     route: Route,
     stops: List<Stop>,
-    timetable: List<TimetableStationTime>? = null
+    timetable: List<TimetableStationTime>? = null,
+    scrollState: ScrollState = rememberScrollState()
 ) {
     val arrivalProgress = when {
         timetable == null -> -1
@@ -105,7 +109,7 @@ private fun _RouteLine(
     }
 
     val color = route.color()
-    Box(Modifier.horizontalScroll(rememberScrollState())) {
+    Box(Modifier.horizontalScroll(scrollState)) {
         RouteLine(
             {
                 for (i in stops.indices) {
@@ -206,11 +210,12 @@ class RouteLineMeasurePolicy(
             abs(it.width * sin(textRotation)) + abs(it.height * cos(textRotation))
         }
         val maxTextHeight = rotatedTextHeights.max()
-        val totalTextWidth = rotatedTextWidths.sumOf {
-            min(
-                max(it.toInt(), nodeWidth),
-                spaceBetweenNodes + nodeWidth
-            )
+        val totalTextWidth = rotatedTextWidths.sumOfIndexed { i,it ->
+            val textWidth = max(it.toInt(), nodeWidth)
+            when (i) {
+                rotatedTextWidths.lastIndex -> textWidth
+                else -> min(textWidth, spaceBetweenNodes + nodeWidth)
+            }
         }
         val totalNodeWidth = stopNode.sumOf { it.width }
 

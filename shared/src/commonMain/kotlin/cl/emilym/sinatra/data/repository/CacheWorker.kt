@@ -70,7 +70,10 @@ abstract class BaseCacheWorker<T, E> {
                 is CacheInformation.Unavailable -> fetch(digest, info, pair, resource, extras)
                 is CacheInformation.Available -> when {
                     digest != info.digest -> fetch(digest, info, pair, resource, extras)
-                    else -> getCached(resource, extras)
+                    else -> {
+                        shaRepository.save(digest, cacheCategory, resource)
+                        getCached(resource, extras)
+                    }
                 }
             }
         }
