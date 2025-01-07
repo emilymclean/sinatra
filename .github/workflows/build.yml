@@ -265,3 +265,38 @@ jobs:
         name: Release ${{ needs.version.outputs.version }}
         draft: false
         prerelease: ${{ github.ref != 'refs/heads/main' }}
+  build-ipa:
+    needs:
+    - version
+    if: github.event_name != 'pull_request'
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - env:
+        GOOGLE_SERVICES_PLIST_DEBUG: ${{ secrets.GOOGLE_SERVICES_PLIST_DEBUG }}
+        GOOGLE_SERVICES_PLIST: ${{ secrets.GOOGLE_SERVICES_PLIST }}
+      run: |-
+        printf "${GOOGLE_SERVICES_PLIST_DEBUG}" >> iosApp/iosApp/Firebase/GoogleService-Info-Debug.plist
+        printf "${GOOGLE_SERVICES_PLIST}" >> iosApp/iosApp/Firebase/GoogleService-Info-Release.plist
+    - name: Update version number
+      run: |-
+        defaults write iosApp/iosApp/Info.plist CFBundleShortVersionString ${{ needs.version.outputs.version }}
+        defaults write iosApp/iosApp/Info.plist CFBundleVersion ${{ needs.version.outputs.versionCode }}
+    - name: Build iOS App
+      uses: yukiarrr/ios-build-action@v1.12.0
+      with:
+        project-path: iosApp/iosApp/Sinatra.xcodeproj
+        workspace-path: iosApp/iosApp/iosApp.xcworkspace
+        p12-base64: ${{ secrets.P12_CERTIFICATE }}
+        certificate-password: ${{ secrets.P12_CERTIFICATE_PASSWORD }}
+        mobileprovision-base64: ${{ secrets.MOBILE_PROVISION }}
+        code-signing-identity: ${{ secrets.CODE_SIGNING_IDENTITY }}
+        team-id: ${{ secrets.TEAM_ID }}
+    - name: Rename ipa
+      run: mv output.ipa ./iosApp.ipa
+    - uses: actions/upload-artifact@v4
+      with:
+        name: iosApp-ipa
+        path: ./iosApp.ipa
