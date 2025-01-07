@@ -339,11 +339,16 @@ jobs = new Mapping {
     `runs-on` = "macos-latest"
     steps = new Listing {
       common.checkout
+      common.setupJdk
       new ActionStep {
         uses = "ruby/setup-ruby@v1"
         with {
           ["ruby-version"] = "3.3"
         }
+      }
+      new ActionStep {
+        name = "Setup gradle"
+        uses = "gradle/actions/setup-gradle@v3"
       }
       new CommandStep {
         run = """
@@ -367,6 +372,8 @@ jobs = new Mapping {
         name = "Install cocoapods"
         run = """
           gem install cocoapods
+          ./gradlew :ui:generateDummyFramework
+          ./gradlew :shared:generateDummyFramework
           cd iosApp && pod install
           """
       }

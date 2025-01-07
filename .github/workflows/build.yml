@@ -273,9 +273,16 @@ jobs:
     - uses: actions/checkout@v4
       with:
         fetch-depth: 0
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: temurin
     - uses: ruby/setup-ruby@v1
       with:
         ruby-version: '3.3'
+    - name: Setup gradle
+      uses: gradle/actions/setup-gradle@v3
     - env:
         GOOGLE_SERVICES_PLIST_DEBUG: ${{ secrets.GOOGLE_SERVICES_PLIST_DEBUG }}
         GOOGLE_SERVICES_PLIST: ${{ secrets.GOOGLE_SERVICES_PLIST }}
@@ -290,6 +297,8 @@ jobs:
     - name: Install cocoapods
       run: |-
         gem install cocoapods
+        ./gradlew :ui:generateDummyFramework
+        ./gradlew :shared:generateDummyFramework
         cd iosApp && pod install
     - name: Build iOS App
       uses: yukiarrr/ios-build-action@v1.12.0
