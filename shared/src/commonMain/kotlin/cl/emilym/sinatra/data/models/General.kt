@@ -21,4 +21,25 @@ data class Alert(
     val message: String?,
     val severity: AlertSeverity,
     val more: ContentLink?
-)
+) {
+
+    companion object {
+        fun fromContentPB(pb: cl.emilym.gtfs.content.Banner): Alert {
+            return Alert(
+                pb.title,
+                pb.message,
+                when (pb.severity) {
+                    "warning" -> AlertSeverity.WARNING
+                    "severe" -> AlertSeverity.SEVERE
+                    else -> AlertSeverity.INFO
+                },
+                pbToContentLink(
+                    pb.contentLinks,
+                    pb.externalLinks,
+                    pb.nativeLinks
+                ).firstOrNull()
+            )
+        }
+    }
+
+}

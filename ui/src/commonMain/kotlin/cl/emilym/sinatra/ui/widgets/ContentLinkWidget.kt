@@ -52,6 +52,7 @@ fun ContentLinkWidget(
                     is ContentLink.Content -> {
                         navigator.push(contentRoute(link.id))
                     }
+                    else -> {}
                 }
             }
             .padding(horizontal = 1.rdp, vertical = 0.75.rdp)
@@ -66,7 +67,7 @@ fun ContentLinkWidget(
                     tint = MaterialTheme.colorScheme.secondary
                 )
             }
-            is ContentLink.Content -> {
+            else -> {
                 ForwardIcon(
                     tint = MaterialTheme.colorScheme.secondary
                 )
