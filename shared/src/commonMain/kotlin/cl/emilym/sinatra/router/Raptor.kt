@@ -21,11 +21,13 @@ data class RaptorConfig(
 
 class Raptor(
     private val graph: NetworkGraph,
-    activeServices: List<ServiceId>,
+    activeServices: List<List<ServiceId>>,
     private val config: RaptorConfig? = null
 ) {
 
-    private val activeServices = activeServices.associate { graph.mappings.serviceIds.indexOf(it) to Unit }
+    private val activeServices = activeServices.map {
+        it.associate { graph.mappings.serviceIds.indexOf(it) to Unit }
+    }
 
     fun calculate(
         departureTime: DaySeconds,
@@ -195,30 +197,33 @@ class Raptor(
         val node = graph.node(index)
         val edges = node.edges
 
-        return edges.mapNotNull {
+        return edges.flatMap {
             when (it.type) {
-                EdgeType.UNWEIGHTED -> NodeCost(it.connectedNodeIndex.toInt(), 0L, it)
+                EdgeType.UNWEIGHTED -> listOf(NodeCost(it.connectedNodeIndex.toInt(), 0L, it))
                 EdgeType.TRANSFER, EdgeType.TRANSFER_NON_ADJUSTABLE -> {
-                    if (ignoreTransfer) return@mapNotNull null
-                    if (it.cost.toLong() > (config?.maximumWalkingTime ?: Long.MAX_VALUE)) return@mapNotNull null
-                    NodeCost(it.connectedNodeIndex.toInt(), it.cost.toLong() + (config?.transferPenalty ?: 0L), it)
+                    if (ignoreTransfer) return@flatMap emptyList()
+                    if (it.cost.toLong() > (config?.maximumWalkingTime ?: Long.MAX_VALUE)) return@flatMap emptyList()
+                    listOf(NodeCost(it.connectedNodeIndex.toInt(), it.cost.toLong() + (config?.transferPenalty ?: 0L), it))
                 }
                 EdgeType.TRAVEL -> {
-                    if (!servicesAreActive(it.availableServices)) return@mapNotNull null
-                    val dt = it.departureTime.toInt()
-                    if ((dt + 60) < departureTime) return@mapNotNull null
-                    NodeCost(it.connectedNodeIndex.toInt(), (dt - departureTime) + it.cost.toLong(), it)
+                    val daysActive = (-1..1).filter { d -> servicesAreActive(it.availableServices, d) }
+                    if (daysActive.isEmpty()) return@flatMap emptyList()
+                    daysActive.mapNotNull { d ->
+                        val dt = it.departureTime.toInt() + (86400 * d)
+                        if ((dt + 60) < departureTime) return@mapNotNull null
+                        NodeCost(it.connectedNodeIndex.toInt(), (dt - departureTime) + it.cost.toLong(), it)
+                    }
                 }
-                else -> null
             }
         }
     }
 
     private fun servicesAreActive(
-        serviceIndices: List<ServiceIndex>
+        serviceIndices: List<ServiceIndex>,
+        day: Int
     ): Boolean {
         for (i in serviceIndices) {
-            if (activeServices.containsKey(i.toInt())) return true
+            if (activeServices[day + 1].containsKey(i.toInt())) return true
         }
         return false
     }

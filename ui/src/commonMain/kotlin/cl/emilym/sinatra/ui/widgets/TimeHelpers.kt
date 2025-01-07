@@ -3,8 +3,8 @@ package cl.emilym.sinatra.ui.widgets
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.staticCompositionLocalOf
 import cl.emilym.sinatra.data.models.Time
-import cl.emilym.sinatra.data.repository.isSameDay
-import cl.emilym.sinatra.data.repository.startOfDay
+import cl.emilym.sinatra.data.models.isSameDay
+import cl.emilym.sinatra.data.models.startOfDay
 import cl.emilym.sinatra.ui.dayOfWeekDateTimeFormat
 import cl.emilym.sinatra.ui.timeFormat
 import kotlinx.datetime.Clock
@@ -31,7 +31,7 @@ fun startOfDay(timeZone: TimeZone): Instant {
 
 @Composable
 fun Time.toTodayInstant(): Instant {
-    return scheduleStartOfDay() + this
+    return addReference(scheduleStartOfDay()).instant
 }
 
 @Composable

@@ -4,14 +4,13 @@ import cl.emilym.sinatra.data.models.Cachable
 import cl.emilym.sinatra.data.models.IRouteTripInformation
 import cl.emilym.sinatra.data.models.LiveRouteTripInformation
 import cl.emilym.sinatra.data.models.RouteId
-import cl.emilym.sinatra.data.models.RouteTripStop
 import cl.emilym.sinatra.data.models.ServiceId
 import cl.emilym.sinatra.data.models.StationTime
 import cl.emilym.sinatra.data.models.Time
 import cl.emilym.sinatra.data.models.TimetableStationTime
 import cl.emilym.sinatra.data.models.TripId
 import cl.emilym.sinatra.data.models.map
-import cl.emilym.sinatra.data.models.toTodayTime
+import cl.emilym.sinatra.data.models.toTime
 import cl.emilym.sinatra.data.repository.LiveServiceRepository
 import cl.emilym.sinatra.data.repository.RouteRepository
 import cl.emilym.sinatra.data.repository.TransportMetadataRepository
@@ -36,11 +35,11 @@ abstract class LiveUseCase {
     ): StationTime {
         return StationTime.Live(
             specific?.time?.let {
-                Instant.fromEpochSeconds(it).toTodayTime(scheduleStartOfDay)
-            } ?: specific?.delay?.seconds?.let { it + expected } ?:
-            delay?.seconds?.let { it + expected } ?: expected,
+                Instant.fromEpochSeconds(it).toTime(scheduleStartOfDay)
+            } ?: specific?.delay?.seconds?.let { expected + it } ?:
+            delay?.seconds?.let { expected + it } ?: expected,
             specific?.time?.let {
-                Instant.fromEpochSeconds(it).toTodayTime(scheduleStartOfDay) - expected
+                Instant.fromEpochSeconds(it) - expected.instant
             } ?: specific?.delay?.seconds ?: delay?.seconds ?: 0.seconds
         )
     }

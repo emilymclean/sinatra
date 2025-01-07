@@ -49,10 +49,10 @@ import cl.emilym.sinatra.data.models.StationTime
 import cl.emilym.sinatra.data.models.StopId
 import cl.emilym.sinatra.data.models.TripId
 import cl.emilym.sinatra.data.models.distance
+import cl.emilym.sinatra.data.models.startOfDay
 import cl.emilym.sinatra.data.repository.AlertRepository
 import cl.emilym.sinatra.data.repository.FavouriteRepository
 import cl.emilym.sinatra.data.repository.RecentVisitRepository
-import cl.emilym.sinatra.data.repository.startOfDay
 import cl.emilym.sinatra.domain.CurrentTripForRouteUseCase
 import cl.emilym.sinatra.domain.CurrentTripInformation
 import cl.emilym.sinatra.nullIfEmpty

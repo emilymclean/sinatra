@@ -9,6 +9,7 @@ import cl.emilym.sinatra.room.dao.RouteTripInformationEntityDao
 import cl.emilym.sinatra.room.dao.RouteTripStopEntityDao
 import cl.emilym.sinatra.room.entities.RouteTripInformationEntity
 import cl.emilym.sinatra.room.entities.RouteTripStopEntity
+import kotlinx.datetime.Instant
 import org.koin.core.annotation.Factory
 
 @Factory
@@ -28,14 +29,14 @@ class RouteTripInformationPersistence(
         }
     }
 
-    suspend fun get(resource: ResourceKey): List<RouteTripInformation> {
+    suspend fun get(resource: ResourceKey, startOfDay: Instant?): List<RouteTripInformation> {
         val infos = routeTripInformationEntityDao.get(resource)
         val out = mutableListOf<RouteTripInformation>()
 
         for (info in infos) {
             out.add(
                 info.toModel(
-                    routeTripStopEntityDao.get(info.id, resource).map { it.toModel() }
+                    routeTripStopEntityDao.get(info.id, resource).map { it.toModel(startOfDay) }
                 )
             )
         }
@@ -58,7 +59,7 @@ class RouteServiceTimetablePersistence(
     }
 
     suspend fun get(resource: ResourceKey): RouteServiceTimetable {
-        return RouteServiceTimetable(routeTripInformationPersistence.get(resource))
+        return RouteServiceTimetable(routeTripInformationPersistence.get(resource, null))
     }
 
     suspend fun clear(resource: ResourceKey) {
@@ -77,7 +78,7 @@ class RouteServiceCanonicalTimetablePersistence(
     }
 
     suspend fun get(resource: ResourceKey): RouteServiceCanonicalTimetable? {
-        return routeTripInformationPersistence.get(resource).firstOrNull()?.let { RouteServiceCanonicalTimetable(it) }
+        return routeTripInformationPersistence.get(resource, null).firstOrNull()?.let { RouteServiceCanonicalTimetable(it) }
     }
 
     suspend fun clear(resource: ResourceKey) {
@@ -95,8 +96,8 @@ class RouteTripTimetablePersistence(
         routeTripInformationPersistence.save(listOf(timetable.trip), resource)
     }
 
-    suspend fun get(resource: ResourceKey): RouteTripTimetable? {
-        return routeTripInformationPersistence.get(resource).firstOrNull()?.let { RouteTripTimetable(it) }
+    suspend fun get(resource: ResourceKey, startOfDay: Instant): RouteTripTimetable? {
+        return routeTripInformationPersistence.get(resource, startOfDay).firstOrNull()?.let { RouteTripTimetable(it) }
     }
 
     suspend fun clear(resource: ResourceKey) {

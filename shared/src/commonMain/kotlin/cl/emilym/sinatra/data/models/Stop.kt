@@ -2,6 +2,7 @@ package cl.emilym.sinatra.data.models
 
 import cl.emilym.gtfs.WheelchairStopAccessibility
 import cl.emilym.kmp.serializable.Serializable
+import kotlinx.datetime.Instant
 import kotlin.time.Duration
 
 private val SIMPLE_TERMINATORS = arrayOf(" Platform", " at", " Plt")
@@ -114,13 +115,20 @@ data class StopTimetableTime(
                 pb.routeCode,
                 pb.serviceId,
                 pb.tripId,
-                parseTime(pb.arrivalTime),
-                parseTime(pb.departureTime),
+                Time.parse(pb.arrivalTime),
+                Time.parse(pb.departureTime),
                 pb.heading,
                 pb.sequence,
                 null
             )
         }
+    }
+
+    fun withTimeReference(startOfDay: Instant): StopTimetableTime {
+        return copy(
+            arrivalTime = arrivalTime.addReference(startOfDay),
+            departureTime = departureTime.addReference(startOfDay),
+        )
     }
 
 }

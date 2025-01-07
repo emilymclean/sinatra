@@ -231,10 +231,10 @@ class NavigationEntryViewModel(
     fun updateCurrentLocation(location: MapLocation) {
         lastLocation.value = location
         val currentLocation = currentLocation
-        if (currentLocation != null && distance(location, currentLocation) < 1.0) return
+//        if (currentLocation != null && distance(location, currentLocation) < 1.0) return
         this.currentLocation = location
-        if (originCurrentLocation) _origin = location
-        if (destinationCurrentLocation) _destination = location
+        if (originCurrentLocation && _origin == null) _origin = location
+        if (destinationCurrentLocation && _destination == null) _destination = location
     }
 
     private fun unpackLocation(

@@ -15,13 +15,14 @@ import kotlinx.coroutines.launch
 import platform.CoreLocation.CLLocation
 import platform.CoreLocation.CLLocationManager
 import platform.CoreLocation.CLLocationManagerDelegateProtocol
+import platform.CoreLocation.kCLLocationAccuracyBest
 import platform.CoreLocation.kCLLocationAccuracyKilometer
 import platform.CoreLocation.kCLLocationAccuracyNearestTenMeters
 import platform.darwin.NSObject
 
 @OptIn(ExperimentalForeignApi::class)
 @Composable
-internal actual fun platformCurrentLocation(): Flow<MapLocation?> {
+internal actual fun platformCurrentLocation(accuracy: LocationAccuracy): Flow<MapLocation?> {
     val locationManager = remember { CLLocationManager() }
 
     return callbackFlow {
@@ -39,7 +40,11 @@ internal actual fun platformCurrentLocation(): Flow<MapLocation?> {
         }
 
         locationManager.delegate = locationCallback
-        locationManager.desiredAccuracy = kCLLocationAccuracyKilometer
+        locationManager.desiredAccuracy = when (accuracy) {
+            LocationAccuracy.LOW -> kCLLocationAccuracyKilometer
+            LocationAccuracy.MEDIUM -> kCLLocationAccuracyNearestTenMeters
+            LocationAccuracy.HIGH -> kCLLocationAccuracyBest
+        }
         locationManager.startUpdatingLocation()
 
         awaitClose {

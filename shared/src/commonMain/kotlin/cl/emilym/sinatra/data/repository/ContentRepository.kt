@@ -1,6 +1,7 @@
 package cl.emilym.sinatra.data.repository
 
 import cl.emilym.sinatra.data.client.ContentClient
+import cl.emilym.sinatra.data.models.Alert
 import cl.emilym.sinatra.data.models.Content
 import cl.emilym.sinatra.data.models.ContentId
 import cl.emilym.sinatra.data.persistence.ContentPersistence
@@ -16,6 +17,7 @@ class ContentRepository(
 
     companion object {
         const val ABOUT_ID = "about"
+        const val HOME_BANNER_ID = "home"
     }
 
     private val lock = Mutex()
@@ -24,13 +26,20 @@ class ContentRepository(
         if (contentPersistence.cached) return
         lock.withLock {
             if (contentPersistence.cached) return
-            contentPersistence.store(contentClient.content())
+            val content = contentClient.content()
+            contentPersistence.store(content.pages)
+            contentPersistence.storeBanner(content.banner)
         }
     }
 
     suspend fun content(id: ContentId): Content? {
         load()
         return contentPersistence.get(id)
+    }
+
+    suspend fun banner(id: String): Alert? {
+        load()
+        return contentPersistence.getBanner(id)
     }
 
 }
