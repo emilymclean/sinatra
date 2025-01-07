@@ -1,15 +1,22 @@
 package cl.emilym.sinatra.domain
 
-import cl.emilym.sinatra.data.models.*
+import cl.emilym.sinatra.data.models.Cachable
+import cl.emilym.sinatra.data.models.Service
+import cl.emilym.sinatra.data.models.StopTimetable
+import cl.emilym.sinatra.data.models.StopTimetableTime
+import cl.emilym.sinatra.data.models.Time
 import cl.emilym.sinatra.data.repository.ServiceRepository
 import cl.emilym.sinatra.data.repository.StopRepository
 import cl.emilym.sinatra.data.repository.TransportMetadataRepository
-import io.mockk.*
+import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.take
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
@@ -17,7 +24,6 @@ import kotlinx.datetime.TimeZone
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.time.Duration.Companion.parseIsoString
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class UpcomingRoutesForStopUseCaseTest {

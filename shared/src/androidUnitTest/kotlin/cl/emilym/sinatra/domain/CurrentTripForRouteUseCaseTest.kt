@@ -1,14 +1,27 @@
-package cl.emilym.sinatra.data.domain
+package cl.emilym.sinatra.domain
 
-import cl.emilym.sinatra.data.models.*
+import cl.emilym.sinatra.data.models.Cachable
+import cl.emilym.sinatra.data.models.CacheState
+import cl.emilym.sinatra.data.models.Route
+import cl.emilym.sinatra.data.models.RouteServiceAccessibility
+import cl.emilym.sinatra.data.models.RouteTripInformation
+import cl.emilym.sinatra.data.models.RouteTripTimetable
+import cl.emilym.sinatra.data.models.RouteType
+import cl.emilym.sinatra.data.models.Service
+import cl.emilym.sinatra.data.models.ServiceBikesAllowed
+import cl.emilym.sinatra.data.models.ServiceWheelchairAccessible
+import cl.emilym.sinatra.data.models.Time
 import cl.emilym.sinatra.data.repository.RouteRepository
 import cl.emilym.sinatra.data.repository.ServiceRepository
 import cl.emilym.sinatra.data.repository.TransportMetadataRepository
-import cl.emilym.sinatra.domain.CurrentTripForRouteUseCase
-import cl.emilym.sinatra.domain.LiveTripInformationUseCase
-import cl.emilym.sinatra.e
 import io.github.aakira.napier.Napier
-import io.mockk.*
+import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.confirmVerified
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.mockkObject
+import io.mockk.verify
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.runBlocking
@@ -41,7 +54,10 @@ class CurrentTripForRouteUseCaseTest {
     val tripInformation = RouteTripInformation(
         Time.parse("PT12H"),
         Time.parse("PT12H"),
-        RouteServiceAccessibility(ServiceBikesAllowed.ALLOWED, ServiceWheelchairAccessible.ACCESSIBLE),
+        RouteServiceAccessibility(
+            ServiceBikesAllowed.ALLOWED,
+            ServiceWheelchairAccessible.ACCESSIBLE
+        ),
         "North",
         listOf()
     )
@@ -83,7 +99,10 @@ class CurrentTripForRouteUseCaseTest {
         every { clock.now() } returns instant
 
         coEvery { routeRepository.route(any()) } returns Cachable(route, CacheState.LIVE)
-        coEvery { routeRepository.servicesForRoute(any()) } returns Cachable(emptyList(), CacheState.LIVE)
+        coEvery { routeRepository.servicesForRoute(any()) } returns Cachable(
+            emptyList(),
+            CacheState.LIVE
+        )
         coEvery { serviceRepository.services(any()) } returns Cachable(listOf(), CacheState.LIVE)
 
         val result = useCase.invoke("route1").first()
@@ -98,32 +117,36 @@ class CurrentTripForRouteUseCaseTest {
     }
 
     @Test
-    fun `invoke should fallback to timetable if tripId is provided but no real-time URL`() = runTest {
-        val instant = Instant.parse("2024-01-05T12:00:00Z")
-        every { clock.now() } returns instant
+    fun `invoke should fallback to timetable if tripId is provided but no real-time URL`() =
+        runTest {
+            val instant = Instant.parse("2024-01-05T12:00:00Z")
+            every { clock.now() } returns instant
 
-        val serviceId = "service1"
-        val tripId = "trip1"
-        val service = Service(serviceId, emptyList(), emptyList())
-        val tripTimetable = mockk<RouteTripTimetable>()
+            val serviceId = "service1"
+            val tripId = "trip1"
+            val service = Service(serviceId, emptyList(), emptyList())
+            val tripTimetable = mockk<RouteTripTimetable>()
 
-        every { tripTimetable.trip } returns tripInformation
-        coEvery { routeRepository.route(any()) } returns Cachable(route, CacheState.LIVE)
-        coEvery { serviceRepository.services(any()) } returns Cachable(listOf(service), CacheState.LIVE)
-        coEvery {
-            routeRepository.tripTimetable(any(), any(), any())
-        } returns Cachable(tripTimetable, CacheState.LIVE)
+            every { tripTimetable.trip } returns tripInformation
+            coEvery { routeRepository.route(any()) } returns Cachable(route, CacheState.LIVE)
+            coEvery { serviceRepository.services(any()) } returns Cachable(
+                listOf(service),
+                CacheState.LIVE
+            )
+            coEvery {
+                routeRepository.tripTimetable(any(), any(), any())
+            } returns Cachable(tripTimetable, CacheState.LIVE)
 
-        val result = useCase.invoke("route1", serviceId, tripId).first()
+            val result = useCase.invoke("route1", serviceId, tripId).first()
 
-        assertEquals(route, result.item?.route)
-        assertEquals(tripInformation, result.item?.tripInformation)
-        coVerify {
-            routeRepository.route("route1")
-            serviceRepository.services(listOf(serviceId))
-            routeRepository.tripTimetable("route1", serviceId, tripId)
+            assertEquals(route, result.item?.route)
+            assertEquals(tripInformation, result.item?.tripInformation)
+            coVerify {
+                routeRepository.route("route1")
+                serviceRepository.services(listOf(serviceId))
+                routeRepository.tripTimetable("route1", serviceId, tripId)
+            }
         }
-    }
 
     @Test
     fun `invoke should return real-time information if available`() = runTest {
@@ -140,7 +163,10 @@ class CurrentTripForRouteUseCaseTest {
 
         every { tripTimetable.trip } returns tripInformation
         coEvery { routeRepository.route(any()) } returns Cachable(route, CacheState.LIVE)
-        coEvery { serviceRepository.services(any()) } returns Cachable(listOf(service), CacheState.LIVE)
+        coEvery { serviceRepository.services(any()) } returns Cachable(
+            listOf(service),
+            CacheState.LIVE
+        )
         coEvery {
             liveTripInformationUseCase.invoke(any(), any(), any(), any())
         } returns flowOf(Cachable(tripInformation, CacheState.LIVE))
@@ -176,7 +202,10 @@ class CurrentTripForRouteUseCaseTest {
 
         every { tripTimetable.trip } returns tripInformation
         coEvery { routeRepository.route(any()) } returns Cachable(route, CacheState.LIVE)
-        coEvery { serviceRepository.services(any()) } returns Cachable(listOf(service), CacheState.LIVE)
+        coEvery { serviceRepository.services(any()) } returns Cachable(
+            listOf(service),
+            CacheState.LIVE
+        )
         coEvery {
             liveTripInformationUseCase.invoke(any(), any(), any(), any())
         } throws RuntimeException("Real-time service error")
@@ -202,4 +231,3 @@ class CurrentTripForRouteUseCaseTest {
         verify { Napier.e(any<String>(), any(), any()) }
     }
 }
-

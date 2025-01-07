@@ -1,11 +1,10 @@
-package cl.emilym.sinatra.data.domain
+package cl.emilym.sinatra.domain
 
 import cl.emilym.sinatra.data.models.Cachable
 import cl.emilym.sinatra.data.models.CacheState
 import cl.emilym.sinatra.data.models.Service
 import cl.emilym.sinatra.data.repository.ServiceRepository
 import cl.emilym.sinatra.data.repository.TransportMetadataRepository
-import cl.emilym.sinatra.domain.ActiveServicesUseCase
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
@@ -13,7 +12,6 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toInstant
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
