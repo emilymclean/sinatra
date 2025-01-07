@@ -3,6 +3,7 @@ package cl.emilym.sinatra.room.dao
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
+import androidx.room.Transaction
 import cl.emilym.sinatra.room.entities.RecentVisitEntity
 import cl.emilym.sinatra.room.entities.RecentVisitEntityWithStopAndRoute
 import kotlinx.coroutines.flow.Flow
@@ -28,6 +29,7 @@ interface RecentVisitDao {
     @Query("DELETE FROM recentVisitEntity WHERE type = \"PLACE\" AND placeId = :placeId")
     suspend fun deletePlaceVisit(placeId: String)
 
+    @Transaction
     @Query("SELECT * FROM recentVisitEntity ORDER BY id DESC LIMIT 10")
     fun getFlow(): Flow<List<RecentVisitEntityWithStopAndRoute>>
 

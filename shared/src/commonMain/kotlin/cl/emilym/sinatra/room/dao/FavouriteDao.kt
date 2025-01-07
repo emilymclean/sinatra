@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
+import androidx.room.Transaction
 import cl.emilym.sinatra.room.entities.FavouriteEntity
 import cl.emilym.sinatra.room.entities.FavouriteEntityEntityWithStopAndRoute
 import kotlinx.coroutines.flow.Flow
@@ -29,6 +30,7 @@ interface FavouriteDao {
     @Query("DELETE FROM favouriteEntity WHERE type = \"PLACE\" AND placeId = :placeId")
     suspend fun deletePlace(placeId: String)
 
+    @Transaction
     @Query("SELECT * FROM favouriteEntity")
     fun get(): Flow<List<FavouriteEntityEntityWithStopAndRoute>>
 
