@@ -336,6 +336,7 @@ jobs = new Mapping {
     needs = new Listing {
       "version"
     }
+    `if` = "github.event_name != 'pull_request'"
     `runs-on` = "macos-latest"
     steps = new Listing {
       common.checkout
@@ -397,7 +398,7 @@ jobs = new Mapping {
       new ActionStep {
         uses = "actions/upload-artifact@v4"
         with = new Mapping {
-          ["name"] = "iosApp-ipa"
+          ["name"] = "iosApp-release-ipa"
           ["path"] = "./iosApp.ipa"
         }
       }
