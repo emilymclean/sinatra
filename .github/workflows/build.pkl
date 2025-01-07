@@ -304,7 +304,7 @@ jobs = new Mapping {
       }
       new CommandStep {
         name = "Generate Job Summary"
-        run = "echo \"# Version Info\nSemantic Version: ${{ steps.gitversion.outputs.semVer }}\nVersion Number: ${{ steps.run-number.outputs.versionCode }}\" >> $GITHUB_STEP_SUMMARY"
+        run = "echo \"# Version Info\nSemantic Version: ${{ steps.gitversion.outputs.semVer }}\niOS Version: ${{ steps.gitversion.outputs.majorMinorPatch }}\nVersion Number: ${{ steps.run-number.outputs.versionCode }}\" >> $GITHUB_STEP_SUMMARY"
       }
     }
   }

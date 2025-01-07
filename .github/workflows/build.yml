@@ -41,6 +41,7 @@ jobs:
       run: |-
         echo "# Version Info
         Semantic Version: ${{ steps.gitversion.outputs.semVer }}
+        iOS Version: ${{ steps.gitversion.outputs.majorMinorPatch }}
         Version Number: ${{ steps.run-number.outputs.versionCode }}" >> $GITHUB_STEP_SUMMARY
   build-apk:
     needs:
