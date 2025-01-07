@@ -287,8 +287,8 @@ jobs:
     - name: Build iOS App
       uses: yukiarrr/ios-build-action@v1.12.0
       with:
-        project-path: iosApp/iosApp/Sinatra.xcodeproj
-        workspace-path: iosApp/iosApp/iosApp.xcworkspace
+        project-path: iosApp/Sinatra.xcodeproj
+        workspace-path: iosApp/iosApp.xcworkspace
         p12-base64: ${{ secrets.P12_CERTIFICATE }}
         certificate-password: ${{ secrets.P12_CERTIFICATE_PASSWORD }}
         mobileprovision-base64: ${{ secrets.MOBILE_PROVISION }}
