@@ -365,8 +365,8 @@ jobs = new Mapping {
       new CommandStep {
         name = "Update version number"
         run = """
-          defaults write iosApp/iosApp/Info.plist CFBundleShortVersionString ${{ needs.version.outputs.version }}
-          defaults write iosApp/iosApp/Info.plist CFBundleVersion ${{ needs.version.outputs.versionCode }}
+          /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString ${{ needs.version.outputs.version }}" iosApp/iosApp/Info.plist
+          /usr/libexec/PlistBuddy -c "Set :CFBundleVersion ${{ needs.version.outputs.versionCode }}" iosApp/iosApp/Info.plist
           """
       }
       new CommandStep {
