@@ -339,6 +339,12 @@ jobs = new Mapping {
     `runs-on` = "macos-latest"
     steps = new Listing {
       common.checkout
+      new ActionStep {
+        uses = "ruby/setup-ruby@v1"
+        with {
+          ["ruby-version"] = "3.3"
+        }
+      }
       new CommandStep {
         run = """
           mkdir -p iosApp/iosApp/Firebase
@@ -355,6 +361,13 @@ jobs = new Mapping {
         run = """
           defaults write iosApp/iosApp/Info.plist CFBundleShortVersionString ${{ needs.version.outputs.version }}
           defaults write iosApp/iosApp/Info.plist CFBundleVersion ${{ needs.version.outputs.versionCode }}
+          """
+      }
+      new CommandStep {
+        name = "Install cocoapods"
+        run = """
+          gem install cocoapods
+          cd iosApp && pod install
           """
       }
       new ActionStep {
