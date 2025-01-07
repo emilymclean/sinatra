@@ -265,3 +265,55 @@ jobs:
         name: Release ${{ needs.version.outputs.version }}
         draft: false
         prerelease: ${{ github.ref != 'refs/heads/main' }}
+  build-ipa:
+    needs:
+    - version
+    if: github.event_name != 'pull_request'
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: temurin
+    - uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: '3.3'
+    - name: Setup gradle
+      uses: gradle/actions/setup-gradle@v3
+    - env:
+        GOOGLE_SERVICES_PLIST_DEBUG: ${{ secrets.GOOGLE_SERVICES_PLIST_DEBUG }}
+        GOOGLE_SERVICES_PLIST: ${{ secrets.GOOGLE_SERVICES_PLIST }}
+      run: |-
+        mkdir -p iosApp/iosApp/Firebase
+        printf "${GOOGLE_SERVICES_PLIST_DEBUG}" >> iosApp/iosApp/Firebase/GoogleService-Info-Debug.plist
+        printf "${GOOGLE_SERVICES_PLIST}" >> iosApp/iosApp/Firebase/GoogleService-Info-Release.plist
+    - name: Update version number
+      run: |-
+        defaults write iosApp/iosApp/Info.plist CFBundleShortVersionString ${{ needs.version.outputs.version }}
+        defaults write iosApp/iosApp/Info.plist CFBundleVersion ${{ needs.version.outputs.versionCode }}
+    - name: Install cocoapods
+      run: |-
+        gem install cocoapods
+        ./gradlew :ui:generateDummyFramework
+        ./gradlew :shared:generateDummyFramework
+        cd iosApp && pod install
+    - name: Build iOS App
+      uses: yukiarrr/ios-build-action@v1.12.0
+      with:
+        project-path: iosApp/Sinatra.xcodeproj
+        workspace-path: iosApp/iosApp.xcworkspace
+        p12-base64: ${{ secrets.P12_CERTIFICATE }}
+        certificate-password: ${{ secrets.P12_CERTIFICATE_PASSWORD }}
+        mobileprovision-base64: ${{ secrets.MOBILE_PROVISION }}
+        code-signing-identity: ${{ secrets.CODE_SIGNING_IDENTITY }}
+        team-id: ${{ secrets.TEAM_ID }}
+    - name: Rename ipa
+      run: mv output.ipa ./iosApp.ipa
+    - uses: actions/upload-artifact@v4
+      with:
+        name: iosApp-release-ipa
+        path: ./iosApp.ipa
