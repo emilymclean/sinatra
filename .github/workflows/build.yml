@@ -244,7 +244,6 @@ jobs:
       contents: write
     needs:
     - version
-    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     outputs:
       upload_url: ${{ steps.create_release.outputs.upload_url }}
