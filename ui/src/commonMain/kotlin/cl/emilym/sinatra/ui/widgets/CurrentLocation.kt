@@ -13,11 +13,15 @@ import io.github.aakira.napier.Napier
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 
-@Composable
-internal expect fun platformCurrentLocation(): Flow<MapLocation?>
+enum class LocationAccuracy {
+    LOW, MEDIUM, HIGH
+}
 
 @Composable
-fun currentLocation(): MapLocation? {
+internal expect fun platformCurrentLocation(accuracy: LocationAccuracy): Flow<MapLocation?>
+
+@Composable
+fun currentLocation(accuracy: LocationAccuracy = LocationAccuracy.MEDIUM): MapLocation? {
     var hasPermission by remember { mutableStateOf(false) }
     val permissionRequestQueue = LocalPermissionRequestQueue.current
 
@@ -29,7 +33,7 @@ fun currentLocation(): MapLocation? {
 
     Napier.d("Has permission = ${hasPermission}")
     val platformLocation = when (hasPermission) {
-        true -> platformCurrentLocation()
+        true -> platformCurrentLocation(accuracy)
         false -> flowOf()
     }
 
