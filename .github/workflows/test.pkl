@@ -1,0 +1,7 @@
+amends "package://components.emilym.cl/actions/actions@0.1.12#/common/simple-gradle.pkl"
+
+jobName = "test"
+gradleTask = "testDebugUnitTest"
+name = "Unit Test"
+
+modules = List("shared")

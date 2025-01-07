@@ -1,0 +1,32 @@
+name: Unit Test
+'on':
+  pull_request:
+    branches:
+    - main
+    - develop
+  push:
+    branches:
+    - main
+    - develop
+    - release/**
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        module:
+        - shared
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: temurin
+    - name: Setup gradle
+      uses: gradle/actions/setup-gradle@v3
+    - name: Test with Gradle
+      env: {}
+      run: ./gradlew ${{ matrix.module }}:testDebugUnitTest
