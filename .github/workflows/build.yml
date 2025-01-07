@@ -277,6 +277,7 @@ jobs:
         GOOGLE_SERVICES_PLIST_DEBUG: ${{ secrets.GOOGLE_SERVICES_PLIST_DEBUG }}
         GOOGLE_SERVICES_PLIST: ${{ secrets.GOOGLE_SERVICES_PLIST }}
       run: |-
+        mkdir -p iosApp/iosApp/Firebase
         printf "${GOOGLE_SERVICES_PLIST_DEBUG}" >> iosApp/iosApp/Firebase/GoogleService-Info-Debug.plist
         printf "${GOOGLE_SERVICES_PLIST}" >> iosApp/iosApp/Firebase/GoogleService-Info-Release.plist
     - name: Update version number
