@@ -39,8 +39,8 @@ class CurrentTripForRouteUseCaseTest {
         null
     )
     val tripInformation = RouteTripInformation(
-        Time.parseIsoString("PT12H"),
-        Time.parseIsoString("PT12H"),
+        Time.parse("PT12H"),
+        Time.parse("PT12H"),
         RouteServiceAccessibility(ServiceBikesAllowed.ALLOWED, ServiceWheelchairAccessible.ACCESSIBLE),
         "North",
         listOf()

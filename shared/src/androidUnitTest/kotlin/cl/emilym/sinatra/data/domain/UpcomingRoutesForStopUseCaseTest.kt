@@ -63,8 +63,8 @@ class UpcomingRoutesForStopUseCaseTest {
                     routeCode = "R1",
                     serviceId = "service-1",
                     tripId = "trip-1",
-                    arrivalTime = parseIsoString("PT13H"),
-                    departureTime = parseIsoString("PT13H5M"),
+                    arrivalTime = Time.parse("PT13H"),
+                    departureTime = Time.parse("PT13H5M"),
                     heading = "North",
                     sequence = 1,
                     route = null
@@ -133,8 +133,8 @@ class UpcomingRoutesForStopUseCaseTest {
                 routeCode = "R1",
                 serviceId = "service-1",
                 tripId = "trip-1",
-                arrivalTime = parseIsoString("PT13H"),
-                departureTime = parseIsoString("PT13H5M"),
+                arrivalTime = Time.parse("PT13H"),
+                departureTime = Time.parse("PT13H5M"),
                 heading = "North",
                 sequence = 1,
                 route = null
@@ -148,8 +148,8 @@ class UpcomingRoutesForStopUseCaseTest {
                 routeCode = "R2",
                 serviceId = "service-2",
                 tripId = "trip-2",
-                arrivalTime = parseIsoString("PT14H"),
-                departureTime = parseIsoString("PT14H5M"),
+                arrivalTime = Time.parse("PT14H"),
+                departureTime = Time.parse("PT14H5M"),
                 heading = "South",
                 sequence = 2,
                 route = null
@@ -168,8 +168,8 @@ class UpcomingRoutesForStopUseCaseTest {
             StopTimetable(times = timetableTimes)
         )
         coEvery { serviceRepository.services(listOf("service-1")) } returns services
-        every { liveStopTimetableUseCase(stopId, timetableTimes) } returns flowOf(
-            liveTimes
+        every { liveStopTimetableUseCase(stopId, any()) } returnsMany listOf(
+            flowOf(liveTimes), flowOf(emptyList())
         )
 
         val result = useCase(stopId).take(1).first()
@@ -178,6 +178,6 @@ class UpcomingRoutesForStopUseCaseTest {
         assertEquals("R2", result.item.first().routeCode)
 
         coVerify { stopRepository.timetable(stopId) }
-        verify { liveStopTimetableUseCase(stopId, timetableTimes) }
+        verify(exactly = 1) { liveStopTimetableUseCase(stopId, any()) }
     }
 }
