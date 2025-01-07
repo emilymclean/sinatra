@@ -246,7 +246,7 @@ class NavigationEntryViewModel(
                 save(navigationLocation.location, false)
             }
             is NavigationLocation.CurrentLocation -> {
-                save(null, true)
+                save(currentLocation, true)
             }
         }
         navigationLocation.recentVisit?.let {
