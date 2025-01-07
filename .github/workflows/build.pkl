@@ -270,7 +270,44 @@ permissions = new Mapping {
 }
 
 jobs = new Mapping {
-  ["version"] = common.version(versionNumberOffset)
+  ["version"] = new Job {
+    outputs = new Mapping {
+      ["version"] = "${{ steps.gitversion.outputs.semVer }}"
+      ["versionIOS"] = "${{ steps.gitversion.outputs.majorMinorPatch }}"
+      ["versionCode"] = "${{ steps.run-number.outputs.versionCode }}"
+    }
+    steps = new Listing {
+      common.checkout
+      new ActionStep {
+        name = "Install GitVersion"
+        uses = "gittools/actions/gitversion/setup@v3.0.0"
+        with = new Mapping {
+          ["versionSpec"] = "5.x"
+        }
+      }
+      new ActionStep {
+        name = "Use GitVersion"
+        id = "gitversion"
+        uses = "gittools/actions/gitversion/execute@v3.0.0"
+        with = new Mapping {
+          ["useConfigFile"] = true
+          ["configFilePath"] = "./gitversion.yml"
+        }
+      }
+      new CommandStep {
+        id = "run-number"
+        run = """
+          current_run_number=${{ github.run_number }}
+          new_number=$((current_run_number+\(versionNumberOffset)))
+          echo "versionCode=${new_number}" >> $GITHUB_OUTPUT
+          """
+      }
+      new CommandStep {
+        name = "Generate Job Summary"
+        run = "echo \"# Version Info\nSemantic Version: ${{ steps.gitversion.outputs.semVer }}\niOS Version: ${{ steps.gitversion.outputs.majorMinorPatch }}\nVersion Number: ${{ steps.run-number.outputs.versionCode }}\" >> $GITHUB_STEP_SUMMARY"
+      }
+    }
+  }
   ...(
   if (hasInstant)
     new Mapping {
@@ -365,7 +402,7 @@ jobs = new Mapping {
       new CommandStep {
         name = "Update version number"
         run = """
-          /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString ${{ needs.version.outputs.version }}" iosApp/iosApp/Info.plist
+          /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString ${{ needs.version.outputs.versionIOS }}" iosApp/iosApp/Info.plist
           /usr/libexec/PlistBuddy -c "Set :CFBundleVersion ${{ needs.version.outputs.versionCode }}" iosApp/iosApp/Info.plist
           """
       }

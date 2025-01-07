@@ -16,6 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.gitversion.outputs.semVer }}
+      versionIOS: ${{ steps.gitversion.outputs.majorMinorPatch }}
       versionCode: ${{ steps.run-number.outputs.versionCode }}
     steps:
     - uses: actions/checkout@v4
@@ -40,6 +41,7 @@ jobs:
       run: |-
         echo "# Version Info
         Semantic Version: ${{ steps.gitversion.outputs.semVer }}
+        iOS Version: ${{ steps.gitversion.outputs.majorMinorPatch }}
         Version Number: ${{ steps.run-number.outputs.versionCode }}" >> $GITHUB_STEP_SUMMARY
   build-apk:
     needs:
@@ -293,7 +295,7 @@ jobs:
         printf "${GOOGLE_SERVICES_PLIST}" >> iosApp/iosApp/Firebase/GoogleService-Info-Release.plist
     - name: Update version number
       run: |-
-        /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString ${{ needs.version.outputs.version }}" iosApp/iosApp/Info.plist
+        /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString ${{ needs.version.outputs.versionIOS }}" iosApp/iosApp/Info.plist
         /usr/libexec/PlistBuddy -c "Set :CFBundleVersion ${{ needs.version.outputs.versionCode }}" iosApp/iosApp/Info.plist
     - name: Install cocoapods
       run: |-
