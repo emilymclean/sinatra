@@ -15,10 +15,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.min
 import cafe.adriel.voyager.core.screen.ScreenKey
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import cl.emilym.compose.requeststate.RequestState
+import cl.emilym.compose.units.px
 import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.FeatureFlags
 import cl.emilym.sinatra.data.models.Stop
@@ -39,6 +41,7 @@ import cl.emilym.sinatra.ui.widgets.SinatraBackHandler
 import cl.emilym.sinatra.ui.widgets.bottomsheet.SinatraSheetValue
 import cl.emilym.sinatra.ui.widgets.currentLocation
 import cl.emilym.sinatra.ui.widgets.viewportHeight
+import io.github.aakira.napier.Napier
 import org.koin.compose.viewmodel.koinViewModel
 
 const val zoomThreshold = 14f
@@ -68,8 +71,6 @@ class MapSearchScreen: MapScreen, NativeMapScreen {
                 viewModel.updateLocation(currentLocation)
             }
         }
-
-        val halfScreen = viewportHeight() * bottomSheetHalfHeight
         Box(
             Modifier.fillMaxSize(),
             contentAlignment = Alignment.BottomEnd
@@ -92,14 +93,12 @@ class MapSearchScreen: MapScreen, NativeMapScreen {
                         },
                     ) { SearchIcon() }
                 }
-                val sheetValue = LocalBottomSheetState.current.bottomSheetState.currentValue
+                val sheetValue = LocalBottomSheetState.current.bottomSheetState.offset
                 Box(
-                    Modifier.height(
-                        when (sheetValue) {
-                            SinatraSheetValue.PartiallyExpanded -> 56.dp
-                            else -> halfScreen
-                        }
-                    )
+                    Modifier.height(min(
+                        viewportHeight() - (sheetValue?.px ?: 0.dp),
+                        viewportHeight() * bottomSheetHalfHeight
+                    ))
                 )
             }
         }
