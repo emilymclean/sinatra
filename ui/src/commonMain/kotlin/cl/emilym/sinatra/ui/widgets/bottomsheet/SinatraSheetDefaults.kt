@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
+import cl.emilym.sinatra.nullIf
 import kotlinx.coroutines.CancellationException
 import kotlin.jvm.JvmName
 
@@ -260,7 +261,7 @@ class SinatraSheetState @OptIn(ExperimentalMaterial3Api::class) constructor(
     )
 
     @OptIn(ExperimentalFoundationApi::class)
-    internal val offset: Float? get() = anchoredDraggableState.offset
+    val offset: Float? get() = anchoredDraggableState.offset.nullIf { it.isNaN() }
 
     internal var density: Density? = null
     private fun requireDensity() = requireNotNull(density) {

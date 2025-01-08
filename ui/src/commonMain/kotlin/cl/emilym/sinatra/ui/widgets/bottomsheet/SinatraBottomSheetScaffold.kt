@@ -40,7 +40,6 @@ fun SinatraBottomSheetScaffold(
     sheetPeekHeight: Dp = 56.dp,
     sheetHalfHeight: Float = 0.5f,
     sheetMaxWidth: Dp = 640.dp,
-    sheetShape: Shape = MaterialTheme.shapes.extraLarge.copy(bottomStart = CornerSize(0f), bottomEnd = CornerSize(0f)),
     sheetContainerColor: Color = MaterialTheme.colorScheme.surfaceContainer,
     sheetContentColor: Color = contentColorFor(sheetContainerColor),
     sheetTonalElevation: Dp = 1.dp,
@@ -73,6 +72,7 @@ fun SinatraBottomSheetScaffold(
                 state = scaffoldState.bottomSheetState,
                 peekHeight = sheetPeekHeight,
                 sheetMaxWidth = sheetMaxWidth,
+                sheetHalfHeight = sheetHalfHeight,
                 sheetSwipeEnabled = sheetSwipeEnabled,
                 calculateAnchors = { sheetSize ->
                     val sheetHeight = sheetSize.height
@@ -89,7 +89,6 @@ fun SinatraBottomSheetScaffold(
                         SinatraSheetValue.HalfExpanded at maxOf(layoutHeight - (sheetHeight * sheetHalfHeight), 0f)
                     }
                 },
-                shape = sheetShape,
                 containerColor = sheetContainerColor,
                 contentColor = sheetContentColor,
                 tonalElevation = sheetTonalElevation,

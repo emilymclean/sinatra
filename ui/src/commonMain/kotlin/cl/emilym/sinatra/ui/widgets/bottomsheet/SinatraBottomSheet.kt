@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.requiredHeightIn
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -18,11 +19,14 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.times
+import cl.emilym.compose.units.px
+import cl.emilym.sinatra.ui.widgets.viewportHeight
 import kotlinx.coroutines.launch
 import kotlin.math.abs
 
@@ -33,8 +37,8 @@ fun SinatraBottomSheet(
     calculateAnchors: (sheetSize: IntSize) -> DraggableAnchors<SinatraSheetValue>,
     peekHeight: Dp,
     sheetMaxWidth: Dp,
+    sheetHalfHeight: Float,
     sheetSwipeEnabled: Boolean,
-    shape: Shape,
     containerColor: Color,
     contentColor: Color,
     tonalElevation: Dp,
@@ -45,6 +49,23 @@ fun SinatraBottomSheet(
     val scope = rememberCoroutineScope()
 
     val orientation = Orientation.Vertical
+
+    // Tween corner radius to 0 during swipe between halfHeight and expanded
+    val viewportHeight = viewportHeight()
+    val halfHeight = remember(viewportHeight, sheetHalfHeight) { sheetHalfHeight * viewportHeight }
+    val offsetPx = state.offset?.px ?: 0.dp
+    val corner = remember(halfHeight, offsetPx, viewportHeight) {
+        val adjustedHeight = viewportHeight - halfHeight
+        (1f - ((viewportHeight - offsetPx - halfHeight) / adjustedHeight)).coerceIn(0f, 1f) * 28.dp
+    }
+    val shape = remember(corner) {
+        RoundedCornerShape(
+            corner,
+            corner,
+            0.dp,
+            0.dp
+        )
+    }
 
     Surface(
         modifier = Modifier
