@@ -60,6 +60,7 @@ import cl.emilym.sinatra.ui.widgets.StarOutlineIcon
 import cl.emilym.sinatra.ui.widgets.WalkIcon
 import cl.emilym.sinatra.ui.widgets.currentLocation
 import cl.emilym.sinatra.ui.widgets.format
+import cl.emilym.sinatra.ui.widgets.hasLocationPermission
 import cl.emilym.sinatra.ui.widgets.routeRandleSize
 import com.mikepenz.markdown.m3.Markdown
 import org.jetbrains.compose.resources.stringResource
@@ -78,7 +79,7 @@ import sinatra.ui.generated.resources.navigate_walk
 
 class NavigateEntryScreen(
     val destination: NavigationLocation,
-    val origin: NavigationLocation = NavigationLocation.CurrentLocation
+    val origin: NavigationLocation? = null
 ): MapScreen {
 
     private val journeyIconInset
@@ -89,7 +90,7 @@ class NavigateEntryScreen(
         @Composable
         get() = 2.rdp + 24.dp
 
-    override val key: ScreenKey = "navigateEntryScreen-${destination.screenKey}-${origin.screenKey}"
+    override val key: ScreenKey = "navigateEntryScreen-${destination.screenKey}-${origin?.screenKey}"
 
     @Composable
     override fun mapItems(): List<MapItem> {
@@ -169,8 +170,16 @@ class NavigateEntryScreen(
         val state by viewModel.state.collectAsState(null)
         val currentLocation = currentLocation()
 
+        val hasLocationPermission = hasLocationPermission()
         LaunchedEffect(Unit) {
-            viewModel.init(destination, origin)
+            viewModel.init(
+                destination,
+                origin ?: (
+                        if (hasLocationPermission)
+                            NavigationLocation.CurrentLocation
+                        else NavigationLocation.None
+                )
+            )
         }
 
         LaunchedEffect(currentLocation) {
@@ -217,6 +226,7 @@ class NavigateEntryScreen(
         innerPadding: PaddingValues,
         viewModel: NavigationEntryViewModel,
     ) {
+        val hasLocationPermission = hasLocationPermission()
         Box(Modifier.fillMaxSize().padding(innerPadding)) {
             SearchScreen(
                 viewModel,
@@ -226,14 +236,16 @@ class NavigateEntryScreen(
                 {},
                 { viewModel.onSearchItemClicked(NavigationLocation.Place(it)) }
             ) {
-                item {
-                    CurrentLocationCard(
-                        onClick = { viewModel.onSearchItemClicked(NavigationLocation.CurrentLocation) },
-                        showCurrentLocationIcon = true
-                    )
-                }
-                item {
-                    Box(Modifier.height(1.rdp))
+                if (hasLocationPermission) {
+                    item {
+                        CurrentLocationCard(
+                            onClick = { viewModel.onSearchItemClicked(NavigationLocation.CurrentLocation) },
+                            showCurrentLocationIcon = true
+                        )
+                    }
+                    item {
+                        Box(Modifier.height(1.rdp))
+                    }
                 }
             }
         }
