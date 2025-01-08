@@ -29,14 +29,21 @@ suspend fun <T> MutableStateFlow<Flow<RequestState<T>>>.handleFlowProperly(
     operation: suspend () -> Flow<T>
 ) {
     if (!hideLoading) emit(flowOf(RequestState.Loading()))
-    emit(
-        operation().map<T, RequestState<T>> {
+    val result = try {
+        operation()
+    } catch(e: Exception) {
+        Napier.e(e)
+        emit(flowOf(RequestState.Failure(e)))
+        null
+    }
+    result?.let { emit(
+        it.map<T, RequestState<T>> {
             RequestState.Success(it)
         }.catch {
             Napier.e(it)
             emit(RequestState.Failure(it as? Exception ?: Exception(it)))
         }
-    )
+    ) }
 }
 
 suspend fun <T> MutableStateFlow<RequestState<T>>.handleFlow(hideLoading: Boolean = false, operation: suspend () -> Flow<T>) {
