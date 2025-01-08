@@ -98,4 +98,7 @@
     <string name="service_accessibility_none_bikes_allowed">Bikes are allowed on no services</string>
     <string name="route_accessibility_bikes_allowed">Bikes are allowed on route</string>
     <string name="route_accessibility_no_bikes_allowed">Bikes are not allowed on route</string>
+
+    <string name="navigate_entry_select_origin">Pick a starting point</string>
+    <string name="navigate_entry_select_destination">Pick a destination</string>
 </resources>

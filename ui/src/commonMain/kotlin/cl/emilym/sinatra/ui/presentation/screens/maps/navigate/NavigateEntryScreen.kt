@@ -16,6 +16,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -69,6 +70,8 @@ import sinatra.ui.generated.resources.Res
 import sinatra.ui.generated.resources.navigate_calculating_journey
 import sinatra.ui.generated.resources.navigate_calculating_journey_failed
 import sinatra.ui.generated.resources.navigate_downloading_graph
+import sinatra.ui.generated.resources.navigate_entry_select_destination
+import sinatra.ui.generated.resources.navigate_entry_select_origin
 import sinatra.ui.generated.resources.navigate_travel
 import sinatra.ui.generated.resources.navigate_travel_arrive
 import sinatra.ui.generated.resources.navigate_travel_depart
@@ -488,6 +491,16 @@ fun NavigationLocationDisplay(
         },
         modifier = modifier
     ) {
-        Text(location.name)
+        Text(
+            when {
+                location !is NavigationLocation.None -> location.name
+                isDestination -> stringResource(Res.string.navigate_entry_select_destination)
+                else -> stringResource(Res.string.navigate_entry_select_origin)
+            },
+            color = when {
+                location !is NavigationLocation.None -> LocalContentColor.current
+                else -> MaterialTheme.colorScheme.onSurfaceVariant
+            }
+        )
     }
 }
