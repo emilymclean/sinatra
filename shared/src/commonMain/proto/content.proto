@@ -7,6 +7,7 @@ option java_package = "cl.emilym.gtfs.content";
 
 message Pages {
   repeated Content pages = 1;
+  map<string, Banner> banners = 2;
 }
 
 message Content {
@@ -15,14 +16,38 @@ message Content {
   required string content = 3;
   repeated ExternalLink externalLinks = 4;
   repeated ContentLink contentLinks = 5;
+  repeated NativeLink nativeLinks = 6;
 }
 
 message ExternalLink {
   required string title = 1;
   required string url = 2;
+  optional uint32 order = 3;
 }
 
 message ContentLink {
   required string title = 1;
   required string contentId = 2;
+  optional uint32 order = 3;
+}
+
+message NativeLink {
+  required string title = 1;
+  required string nativeReference = 2;
+  optional uint32 order = 3;
+}
+
+message PageLink {
+  required string title = 1;
+  required string nativeReference = 2;
+  optional uint32 order = 3;
+}
+
+message Banner {
+  required string title = 1;
+  optional string message = 2;
+  optional string severity = 3;
+  repeated ExternalLink externalLinks = 4;
+  repeated ContentLink contentLinks = 5;
+  repeated NativeLink nativeLinks = 6;
 }

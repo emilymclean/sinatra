@@ -14,13 +14,11 @@ interface IRouteTripInformation {
         it.stationTime
     }.nullIfEmpty()
 
-    fun startTime(startOfDay: Instant): Instant? = startTime?.forDay(startOfDay)
-    fun endTime(startOfDay: Instant): Instant? = endTime?.forDay(startOfDay)
-    fun active(current: Instant, startOfDay: Instant): Boolean? {
-        val start = startTime(startOfDay)
-        val end = endTime(startOfDay)
-        if (start == null || end == null) return null
-        return current in start..end
+    fun active(current: Instant): Boolean? {
+        val startTime = startTime
+        val endTime = endTime
+        if (startTime == null || endTime == null) return null
+        return current in startTime.instant..endTime.instant
     }
 }
 

@@ -270,7 +270,44 @@ permissions = new Mapping {
 }
 
 jobs = new Mapping {
-  ["version"] = common.version(versionNumberOffset)
+  ["version"] = new Job {
+    outputs = new Mapping {
+      ["version"] = "${{ steps.gitversion.outputs.semVer }}"
+      ["versionIOS"] = "${{ steps.gitversion.outputs.majorMinorPatch }}"
+      ["versionCode"] = "${{ steps.run-number.outputs.versionCode }}"
+    }
+    steps = new Listing {
+      common.checkout
+      new ActionStep {
+        name = "Install GitVersion"
+        uses = "gittools/actions/gitversion/setup@v3.0.0"
+        with = new Mapping {
+          ["versionSpec"] = "5.x"
+        }
+      }
+      new ActionStep {
+        name = "Use GitVersion"
+        id = "gitversion"
+        uses = "gittools/actions/gitversion/execute@v3.0.0"
+        with = new Mapping {
+          ["useConfigFile"] = true
+          ["configFilePath"] = "./gitversion.yml"
+        }
+      }
+      new CommandStep {
+        id = "run-number"
+        run = """
+          current_run_number=${{ github.run_number }}
+          new_number=$((current_run_number+\(versionNumberOffset)))
+          echo "versionCode=${new_number}" >> $GITHUB_OUTPUT
+          """
+      }
+      new CommandStep {
+        name = "Generate Job Summary"
+        run = "echo \"# Version Info\nSemantic Version: ${{ steps.gitversion.outputs.semVer }}\niOS Version: ${{ steps.gitversion.outputs.majorMinorPatch }}\nVersion Number: ${{ steps.run-number.outputs.versionCode }}\" >> $GITHUB_STEP_SUMMARY"
+      }
+    }
+  }
   ...(
   if (hasInstant)
     new Mapping {
@@ -330,6 +367,78 @@ jobs = new Mapping {
     steps = new Listing {
       common.checkout
       ...common.create_release
+    }
+  }
+  ["build-ipa"] = new Job {
+    needs = new Listing {
+      "version"
+    }
+    `if` = "github.event_name != 'pull_request'"
+    `runs-on` = "macos-latest"
+    steps = new Listing {
+      common.checkout
+      common.setupJdk
+      new ActionStep {
+        uses = "ruby/setup-ruby@v1"
+        with {
+          ["ruby-version"] = "3.3"
+        }
+      }
+      new ActionStep {
+        name = "Setup gradle"
+        uses = "gradle/actions/setup-gradle@v3"
+      }
+      new CommandStep {
+        run = """
+          mkdir -p iosApp/iosApp/Firebase
+          printf "${GOOGLE_SERVICES_PLIST_DEBUG}" >> iosApp/iosApp/Firebase/GoogleService-Info-Debug.plist
+          printf "${GOOGLE_SERVICES_PLIST}" >> iosApp/iosApp/Firebase/GoogleService-Info-Release.plist
+          """
+        env {
+          ["GOOGLE_SERVICES_PLIST_DEBUG"] = "${{ secrets.GOOGLE_SERVICES_PLIST_DEBUG }}"
+          ["GOOGLE_SERVICES_PLIST"] = "${{ secrets.GOOGLE_SERVICES_PLIST }}"
+        }
+      }
+      new CommandStep {
+        name = "Update version number"
+        run = """
+          /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString ${{ needs.version.outputs.versionIOS }}" iosApp/iosApp/Info.plist
+          /usr/libexec/PlistBuddy -c "Set :CFBundleVersion ${{ needs.version.outputs.versionCode }}" iosApp/iosApp/Info.plist
+          """
+      }
+      new CommandStep {
+        name = "Install cocoapods"
+        run = """
+          gem install cocoapods
+          ./gradlew :ui:generateDummyFramework
+          ./gradlew :shared:generateDummyFramework
+          cd iosApp && pod install
+          """
+      }
+      new ActionStep {
+        name = "Build iOS App"
+        uses = "yukiarrr/ios-build-action@v1.12.0"
+        with = new Mapping {
+          ["project-path"] = "iosApp/Sinatra.xcodeproj"
+          ["workspace-path"] = "iosApp/iosApp.xcworkspace"
+          ["p12-base64"] = "${{ secrets.P12_CERTIFICATE }}"
+          ["certificate-password"] = "${{ secrets.P12_CERTIFICATE_PASSWORD }}"
+          ["mobileprovision-base64"] = "${{ secrets.MOBILE_PROVISION }}"
+          ["code-signing-identity"] = "${{ secrets.CODE_SIGNING_IDENTITY }}"
+          ["team-id"] = "${{ secrets.TEAM_ID }}"
+        }
+      }
+      new CommandStep {
+        name = "Rename ipa"
+        run = "mv output.ipa ./iosApp.ipa"
+      }
+      new ActionStep {
+        uses = "actions/upload-artifact@v4"
+        with = new Mapping {
+          ["name"] = "iosApp-release-ipa"
+          ["path"] = "./iosApp.ipa"
+        }
+      }
     }
   }
 }

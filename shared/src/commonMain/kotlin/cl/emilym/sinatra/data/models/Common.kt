@@ -1,7 +1,5 @@
 package cl.emilym.sinatra.data.models
 
-import kotlinx.datetime.Instant
-
 interface StopTime {
     val arrivalTime: Time?
     val departureTime: Time?
@@ -12,14 +10,6 @@ interface StopTime {
                 StationTime.Scheduled(departureTime),
             )
         } }
-
-    fun arrivalTime(startOfDay: Instant): Instant? {
-        return arrivalTime?.forDay(startOfDay)
-    }
-
-    fun departureTime(startOfDay: Instant): Instant? {
-        return departureTime?.forDay(startOfDay)
-    }
 }
 
 enum class OnColor {

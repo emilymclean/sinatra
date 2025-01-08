@@ -6,17 +6,21 @@ import cl.emilym.sinatra.data.models.ContentLink
 import cl.emilym.sinatra.data.models.RouteId
 import cl.emilym.sinatra.data.models.StopId
 import cl.emilym.sinatra.data.models.TripId
+import cl.emilym.sinatra.e
 import cl.emilym.sinatra.pick
+import io.github.aakira.napier.Napier
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import org.koin.core.annotation.Factory
 
 @Factory
 class AlertRepository(
     private val liveServiceRepository: LiveServiceRepository,
-    private val routeRepository: RouteRepository
+    private val routeRepository: RouteRepository,
+    private val contentRepository: ContentRepository
 ) {
 
     fun alerts(
@@ -25,16 +29,28 @@ class AlertRepository(
         stopId: StopId? = null
     ): Flow<List<Alert>> {
         return flow {
+            val banner = listOfNotNull(when {
+                routeId == null && tripId == null && stopId == null -> try {
+                    contentRepository.banner(
+                        ContentRepository.HOME_BANNER_ID
+                    )
+                } catch (e: Exception) {
+                    Napier.e(e)
+                    null
+                }
+                else -> null
+            })
+
             val routeFeeds = when (routeId) {
                 null -> routeRepository.routes().item.mapNotNull { it.realTimeUrl }.distinct().toTypedArray()
                 else -> routeRepository.route(routeId).item?.realTimeUrl?.let { arrayOf(it) } ?: emptyArray()
             }
-            if (routeFeeds.isEmpty()) return@flow emit(emptyList())
+            if (routeFeeds.isEmpty()) return@flow emit(banner)
 
             val out = liveServiceRepository.getMultipleRealtimeUpdates(
                 *routeFeeds
             ).map {
-                it.asSequence().flatMap { it.entity }
+                banner + it.asSequence().flatMap { it.entity }
                     .filter { it.isDeleted != true && it.alert != null }
                     .map { it.alert!! }
                     .filter {

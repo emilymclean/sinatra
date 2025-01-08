@@ -20,16 +20,27 @@ import java.util.concurrent.TimeUnit
 
 @SuppressLint("MissingPermission")
 @Composable
-internal actual fun platformCurrentLocation(): Flow<MapLocation?> {
+internal actual fun platformCurrentLocation(accuracy: LocationAccuracy): Flow<MapLocation?> {
     val context = LocalContext.current
     val fusedLocationClient = remember(context) { LocationServices.getFusedLocationProviderClient(context) }
 
     val request = remember {
         LocationRequest.Builder(
-            Priority.PRIORITY_BALANCED_POWER_ACCURACY,
-            TimeUnit.MINUTES.toMillis(10)
+            when (accuracy) {
+                LocationAccuracy.HIGH -> Priority.PRIORITY_HIGH_ACCURACY
+                else -> Priority.PRIORITY_BALANCED_POWER_ACCURACY
+            },
+            when (accuracy) {
+                LocationAccuracy.LOW -> TimeUnit.MINUTES.toMillis(10)
+                LocationAccuracy.MEDIUM -> TimeUnit.MINUTES.toMillis(1)
+                LocationAccuracy.HIGH -> TimeUnit.SECONDS.toMillis(30)
+            }
         )
-            .setMinUpdateDistanceMeters(1000F)
+            .setMinUpdateDistanceMeters(when (accuracy) {
+                LocationAccuracy.LOW -> 1000F
+                LocationAccuracy.MEDIUM -> 10F
+                LocationAccuracy.HIGH -> 1F
+            })
             .build()
     }
 

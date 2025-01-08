@@ -6,8 +6,10 @@ import androidx.room.PrimaryKey
 import androidx.room.Relation
 import cl.emilym.sinatra.data.models.ResourceKey
 import cl.emilym.sinatra.data.models.StopTimetableTime
-import cl.emilym.sinatra.data.models.time
-import cl.emilym.sinatra.data.models.toLong
+import cl.emilym.sinatra.room.referenced
+import cl.emilym.sinatra.room.time
+import cl.emilym.sinatra.room.toLong
+import kotlinx.datetime.Instant
 
 @Entity
 class StopTimetableTimeEntity(
@@ -24,15 +26,17 @@ class StopTimetableTimeEntity(
     val sequence: Int
 ) {
 
-    fun toModel(): StopTimetableTime {
+    fun toModel(
+        startOfDay: Instant? = null
+    ): StopTimetableTime {
         return StopTimetableTime(
             childStopId,
             routeId,
             routeCode,
             serviceId,
             tripId,
-            arrivalTime.time,
-            departureTime.time,
+            arrivalTime.time.referenced(startOfDay),
+            departureTime.time.referenced(startOfDay),
             heading,
             sequence,
             null
@@ -68,8 +72,8 @@ class StopTimetableTimeEntityWithRouteEntity(
     val route: RouteEntity?
 ) {
 
-    fun toModel(): StopTimetableTime {
-        return stopTimetableTimeEntity.toModel().copy(
+    fun toModel(startOfDay: Instant? = null): StopTimetableTime {
+        return stopTimetableTimeEntity.toModel(startOfDay).copy(
             route = route?.toModel()
         )
     }
