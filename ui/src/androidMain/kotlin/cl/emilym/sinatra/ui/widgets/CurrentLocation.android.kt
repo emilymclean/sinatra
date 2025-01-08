@@ -1,10 +1,13 @@
 package cl.emilym.sinatra.ui.widgets
 
+import android.Manifest
 import android.annotation.SuppressLint
+import android.content.pm.PackageManager
 import android.os.Looper
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
+import androidx.core.content.ContextCompat
 import cl.emilym.sinatra.data.models.MapLocation
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
@@ -62,5 +65,16 @@ internal actual fun platformCurrentLocation(accuracy: LocationAccuracy): Flow<Ma
         awaitClose {
             fusedLocationClient.removeLocationUpdates(locationCallback)
         }
+    }
+}
+
+@Composable
+actual fun hasLocationPermission(): Boolean {
+    val context = LocalContext.current
+    return remember {
+        ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
     }
 }

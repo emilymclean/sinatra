@@ -19,6 +19,7 @@ import cl.emilym.sinatra.ui.presentation.theme.SinatraTheme
 import cl.emilym.sinatra.ui.widgets.LocalPermissionRequestQueue
 import cl.emilym.sinatra.ui.widgets.LocalScheduleTimeZone
 import cl.emilym.sinatra.ui.widgets.PermissionRequestQueue
+import cl.emilym.sinatra.ui.widgets.PermissionRequestQueueHandler
 import coil3.ImageLoader
 import coil3.compose.setSingletonImageLoaderFactory
 import coil3.request.crossfade
@@ -75,46 +76,5 @@ fun App() {
                 Navigator(RootMapScreen())
             }
         }
-    }
-}
-
-@Composable
-fun PermissionRequestQueueHandler() {
-    val queue = LocalPermissionRequestQueue.current
-    val request by queue.request.collectAsState(null)
-    val rejectedPermissions = rememberSaveable { mutableListOf<Permission>() }
-
-    val permissionsFactory = rememberPermissionsControllerFactory()
-    val permissionsController: PermissionsController = remember(permissionsFactory) {
-        permissionsFactory.createPermissionsController()
-    }
-    BindEffect(permissionsController)
-
-    LaunchedEffect(request) {
-        val request = request ?: return@LaunchedEffect
-
-        when {
-            permissionsController.isPermissionGranted(request.permission) -> {
-                request.suspended.complete(true)
-                Napier.d("Already have permission ${request.permission}, continuing")
-            }
-            rejectedPermissions.contains(request.permission) -> {
-                request.suspended.complete(false)
-                Napier.d("Permission ${request.permission} already rejected this session")
-            }
-            else -> {
-                try {
-                    Napier.d("Requesting permission ${request.permission}")
-                    permissionsController.providePermission(request.permission)
-                    Napier.d("Got ${request.permission} permission, continuing")
-                    request.suspended.complete(true)
-                } catch (e: Exception) {
-                    Napier.e(e)
-                    rejectedPermissions.add(request.permission)
-                    request.suspended.complete(false)
-                }
-            }
-        }
-        queue.pop()
     }
 }

@@ -248,6 +248,9 @@ class NavigationEntryViewModel(
             is NavigationLocation.CurrentLocation -> {
                 save(currentLocation, true)
             }
+            is NavigationLocation.None -> {
+                save(null, false)
+            }
         }
         navigationLocation.recentVisit?.let {
             viewModelScope.launch {

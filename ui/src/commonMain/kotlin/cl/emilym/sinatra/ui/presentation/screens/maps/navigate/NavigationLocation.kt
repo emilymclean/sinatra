@@ -22,6 +22,14 @@ sealed interface NavigationLocation: Serializable {
 
     val recentVisit: RecentVisit?
 
+    data object None: NavigationLocation {
+        override val name: String
+            @Composable
+            get() = ""
+        override val screenKey: String = "none"
+        override val recentVisit: RecentVisit? = null
+    }
+
     data class Point(
         override val location: MapLocation
     ): LocatableNavigationLocation {

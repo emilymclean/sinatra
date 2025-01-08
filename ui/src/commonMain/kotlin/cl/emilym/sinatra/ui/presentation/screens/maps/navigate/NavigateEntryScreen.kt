@@ -16,6 +16,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -60,6 +61,7 @@ import cl.emilym.sinatra.ui.widgets.StarOutlineIcon
 import cl.emilym.sinatra.ui.widgets.WalkIcon
 import cl.emilym.sinatra.ui.widgets.currentLocation
 import cl.emilym.sinatra.ui.widgets.format
+import cl.emilym.sinatra.ui.widgets.hasLocationPermission
 import cl.emilym.sinatra.ui.widgets.routeRandleSize
 import com.mikepenz.markdown.m3.Markdown
 import org.jetbrains.compose.resources.stringResource
@@ -68,6 +70,8 @@ import sinatra.ui.generated.resources.Res
 import sinatra.ui.generated.resources.navigate_calculating_journey
 import sinatra.ui.generated.resources.navigate_calculating_journey_failed
 import sinatra.ui.generated.resources.navigate_downloading_graph
+import sinatra.ui.generated.resources.navigate_entry_select_destination
+import sinatra.ui.generated.resources.navigate_entry_select_origin
 import sinatra.ui.generated.resources.navigate_travel
 import sinatra.ui.generated.resources.navigate_travel_arrive
 import sinatra.ui.generated.resources.navigate_travel_depart
@@ -78,7 +82,7 @@ import sinatra.ui.generated.resources.navigate_walk
 
 class NavigateEntryScreen(
     val destination: NavigationLocation,
-    val origin: NavigationLocation = NavigationLocation.CurrentLocation
+    val origin: NavigationLocation? = null
 ): MapScreen {
 
     private val journeyIconInset
@@ -89,7 +93,7 @@ class NavigateEntryScreen(
         @Composable
         get() = 2.rdp + 24.dp
 
-    override val key: ScreenKey = "navigateEntryScreen-${destination.screenKey}-${origin.screenKey}"
+    override val key: ScreenKey = "navigateEntryScreen-${destination.screenKey}-${origin?.screenKey}"
 
     @Composable
     override fun mapItems(): List<MapItem> {
@@ -169,8 +173,16 @@ class NavigateEntryScreen(
         val state by viewModel.state.collectAsState(null)
         val currentLocation = currentLocation()
 
+        val hasLocationPermission = hasLocationPermission()
         LaunchedEffect(Unit) {
-            viewModel.init(destination, origin)
+            viewModel.init(
+                destination,
+                origin ?: (
+                        if (hasLocationPermission)
+                            NavigationLocation.CurrentLocation
+                        else NavigationLocation.None
+                )
+            )
         }
 
         LaunchedEffect(currentLocation) {
@@ -217,6 +229,7 @@ class NavigateEntryScreen(
         innerPadding: PaddingValues,
         viewModel: NavigationEntryViewModel,
     ) {
+        val hasLocationPermission = hasLocationPermission()
         Box(Modifier.fillMaxSize().padding(innerPadding)) {
             SearchScreen(
                 viewModel,
@@ -226,14 +239,16 @@ class NavigateEntryScreen(
                 {},
                 { viewModel.onSearchItemClicked(NavigationLocation.Place(it)) }
             ) {
-                item {
-                    CurrentLocationCard(
-                        onClick = { viewModel.onSearchItemClicked(NavigationLocation.CurrentLocation) },
-                        showCurrentLocationIcon = true
-                    )
-                }
-                item {
-                    Box(Modifier.height(1.rdp))
+                if (hasLocationPermission) {
+                    item {
+                        CurrentLocationCard(
+                            onClick = { viewModel.onSearchItemClicked(NavigationLocation.CurrentLocation) },
+                            showCurrentLocationIcon = true
+                        )
+                    }
+                    item {
+                        Box(Modifier.height(1.rdp))
+                    }
                 }
             }
         }
@@ -476,6 +491,16 @@ fun NavigationLocationDisplay(
         },
         modifier = modifier
     ) {
-        Text(location.name)
+        Text(
+            when {
+                location !is NavigationLocation.None -> location.name
+                isDestination -> stringResource(Res.string.navigate_entry_select_destination)
+                else -> stringResource(Res.string.navigate_entry_select_origin)
+            },
+            color = when {
+                location !is NavigationLocation.None -> LocalContentColor.current
+                else -> MaterialTheme.colorScheme.onSurfaceVariant
+            }
+        )
     }
 }

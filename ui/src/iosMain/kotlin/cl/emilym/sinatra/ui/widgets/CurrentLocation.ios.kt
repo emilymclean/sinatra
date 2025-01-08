@@ -12,9 +12,16 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
+import platform.CoreLocation.CLAuthorizationStatus
 import platform.CoreLocation.CLLocation
 import platform.CoreLocation.CLLocationManager
 import platform.CoreLocation.CLLocationManagerDelegateProtocol
+import platform.CoreLocation.kCLAuthorizationStatusAuthorized
+import platform.CoreLocation.kCLAuthorizationStatusAuthorizedAlways
+import platform.CoreLocation.kCLAuthorizationStatusAuthorizedWhenInUse
+import platform.CoreLocation.kCLAuthorizationStatusDenied
+import platform.CoreLocation.kCLAuthorizationStatusNotDetermined
+import platform.CoreLocation.kCLAuthorizationStatusRestricted
 import platform.CoreLocation.kCLLocationAccuracyBest
 import platform.CoreLocation.kCLLocationAccuracyKilometer
 import platform.CoreLocation.kCLLocationAccuracyNearestTenMeters
@@ -50,6 +57,20 @@ internal actual fun platformCurrentLocation(accuracy: LocationAccuracy): Flow<Ma
         awaitClose {
             locationManager.stopUpdatingLocation()
             locationManager.delegate = null
+        }
+    }
+}
+
+@Composable
+actual fun hasLocationPermission(): Boolean {
+    return remember {
+        when (CLLocationManager.locationServicesEnabled()) {
+            true -> when (CLLocationManager.authorizationStatus()) {
+                kCLAuthorizationStatusAuthorized, kCLAuthorizationStatusAuthorizedWhenInUse
+                    -> true
+                else -> false
+            }
+            false -> false
         }
     }
 }

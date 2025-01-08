@@ -6,9 +6,13 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import cl.emilym.sinatra.data.models.MapLocation
 import dev.icerock.moko.permissions.Permission
+import dev.icerock.moko.permissions.PermissionsController
+import dev.icerock.moko.permissions.compose.BindEffect
+import dev.icerock.moko.permissions.compose.rememberPermissionsControllerFactory
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
@@ -39,3 +43,6 @@ fun currentLocation(accuracy: LocationAccuracy = LocationAccuracy.MEDIUM): MapLo
 
     return platformLocation.collectAsState(null).value
 }
+
+@Composable
+expect fun hasLocationPermission(): Boolean
