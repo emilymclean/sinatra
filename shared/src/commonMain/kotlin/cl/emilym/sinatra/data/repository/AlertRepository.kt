@@ -6,7 +6,9 @@ import cl.emilym.sinatra.data.models.ContentLink
 import cl.emilym.sinatra.data.models.RouteId
 import cl.emilym.sinatra.data.models.StopId
 import cl.emilym.sinatra.data.models.TripId
+import cl.emilym.sinatra.e
 import cl.emilym.sinatra.pick
+import io.github.aakira.napier.Napier
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
@@ -28,9 +30,14 @@ class AlertRepository(
     ): Flow<List<Alert>> {
         return flow {
             val banner = listOfNotNull(when {
-                routeId == null && tripId == null && stopId == null -> contentRepository.banner(
-                    ContentRepository.HOME_BANNER_ID
-                )
+                routeId == null && tripId == null && stopId == null -> try {
+                    contentRepository.banner(
+                        ContentRepository.HOME_BANNER_ID
+                    )
+                } catch (e: Exception) {
+                    Napier.e(e)
+                    null
+                }
                 else -> null
             })
 
