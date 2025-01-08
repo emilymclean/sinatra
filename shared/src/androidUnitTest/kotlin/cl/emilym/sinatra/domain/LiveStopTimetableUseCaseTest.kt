@@ -29,7 +29,7 @@ class LiveStopTimetableUseCaseTest {
     private lateinit var liveServiceRepository: LiveServiceRepository
     private lateinit var transportMetadataRepository: TransportMetadataRepository
     private lateinit var useCase: LiveStopTimetableUseCase
-    val scheduleStartOfDay = Instant.fromEpochMilliseconds(0)
+    private val scheduleStartOfDay = Instant.fromEpochMilliseconds(0)
 
     @BeforeTest
     fun setUp() {
