@@ -1,43 +1,57 @@
 package cl.emilym.sinatra.domain
 
-import cl.emilym.sinatra.data.models.*
+import cl.emilym.sinatra.data.models.Cachable
+import cl.emilym.sinatra.data.models.RouteServiceAccessibility
+import cl.emilym.sinatra.data.models.RouteTripInformation
+import cl.emilym.sinatra.data.models.RouteTripStop
+import cl.emilym.sinatra.data.models.RouteTripTimetable
+import cl.emilym.sinatra.data.models.ServiceBikesAllowed
+import cl.emilym.sinatra.data.models.ServiceWheelchairAccessible
+import cl.emilym.sinatra.data.models.StationTime
+import cl.emilym.sinatra.data.models.Time
 import cl.emilym.sinatra.data.repository.LiveServiceRepository
 import cl.emilym.sinatra.data.repository.RouteRepository
 import cl.emilym.sinatra.data.repository.TransportMetadataRepository
-import cl.emilym.sinatra.domain.LiveTripInformationUseCase
-import cl.emilym.sinatra.domain.LiveUseCase
+import cl.emilym.sinatra.timeZone
 import com.google.transit.realtime.FeedMessage
-import com.google.transit.realtime.TripUpdate
-import io.mockk.*
+import io.mockk.coEvery
+import io.mockk.every
+import io.mockk.mockk
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
-import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.Month
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toInstant
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.assertNotNull
-import kotlin.test.assertTrue
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 
 class LiveTripInformationUseCaseTest {
 
     private val liveServiceRepository = mockk<LiveServiceRepository>()
     private val routeRepository = mockk<RouteRepository>()
     private val transportMetadataRepository = mockk<TransportMetadataRepository>()
-    private val scheduleStartOfDay = Instant.fromEpochMilliseconds(0)
+    private val scheduleStartOfDay = LocalDateTime(2024, Month.JANUARY, 5, 0, 0, 0).toInstant(
+        timeZone
+    )
 
     private val useCase = LiveTripInformationUseCase(
         liveServiceRepository = liveServiceRepository,
         routeRepository = routeRepository,
-        transportMetadataRepository = transportMetadataRepository
+        metadataRepository = transportMetadataRepository
     )
 
     @Test
     fun `invoke should merge real-time updates with scheduled times when delay provided`() = runTest {
         // Arrange
+        val instant = Instant.parse("2024-01-05T12:00:00Z")
         val liveInformationUrl = "http://realtime.url"
         val routeId = "route-1"
         val serviceId = "service-1"
@@ -78,12 +92,13 @@ class LiveTripInformationUseCaseTest {
             )
         }
 
-        coEvery { routeRepository.tripTimetable(routeId, serviceId, tripId) } returns Cachable.live(scheduledTimetable)
+        coEvery { routeRepository.tripTimetable(routeId, serviceId, tripId, any()) } returns Cachable.live(scheduledTimetable)
         coEvery { transportMetadataRepository.scheduleStartOfDay() } returns scheduleStartOfDay
         coEvery { liveServiceRepository.getRealtimeUpdates(liveInformationUrl) } returns flowOf(feedMessage)
+        coEvery { transportMetadataRepository.timeZone() } returns timeZone
 
         // Act
-        val result = useCase.invoke(liveInformationUrl, routeId, serviceId, tripId).first()
+        val result = useCase.invoke(liveInformationUrl, routeId, serviceId, tripId, instant).first()
 
         // Assert
         val updatedTimetable = result.item
@@ -98,6 +113,7 @@ class LiveTripInformationUseCaseTest {
     @Test
     fun `invoke should merge real-time updates with scheduled times when arrival time provided`() = runTest {
         // Arrange
+        val instant = scheduleStartOfDay
         val liveInformationUrl = "http://realtime.url"
         val routeId = "route-1"
         val serviceId = "service-1"
@@ -146,12 +162,13 @@ class LiveTripInformationUseCaseTest {
             )
         }
 
-        coEvery { routeRepository.tripTimetable(routeId, serviceId, tripId) } returns Cachable.live(scheduledTimetable)
+        coEvery { routeRepository.tripTimetable(routeId, serviceId, tripId, any()) } returns Cachable.live(scheduledTimetable)
         coEvery { transportMetadataRepository.scheduleStartOfDay() } returns scheduleStartOfDay
         coEvery { liveServiceRepository.getRealtimeUpdates(liveInformationUrl) } returns flowOf(feedMessage)
+        coEvery { transportMetadataRepository.timeZone() } returns timeZone
 
         // Act
-        val result = useCase.invoke(liveInformationUrl, routeId, serviceId, tripId).first()
+        val result = useCase.invoke(liveInformationUrl, routeId, serviceId, tripId, instant).first()
 
         // Assert
         val updatedTimetable = result.item
@@ -166,6 +183,7 @@ class LiveTripInformationUseCaseTest {
     @Test
     fun `invoke should merge real-time updates with scheduled times when stop delay provided`() = runTest {
         // Arrange
+        val instant = Instant.parse("2024-01-05T12:00:00Z")
         val liveInformationUrl = "http://realtime.url"
         val routeId = "route-1"
         val serviceId = "service-1"
@@ -215,12 +233,13 @@ class LiveTripInformationUseCaseTest {
             )
         }
 
-        coEvery { routeRepository.tripTimetable(routeId, serviceId, tripId) } returns Cachable.live(scheduledTimetable)
+        coEvery { routeRepository.tripTimetable(routeId, serviceId, tripId, any()) } returns Cachable.live(scheduledTimetable)
         coEvery { transportMetadataRepository.scheduleStartOfDay() } returns scheduleStartOfDay
         coEvery { liveServiceRepository.getRealtimeUpdates(liveInformationUrl) } returns flowOf(feedMessage)
+        coEvery { transportMetadataRepository.timeZone() } returns timeZone
 
         // Act
-        val result = useCase.invoke(liveInformationUrl, routeId, serviceId, tripId).first()
+        val result = useCase.invoke(liveInformationUrl, routeId, serviceId, tripId, instant).first()
 
         // Assert
         val updatedTimetable = result.item
@@ -234,6 +253,8 @@ class LiveTripInformationUseCaseTest {
 
     @Test
     fun `invoke emits scheduled timetable on error`() = runTest {
+        val instant = Instant.parse("2024-01-05T12:00:00Z")
+
         // Arrange
         val liveInformationUrl = "http://realtime.url"
         val routeId = "route-1"
@@ -262,12 +283,13 @@ class LiveTripInformationUseCaseTest {
             )
         )
 
-        coEvery { routeRepository.tripTimetable(routeId, serviceId, tripId) } returns Cachable.live(scheduledTimetable)
+        coEvery { routeRepository.tripTimetable(routeId, serviceId, tripId, any()) } returns Cachable.live(scheduledTimetable)
         coEvery { transportMetadataRepository.scheduleStartOfDay() } returns scheduleStartOfDay
         coEvery { liveServiceRepository.getRealtimeUpdates(liveInformationUrl) } returns flow { throw Exception("Network error") }
+        coEvery { transportMetadataRepository.timeZone() } returns timeZone
 
         // Act
-        val result = useCase.invoke(liveInformationUrl, routeId, serviceId, tripId).first()
+        val result = useCase.invoke(liveInformationUrl, routeId, serviceId, tripId, instant).first()
 
         // Assert
         val updatedTimetable = result.item
