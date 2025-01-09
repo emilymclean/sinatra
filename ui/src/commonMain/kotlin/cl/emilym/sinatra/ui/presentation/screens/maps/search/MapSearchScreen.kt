@@ -14,6 +14,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
 import cafe.adriel.voyager.core.screen.ScreenKey
@@ -83,6 +85,9 @@ class MapSearchScreen: MapScreen, NativeMapScreen {
                     FloatingActionButton(
                         onClick = {
                             mapControl.zoomToPoint(it, currentLocationZoom)
+                        },
+                        Modifier.semantics {
+                            contentDescription = "Zoom to current location"
                         }
                     ) { MyLocationIcon() }
                 }
@@ -91,6 +96,9 @@ class MapSearchScreen: MapScreen, NativeMapScreen {
                         onClick = {
                             viewModel.openSearch()
                         },
+                        Modifier.semantics {
+                            contentDescription = "Open search screen"
+                        }
                     ) { SearchIcon() }
                 }
                 val sheetValue = LocalBottomSheetState.current.bottomSheetState.offset

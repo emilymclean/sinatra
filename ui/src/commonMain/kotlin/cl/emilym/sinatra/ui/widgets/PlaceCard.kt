@@ -6,6 +6,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.data.models.Place
 
@@ -24,7 +26,11 @@ fun PlaceCard(
                 }
             }
         },
-        modifier,
+        Modifier
+            .semantics {
+                contentDescription = "Place listing"
+            }
+            .then(modifier),
         onClick,
     ) {
         Row(
