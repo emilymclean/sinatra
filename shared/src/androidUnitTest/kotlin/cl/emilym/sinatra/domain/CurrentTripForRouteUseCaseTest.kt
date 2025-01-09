@@ -14,6 +14,7 @@ import cl.emilym.sinatra.data.models.Time
 import cl.emilym.sinatra.data.repository.RouteRepository
 import cl.emilym.sinatra.data.repository.ServiceRepository
 import cl.emilym.sinatra.data.repository.TransportMetadataRepository
+import cl.emilym.sinatra.timeZone
 import io.github.aakira.napier.Napier
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -28,6 +29,10 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.Month
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toInstant
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -38,8 +43,13 @@ class CurrentTripForRouteUseCaseTest {
     private lateinit var serviceRepository: ServiceRepository
     private lateinit var transportMetadataRepository: TransportMetadataRepository
     private lateinit var liveTripInformationUseCase: LiveTripInformationUseCase
+    private lateinit var metadataRepository: TransportMetadataRepository
     private lateinit var clock: Clock
     private lateinit var useCase: CurrentTripForRouteUseCase
+
+    val scheduleStartOfDay = LocalDateTime(2024, Month.JANUARY, 5, 0, 0, 0).toInstant(
+        timeZone
+    )
 
     val route = Route(
         "route1",
@@ -68,13 +78,15 @@ class CurrentTripForRouteUseCaseTest {
         serviceRepository = mockk()
         transportMetadataRepository = mockk()
         liveTripInformationUseCase = mockk()
+        metadataRepository = mockk()
         clock = mockk()
         useCase = CurrentTripForRouteUseCase(
             routeRepository,
             serviceRepository,
             transportMetadataRepository,
             clock,
-            liveTripInformationUseCase
+            liveTripInformationUseCase,
+            metadataRepository
         )
         mockkObject(Napier) // Mock Napier logging
     }
@@ -85,6 +97,7 @@ class CurrentTripForRouteUseCaseTest {
         every { clock.now() } returns instant
 
         coEvery { routeRepository.route(any()) } returns Cachable(null, CacheState.LIVE)
+        coEvery { metadataRepository.timeZone() } returns timeZone
 
         val result = useCase.invoke("route1").first()
 
@@ -104,6 +117,7 @@ class CurrentTripForRouteUseCaseTest {
             CacheState.LIVE
         )
         coEvery { serviceRepository.services(any()) } returns Cachable(listOf(), CacheState.LIVE)
+        coEvery { metadataRepository.timeZone() } returns timeZone
 
         val result = useCase.invoke("route1").first()
 
@@ -134,8 +148,9 @@ class CurrentTripForRouteUseCaseTest {
                 CacheState.LIVE
             )
             coEvery {
-                routeRepository.tripTimetable(any(), any(), any())
+                routeRepository.tripTimetable(any(), any(), any(), any())
             } returns Cachable(tripTimetable, CacheState.LIVE)
+            coEvery { metadataRepository.timeZone() } returns timeZone
 
             val result = useCase.invoke("route1", serviceId, tripId).first()
 
@@ -144,7 +159,7 @@ class CurrentTripForRouteUseCaseTest {
             coVerify {
                 routeRepository.route("route1")
                 serviceRepository.services(listOf(serviceId))
-                routeRepository.tripTimetable("route1", serviceId, tripId)
+                routeRepository.tripTimetable("route1", serviceId, tripId, any())
             }
         }
 
@@ -168,8 +183,9 @@ class CurrentTripForRouteUseCaseTest {
             CacheState.LIVE
         )
         coEvery {
-            liveTripInformationUseCase.invoke(any(), any(), any(), any())
+            liveTripInformationUseCase.invoke(any(), any(), any(), any(), any())
         } returns flowOf(Cachable(tripInformation, CacheState.LIVE))
+        coEvery { metadataRepository.timeZone() } returns timeZone
 
         val result = useCase.invoke("route1", serviceId, tripId).first()
 
@@ -182,7 +198,8 @@ class CurrentTripForRouteUseCaseTest {
                 "http://realtime.url",
                 "route1",
                 serviceId,
-                tripId
+                tripId,
+                any()
             )
         }
     }
@@ -207,11 +224,12 @@ class CurrentTripForRouteUseCaseTest {
             CacheState.LIVE
         )
         coEvery {
-            liveTripInformationUseCase.invoke(any(), any(), any(), any())
+            liveTripInformationUseCase.invoke(any(), any(), any(), any(), any())
         } throws RuntimeException("Real-time service error")
         coEvery {
-            routeRepository.tripTimetable(any(), any(), any())
+            routeRepository.tripTimetable(any(), any(), any(), any())
         } returns Cachable(tripTimetable, CacheState.LIVE)
+        coEvery { metadataRepository.timeZone() } returns timeZone
 
         val result = useCase.invoke("route1", serviceId, tripId).first()
 
@@ -224,9 +242,10 @@ class CurrentTripForRouteUseCaseTest {
                 "http://realtime.url",
                 "route1",
                 serviceId,
-                tripId
+                tripId,
+                any()
             )
-            routeRepository.tripTimetable("route1", serviceId, tripId)
+            routeRepository.tripTimetable("route1", serviceId, tripId, any())
         }
         verify { Napier.e(any<String>(), any(), any()) }
     }
