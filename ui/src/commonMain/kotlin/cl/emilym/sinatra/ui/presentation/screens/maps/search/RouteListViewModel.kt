@@ -1,19 +1,19 @@
-package cl.emilym.sinatra.ui.presentation.screens.maps
+package cl.emilym.sinatra.ui.presentation.screens.maps.search
 
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import cafe.adriel.voyager.core.model.ScreenModel
+import cafe.adriel.voyager.core.model.screenModelScope
 import cl.emilym.compose.requeststate.RequestState
 import cl.emilym.compose.requeststate.handle
 import cl.emilym.sinatra.data.models.Route
 import cl.emilym.sinatra.domain.DisplayRoutesUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
-import org.koin.android.annotation.KoinViewModel
+import org.koin.core.annotation.Factory
 
-@KoinViewModel
+@Factory
 class RouteListViewModel(
     val displayRoutesUseCase: DisplayRoutesUseCase
-): ViewModel() {
+): ScreenModel {
 
     val routes = MutableStateFlow<RequestState<List<Route>>>(RequestState.Initial())
 
@@ -22,7 +22,7 @@ class RouteListViewModel(
     }
 
     fun retry() {
-        viewModelScope.launch {
+        screenModelScope.launch {
             routes.handle {
                 displayRoutesUseCase().item
             }

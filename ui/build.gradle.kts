@@ -80,7 +80,8 @@ kotlin {
 
             // Voyager
             implementation(libs.voyager.navigator)
-            implementation(libs.voyager.navigator.bottomsheet)
+            implementation(libs.voyager.koin)
+            implementation(libs.voyager.screenmodel)
         }
         iosMain.dependencies {}
         iosMain {

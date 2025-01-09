@@ -11,9 +11,7 @@ import cl.emilym.sinatra.ui.presentation.screens.maps.StopDetailScreen
 import cl.emilym.sinatra.ui.presentation.screens.maps.navigate.NavigateEntryScreen
 import cl.emilym.sinatra.ui.presentation.screens.maps.navigate.NavigationLocation
 
-sealed interface ScreenRoute: ScreenProvider, Serializable {
-    data object HomeScreen: ScreenRoute
-}
+sealed interface ScreenRoute: ScreenProvider, Serializable {}
 
 fun Navigator.placeCardDefaultNavigation(place: Place) {
     push(NavigateEntryScreen(NavigationLocation.Place(place)))

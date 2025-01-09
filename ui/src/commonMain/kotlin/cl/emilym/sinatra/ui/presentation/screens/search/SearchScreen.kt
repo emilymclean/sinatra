@@ -65,7 +65,6 @@ import sinatra.ui.generated.resources.stop_detail_distance
 @Composable
 fun SearchScreen(
     viewModel: SearchScreenViewModel,
-    inBottomSheet: Boolean,
     onBackPressed: () -> Unit,
     onStopPressed: (Stop) -> Unit,
     onRoutePressed: (Route) -> Unit,
