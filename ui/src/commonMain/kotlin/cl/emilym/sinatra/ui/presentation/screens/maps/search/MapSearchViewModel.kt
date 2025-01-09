@@ -17,6 +17,7 @@ import cl.emilym.sinatra.domain.search.RouteStopSearchUseCase
 import cl.emilym.sinatra.domain.search.SearchResult
 import cl.emilym.sinatra.nullIfEmpty
 import cl.emilym.sinatra.ui.NEAREST_STOP_RADIUS
+import cl.emilym.sinatra.ui.canberraRegion
 import cl.emilym.sinatra.ui.presentation.screens.search.SearchScreenViewModel
 import cl.emilym.sinatra.ui.presentation.screens.search.searchHandler
 import cl.emilym.sinatra.ui.widgets.createRequestStateFlowFlow
@@ -27,6 +28,7 @@ import io.github.aakira.napier.Napier
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
@@ -81,7 +83,9 @@ class MapSearchViewModel(
 
     private val lastLocation = MutableStateFlow<MapLocation?>(null)
     val stops = MutableStateFlow<RequestState<List<Stop>>>(RequestState.Initial())
-    var hasZoomedToLocation = false
+    val showCurrentLocation = MutableStateFlow(false)
+    val zoomToLocation = MutableSharedFlow<Unit>()
+    private var hasZoomedToLocation = false
 
     override val nearbyStops: Flow<List<StopWithDistance>?> = stops.combine(lastLocation) { stops, lastLocation ->
         if (stops !is RequestState.Success || lastLocation == null) return@combine null
@@ -145,6 +149,16 @@ class MapSearchViewModel(
 
     fun updateLocation(location: MapLocation) {
         lastLocation.value = location
+
+        val isInRegion = canberraRegion.contains(location)
+        showCurrentLocation.value = isInRegion
+
+        if (!hasZoomedToLocation && isInRegion) {
+            hasZoomedToLocation = true
+            viewModelScope.launch {
+                zoomToLocation.emit(Unit)
+            }
+        }
     }
 
     private enum class State {

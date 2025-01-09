@@ -58,6 +58,11 @@ data class MapRegion(
     )
     val center: MapLocation get() = naiveCenter
 
+    fun contains(location: MapLocation): Boolean {
+        return location.lat <= topLeft.lat && location.lat >= bottomRight.lat &&
+                location.lng >= topLeft.lng && location.lng <= bottomRight.lng
+    }
+
 }
 
 const val EARTH_RADIUS = 6371.0

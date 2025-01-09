@@ -62,17 +62,19 @@ class MapSearchScreen: MapScreen, NativeMapScreen {
 
         val currentLocation = currentLocation()
         val state by viewModel.state.collectAsState(MapSearchState.Browse)
+        val zoomToCurrentLocation by viewModel.zoomToLocation.collectAsState(null)
 
         LaunchedEffect(currentLocation) {
-            val currentLocation = currentLocation ?: return@LaunchedEffect
-            if (!viewModel.hasZoomedToLocation) {
-                mapControl.zoomToPoint(currentLocation, currentLocationZoom)
-                viewModel.hasZoomedToLocation = true
-            }
-            if (FeatureFlags.MAP_SEARCH_SCREEN_NEARBY_STOPS_SEARCH) {
+            if (currentLocation != null) {
                 viewModel.updateLocation(currentLocation)
             }
         }
+
+        LaunchedEffect(zoomToCurrentLocation) {
+            if (zoomToCurrentLocation == null || currentLocation == null) return@LaunchedEffect
+            mapControl.zoomToPoint(currentLocation, currentLocationZoom)
+        }
+
         Box(
             Modifier.fillMaxSize(),
             contentAlignment = Alignment.BottomEnd
@@ -81,15 +83,18 @@ class MapSearchScreen: MapScreen, NativeMapScreen {
                 Modifier.padding(1.rdp),
                 verticalArrangement = Arrangement.spacedBy(1.rdp)
             ) {
-                currentLocation?.let {
-                    FloatingActionButton(
-                        onClick = {
-                            mapControl.zoomToPoint(it, currentLocationZoom)
-                        },
-                        Modifier.semantics {
-                            contentDescription = "Zoom to current location"
-                        }
-                    ) { MyLocationIcon() }
+                val showCurrentLocationButton by viewModel.showCurrentLocation.collectAsState(false)
+                if (showCurrentLocationButton) {
+                    currentLocation?.let {
+                        FloatingActionButton(
+                            onClick = {
+                                mapControl.zoomToPoint(it, currentLocationZoom)
+                            },
+                            Modifier.semantics {
+                                contentDescription = "Zoom to current location"
+                            }
+                        ) { MyLocationIcon() }
+                    }
                 }
                 if (state !is MapSearchState.Search) {
                     FloatingActionButton(
