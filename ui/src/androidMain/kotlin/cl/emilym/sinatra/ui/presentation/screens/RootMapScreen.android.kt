@@ -101,7 +101,7 @@ actual fun Map(content: @Composable MapControl.(@Composable () -> Unit) -> Unit)
                 windowPadding.calculateStartPadding(layoutDirection),
                 windowPadding.calculateTopPadding(),
                 windowPadding.calculateEndPadding(layoutDirection),
-                windowPadding.calculateBottomPadding() + 56.dp
+                windowPadding.calculateBottomPadding()
             ),
             mapColorScheme = ComposeMapColorScheme.FOLLOW_SYSTEM
         ) {

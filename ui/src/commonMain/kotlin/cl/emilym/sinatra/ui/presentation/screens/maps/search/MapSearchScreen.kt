@@ -106,13 +106,6 @@ class MapSearchScreen: MapScreen, NativeMapScreen {
                         }
                     ) { SearchIcon() }
                 }
-                val sheetValue = LocalBottomSheetState.current.bottomSheetState.offset
-                Box(
-                    Modifier.height(min(
-                        viewportHeight() - (sheetValue?.px ?: 0.dp),
-                        viewportHeight() * bottomSheetHalfHeight
-                    ))
-                )
             }
         }
     }

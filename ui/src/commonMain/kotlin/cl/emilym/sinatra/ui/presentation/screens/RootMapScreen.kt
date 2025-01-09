@@ -13,11 +13,17 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.exclude
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.onConsumedWindowInsetsChanged
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContent
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationRail
@@ -34,10 +40,14 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.min
 import androidx.window.core.layout.WindowWidthSizeClass
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.CurrentScreen
 import cafe.adriel.voyager.navigator.Navigator
+import cl.emilym.compose.units.px
+import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.ui.maps.MapControl
 import cl.emilym.sinatra.ui.navigation.CurrentBottomSheetContent
 import cl.emilym.sinatra.ui.navigation.CurrentMapOverlayContent
@@ -59,6 +69,7 @@ import cl.emilym.sinatra.ui.widgets.bottomsheet.SinatraSheetValue
 import cl.emilym.sinatra.ui.widgets.bottomsheet.rememberSinatraBottomSheetScaffoldState
 import cl.emilym.sinatra.ui.widgets.bottomsheet.rememberSinatraBottomSheetState
 import cl.emilym.sinatra.ui.widgets.toFloatPx
+import cl.emilym.sinatra.ui.widgets.viewportHeight
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import sinatra.ui.generated.resources.Res
@@ -84,6 +95,7 @@ class RootMapScreen: Screen {
             BoxWithConstraints(Modifier.fillMaxSize()) {
                 val height = maxHeight.toFloatPx()
                 val width = maxWidth.toFloatPx()
+                val adaptiveWindowInfo = currentWindowAdaptiveInfo()
 
                 CompositionLocalProvider(
                     LocalBottomSheetState provides scaffoldState,
@@ -94,10 +106,38 @@ class RootMapScreen: Screen {
                             CompositionLocalProvider(
                                 LocalMapControl provides this
                             ) {
-                                BottomSheet(scaffoldState) {
-                                    Box(Modifier.fillMaxSize()) {
-                                        map()
-                                        MapOverlay()
+                                when (adaptiveWindowInfo.windowSizeClass.windowWidthSizeClass) {
+                                    WindowWidthSizeClass.COMPACT -> {
+                                        BottomSheet(scaffoldState) {
+                                            Box(Modifier.fillMaxSize()) {
+                                                map()
+                                                MapOverlay()
+                                            }
+                                        }
+                                    }
+                                    else -> {
+                                        Row(
+                                            Modifier
+                                                .fillMaxSize()
+                                        ) {
+                                            Box(
+                                                Modifier
+                                                    .background(MaterialTheme.colorScheme.surface)
+                                                    .fillMaxHeight()
+                                                    .fillMaxWidth(0.5f)
+                                                    .widthIn(max = 200.dp)
+                                            ) {
+                                                CompositionLocalProvider(
+                                                    LocalContentColor provides MaterialTheme.colorScheme.onSurface
+                                                ) {
+                                                    CurrentBottomSheetContent()
+                                                }
+                                            }
+                                            Box(Modifier.fillMaxSize()) {
+                                                map()
+                                                MapOverlay()
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -226,6 +266,7 @@ class RootMapScreen: Screen {
     @OptIn(ExperimentalLayoutApi::class)
     @Composable
     private fun MapOverlay() {
+        val adaptiveWindowInfo = currentWindowAdaptiveInfo()
         val cwi = ScaffoldDefaults.contentWindowInsets
         val insets = remember(cwi) {
             MutableWindowInsets(cwi)
@@ -235,7 +276,24 @@ class RootMapScreen: Screen {
                 insets.insets = cwi.exclude(consumedWindowInsets)
             }.fillMaxSize().padding(insets.insets.asPaddingValues())
         ) {
-            CurrentMapOverlayContent()
+            val bottomSheetHalfHeight = bottomSheetHalfHeight()
+            Column {
+                Box(Modifier.weight(1f)) {
+                    CurrentMapOverlayContent()
+                }
+                val sheetValue = LocalBottomSheetState.current?.bottomSheetState?.offset
+                Box(
+                    Modifier.height(
+                        when (adaptiveWindowInfo.windowSizeClass.windowWidthSizeClass) {
+                            WindowWidthSizeClass.COMPACT -> min(
+                                viewportHeight() - (sheetValue?.px ?: 0.dp),
+                                viewportHeight() * bottomSheetHalfHeight
+                            )
+                            else -> 0.dp
+                        }
+                    )
+                )
+            }
         }
     }
 

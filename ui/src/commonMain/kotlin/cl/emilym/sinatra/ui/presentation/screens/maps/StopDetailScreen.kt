@@ -15,6 +15,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -166,7 +167,7 @@ class StopDetailScreen(
         val mapControl = LocalMapControl.current
 
         LaunchedEffect(bottomSheetState) {
-            bottomSheetState.bottomSheetState.halfExpand()
+            bottomSheetState?.bottomSheetState?.halfExpand()
         }
 
         LaunchedEffect(stopId) {
@@ -190,80 +191,83 @@ class StopDetailScreen(
                             mapControl.zoomToPoint(stop.location)
                         }
 
-                        LazyColumn(
-                            Modifier.fillMaxSize(),
-                        ) {
-                            item { Box(Modifier.height(1.rdp)) }
-                            item {
-                                Row(
-                                    Modifier.padding(horizontal = 1.rdp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(1.rdp)
-                                ) {
-                                    SheetIosBackButton()
-                                    Column(Modifier.weight(1f)) {
-                                        Text(
-                                            stop.name,
-                                            style = MaterialTheme.typography.titleLarge
+                        Scaffold { innerPadding ->
+                            LazyColumn(
+                                Modifier.fillMaxSize(),
+                                contentPadding = innerPadding
+                            ) {
+                                item { Box(Modifier.height(1.rdp)) }
+                                item {
+                                    Row(
+                                        Modifier.padding(horizontal = 1.rdp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(1.rdp)
+                                    ) {
+                                        SheetIosBackButton()
+                                        Column(Modifier.weight(1f)) {
+                                            Text(
+                                                stop.name,
+                                                style = MaterialTheme.typography.titleLarge
+                                            )
+                                        }
+                                        val favourited by viewModel.favourited.collectAsState(false)
+                                        FavouriteButton(
+                                            favourited,
+                                            { viewModel.favourite(stopId, it) },
+                                            Modifier.semantics {
+                                                contentDescription = "Favourite stop"
+                                                selected = favourited
+                                            }
                                         )
                                     }
-                                    val favourited by viewModel.favourited.collectAsState(false)
-                                    FavouriteButton(
-                                        favourited,
-                                        { viewModel.favourite(stopId, it) },
-                                        Modifier.semantics {
-                                            contentDescription = "Favourite stop"
-                                            selected = favourited
-                                        }
-                                    )
                                 }
-                            }
-                            item {
-                                AlertScaffold((alerts as? RequestState.Success)?.value)
-                            }
-                            item { Box(Modifier.height(1.rdp)) }
-                            item {
-                                Column(Modifier.padding(horizontal = 1.rdp)) {
-                                    AccessibilityIconLockup(
-                                        {
-                                            WheelchairAccessibleIcon(stop.accessibility.wheelchair.isAccessible)
-                                        }
-                                    ) {
-                                        Text(when(stop.accessibility.wheelchair.isAccessible) {
-                                            true -> stringResource(Res.string.accessibility_wheelchair_accessible)
-                                            false -> stringResource(Res.string.accessibility_not_wheelchair_accessible)
-                                        })
-                                    }
-                                }
-                            }
-                            item { Box(Modifier.height(1.rdp)) }
-                            if (FeatureFlags.STOP_DETAIL_SHOW_IN_MAPS_BUTTON) {
                                 item {
-                                    val uriHandler = LocalUriHandler.current
-                                    Button(
-                                        onClick = { openMaps(uriHandler, stop.location) },
-                                        modifier = Modifier.fillMaxWidth().padding(horizontal = 1.rdp)
-                                    ) {
-                                        MapIcon()
-                                        Box(Modifier.width(0.5.rdp))
-                                        Text(stringResource(Res.string.open_maps))
+                                    AlertScaffold((alerts as? RequestState.Success)?.value)
+                                }
+                                item { Box(Modifier.height(1.rdp)) }
+                                item {
+                                    Column(Modifier.padding(horizontal = 1.rdp)) {
+                                        AccessibilityIconLockup(
+                                            {
+                                                WheelchairAccessibleIcon(stop.accessibility.wheelchair.isAccessible)
+                                            }
+                                        ) {
+                                            Text(when(stop.accessibility.wheelchair.isAccessible) {
+                                                true -> stringResource(Res.string.accessibility_wheelchair_accessible)
+                                                false -> stringResource(Res.string.accessibility_not_wheelchair_accessible)
+                                            })
+                                        }
                                     }
                                 }
                                 item { Box(Modifier.height(1.rdp)) }
-                            }
-                            item {
-                                Button(
-                                    onClick = { navigator.stopJourneyNavigation(stop) },
-                                    modifier = Modifier.fillMaxWidth().padding(horizontal = 1.rdp)
-                                ) {
-                                    NavigateIcon()
-                                    Box(Modifier.width(0.5.rdp))
-                                    Text(stringResource(Res.string.stop_detail_navigate))
+                                if (FeatureFlags.STOP_DETAIL_SHOW_IN_MAPS_BUTTON) {
+                                    item {
+                                        val uriHandler = LocalUriHandler.current
+                                        Button(
+                                            onClick = { openMaps(uriHandler, stop.location) },
+                                            modifier = Modifier.fillMaxWidth().padding(horizontal = 1.rdp)
+                                        ) {
+                                            MapIcon()
+                                            Box(Modifier.width(0.5.rdp))
+                                            Text(stringResource(Res.string.open_maps))
+                                        }
+                                    }
+                                    item { Box(Modifier.height(1.rdp)) }
                                 }
+                                item {
+                                    Button(
+                                        onClick = { navigator.stopJourneyNavigation(stop) },
+                                        modifier = Modifier.fillMaxWidth().padding(horizontal = 1.rdp)
+                                    ) {
+                                        NavigateIcon()
+                                        Box(Modifier.width(0.5.rdp))
+                                        Text(stringResource(Res.string.stop_detail_navigate))
+                                    }
+                                }
+                                item { Box(Modifier.height(1.rdp)) }
+                                Upcoming(viewModel, upcoming, navigator)
+                                item { Box(Modifier.height(1.rdp)) }
                             }
-                            item { Box(Modifier.height(1.rdp)) }
-                            Upcoming(viewModel, upcoming, navigator)
-                            item { Box(Modifier.height(1.rdp)) }
                         }
                     }
                 }

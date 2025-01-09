@@ -12,12 +12,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -191,8 +193,8 @@ class NavigateEntryScreen(
         }
 
         when (val state = state) {
-            is NavigationEntryState.Journey -> JourneyState(PaddingValues(0.dp), viewModel, state.state)
-            is NavigationEntryState.Search -> SearchState(PaddingValues(0.dp), viewModel)
+            is NavigationEntryState.Journey -> JourneyState(viewModel, state.state)
+            is NavigationEntryState.Search -> SearchState(viewModel)
             null -> {}
         }
 
@@ -206,7 +208,7 @@ class NavigateEntryScreen(
             when (val state = state) {
                 is NavigationEntryState.Journey -> when (state.state) {
                     is NavigationState.JourneyFound -> {
-                        bottomSheet.bottomSheetState.halfExpand()
+                        bottomSheet?.bottomSheetState?.halfExpand()
                         mapControl.zoomToArea(
                             (state.state.journey.legs
                                 .filterIsInstance<JourneyLeg.RouteJourneyLeg>()
@@ -216,9 +218,9 @@ class NavigateEntryScreen(
                             zoomPadding
                         )
                     }
-                    else -> bottomSheet.bottomSheetState.expand()
+                    else -> bottomSheet?.bottomSheetState?.expand()
                 }
-                is NavigationEntryState.Search -> bottomSheet.bottomSheetState.expand()
+                is NavigationEntryState.Search -> bottomSheet?.bottomSheetState?.expand()
                 null -> {}
             }
         }
@@ -226,11 +228,10 @@ class NavigateEntryScreen(
 
     @Composable
     fun SearchState(
-        innerPadding: PaddingValues,
         viewModel: NavigationEntryViewModel,
     ) {
         val hasLocationPermission = hasLocationPermission()
-        Box(Modifier.fillMaxSize().padding(innerPadding)) {
+        Box(Modifier.fillMaxSize()) {
             SearchScreen(
                 viewModel,
                 false,
@@ -256,99 +257,109 @@ class NavigateEntryScreen(
 
     @Composable
     fun JourneyState(
-        innerPadding: PaddingValues,
         viewModel: NavigationEntryViewModel,
         navigationState: NavigationState
     ) {
-        Column(
-            Modifier
-                .padding(innerPadding)
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-        ) {
-            Row(
-                Modifier.padding(1.rdp),
-                verticalAlignment = Alignment.CenterVertically
+        Scaffold { innerPadding ->
+            LazyColumn(
+                Modifier
+                    .fillMaxSize(),
+                contentPadding = innerPadding
             ) {
-                NavigatorBackButton()
-                Column(
-                    Modifier
-                        .fillMaxWidth()
-                        .shadow(2.dp, shape = MaterialTheme.shapes.large)
-                        .clip(MaterialTheme.shapes.large)
-                        .background(Container)
-                ) {
-                    val origin by viewModel.origin.collectAsState()
-                    val destination by viewModel.destination.collectAsState()
-                    origin?.let { origin ->
-                        NavigationLocationDisplay(
-                            origin,
-                            false,
-                            modifier = Modifier.clickable { viewModel.onOriginClick() }
-                        )
-                    }
-                    HorizontalDivider(Modifier.padding(start = iconInset))
-                    destination?.let { destination ->
-                        NavigationLocationDisplay(
-                            destination,
-                            true,
-                            modifier = Modifier.clickable { viewModel.onDestinationClick() }
-                        )
-                    }
-                }
-            }
-
-            navigationState.let { state ->
-                when (state) {
-                    is NavigationState.GraphLoading, NavigationState.JourneyCalculating -> {
-                        Box(
-                            Modifier.weight(1f).fillMaxWidth(),
-                            contentAlignment = Alignment.Center
+                item {
+                    Row(
+                        Modifier.padding(1.rdp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        NavigatorBackButton()
+                        Column(
+                            Modifier
+                                .fillMaxWidth()
+                                .shadow(2.dp, shape = MaterialTheme.shapes.large)
+                                .clip(MaterialTheme.shapes.large)
+                                .background(Container)
                         ) {
-                            Column(
-                                Modifier.padding(1.rdp),
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.spacedBy(1.rdp)
-                            ) {
-                                CircularProgressIndicator()
-                                Text(stringResource(
-                                    if (state == NavigationState.GraphLoading) {
-                                        Res.string.navigate_downloading_graph
-                                    } else {
-                                        Res.string.navigate_calculating_journey
-                                    }
-                                ))
+                            val origin by viewModel.origin.collectAsState()
+                            val destination by viewModel.destination.collectAsState()
+                            origin?.let { origin ->
+                                NavigationLocationDisplay(
+                                    origin,
+                                    false,
+                                    modifier = Modifier.clickable { viewModel.onOriginClick() }
+                                )
+                            }
+                            HorizontalDivider(Modifier.padding(start = iconInset))
+                            destination?.let { destination ->
+                                NavigationLocationDisplay(
+                                    destination,
+                                    true,
+                                    modifier = Modifier.clickable { viewModel.onDestinationClick() }
+                                )
                             }
                         }
                     }
-                    is NavigationState.GraphFailed -> {
-                        Box(
-                            Modifier.padding(1.rdp).weight(1f).fillMaxWidth(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            ErrorWidget(
-                                if (state is NavigationState.GraphFailed) state.exception else
-                                    (state as? NavigationState.JourneyFailed)?.exception,
-                                retry = { viewModel.retryLoadingGraph() }
-                            )
+                }
+
+                navigationState.let { state ->
+                    when (state) {
+                        is NavigationState.GraphLoading, NavigationState.JourneyCalculating -> {
+                            item {
+                                Box(
+                                    Modifier.fillMaxWidth(),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Column(
+                                        Modifier.padding(1.rdp),
+                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                        verticalArrangement = Arrangement.spacedBy(1.rdp)
+                                    ) {
+                                        CircularProgressIndicator()
+                                        Text(stringResource(
+                                            if (state == NavigationState.GraphLoading) {
+                                                Res.string.navigate_downloading_graph
+                                            } else {
+                                                Res.string.navigate_calculating_journey
+                                            }
+                                        ))
+                                    }
+                                }
+                            }
                         }
-                    }
-                    is NavigationState.JourneyFailed -> {
-                        Box(
-                            Modifier.padding(1.rdp).weight(1f).fillMaxWidth(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            ListHint(
-                                stringResource(Res.string.navigate_calculating_journey_failed),
-                                icon = { MapIcon(tint = MaterialTheme.colorScheme.primary) }
-                            )
+                        is NavigationState.GraphFailed -> {
+                            item {
+                                Box(
+                                    Modifier.padding(1.rdp).fillMaxWidth(),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    ErrorWidget(
+                                        if (state is NavigationState.GraphFailed) state.exception else
+                                            (state as? NavigationState.JourneyFailed)?.exception,
+                                        retry = { viewModel.retryLoadingGraph() }
+                                    )
+                                }
+                            }
                         }
+                        is NavigationState.JourneyFailed -> {
+                            item {
+                                Box(
+                                    Modifier.padding(1.rdp).fillMaxWidth(),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    ListHint(
+                                        stringResource(Res.string.navigate_calculating_journey_failed),
+                                        icon = { MapIcon(tint = MaterialTheme.colorScheme.primary) }
+                                    )
+                                }
+                            }
+                        }
+                        is NavigationState.GraphReady -> {}
+                        is NavigationState.JourneyFound -> {
+                            item {
+                                DisplayJourney(state.journey)
+                            }
+                        }
+                        else -> {}
                     }
-                    is NavigationState.GraphReady -> {}
-                    is NavigationState.JourneyFound -> {
-                        DisplayJourney(state.journey)
-                    }
-                    else -> {}
                 }
             }
         }
