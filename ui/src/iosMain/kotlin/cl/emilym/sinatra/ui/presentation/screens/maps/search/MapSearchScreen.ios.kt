@@ -45,6 +45,7 @@ private fun Stop.toMarkerItem(
             navigator.push(StopDetailScreen(id))
         },
         id = "mapSearchScreen-stop-${id}",
-        visibleZoomRange = zoomThreshold
+        visibleZoomRange = zoomThreshold,
+        contentDescription = "Stop ${name}"
     )
 }

@@ -141,7 +141,8 @@ fun DrawMarker(item: MarkerItem) {
         onClick = {
             item.onClick?.let { it() }
             false
-        }
+        },
+        title = item.contentDescription
     )
 }
 

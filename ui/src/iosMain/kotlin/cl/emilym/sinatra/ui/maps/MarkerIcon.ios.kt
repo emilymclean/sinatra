@@ -22,6 +22,7 @@ import platform.CoreGraphics.CGPointMake
 import platform.MapKit.MKAnnotationProtocol
 import platform.MapKit.MKAnnotationView
 import platform.UIKit.UIImage
+import platform.UIKit.accessibilityLabel
 import platform.darwin.NSObject
 import sinatra.ui.generated.resources.Res
 
@@ -29,7 +30,7 @@ actual interface MarkerIcon {
     val reuseIdentifier: String
     val anchor: MarkerIconOffset
 
-    fun annotationView(annotation: MKAnnotationProtocol): MKAnnotationView
+    fun annotationView(annotation: MKAnnotationProtocol, contentDescription: String? = null): MKAnnotationView
 }
 
 class UIImageMarkerIcon(
@@ -38,9 +39,9 @@ class UIImageMarkerIcon(
     val image: UIImage?
 ): MarkerIcon {
 
-    override fun annotationView(annotation: MKAnnotationProtocol): MKAnnotationView {
+    override fun annotationView(annotation: MKAnnotationProtocol, contentDescription: String?): MKAnnotationView {
         return UIImageAnnotationView(
-            image, anchor, annotation, reuseIdentifier
+            image, anchor, annotation, reuseIdentifier, contentDescription
         )
     }
 
@@ -65,7 +66,8 @@ class UIImageAnnotationView(
     image: UIImage?,
     anchor: MarkerIconOffset,
     annotation: MKAnnotationProtocol,
-    reuseIdentifier: String
+    reuseIdentifier: String,
+    contentDescription: String?
 ): MKAnnotationView(annotation, reuseIdentifier) {
     init {
         image?.let {
@@ -77,6 +79,7 @@ class UIImageAnnotationView(
                 )
             }
         }
+        accessibilityLabel = contentDescription
     }
 }
 

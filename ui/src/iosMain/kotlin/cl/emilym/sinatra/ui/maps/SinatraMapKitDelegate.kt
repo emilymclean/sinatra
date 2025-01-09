@@ -46,7 +46,7 @@ class SinatraMapKitDelegate(
             is MarkerAnnotation -> {
                 val icon = viewForAnnotation.icon ?: return MKAnnotationView()
                 (mapView.dequeueReusableAnnotationViewWithIdentifier(icon.reuseIdentifier)
-                    ?: icon.annotationView(viewForAnnotation)
+                    ?: icon.annotationView(viewForAnnotation, viewForAnnotation.contentDescription)
                 ).apply {
                     viewForAnnotation.visibleZoomRange?.let {
                         hidden = mapView.region.useContents { span }.toShared().toZoom() !in it
