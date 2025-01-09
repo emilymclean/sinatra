@@ -54,7 +54,7 @@ jobs:
         distribution: temurin
     - if: matrix.build-mode == 'manual'
       uses: gradle/actions/setup-gradle@v3
-    - if: matrix.build-mode == 'manual' && language == 'java-kotlin'
+    - if: matrix.build-mode == 'manual' && matrix.language == 'java-kotlin'
       shell: bash
       run: |
         ./gradlew clean build testDebugUnitTest
