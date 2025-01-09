@@ -32,7 +32,9 @@ interface Time: Comparable<Any> {
     }
 }
 
-interface ReferencedTime: Time
+interface ReferencedTime: Time {
+    val startOfDay: Instant
+}
 
 abstract class AbstractTime: Time {
 
@@ -71,7 +73,7 @@ internal data class UnreferencedTime(
 
 internal data class DefaultReferencedTime(
     override val durationThroughDay: Duration,
-    val startOfDay: Instant
+    override val startOfDay: Instant
 ): AbstractTime(), ReferencedTime {
 
     override val instant: Instant

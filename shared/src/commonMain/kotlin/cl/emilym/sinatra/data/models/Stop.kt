@@ -126,10 +126,16 @@ data class StopTimetableTime(
 
     fun withTimeReference(startOfDay: Instant): StopTimetableTime {
         return copy(
-            arrivalTime = arrivalTime.addReference(startOfDay),
-            departureTime = departureTime.addReference(startOfDay),
+            arrivalTime = arrivalTime.forDay(startOfDay),
+            departureTime = departureTime.forDay(startOfDay),
         )
     }
+
+    override val stationTime: TimetableStationTime
+        get() = TimetableStationTime(
+            StationTime.Scheduled(arrivalTime),
+            StationTime.Scheduled(departureTime),
+        )
 
 }
 
