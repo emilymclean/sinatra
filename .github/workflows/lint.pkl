@@ -4,4 +4,17 @@ jobName = "lint"
 gradleTask = "lintVitalRelease"
 name = "Lint"
 
+extraBuildSteps {
+  new CommandStep {
+    run = """
+      printf "MAPS_API_KEY=${MAPS_API_KEY}" >> secrets.properties
+      printf "${GOOGLE_SERVICES_JSON}" >> androidApp/google-services.json
+      """
+    env {
+      ["MAPS_API_KEY"] = "${{ secrets.MAPS_API_KEY }}"
+      ["GOOGLE_SERVICES_JSON"] = "${{ secrets.GOOGLE_SERVICES_JSON }}"
+    }
+  }
+}
+
 modules = List("androidApp")
