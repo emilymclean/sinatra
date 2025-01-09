@@ -5,4 +5,4 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import cl.emilym.sinatra.ui.widgets.bottomsheet.SinatraBottomSheetScaffoldState
 
 @OptIn(ExperimentalMaterial3Api::class)
-val LocalBottomSheetState = staticCompositionLocalOf<SinatraBottomSheetScaffoldState> { error("View is not in a bottom sheet") }
+val LocalBottomSheetState = staticCompositionLocalOf<SinatraBottomSheetScaffoldState?> { null }

@@ -24,10 +24,10 @@ import org.koin.compose.viewmodel.koinViewModel
 fun MapSearchScreenBrowseState() {
     val viewModel = koinViewModel<RouteListViewModel>()
     val mainViewModel = koinViewModel<MapSearchViewModel>()
-    val bottomSheetState = LocalBottomSheetState.current.bottomSheetState
+    val bottomSheetState = LocalBottomSheetState.current?.bottomSheetState
 
     LaunchedEffect(Unit) {
-        bottomSheetState.halfExpand()
+        bottomSheetState?.halfExpand()
     }
 
     Box(

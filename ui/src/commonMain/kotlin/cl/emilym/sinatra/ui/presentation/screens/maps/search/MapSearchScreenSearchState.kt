@@ -62,7 +62,7 @@ import sinatra.ui.generated.resources.stop_detail_distance
 fun MapSearchScreenSearchState() {
     val viewModel = koinViewModel<MapSearchViewModel>()
     val navigator = LocalNavigator.currentOrThrow
-    val bottomSheetState = LocalBottomSheetState.current.bottomSheetState
+    val bottomSheetState = LocalBottomSheetState.current?.bottomSheetState
     val focusRequester = remember { FocusRequester() }
 
     val state by viewModel.state.collectAsState(null)
@@ -72,7 +72,7 @@ fun MapSearchScreenSearchState() {
     val nearbyStops by viewModel.nearbyStops.collectAsState(null)
 
     LaunchedEffect(Unit) {
-        bottomSheetState.expand()
+        bottomSheetState?.expand()
     }
 
     val query by viewModel.query.collectAsState()

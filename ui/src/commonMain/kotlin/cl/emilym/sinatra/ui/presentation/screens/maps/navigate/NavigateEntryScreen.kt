@@ -206,7 +206,7 @@ class NavigateEntryScreen(
             when (val state = state) {
                 is NavigationEntryState.Journey -> when (state.state) {
                     is NavigationState.JourneyFound -> {
-                        bottomSheet.bottomSheetState.halfExpand()
+                        bottomSheet?.bottomSheetState?.halfExpand()
                         mapControl.zoomToArea(
                             (state.state.journey.legs
                                 .filterIsInstance<JourneyLeg.RouteJourneyLeg>()
@@ -216,9 +216,9 @@ class NavigateEntryScreen(
                             zoomPadding
                         )
                     }
-                    else -> bottomSheet.bottomSheetState.expand()
+                    else -> bottomSheet?.bottomSheetState?.expand()
                 }
-                is NavigationEntryState.Search -> bottomSheet.bottomSheetState.expand()
+                is NavigationEntryState.Search -> bottomSheet?.bottomSheetState?.expand()
                 null -> {}
             }
         }

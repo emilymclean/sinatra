@@ -166,7 +166,7 @@ class StopDetailScreen(
         val mapControl = LocalMapControl.current
 
         LaunchedEffect(bottomSheetState) {
-            bottomSheetState.bottomSheetState.halfExpand()
+            bottomSheetState?.bottomSheetState?.halfExpand()
         }
 
         LaunchedEffect(stopId) {

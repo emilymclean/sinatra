@@ -37,12 +37,12 @@ expect fun IosBackButton(onBack: () -> Unit)
 @Composable
 fun SheetIosBackButton() {
     val navigator = LocalNavigator.current
-    val sheetState = LocalBottomSheetState.current.bottomSheetState
+    val sheetState = LocalBottomSheetState.current?.bottomSheetState
     val coroutineScope = rememberCoroutineScope()
 
     IosBackButton {
         when {
-            sheetState.currentValue == SinatraSheetValue.Expanded -> coroutineScope.launch {
+            sheetState?.currentValue == SinatraSheetValue.Expanded -> coroutineScope.launch {
                 sheetState.halfExpand()
             }
             navigator?.canPop == true -> navigator.pop()

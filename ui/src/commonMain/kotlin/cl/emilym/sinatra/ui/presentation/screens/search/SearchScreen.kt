@@ -79,9 +79,9 @@ fun SearchScreen(
     val nearbyStops by viewModel.nearbyStops.collectAsState(null)
 
     if (inBottomSheet) {
-        val bottomSheetState = LocalBottomSheetState.current.bottomSheetState
+        val bottomSheetState = LocalBottomSheetState.current?.bottomSheetState
         LaunchedEffect(Unit) {
-            bottomSheetState.expand()
+            bottomSheetState?.expand()
         }
     }
 
