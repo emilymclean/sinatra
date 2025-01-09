@@ -9,6 +9,7 @@ import cl.emilym.sinatra.data.models.TripId
 import cl.emilym.sinatra.data.models.flatMap
 import cl.emilym.sinatra.data.models.map
 import cl.emilym.sinatra.data.models.merge
+import cl.emilym.sinatra.data.models.startOfDay
 import cl.emilym.sinatra.data.repository.RouteRepository
 import cl.emilym.sinatra.data.repository.ServiceRepository
 import cl.emilym.sinatra.data.repository.TransportMetadataRepository
@@ -19,6 +20,8 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.fold
 import kotlinx.coroutines.flow.map
 import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
+import kotlinx.datetime.toLocalDateTime
 import org.koin.core.annotation.Factory
 
 data class CurrentTripInformation(
@@ -32,15 +35,17 @@ class CurrentTripForRouteUseCase(
     private val serviceRepository: ServiceRepository,
     private val transportMetadataRepository: TransportMetadataRepository,
     private val clock: Clock,
-    private val liveTripInformationUseCase: LiveTripInformationUseCase
+    private val liveTripInformationUseCase: LiveTripInformationUseCase,
+    private val metadataRepository: TransportMetadataRepository
 ) {
 
     suspend operator fun invoke(
         routeId: RouteId,
         serviceId: ServiceId? = null,
-        tripId: TripId? = null
+        tripId: TripId? = null,
+        referenceTime: Instant? = null
     ): Flow<Cachable<CurrentTripInformation?>> {
-        val now = clock.now()
+        val now = (referenceTime ?: clock.now()).startOfDay(metadataRepository.timeZone())
 
         val rc = routeRepository.route(routeId)
         val route = rc.item ?: return flowOf(rc.map { null })
@@ -63,7 +68,8 @@ class CurrentTripForRouteUseCase(
                 routeRepository.tripTimetable(
                     routeId,
                     it!!.id,
-                    tripId!!
+                    tripId!!,
+                    now
                 )
             }
             return flowOf(timetable.map { CurrentTripInformation(it.trip, route) })
@@ -83,7 +89,8 @@ class CurrentTripForRouteUseCase(
                         route.realTimeUrl,
                         routeId,
                         activeServices.item!!.id,
-                        tripId
+                        tripId,
+                        now
                     ).map { it.map { CurrentTripInformation(it, route) }
                         .merge(activeServices, { i1, i2 -> i1 }) }
                 } catch (e: Exception) {

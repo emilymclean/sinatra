@@ -40,6 +40,7 @@ import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.FeatureFlags
 import cl.emilym.sinatra.data.models.Alert
 import cl.emilym.sinatra.data.models.IStopTimetableTime
+import cl.emilym.sinatra.data.models.ReferencedTime
 import cl.emilym.sinatra.data.models.StationTime
 import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.data.models.StopId
@@ -321,7 +322,11 @@ class StopDetailScreen(
                             it.stationTime.pick(),
                             modifier = Modifier.fillMaxWidth(),
                             onClick = { navigator.push(RouteDetailScreen(
-                                it.routeId, it.serviceId, it.tripId, stopId
+                                it.routeId,
+                                it.serviceId,
+                                it.tripId,
+                                stopId,
+                                (it.stationTime.arrival.time as? ReferencedTime)?.startOfDay
                             )) }
                         )
                     }

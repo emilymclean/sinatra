@@ -30,6 +30,7 @@ class LiveStopTimetableUseCase(
     ): Flow<List<IStopTimetableTime>> {
         return flow {
             val scheduleStartOfDay = transportMetadataRepository.scheduleStartOfDay()
+            val scheduleTimeZone = transportMetadataRepository.timeZone()
 
             val out = scheduled.groupBy { it.route }.map { groups ->
                 when {
@@ -53,13 +54,15 @@ class LiveStopTimetableUseCase(
                                         s?.arrival,
                                         delay,
                                         stopTimetableTime.arrivalTime,
-                                        scheduleStartOfDay
+                                        scheduleStartOfDay,
+                                        scheduleTimeZone
                                     ),
                                     departure = decodeTime(
                                         s?.departure,
                                         delay,
                                         stopTimetableTime.departureTime,
-                                        scheduleStartOfDay
+                                        scheduleStartOfDay,
+                                        scheduleTimeZone
                                     )
                                 )
                             )

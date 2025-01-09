@@ -32,24 +32,20 @@ import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import cl.emilym.compose.requeststate.RequestState
 import cl.emilym.compose.requeststate.RequestStateWidget
-import cl.emilym.compose.requeststate.handle
 import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.FeatureFlags
 import cl.emilym.sinatra.bounds
 import cl.emilym.sinatra.data.models.Alert
-import cl.emilym.sinatra.data.models.MapLocation
-import cl.emilym.sinatra.data.models.StopWithDistance
 import cl.emilym.sinatra.data.models.IRouteTripInformation
 import cl.emilym.sinatra.data.models.IRouteTripStop
+import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.data.models.Route
 import cl.emilym.sinatra.data.models.RouteId
-import cl.emilym.sinatra.data.models.RouteTripInformation
-import cl.emilym.sinatra.data.models.RouteTripStop
 import cl.emilym.sinatra.data.models.ServiceBikesAllowed
 import cl.emilym.sinatra.data.models.ServiceId
 import cl.emilym.sinatra.data.models.ServiceWheelchairAccessible
-import cl.emilym.sinatra.data.models.StationTime
 import cl.emilym.sinatra.data.models.StopId
+import cl.emilym.sinatra.data.models.StopWithDistance
 import cl.emilym.sinatra.data.models.TripId
 import cl.emilym.sinatra.data.models.distance
 import cl.emilym.sinatra.data.models.startOfDay
@@ -84,22 +80,23 @@ import cl.emilym.sinatra.ui.widgets.RouteRandle
 import cl.emilym.sinatra.ui.widgets.SheetIosBackButton
 import cl.emilym.sinatra.ui.widgets.SpecificRecomposeOnInstants
 import cl.emilym.sinatra.ui.widgets.StopCard
-import cl.emilym.sinatra.ui.widgets.StopStationTime
 import cl.emilym.sinatra.ui.widgets.Subheading
 import cl.emilym.sinatra.ui.widgets.WheelchairAccessibleIcon
-import cl.emilym.sinatra.ui.widgets.currentLocation
 import cl.emilym.sinatra.ui.widgets.createRequestStateFlowFlow
+import cl.emilym.sinatra.ui.widgets.currentLocation
 import cl.emilym.sinatra.ui.widgets.handleFlowProperly
-import cl.emilym.sinatra.ui.widgets.isInPast
 import cl.emilym.sinatra.ui.widgets.pick
 import cl.emilym.sinatra.ui.widgets.presentable
 import cl.emilym.sinatra.ui.widgets.toIntPx
+import io.github.aakira.napier.Napier
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 import org.jetbrains.compose.resources.stringResource
 import org.koin.android.annotation.KoinViewModel
 import org.koin.compose.viewmodel.koinViewModel
@@ -113,10 +110,10 @@ import sinatra.ui.generated.resources.route_accessibility_not_wheelchair_accessi
 import sinatra.ui.generated.resources.route_accessibility_wheelchair_accessible
 import sinatra.ui.generated.resources.route_heading
 import sinatra.ui.generated.resources.route_not_found
+import sinatra.ui.generated.resources.stop_detail_distance
+import sinatra.ui.generated.resources.stop_detail_nearest_stop
 import sinatra.ui.generated.resources.stops_title
 import sinatra.ui.generated.resources.trip_not_found
-import sinatra.ui.generated.resources.stop_detail_nearest_stop
-import sinatra.ui.generated.resources.stop_detail_distance
 
 val zoomPadding
     @Composable
@@ -128,6 +125,7 @@ class RouteDetailViewModel(
     private val favouriteRepository: FavouriteRepository,
     private val recentVisitRepository: RecentVisitRepository,
     private val alertRepository: AlertRepository,
+    private val clock: Clock
 ): ViewModel() {
 
     private var lastLocation = MutableStateFlow<MapLocation?>(null)
@@ -146,21 +144,31 @@ class RouteDetailViewModel(
     private val _alerts = createRequestStateFlowFlow<List<Alert>>()
     val alerts = _alerts.presentable()
 
-    fun init(routeId: RouteId, serviceId: ServiceId?, tripId: TripId?) {
+    fun init(
+        routeId: RouteId,
+        serviceId: ServiceId?,
+        tripId: TripId?,
+        referenceTime: Instant?
+    ) {
         viewModelScope.launch {
             favourited.emitAll(favouriteRepository.routeIsFavourited(routeId))
         }
         viewModelScope.launch {
             recentVisitRepository.addRouteVisit(routeId)
         }
-        retry(routeId, serviceId, tripId)
+        retry(routeId, serviceId, tripId, referenceTime)
         retryAlerts(routeId, serviceId, tripId)
     }
 
-    fun retry(routeId: RouteId, serviceId: ServiceId?, tripId: TripId?) {
+    fun retry(routeId: RouteId, serviceId: ServiceId?, tripId: TripId?, referenceTime: Instant?) {
         viewModelScope.launch {
             _tripInformation.handleFlowProperly {
-                currentTripForRouteUseCase(routeId, serviceId, tripId).map { it.item }
+                currentTripForRouteUseCase(
+                    routeId,
+                    serviceId,
+                    tripId,
+                    referenceTime ?: clock.now()
+                ).map { it.item }
             }
         }
     }
@@ -191,6 +199,7 @@ class RouteDetailScreen(
     private val serviceId: ServiceId? = null,
     private val tripId: TripId? = null,
     private val stopId: StopId? = null,
+    private val startOfDay: Instant? = null
 ): MapScreen {
     override val key: ScreenKey = "${this::class.qualifiedName!!}/$routeId/$serviceId/$tripId/$stopId"
 
@@ -204,8 +213,8 @@ class RouteDetailScreen(
             bottomSheetState.bottomSheetState.halfExpand()
         }
 
-        LaunchedEffect(routeId, serviceId, tripId) {
-            viewModel.init(routeId, serviceId, tripId)
+        LaunchedEffect(routeId, serviceId, tripId, startOfDay) {
+            viewModel.init(routeId, serviceId, tripId, startOfDay)
         }
 
         if (FeatureFlags.ROUTE_DETAIL_NEAREST_STOP) {
@@ -220,7 +229,7 @@ class RouteDetailScreen(
             Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
-            RequestStateWidget(tripInformation, { viewModel.retry(routeId, serviceId, tripId) }) { tripInformation ->
+            RequestStateWidget(tripInformation, { viewModel.retry(routeId, serviceId, tripId, startOfDay) }) { tripInformation ->
                 when {
                     tripInformation == null -> { Text(stringResource(Res.string.route_not_found)) }
                     tripInformation.tripInformation == null -> { Text(stringResource(Res.string.trip_not_found)) }
@@ -257,7 +266,7 @@ class RouteDetailScreen(
         val current = if (trigger != null) {
             remember(trigger) {
                 val now = clock.now()
-                info.stops.current(now, now.startOfDay(timeZone)).nullIfEmpty()
+                info.stops.current(now, startOfDay ?: now.startOfDay(timeZone)).nullIfEmpty()
             }
         } else {
             info.stops
@@ -265,7 +274,7 @@ class RouteDetailScreen(
         val past = if (trigger != null) {
             remember(trigger) {
                 val now = clock.now()
-                info.stops.past(now, now.startOfDay(timeZone)).nullIfEmpty()?.reversed()
+                info.stops.past(now, startOfDay ?: now.startOfDay(timeZone)).nullIfEmpty()?.reversed()
             }
         } else {
             null
