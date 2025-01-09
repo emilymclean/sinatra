@@ -21,6 +21,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cafe.adriel.voyager.core.screen.ScreenKey
@@ -287,7 +290,9 @@ class RouteDetailScreen(
                 ) {
                     SheetIosBackButton()
                     RouteRandle(route)
-                    Column(Modifier.weight(1f)) {
+                    Column(
+                        Modifier.weight(1f)
+                    ) {
                         Text(
                             route.name,
                             style = MaterialTheme.typography.titleLarge
@@ -300,7 +305,14 @@ class RouteDetailScreen(
                         }
                     }
                     val favourited by viewModel.favourited.collectAsState(false)
-                    FavouriteButton(favourited, { viewModel.favourite(routeId, it) })
+                    FavouriteButton(
+                        favourited,
+                        { viewModel.favourite(routeId, it) },
+                        Modifier.semantics {
+                            contentDescription = "Favourite route"
+                            selected = favourited
+                        }
+                    )
                 }
             }
             item { Box(Modifier.height(0.5.rdp)) }

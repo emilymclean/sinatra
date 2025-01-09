@@ -34,11 +34,11 @@ import sinatra.ui.generated.resources.journey_start
 @Composable
 fun AccessibleIcon(
     modifier: Modifier = Modifier,
-    tint: Color = LocalContentColor.current
+    tint: Color = LocalContentColor.current,
 ) {
     Icon(
         painterResource(Res.drawable.accessible),
-        contentDescription = "A person in a wheelchair",
+        contentDescription = null,
         modifier = modifier,
         tint = tint
     )
@@ -51,7 +51,7 @@ fun NotAccessibleIcon(
 ) {
     Icon(
         painterResource(Res.drawable.not_accessible),
-        contentDescription = "A person in a wheelchair with a line through them",
+        contentDescription = null,
         modifier = modifier,
         tint = tint
     )
@@ -76,7 +76,7 @@ fun BikeIcon(
 ) {
     Icon(
         painterResource(Res.drawable.bike),
-        contentDescription = "A person in on a bike",
+        contentDescription = null,
         modifier = modifier,
         tint = tint
     )
@@ -89,7 +89,7 @@ fun NoBusIcon(
 ) {
     Icon(
         painterResource(Res.drawable.no_routes),
-        contentDescription = "A bus with a strike through it",
+        contentDescription = null,
         modifier = modifier,
         tint = tint
     )
@@ -102,7 +102,7 @@ fun MyLocationIcon(
 ) {
     Icon(
         painterResource(Res.drawable.my_location),
-        contentDescription = "A crosshair",
+        contentDescription = null,
         modifier = modifier,
         tint = tint
     )
@@ -115,7 +115,7 @@ fun SearchIcon(
 ) {
     Icon(
         painterResource(Res.drawable.search),
-        contentDescription = "A magnifying glass",
+        contentDescription = null,
         modifier = modifier,
         tint = tint,
     )
@@ -128,7 +128,7 @@ fun NoResultsIcon(
 ) {
     Icon(
         painterResource(Res.drawable.no_results),
-        contentDescription = "A magnifying glass with a cross beside it",
+        contentDescription = null,
         modifier = modifier,
         tint = tint
     )
@@ -141,7 +141,7 @@ fun StarOutlineIcon(
 ) {
     Icon(
         painterResource(Res.drawable.star_outline),
-        contentDescription = "The outline of a star",
+        contentDescription = null,
         modifier = modifier,
         tint = tint
     )
@@ -154,7 +154,7 @@ fun StarIcon(
 ) {
     Icon(
         painterResource(Res.drawable.star),
-        contentDescription = "A filled in star",
+        contentDescription = null,
         modifier = modifier,
         tint = tint
     )
@@ -179,7 +179,7 @@ fun MapIcon(
 ) {
     Icon(
         painterResource(Res.drawable.map),
-        contentDescription = "A map",
+        contentDescription = null,
         modifier = modifier,
         tint = tint
     )
@@ -192,7 +192,7 @@ fun NavigateIcon(
 ) {
     Icon(
         painterResource(Res.drawable.navigate),
-        contentDescription = "A direction arrow",
+        contentDescription = null,
         modifier = modifier,
         tint = tint
     )
@@ -205,7 +205,7 @@ fun InfoIcon(
 ) {
     Icon(
         painterResource(Res.drawable.info),
-        contentDescription = "An \"i\" in a circle",
+        contentDescription = null,
         modifier = modifier,
         tint = tint
     )
@@ -218,7 +218,7 @@ fun WarningIcon(
 ) {
     Icon(
         painterResource(Res.drawable.warning),
-        contentDescription = "An \"!\" in a triangle",
+        contentDescription = null,
         modifier = modifier,
         tint = tint
     )
@@ -231,7 +231,7 @@ fun SevereWarningIcon(
 ) {
     Icon(
         painterResource(Res.drawable.severe_warning),
-        contentDescription = "An \"!\" in an octogon",
+        contentDescription = null,
         modifier = modifier,
         tint = tint
     )
@@ -245,7 +245,7 @@ fun BackIcon(
 ) {
     Icon(
         painterResource(Res.drawable.back),
-        contentDescription = "An arrow pointing to the left",
+        contentDescription = null,
         modifier = modifier,
         tint = tint
     )
@@ -258,7 +258,7 @@ fun ForwardIcon(
 ) {
     Icon(
         painterResource(Res.drawable.forward),
-        contentDescription = "A forward arrow",
+        contentDescription = null,
         modifier = modifier,
         tint = tint
     )
@@ -271,7 +271,7 @@ fun ExternalLinkIcon(
 ) {
     Icon(
         painterResource(Res.drawable.external_link),
-        contentDescription = "An arrow out of a box",
+        contentDescription = null,
         modifier = modifier,
         tint = tint
     )
@@ -284,7 +284,7 @@ fun GenericMarkerIcon(
 ) {
     Icon(
         painterResource(Res.drawable.marker_icon),
-        contentDescription = "A map marker",
+        contentDescription = null,
         modifier = modifier,
         tint = tint
     )
@@ -297,7 +297,7 @@ fun BusIcon(
 ) {
     Icon(
         painterResource(Res.drawable.bus),
-        contentDescription = "A bus",
+        contentDescription = null,
         modifier = modifier,
         tint = tint
     )
@@ -310,7 +310,7 @@ fun TramIcon(
 ) {
     Icon(
         painterResource(Res.drawable.tram),
-        contentDescription = "A tram",
+        contentDescription = null,
         modifier = modifier,
         tint = tint
     )
@@ -323,7 +323,7 @@ fun WalkIcon(
 ) {
     Icon(
         painterResource(Res.drawable.walk),
-        contentDescription = "A person walking",
+        contentDescription = null,
         modifier = modifier,
         tint = tint
     )
@@ -336,7 +336,7 @@ fun JourneyStartIcon(
 ) {
     Icon(
         painterResource(Res.drawable.journey_start),
-        contentDescription = "A circle with a centred dot",
+        contentDescription = null,
         modifier = modifier,
         tint = tint
     )

@@ -169,7 +169,8 @@ class MapKitState(
                             item.id,
                             item.location,
                             item.icon,
-                            item.visibleZoomRange
+                            item.visibleZoomRange,
+                            item.contentDescription
                         ).also {
                             addItem(item, it)
                         }

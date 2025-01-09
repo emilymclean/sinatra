@@ -2,6 +2,9 @@ package cl.emilym.sinatra.ui.widgets
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
@@ -11,7 +14,10 @@ import kotlinx.coroutines.launch
 @Composable
 fun BackButton(onBack: () -> Unit) {
     SinatraIconButton(
-        onClick = { onBack() }
+        onClick = { onBack() },
+        modifier = Modifier.semantics {
+            contentDescription = "Back"
+        }
     ) {
         BackIcon()
     }

@@ -23,6 +23,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cafe.adriel.voyager.core.screen.ScreenKey
@@ -204,7 +207,14 @@ class StopDetailScreen(
                                         )
                                     }
                                     val favourited by viewModel.favourited.collectAsState(false)
-                                    FavouriteButton(favourited, { viewModel.favourite(stopId, it) })
+                                    FavouriteButton(
+                                        favourited,
+                                        { viewModel.favourite(stopId, it) },
+                                        Modifier.semantics {
+                                            contentDescription = "Favourite stop"
+                                            selected = favourited
+                                        }
+                                    )
                                 }
                             }
                             item {

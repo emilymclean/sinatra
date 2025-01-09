@@ -10,6 +10,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.data.models.ServiceAccessibility
 import cl.emilym.sinatra.data.models.ServiceBikesAllowed
@@ -71,7 +75,11 @@ fun StopCard(
                 }
             }
         },
-        modifier,
+        Modifier
+            .semantics {
+                contentDescription = "Stop listing"
+            }
+            .then(modifier),
         onClick,
     ) {
         Row(
