@@ -2,6 +2,7 @@ package cl.emilym.sinatra.ui.presentation.screens.maps.search
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Scaffold
@@ -15,6 +16,7 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import cl.emilym.compose.requeststate.RequestState
 import cl.emilym.compose.requeststate.RequestStateWidget
+import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
 import cl.emilym.sinatra.ui.presentation.screens.maps.RouteDetailScreen
 import cl.emilym.sinatra.ui.presentation.screens.maps.RouteListViewModel
@@ -46,6 +48,9 @@ fun MapSearchScreenBrowseState() {
                     contentPadding = innerPadding
                 ) {
                     item {
+                        Modifier.height(1.rdp)
+                    }
+                    item {
                         AlertScaffold((alerts as? RequestState.Success)?.value)
                     }
                     items(routes.size) {
@@ -59,6 +64,9 @@ fun MapSearchScreenBrowseState() {
                                 )
                             }
                         )
+                    }
+                    item {
+                        Modifier.height(1.rdp)
                     }
                 }
             }
