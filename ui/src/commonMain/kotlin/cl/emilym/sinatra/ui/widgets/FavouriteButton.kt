@@ -8,6 +8,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import cl.emilym.sinatra.ui.minimumTouchTarget
 
 @Composable
@@ -23,10 +28,17 @@ fun SinatraIconButton(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null
             ) { onClick() }
+            .semantics {
+                role = Role.Button
+            }
             .then(modifier),
         contentAlignment = Alignment.Center
     ) {
-        icon()
+        Box(
+            Modifier.clearAndSetSemantics {  }
+        ) {
+            icon()
+        }
     }
 }
 

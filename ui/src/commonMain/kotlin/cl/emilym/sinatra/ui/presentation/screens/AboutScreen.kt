@@ -51,7 +51,7 @@ class AboutScreen: ContentScreen(ContentRepository.ABOUT_ID) {
         ) {
             Image(
                 painterResource(Res.drawable.in_app_icon),
-                contentDescription = "An image of a bus",
+                contentDescription = "The app icon; an image of a bus",
                 modifier = Modifier.padding(horizontal = 1.rdp).widthIn(max = 150.dp)
             )
         }
