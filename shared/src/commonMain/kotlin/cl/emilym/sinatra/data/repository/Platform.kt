@@ -11,3 +11,4 @@ data class PlatformInformation(
 expect val platform: PlatformInformation
 
 val isIos: Boolean get() = platform.platform == Platform.IOS
+val isAndroid: Boolean get() = platform.platform == Platform.ANDROID
