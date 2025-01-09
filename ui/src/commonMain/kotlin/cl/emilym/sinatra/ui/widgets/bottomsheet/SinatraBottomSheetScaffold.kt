@@ -31,6 +31,8 @@ import androidx.compose.ui.unit.dp
 import kotlin.math.max
 import kotlin.math.roundToInt
 
+val DRAG_HANDLE_HEIGHT = (22.dp * 2) + 4.dp
+
 @Composable
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 fun SinatraBottomSheetScaffold(
@@ -181,7 +183,9 @@ private fun SinatraBottomSheetScaffoldLayout(
                 modifier = modifier,
                 color = containerColor,
                 contentColor = contentColor,
-            ) { body(PaddingValues(bottom = sheetPeekHeight)) }
+            ) {
+                body(PaddingValues(bottom = sheetPeekHeight))
+            }
         }[0].measure(bodyConstraints)
 
         val snackbarPlaceable = subcompose(SinatraBottomSheetScaffoldLayoutSlot.Snackbar, snackbarHost)[0]

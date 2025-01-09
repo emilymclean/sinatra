@@ -7,8 +7,16 @@ import androidx.compose.foundation.gestures.anchoredDraggable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeightIn
+import androidx.compose.foundation.layout.safeContent
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -21,9 +29,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.max
+import androidx.compose.ui.unit.min
 import androidx.compose.ui.unit.times
 import cl.emilym.compose.units.px
 import cl.emilym.sinatra.ui.widgets.viewportHeight
@@ -114,7 +125,16 @@ fun SinatraBottomSheet(
                     dragHandle()
                 }
             }
-            content()
+
+            val statusWindowInsets = WindowInsets.statusBars.getTop(LocalDensity.current).px
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .consumeWindowInsets(WindowInsets.statusBars.only(WindowInsetsSides.Top))
+                    .padding(top = max(statusWindowInsets - DRAG_HANDLE_HEIGHT, 0.dp))
+            ) {
+                content()
+            }
         }
     }
 }
