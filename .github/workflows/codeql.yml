@@ -47,6 +47,7 @@ jobs:
       with:
         languages: ${{ matrix.language }}
         build-mode: ${{ matrix.build-mode }}
+      
     - if: matrix.build-mode == 'manual'
       uses: actions/setup-java@v4
       with:
@@ -54,11 +55,18 @@ jobs:
         distribution: temurin
     - if: matrix.build-mode == 'manual'
       uses: gradle/actions/setup-gradle@v3
+    - if: matrix.build-mode == 'manual'
+      env:
+        MAPS_API_KEY: ${{ secrets.MAPS_API_KEY }}
+        GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+      run: |
+        printf "MAPS_API_KEY=${MAPS_API_KEY}" >> secrets.properties
+        printf "${GOOGLE_SERVICES_JSON}" >> androidApp/google-services.json
     - if: matrix.build-mode == 'manual' && matrix.language == 'java-kotlin'
       shell: bash
       run: |
         ./gradlew clean build testDebugUnitTest
-
+        
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v3
       with:
