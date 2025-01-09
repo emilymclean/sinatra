@@ -41,9 +41,19 @@ fun Time.isInPast(): Boolean {
 
 @Composable
 fun Instant.format(): String {
-    val tz = LocalLocalTimeZone.current
-    val inTz = toLocalDateTime(tz)
-    val startInTz = startOfDay(tz).toLocalDateTime(tz)
+    val localTimeZone = LocalLocalTimeZone.current
+    val scheduleTimeZone = LocalScheduleTimeZone.current
+
+    val scheduleTime = format(scheduleTimeZone)
+    return when {
+        localTimeZone.id != scheduleTimeZone.id -> "$scheduleTime (${scheduleTimeZone.id})"
+        else -> scheduleTime
+    }
+}
+
+private fun Instant.format(timeZone: TimeZone): String {
+    val inTz = toLocalDateTime(timeZone)
+    val startInTz = startOfDay(timeZone).toLocalDateTime(timeZone)
 
     return when {
         inTz.isSameDay(startInTz) -> inTz.format(LocalDateTime.Format {
