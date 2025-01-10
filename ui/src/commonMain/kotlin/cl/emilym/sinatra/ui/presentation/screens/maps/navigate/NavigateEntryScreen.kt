@@ -31,6 +31,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.ScreenKey
+import cafe.adriel.voyager.koin.koinScreenModel
 import cl.emilym.compose.errorwidget.ErrorWidget
 import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.bounds
@@ -99,7 +100,7 @@ class NavigateEntryScreen(
 
     @Composable
     override fun mapItems(): List<MapItem> {
-        val viewModel = koinViewModel<NavigationEntryViewModel>()
+        val viewModel = koinScreenModel<NavigationEntryViewModel>()
         val state by viewModel.state.collectAsState(null)
         val journey = ((state as? NavigationEntryState.Journey)?.state as? NavigationState.JourneyFound)?.journey ?: return emptyList()
         val originLocation by viewModel.originLocation.collectAsState()
@@ -171,12 +172,12 @@ class NavigateEntryScreen(
 
     @Composable
     override fun BottomSheetContent() {
-        val viewModel = koinViewModel<NavigationEntryViewModel>()
+        val viewModel = koinScreenModel<NavigationEntryViewModel>()
         val state by viewModel.state.collectAsState(null)
         val currentLocation = currentLocation()
 
         val hasLocationPermission = hasLocationPermission()
-        LaunchedEffect(Unit) {
+        LaunchedEffect(destination, origin) {
             viewModel.init(
                 destination,
                 origin ?: (
@@ -234,7 +235,6 @@ class NavigateEntryScreen(
         Box(Modifier.fillMaxSize()) {
             SearchScreen(
                 viewModel,
-                false,
                 { viewModel.openJourney() },
                 { viewModel.onSearchItemClicked(NavigationLocation.Stop(it)) },
                 {},
@@ -370,7 +370,7 @@ class NavigateEntryScreen(
         if (journey.legs.isEmpty()) return
         val lastLeg = journey.legs.last()
         val firstLeg = journey.legs.first()
-        val viewModel = koinViewModel<NavigationEntryViewModel>()
+        val viewModel = koinScreenModel<NavigationEntryViewModel>()
         val destination by viewModel.destination.collectAsState()
         val origin by viewModel.origin.collectAsState()
 

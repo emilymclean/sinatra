@@ -1,14 +1,14 @@
 package cl.emilym.sinatra.ui.presentation.screens.maps.search
 
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import cafe.adriel.voyager.core.model.ScreenModel
+import cafe.adriel.voyager.core.model.screenModelScope
 import cl.emilym.compose.requeststate.RequestState
 import cl.emilym.compose.requeststate.handle
 import cl.emilym.sinatra.data.models.Alert
 import cl.emilym.sinatra.data.models.MapLocation
-import cl.emilym.sinatra.data.models.StopWithDistance
 import cl.emilym.sinatra.data.models.RecentVisit
 import cl.emilym.sinatra.data.models.Stop
+import cl.emilym.sinatra.data.models.StopWithDistance
 import cl.emilym.sinatra.data.models.distance
 import cl.emilym.sinatra.data.repository.AlertRepository
 import cl.emilym.sinatra.data.repository.RecentVisitRepository
@@ -21,10 +21,8 @@ import cl.emilym.sinatra.ui.canberraRegion
 import cl.emilym.sinatra.ui.presentation.screens.search.SearchScreenViewModel
 import cl.emilym.sinatra.ui.presentation.screens.search.searchHandler
 import cl.emilym.sinatra.ui.widgets.createRequestStateFlowFlow
-import cl.emilym.sinatra.ui.widgets.handleFlow
 import cl.emilym.sinatra.ui.widgets.handleFlowProperly
 import cl.emilym.sinatra.ui.widgets.presentable
-import io.github.aakira.napier.Napier
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
@@ -32,19 +30,12 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
-import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import org.koin.android.annotation.KoinViewModel
-import org.koin.core.KoinApplication.Companion.init
-import kotlin.time.Duration.Companion.seconds
+import org.koin.core.annotation.Factory
 
 const val NEARBY_STOPS_LIMIT = 5
 
@@ -55,13 +46,13 @@ sealed interface MapSearchState {
     ): MapSearchState
 }
 
-@KoinViewModel
+@Factory
 class MapSearchViewModel(
     private val stopRepository: StopRepository,
     private val routeStopSearchUseCase: RouteStopSearchUseCase,
     private val recentVisitRepository: RecentVisitRepository,
     private val alertRepository: AlertRepository
-): ViewModel(), SearchScreenViewModel {
+): ScreenModel, SearchScreenViewModel {
 
     private val _state = MutableStateFlow(State.BROWSE)
     override val query = MutableStateFlow<String?>(null)
@@ -72,7 +63,7 @@ class MapSearchViewModel(
             State.BROWSE -> flowOf(MapSearchState.Browse)
             State.SEARCH -> searchHandler(routeStopSearchUseCase) { MapSearchState.Search(it) }
         }
-    }.stateIn(viewModelScope, SharingStarted.Eagerly, MapSearchState.Browse)
+    }.stateIn(screenModelScope, SharingStarted.Eagerly, MapSearchState.Browse)
 
     override val results: Flow<RequestState<List<SearchResult>>> = state.mapLatest {
         when (it) {
@@ -110,7 +101,7 @@ class MapSearchViewModel(
     }
 
     fun retry() {
-        viewModelScope.launch {
+        screenModelScope.launch {
             stops.handle {
                 stopRepository.stops().item
             }
@@ -118,7 +109,7 @@ class MapSearchViewModel(
     }
 
     override fun retryRecentVisits() {
-        viewModelScope.launch {
+        screenModelScope.launch {
             _recentVisits.handleFlowProperly {
                 recentVisitRepository.all()
             }
@@ -126,7 +117,7 @@ class MapSearchViewModel(
     }
 
     fun retryAlerts() {
-        viewModelScope.launch {
+        screenModelScope.launch {
             _alerts.handleFlowProperly {
                 alertRepository.alerts()
             }
@@ -155,7 +146,7 @@ class MapSearchViewModel(
 
         if (!hasZoomedToLocation && isInRegion) {
             hasZoomedToLocation = true
-            viewModelScope.launch {
+            screenModelScope.launch {
                 zoomToLocation.emit(Unit)
             }
         }

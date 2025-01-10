@@ -82,6 +82,7 @@ dependencies {
     // Voyager
     implementation(libs.voyager.navigator)
     implementation(libs.voyager.koin)
+    implementation(libs.voyager.screenmodel)
 }
 
 ksp {

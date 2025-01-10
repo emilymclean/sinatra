@@ -27,9 +27,10 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import cafe.adriel.voyager.core.model.ScreenModel
+import cafe.adriel.voyager.core.model.screenModelScope
 import cafe.adriel.voyager.core.screen.ScreenKey
+import cafe.adriel.voyager.koin.koinScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
@@ -42,10 +43,8 @@ import cl.emilym.sinatra.FeatureFlags
 import cl.emilym.sinatra.data.models.Alert
 import cl.emilym.sinatra.data.models.IStopTimetableTime
 import cl.emilym.sinatra.data.models.ReferencedTime
-import cl.emilym.sinatra.data.models.StationTime
 import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.data.models.StopId
-import cl.emilym.sinatra.data.models.StopTimetableTime
 import cl.emilym.sinatra.data.repository.AlertRepository
 import cl.emilym.sinatra.data.repository.FavouriteRepository
 import cl.emilym.sinatra.data.repository.RecentVisitRepository
@@ -74,30 +73,29 @@ import cl.emilym.sinatra.ui.widgets.handleFlowProperly
 import cl.emilym.sinatra.ui.widgets.openMaps
 import cl.emilym.sinatra.ui.widgets.pick
 import cl.emilym.sinatra.ui.widgets.presentable
-import io.github.aakira.napier.Napier
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
-import org.koin.android.annotation.KoinViewModel
 import org.koin.compose.viewmodel.koinViewModel
+import org.koin.core.annotation.Factory
 import sinatra.ui.generated.resources.Res
 import sinatra.ui.generated.resources.accessibility_not_wheelchair_accessible
 import sinatra.ui.generated.resources.accessibility_wheelchair_accessible
 import sinatra.ui.generated.resources.no_upcoming_vehicles
+import sinatra.ui.generated.resources.stop_detail_navigate
 import sinatra.ui.generated.resources.stop_not_found
 import sinatra.ui.generated.resources.upcoming_vehicles
-import sinatra.ui.generated.resources.stop_detail_navigate
 
-@KoinViewModel
+@Factory
 class StopDetailViewModel(
     private val stopRepository: StopRepository,
     private val upcomingRoutesForStopUseCase: UpcomingRoutesForStopUseCase,
     private val favouriteRepository: FavouriteRepository,
     private val recentVisitRepository: RecentVisitRepository,
     private val alertRepository: AlertRepository
-): ViewModel() {
+): ScreenModel {
 
     private val _alerts = createRequestStateFlowFlow<List<Alert>>()
     val alerts = _alerts.presentable()
@@ -113,16 +111,16 @@ class StopDetailViewModel(
         retryUpcoming(stopId)
         retryAlerts(stopId)
 
-        viewModelScope.launch {
+        screenModelScope.launch {
             favourited.emitAll(favouriteRepository.stopIsFavourited(stopId))
         }
-        viewModelScope.launch {
+        screenModelScope.launch {
             recentVisitRepository.addStopVisit(stopId)
         }
     }
 
     fun retryStop(stopId: StopId) {
-        viewModelScope.launch {
+        screenModelScope.launch {
             stop.handle {
                 stopRepository.stop(stopId).item
             }
@@ -130,7 +128,7 @@ class StopDetailViewModel(
     }
 
     fun retryUpcoming(stopId: StopId) {
-        viewModelScope.launch {
+        screenModelScope.launch {
             _upcoming.handleFlowProperly {
                 upcomingRoutesForStopUseCase(stopId).map { it.item }
             }
@@ -138,7 +136,7 @@ class StopDetailViewModel(
     }
 
     fun retryAlerts(stopId: StopId) {
-        viewModelScope.launch {
+        screenModelScope.launch {
             _alerts.handleFlowProperly {
                 alertRepository.alerts(stopId = stopId)
             }
@@ -147,7 +145,7 @@ class StopDetailViewModel(
 
     fun favourite(stopId: StopId, favourited: Boolean) {
         this.favourited.value = favourited
-        viewModelScope.launch {
+        screenModelScope.launch {
             favouriteRepository.setStopFavourite(stopId, favourited)
         }
     }
@@ -161,7 +159,7 @@ class StopDetailScreen(
 
     @Composable
     override fun BottomSheetContent() {
-        val viewModel = koinViewModel<StopDetailViewModel>()
+        val viewModel = koinScreenModel<StopDetailViewModel>()
         val bottomSheetState = LocalBottomSheetState.current
         val navigator = LocalNavigator.currentOrThrow
         val mapControl = LocalMapControl.current
@@ -351,7 +349,7 @@ class StopDetailScreen(
 
     @Composable
     override fun mapItems(): List<MapItem> {
-        val viewModel = koinViewModel<StopDetailViewModel>()
+        val viewModel = koinScreenModel<StopDetailViewModel>()
         val stopRS by viewModel.stop.collectAsState(RequestState.Initial())
         val stop = (stopRS as? RequestState.Success)?.value ?: return listOf()
 

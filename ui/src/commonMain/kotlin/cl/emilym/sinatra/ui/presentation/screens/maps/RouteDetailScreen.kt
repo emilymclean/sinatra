@@ -25,9 +25,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import cafe.adriel.voyager.core.model.ScreenModel
+import cafe.adriel.voyager.core.model.screenModelScope
 import cafe.adriel.voyager.core.screen.ScreenKey
+import cafe.adriel.voyager.koin.koinScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
@@ -68,6 +69,7 @@ import cl.emilym.sinatra.ui.maps.routeStopMarkerIcon
 import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
 import cl.emilym.sinatra.ui.navigation.MapScreen
 import cl.emilym.sinatra.ui.past
+import cl.emilym.sinatra.ui.presentation.screens.maps.search.MapSearchViewModel
 import cl.emilym.sinatra.ui.text
 import cl.emilym.sinatra.ui.widgets.AccessibilityIconLockup
 import cl.emilym.sinatra.ui.widgets.AlertScaffold
@@ -89,7 +91,6 @@ import cl.emilym.sinatra.ui.widgets.handleFlowProperly
 import cl.emilym.sinatra.ui.widgets.pick
 import cl.emilym.sinatra.ui.widgets.presentable
 import cl.emilym.sinatra.ui.widgets.toIntPx
-import io.github.aakira.napier.Napier
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
@@ -101,6 +102,7 @@ import kotlinx.datetime.Instant
 import org.jetbrains.compose.resources.stringResource
 import org.koin.android.annotation.KoinViewModel
 import org.koin.compose.viewmodel.koinViewModel
+import org.koin.core.annotation.Factory
 import sinatra.ui.generated.resources.Res
 import sinatra.ui.generated.resources.accessibility_title
 import sinatra.ui.generated.resources.current_stops_title
@@ -120,14 +122,14 @@ val zoomPadding
     @Composable
     get() = 4.rdp.toIntPx()
 
-@KoinViewModel
+@Factory
 class RouteDetailViewModel(
     private val currentTripForRouteUseCase: CurrentTripForRouteUseCase,
     private val favouriteRepository: FavouriteRepository,
     private val recentVisitRepository: RecentVisitRepository,
     private val alertRepository: AlertRepository,
     private val clock: Clock
-): ViewModel() {
+): ScreenModel {
 
     private var lastLocation = MutableStateFlow<MapLocation?>(null)
     private val _tripInformation = createRequestStateFlowFlow<CurrentTripInformation?>()
@@ -151,10 +153,10 @@ class RouteDetailViewModel(
         tripId: TripId?,
         referenceTime: Instant?
     ) {
-        viewModelScope.launch {
+        screenModelScope.launch {
             favourited.emitAll(favouriteRepository.routeIsFavourited(routeId))
         }
-        viewModelScope.launch {
+        screenModelScope.launch {
             recentVisitRepository.addRouteVisit(routeId)
         }
         retry(routeId, serviceId, tripId, referenceTime)
@@ -162,7 +164,7 @@ class RouteDetailViewModel(
     }
 
     fun retry(routeId: RouteId, serviceId: ServiceId?, tripId: TripId?, referenceTime: Instant?) {
-        viewModelScope.launch {
+        screenModelScope.launch {
             _tripInformation.handleFlowProperly {
                 currentTripForRouteUseCase(
                     routeId,
@@ -175,7 +177,7 @@ class RouteDetailViewModel(
     }
 
     fun retryAlerts(routeId: RouteId, serviceId: ServiceId?, tripId: TripId?) {
-        viewModelScope.launch {
+        screenModelScope.launch {
             _alerts.handleFlowProperly {
                 alertRepository.alerts(routeId = routeId, tripId = tripId)
             }
@@ -188,7 +190,7 @@ class RouteDetailViewModel(
 
     fun favourite(routeId: RouteId, favourited: Boolean) {
         this.favourited.value = favourited
-        viewModelScope.launch {
+        screenModelScope.launch {
             favouriteRepository.setRouteFavourite(routeId, favourited)
         }
     }
@@ -207,7 +209,7 @@ class RouteDetailScreen(
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     override fun BottomSheetContent() {
-        val viewModel = koinViewModel<RouteDetailViewModel>()
+        val viewModel = koinScreenModel<RouteDetailViewModel>()
         val bottomSheetState = LocalBottomSheetState.current
 
         LaunchedEffect(bottomSheetState) {
@@ -255,7 +257,7 @@ class RouteDetailScreen(
 
     @Composable
     fun TripDetails(route: Route, info: IRouteTripInformation, trigger: Int?) {
-        val viewModel = koinViewModel<RouteDetailViewModel>()
+        val viewModel = koinScreenModel<RouteDetailViewModel>()
         val navigator = LocalNavigator.currentOrThrow
         val clock = LocalClock.current
         val timeZone = LocalScheduleTimeZone.current
@@ -426,7 +428,7 @@ class RouteDetailScreen(
 
     @Composable
     override fun mapItems(): List<MapItem> {
-        val viewModel = koinViewModel<RouteDetailViewModel>()
+        val viewModel = koinScreenModel<RouteDetailViewModel>()
         val navigator = LocalNavigator.currentOrThrow
         val tripInformationRS by viewModel.tripInformation.collectAsState(RequestState.Initial())
         val info = (tripInformationRS as? RequestState.Success)?.value ?: return listOf()

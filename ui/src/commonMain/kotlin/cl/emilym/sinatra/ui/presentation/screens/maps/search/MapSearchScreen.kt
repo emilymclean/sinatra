@@ -19,6 +19,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
 import cafe.adriel.voyager.core.screen.ScreenKey
+import cafe.adriel.voyager.koin.koinScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import cl.emilym.compose.requeststate.RequestState
@@ -57,7 +58,7 @@ class MapSearchScreen: MapScreen, NativeMapScreen {
 
     @Composable
     override fun Content() {
-        val viewModel = koinViewModel<MapSearchViewModel>()
+        val viewModel = koinScreenModel<MapSearchViewModel>()
         val mapControl = LocalMapControl.current
 
         val currentLocation = currentLocation()
@@ -112,16 +113,19 @@ class MapSearchScreen: MapScreen, NativeMapScreen {
 
     @Composable
     override fun BottomSheetContent() {
-        val viewModel = koinViewModel<MapSearchViewModel>()
+        val viewModel = koinScreenModel<MapSearchViewModel>()
+        val routeListViewModel = koinScreenModel<RouteListViewModel>()
         val state by viewModel.state.collectAsState(MapSearchState.Browse)
         val navigator = LocalNavigator.currentOrThrow
 
         Box(modifier = Modifier.heightIn(min = viewportHeight() * 0.5f)) {
             when (state) {
-                is MapSearchState.Browse -> MapSearchScreenBrowseState()
+                is MapSearchState.Browse -> MapSearchScreenBrowseState(
+                    routeListViewModel,
+                    viewModel
+                )
                 is MapSearchState.Search -> SearchScreen(
                     viewModel,
-                    true,
                     { viewModel.openBrowse() },
                     { navigator.push(StopDetailScreen(it.id)) },
                     { navigator.push(RouteDetailScreen(it.id)) },
@@ -133,7 +137,7 @@ class MapSearchScreen: MapScreen, NativeMapScreen {
 
     @Composable
     override fun NativeMapScope.DrawMapNative() {
-        val viewModel = koinViewModel<MapSearchViewModel>()
+        val viewModel = koinScreenModel<MapSearchViewModel>()
         val stopsRS by viewModel.stops.collectAsState(RequestState.Initial())
         val stops = (stopsRS as? RequestState.Success)?.value?.filter { it.parentStation == null } ?: return
 
@@ -142,7 +146,7 @@ class MapSearchScreen: MapScreen, NativeMapScreen {
 
     @Composable
     override fun mapItems(): List<MapItem> {
-        val viewModel = koinViewModel<MapSearchViewModel>()
+        val viewModel = koinScreenModel<MapSearchViewModel>()
         val stopsRS by viewModel.stops.collectAsState(RequestState.Initial())
         val stops = (stopsRS as? RequestState.Success)?.value?.filter { it.parentStation == null } ?: return listOf()
 
