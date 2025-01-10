@@ -100,6 +100,9 @@ interface GtfsApi {
     @GET
     suspend fun markdownContent(@Url url: String): String
 
+    @GET
+    suspend fun contentDynamic(@Url url: String): Pages
+
     @GET("content.pb")
     suspend fun content(): Pages
 

@@ -12,7 +12,8 @@ import org.koin.core.annotation.Factory
 @Factory
 class ContentRepository(
     private val contentClient: ContentClient,
-    private val contentPersistence: ContentPersistence
+    private val contentPersistence: ContentPersistence,
+    private val remoteConfigRepository: RemoteConfigRepository
 ) {
 
     companion object {
@@ -26,7 +27,9 @@ class ContentRepository(
         if (contentPersistence.cached) return
         lock.withLock {
             if (contentPersistence.cached) return
-            val content = contentClient.content()
+            val content = contentClient.content(
+                remoteConfigRepository.contentUrl()
+            )
             contentPersistence.store(content.pages)
             contentPersistence.storeBanner(content.banner)
         }

@@ -8,6 +8,7 @@ import cl.emilym.sinatra.data.repository.Platform
 import cl.emilym.sinatra.data.repository.isAndroid
 import cl.emilym.sinatra.data.repository.isIos
 import cl.emilym.sinatra.network.GtfsApi
+import io.github.aakira.napier.Napier
 import org.koin.core.annotation.Factory
 
 @Factory
@@ -15,8 +16,9 @@ class ContentClient(
     private val gtfsApi: GtfsApi
 ) {
 
-    suspend fun content(): Pages {
+    suspend fun content(url: String? = null): Pages {
         val response = when {
+            url != null -> gtfsApi.contentDynamic(url)
             isIos -> gtfsApi.contentIos()
             isAndroid -> gtfsApi.contentAndroid()
             else -> gtfsApi.content()
