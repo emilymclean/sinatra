@@ -6,7 +6,13 @@ import cl.emilym.sinatra.data.models.ContentId
 import org.koin.core.annotation.Single
 
 @Single
-class ContentPersistence {
+class ContentPersistence(
+    private val cacheFileWriter: CacheFileWriter
+) {
+
+    companion object {
+        const val CONTENT_FILENAME = "content.pb"
+    }
 
     private val contents = mutableMapOf<String, Content>()
     private val banners = mutableMapOf<String, Alert>()
@@ -20,12 +26,16 @@ class ContentPersistence {
         return banners[id]
     }
 
-    fun store(content: List<Content>) {
-        content.forEach { contents[it.id] = it }
+    suspend fun save(data: ByteArray) {
+        cacheFileWriter.save(CONTENT_FILENAME, data)
     }
 
-    fun storeBanner(banners: Map<String, Alert>) {
-        this.banners.putAll(banners)
+    suspend fun exists(): Boolean {
+        return cacheFileWriter.exists(CONTENT_FILENAME)
+    }
+
+    suspend fun restore() {
+        return cacheFileWriter.retrieve(CONTENT_FILENAME)
     }
 
 }

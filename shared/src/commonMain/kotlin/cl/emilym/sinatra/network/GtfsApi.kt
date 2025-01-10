@@ -103,6 +103,9 @@ interface GtfsApi {
     @GET
     suspend fun contentDynamic(@Url url: String): Pages
 
+    @GET
+    suspend fun contentDynamicDigest(@Url url: String): String
+
     @GET("content.pb")
     suspend fun content(): Pages
 
