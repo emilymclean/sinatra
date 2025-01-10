@@ -1,6 +1,6 @@
 <p align="center">
     <a href="https://github.com/emilymclean/sinatra" rel="noopener">
-        <img width=150px src="https://raw.githubusercontent.com/emilymclean/sinatra/main/assets/in_app_icon.png" alt="Sinatra icon"/>
+        <img width=150px src="https://emilym.cl/assets/img/in_app_icon.png" alt="Sinatra Icon"/>
     </a>
     <h1 align="center">Sinatra</h1>
     <p align="center">
@@ -13,6 +13,17 @@
 [![Build App](https://github.com/emilymclean/sinatra/actions/workflows/build.yml/badge.svg)](https://github.com/emilymclean/sinatra/actions/workflows/build.yml)
 [![Unit Test](https://github.com/emilymclean/sinatra/actions/workflows/test.yml/badge.svg)](https://github.com/emilymclean/sinatra/actions/workflows/test.yml)
 [![Lint](https://github.com/emilymclean/sinatra/actions/workflows/lint.yml/badge.svg)](https://github.com/emilymclean/sinatra/actions/workflows/lint.yml)
+
+</div>
+
+<div align="center">
+
+    <a href="https://play.google.com/store/apps/details?id=cl.emilym.sinatra" rel="noopener">
+        <img width=150px src="https://emilym.cl/assets/img/googleplay.png" alt="Get it on Google Play"/>
+    </a>
+    <a href="https://apps.apple.com/us/app/sinatra-for-canberra/id6739419456" rel="noopener">
+        <img width=150px src="https://emilym.cl/assets/img/appstore.svg" alt="Download on the App Store"/>
+    </a>
 
 </div>
 
