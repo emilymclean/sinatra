@@ -16,16 +16,14 @@
 
 </div>
 
-<div align="center">
-
+<p align="center">
     <a href="https://play.google.com/store/apps/details?id=cl.emilym.sinatra" rel="noopener">
         <img width=150px src="https://emilym.cl/assets/img/googleplay.png" alt="Get it on Google Play"/>
     </a>
     <a href="https://apps.apple.com/us/app/sinatra-for-canberra/id6739419456" rel="noopener">
         <img width=150px src="https://emilym.cl/assets/img/appstore.svg" alt="Download on the App Store"/>
     </a>
-
-</div>
+</p>
 
 Sinatra is a companion app for the Canberra MyWay+ network made by locals for locals. Our goal is to 
 make it easier to find route and stop information, offering a fresh, streamlined experience alongside 
