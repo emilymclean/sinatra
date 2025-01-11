@@ -156,6 +156,12 @@ class MapKitState(
                 managedItems[item.id] = managed
             }
 
+            fun updateItem(item: MapItem, annotation: MarkerAnnotation, arena: Arena? = null) {
+                managedItems[item.id] = ManagedMapItem(
+                    item, annotation, arena
+                )
+            }
+
             for (item in items) {
                 visitedIds[item.id] = Unit
                 val existing = managedItems[item.id]
@@ -163,16 +169,22 @@ class MapKitState(
 
                 when (item) {
                     is MarkerItem -> {
-                        removeItem(item.id)
+                        when (existing?.annotation) {
+                            !is MarkerAnnotation -> {
+                                removeItem(item.id)
 
-                        MarkerAnnotation(
-                            item.id,
-                            item.location,
-                            item.icon,
-                            item.visibleZoomRange,
-                            item.contentDescription
-                        ).also {
-                            addItem(item, it)
+                                MarkerAnnotation.fromItem(item).also {
+                                    addItem(item, it)
+                                }
+                            }
+                            else -> {
+                                updateItem(
+                                    item,
+                                    (existing.annotation as MarkerAnnotation).apply {
+                                        update(item)
+                                    }
+                                )
+                            }
                         }
                     }
                     is LineItem -> {
