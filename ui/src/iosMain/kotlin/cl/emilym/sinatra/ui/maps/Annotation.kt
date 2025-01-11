@@ -30,12 +30,23 @@ class LineAnnotation(
 }
 
 class MarkerAnnotation(
-    val id: String,
-    val location: MapLocation,
-    val icon: MarkerIcon?,
-    val visibleZoomRange: FloatRange?,
-    val contentDescription: String?
+    id: String,
+    location: MapLocation,
+    icon: MarkerIcon?,
+    visibleZoomRange: FloatRange?,
+    contentDescription: String?
 ): NSObject(), MKAnnotationProtocol {
+
+    var id: String = id
+        private set
+    var location: MapLocation = location
+        private set
+    var icon: MarkerIcon? = icon
+        private set
+    var visibleZoomRange: FloatRange? = visibleZoomRange
+        private set
+    var contentDescription: String? = contentDescription
+        private set
 
     @OptIn(ExperimentalForeignApi::class)
     private val position = location.toNative()
@@ -43,6 +54,26 @@ class MarkerAnnotation(
     @ExperimentalForeignApi
     override fun coordinate(): CValue<CLLocationCoordinate2D> {
         return position
+    }
+
+    fun update(item: MarkerItem) {
+        id = item.id
+        location = item.location
+        icon = item.icon
+        visibleZoomRange = item.visibleZoomRange
+        contentDescription = item.contentDescription
+    }
+
+    companion object {
+        fun fromItem(item: MarkerItem): MarkerAnnotation {
+            return MarkerAnnotation(
+                id = item.id,
+                location = item.location,
+                icon = item.icon,
+                visibleZoomRange = item.visibleZoomRange,
+                contentDescription = item.contentDescription
+            )
+        }
     }
 
 }
