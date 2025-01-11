@@ -101,4 +101,14 @@
 
     <string name="navigate_entry_select_origin">Pick a starting point</string>
     <string name="navigate_entry_select_destination">Pick a destination</string>
+
+    <string name="time_am">am</string>
+    <string name="time_pm">pm</string>
+    <string name="day_of_week_monday">Monday</string>
+    <string name="day_of_week_tuesday">Tuesday</string>
+    <string name="day_of_week_wednesday">Wednesday</string>
+    <string name="day_of_week_thursday">Thursday</string>
+    <string name="day_of_week_friday">Friday</string>
+    <string name="day_of_week_saturday">Saturday</string>
+    <string name="day_of_week_sunday">Sunday</string>
 </resources>
