@@ -56,7 +56,7 @@
       
   <string name="navigate_walk_to_stop">**步行** %1$s 到 %1$s</string>
       
-  <string name="navigate_travel_depart">**出发**，时间为%2$s 从%1$s</string>
+  <string name="navigate_travel_depart">**出发**，时间为 %2$s 从%1$s</string>
       
   <string name="navigate_travel_arrive">**抵达** %1$s，时间为%2$s</string>
       
@@ -64,7 +64,7 @@
       
   <string name="navigate_travel_journey_arrive">**抵达** %1$s，时间为%2$s</string>
       
-  <string name="navigate_travel_journey_depart">**从%1$s出发**</string>
+  <string name="navigate_travel_journey_depart">**从 %1$s 出发**</string>
       
   <string name="map_search_nearby_stops">附近站点</string>
       
@@ -98,7 +98,7 @@
       
   <string name="estimated_arrival_early">预计到达时间为 %1$s（早 %2$s）</string>
       
-  <string name="past_departure">于%1$s出发</string>
+  <string name="past_departure">于 %1$s 出发</string>
       
   <string name="past_departure_late">于 %1$s 出发（晚点 %2$s）</string>
       
