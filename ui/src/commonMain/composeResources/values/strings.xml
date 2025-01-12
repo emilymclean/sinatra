@@ -44,7 +44,7 @@
     <string name="navigate_calculating_journey">Calculating a journey...</string>
     <string name="navigate_calculating_journey_failed">We couldn't find a journey</string>
     <string name="navigate_walk">**Walk** %1$s</string>
-    <string name="navigate_walk_to_stop">**Walk** %1$s to %1$s</string>
+    <string name="navigate_walk_to_stop">**Walk** %1$s to %2$s</string>
     <string name="navigate_travel_depart">**Depart** from %1$s at %2$s</string>
     <string name="navigate_travel_arrive">**Arrive** at %1$s at %2$s</string>
     <string name="navigate_travel">Travel for %1$s on %2$s towards %3$s</string>
@@ -101,4 +101,34 @@
 
     <string name="navigate_entry_select_origin">Pick a starting point</string>
     <string name="navigate_entry_select_destination">Pick a destination</string>
+
+    <string name="time_am">am</string>
+    <string name="time_pm">pm</string>
+    <string name="day_of_week_monday">Monday</string>
+    <string name="day_of_week_tuesday">Tuesday</string>
+    <string name="day_of_week_wednesday">Wednesday</string>
+    <string name="day_of_week_thursday">Thursday</string>
+    <string name="day_of_week_friday">Friday</string>
+    <string name="day_of_week_saturday">Saturday</string>
+    <string name="day_of_week_sunday">Sunday</string>
+
+    <string name="alert_default_title">Alert</string>
+    <string name="alert_due_to">%1$s due to %2$s</string>
+    <string name="alert_accessibility_issue">accessibility issue</string>
+    <string name="alert_detour">detour</string>
+    <string name="alert_additional_service">additional service</string>
+    <string name="alert_modified_service">modified service</string>
+    <string name="alert_reduced_service">reduced service</string>
+    <string name="alert_significant_delays">significant delays</string>
+    <string name="alert_stop_moved">stop moved</string>
+    <string name="alert_strike">industrial action</string>
+    <string name="alert_accident">accident</string>
+    <string name="alert_construction">construction</string>
+    <string name="alert_demonstration">demonstration</string>
+    <string name="alert_holiday">holiday</string>
+    <string name="alert_maintenance">maintenance</string>
+    <string name="alert_medical_emergency">medical emergency</string>
+    <string name="alert_police_activity">police activity</string>
+    <string name="alert_technical_issues">technical issues</string>
+    <string name="alert_weather">weather</string>
 </resources>
