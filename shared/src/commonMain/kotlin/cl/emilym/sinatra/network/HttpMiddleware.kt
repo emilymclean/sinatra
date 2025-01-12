@@ -12,6 +12,7 @@ import cl.emilym.gtfs.StopEndpoint
 import cl.emilym.gtfs.StopTimetable
 import cl.emilym.gtfs.content.Pages
 import cl.emilym.sinatra.NoApiUrlException
+import cl.emilym.sinatra.data.repository.LocaleRepository
 import cl.emilym.sinatra.data.repository.RemoteConfigRepository
 import com.google.transit.realtime.FeedMessage
 import de.jensklingenberg.ktorfit.Ktorfit
@@ -25,6 +26,7 @@ import io.ktor.client.plugins.Sender
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.plugin
 import io.ktor.client.request.HttpRequestBuilder
+import io.ktor.client.request.header
 import io.ktor.client.request.url
 import io.ktor.client.statement.HttpResponse
 import io.ktor.serialization.kotlinx.json.json
@@ -57,14 +59,24 @@ fun urlReplaceInterceptor(
 
 fun loggingInterceptor(): suspend Sender.(HttpRequestBuilder) -> HttpClientCall {
     return { request ->
-        Napier.d("Requesting ${request.url}", tag = "Http")
+        Napier.d("Requesting ${request.url} (with language = ${request.headers["Accept-Language"]})", tag = "Http")
+        execute(request)
+    }
+}
+
+fun languagesHeader(
+    localeRepository: LocaleRepository
+): suspend Sender.(HttpRequestBuilder) -> HttpClientCall {
+    return { request ->
+        request.header("Accept-Language", localeRepository.acceptedLanguages)
         execute(request)
     }
 }
 
 @Factory
 fun ktorDependency(
-    remoteConfigRepository: RemoteConfigRepository
+    remoteConfigRepository: RemoteConfigRepository,
+    localeRepository: LocaleRepository
 ) = HttpClient(engine) {
     install(ContentNegotiation) {
         json(Json {
@@ -73,6 +85,7 @@ fun ktorDependency(
     }
 }.apply {
     plugin(HttpSend).intercept(urlReplaceInterceptor(remoteConfigRepository))
+    plugin(HttpSend).intercept(languagesHeader(localeRepository))
     plugin(HttpSend).intercept(loggingInterceptor())
 }
 
