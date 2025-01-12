@@ -23,38 +23,56 @@ import cl.emilym.sinatra.data.models.AlertSeverity
 import cl.emilym.sinatra.ui.text
 import org.jetbrains.compose.resources.stringResource
 import sinatra.ui.generated.resources.Res
+import sinatra.ui.generated.resources.alert_accessibility_issue
+import sinatra.ui.generated.resources.alert_accident
+import sinatra.ui.generated.resources.alert_additional_service
+import sinatra.ui.generated.resources.alert_construction
 import sinatra.ui.generated.resources.alert_default_title
+import sinatra.ui.generated.resources.alert_demonstration
+import sinatra.ui.generated.resources.alert_detour
+import sinatra.ui.generated.resources.alert_due_to
+import sinatra.ui.generated.resources.alert_holiday
+import sinatra.ui.generated.resources.alert_maintenance
+import sinatra.ui.generated.resources.alert_medical_emergency
+import sinatra.ui.generated.resources.alert_modified_service
+import sinatra.ui.generated.resources.alert_police_activity
+import sinatra.ui.generated.resources.alert_reduced_service
+import sinatra.ui.generated.resources.alert_significant_delays
+import sinatra.ui.generated.resources.alert_stop_moved
+import sinatra.ui.generated.resources.alert_strike
+import sinatra.ui.generated.resources.alert_technical_issues
+import sinatra.ui.generated.resources.alert_weather
 
 val Alert.Realtime.title: String?
     @Composable
     get() {
         val effect = when (effect) {
-            is com.google.transit.realtime.Alert.Effect.ACCESSIBILITY_ISSUE -> "accessibility issue"
-            is com.google.transit.realtime.Alert.Effect.DETOUR -> "detour"
-            is com.google.transit.realtime.Alert.Effect.ADDITIONAL_SERVICE -> "additional service"
-            is com.google.transit.realtime.Alert.Effect.MODIFIED_SERVICE -> "modified service"
-            is com.google.transit.realtime.Alert.Effect.REDUCED_SERVICE -> "reduced service"
-            is com.google.transit.realtime.Alert.Effect.SIGNIFICANT_DELAYS -> "significant delays"
-            is com.google.transit.realtime.Alert.Effect.STOP_MOVED -> "stop moved"
+            is com.google.transit.realtime.Alert.Effect.ACCESSIBILITY_ISSUE -> stringResource(Res.string.alert_accessibility_issue)
+            is com.google.transit.realtime.Alert.Effect.DETOUR -> stringResource(Res.string.alert_detour)
+            is com.google.transit.realtime.Alert.Effect.ADDITIONAL_SERVICE -> stringResource(Res.string.alert_additional_service)
+            is com.google.transit.realtime.Alert.Effect.MODIFIED_SERVICE -> stringResource(Res.string.alert_modified_service)
+            is com.google.transit.realtime.Alert.Effect.REDUCED_SERVICE -> stringResource(Res.string.alert_reduced_service)
+            is com.google.transit.realtime.Alert.Effect.SIGNIFICANT_DELAYS -> stringResource(Res.string.alert_significant_delays)
+            is com.google.transit.realtime.Alert.Effect.STOP_MOVED -> stringResource(Res.string.alert_stop_moved)
             else -> null
         }
 
         val cause = when (cause) {
-            is com.google.transit.realtime.Alert.Cause.STRIKE -> "industrial action"
-            is com.google.transit.realtime.Alert.Cause.ACCIDENT -> "accident"
-            is com.google.transit.realtime.Alert.Cause.CONSTRUCTION -> "construction"
-            is com.google.transit.realtime.Alert.Cause.DEMONSTRATION -> "demonstration"
-            is com.google.transit.realtime.Alert.Cause.HOLIDAY -> "holiday"
-            is com.google.transit.realtime.Alert.Cause.MAINTENANCE -> "maintenance"
-            is com.google.transit.realtime.Alert.Cause.MEDICAL_EMERGENCY -> "medical emergency"
-            is com.google.transit.realtime.Alert.Cause.POLICE_ACTIVITY -> "police activity"
-            is com.google.transit.realtime.Alert.Cause.TECHNICAL_PROBLEM -> "technical issues"
-            is com.google.transit.realtime.Alert.Cause.WEATHER -> "weather"
+            is com.google.transit.realtime.Alert.Cause.STRIKE -> stringResource(Res.string.alert_strike)
+            is com.google.transit.realtime.Alert.Cause.ACCIDENT -> stringResource(Res.string.alert_accident)
+            is com.google.transit.realtime.Alert.Cause.CONSTRUCTION -> stringResource(Res.string.alert_construction)
+            is com.google.transit.realtime.Alert.Cause.DEMONSTRATION -> stringResource(Res.string.alert_demonstration)
+            is com.google.transit.realtime.Alert.Cause.HOLIDAY -> stringResource(Res.string.alert_holiday)
+            is com.google.transit.realtime.Alert.Cause.MAINTENANCE -> stringResource(Res.string.alert_maintenance)
+            is com.google.transit.realtime.Alert.Cause.MEDICAL_EMERGENCY -> stringResource(Res.string.alert_medical_emergency)
+            is com.google.transit.realtime.Alert.Cause.POLICE_ACTIVITY -> stringResource(Res.string.alert_police_activity)
+            is com.google.transit.realtime.Alert.Cause.TECHNICAL_PROBLEM -> stringResource(Res.string.alert_technical_issues)
+            is com.google.transit.realtime.Alert.Cause.WEATHER -> stringResource(Res.string.alert_weather)
             else -> null
         }
 
         return when {
-            cause != null && effect != null -> "${effect.capitalize()} due to $cause"
+            cause != null && effect != null -> stringResource(Res.string.alert_due_to, cause, effect)
             effect != null -> effect.capitalize()
             cause != null -> cause.capitalize()
             else -> null

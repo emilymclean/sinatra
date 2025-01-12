@@ -113,4 +113,22 @@
     <string name="day_of_week_sunday">Sunday</string>
 
     <string name="alert_default_title">Alert</string>
+    <string name="alert_due_to">%1$s due to %2$s</string>
+    <string name="alert_accessibility_issue">accessibility issue</string>
+    <string name="alert_detour">detour</string>
+    <string name="alert_additional_service">additional service</string>
+    <string name="alert_modified_service">modified service</string>
+    <string name="alert_reduced_service">reduced service</string>
+    <string name="alert_significant_delays">significant delays</string>
+    <string name="alert_stop_moved">stop moved</string>
+    <string name="alert_strike">industrial action</string>
+    <string name="alert_accident">accident</string>
+    <string name="alert_construction">construction</string>
+    <string name="alert_demonstration">demonstration</string>
+    <string name="alert_holiday">holiday</string>
+    <string name="alert_maintenance">maintenance</string>
+    <string name="alert_medical_emergency">medical emergency</string>
+    <string name="alert_police_activity">police activity</string>
+    <string name="alert_technical_issues">technical issues</string>
+    <string name="alert_weather">weather</string>
 </resources>
