@@ -21,8 +21,5 @@ fun imePadding(): Dp {
             WindowInsets.systemBars.getBottom(density).px +
             WindowInsets.systemBars.getTop(density).px -
             viewportHeight()
-    LaunchedEffect(bottomBar, ime) {
-        Napier.d("bottomBar = ${bottomBar}, ime = ${ime}")
-    }
     return (ime - bottomBar + 1.rdp).coerceAtLeast(0.dp)
 }
