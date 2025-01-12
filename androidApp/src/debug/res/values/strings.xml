@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Sinatra Develop</string>
+    <string name="app_name" translatable="false">Sinatra Develop</string>
 </resources>
