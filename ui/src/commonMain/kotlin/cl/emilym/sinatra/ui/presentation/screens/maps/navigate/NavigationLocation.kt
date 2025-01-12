@@ -6,6 +6,7 @@ import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.data.models.Place
 import cl.emilym.sinatra.data.models.RecentVisit
 import cl.emilym.sinatra.data.models.Stop
+import cl.emilym.sinatra.ui.localization.format
 import org.jetbrains.compose.resources.stringResource
 import sinatra.ui.generated.resources.Res
 import sinatra.ui.generated.resources.navigate_lat_lng
@@ -35,7 +36,11 @@ sealed interface NavigationLocation: Serializable {
     ): LocatableNavigationLocation {
         override val name: String
             @Composable
-            get() = stringResource(Res.string.navigate_lat_lng)
+            get() = stringResource(
+                Res.string.navigate_lat_lng,
+                location.lat.format(3),
+                location.lng.format(3)
+            )
         override val screenKey: String = "point-${location.lng}-${location.lng}"
 
         override val recentVisit: RecentVisit? get() = null
