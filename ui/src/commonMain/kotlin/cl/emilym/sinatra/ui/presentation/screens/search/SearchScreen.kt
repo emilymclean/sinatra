@@ -95,7 +95,7 @@ fun SearchScreen(
             contentPadding = innerPadding
         ) {
             item {
-                Box(Modifier.padding(1.rdp))
+                Box(Modifier.height(1.rdp))
             }
             item {
                 Row(
