@@ -171,5 +171,39 @@
   <string name="alert_default_title">警报</string>
 
   <string name="alert_due_to">%2$s，因为%1$s</string>
+
+  <string name="alert_accessibility_issue">可访问性问题</string>
+
+  <string name="alert_detour">車輛改道</string>
+
+  <string name="alert_additional_service">附加服务</string>
+
+  <string name="alert_modified_service">修改服务</string>
+
+  <string name="alert_reduced_service">减少服务</string>
+
+  <string name="alert_significant_delays">严重延误</string>
+
+  <string name="alert_stop_moved">停止移动</string>
+
+  <string name="alert_strike">工业行动</string>
+
+  <string name="alert_accident">事故</string>
+
+  <string name="alert_construction">建造</string>
+
+  <string name="alert_demonstration">示范</string>
+
+  <string name="alert_holiday">假期</string>
+
+  <string name="alert_maintenance">维护</string>
+
+  <string name="alert_medical_emergency">医疗紧急情况</string>
+
+  <string name="alert_police_activity">警方活动</string>
+
+  <string name="alert_technical_issues">技术问题</string>
+
+  <string name="alert_weather">天气</string>
   
 </resources>
