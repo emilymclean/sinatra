@@ -52,6 +52,7 @@ import cl.emilym.sinatra.ui.widgets.SinatraBackHandler
 import cl.emilym.sinatra.ui.widgets.SinatraTextField
 import cl.emilym.sinatra.ui.widgets.StopCard
 import cl.emilym.sinatra.ui.widgets.Subheading
+import cl.emilym.sinatra.ui.widgets.imePadding
 import cl.emilym.sinatra.ui.widgets.viewportHeight
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -247,7 +248,8 @@ fun SearchScreen(
                 }
             }
             item {
-                Box(Modifier.padding(1.rdp))
+                Box(Modifier.height(imePadding()))
+                Box(Modifier.height(1.rdp))
             }
         }
     }
