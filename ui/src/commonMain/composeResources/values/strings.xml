@@ -111,4 +111,6 @@
     <string name="day_of_week_friday">Friday</string>
     <string name="day_of_week_saturday">Saturday</string>
     <string name="day_of_week_sunday">Sunday</string>
+
+    <string name="alert_default_title">Alert</string>
 </resources>

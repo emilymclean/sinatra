@@ -5,12 +5,14 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.intl.Locale
 import cl.emilym.sinatra.asRadians
 import cl.emilym.sinatra.data.models.ColorPair
 import cl.emilym.sinatra.data.models.CoordinateSpan
 import cl.emilym.sinatra.data.models.IRouteTripStop
 import cl.emilym.sinatra.data.models.Kilometer
 import cl.emilym.sinatra.data.models.Latitude
+import cl.emilym.sinatra.data.models.LocalizableString
 import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.data.models.MapRegion
 import cl.emilym.sinatra.data.models.OnColor
@@ -159,3 +161,7 @@ val Duration.text
         inWholeMinutes < 60 -> pluralStringResource(Res.plurals.time_minute, inWholeMinutes.toInt(), inWholeMinutes)
         else -> pluralStringResource(Res.plurals.time_hour, inWholeHours.toInt(), inWholeHours)
     }
+
+val LocalizableString.text: String
+    @Composable
+    get() = get(Locale.current.toLanguageTag())

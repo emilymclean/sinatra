@@ -2,6 +2,7 @@ package cl.emilym.sinatra
 
 import cl.emilym.sinatra.data.models.BCP47LanguageCode
 import cl.emilym.sinatra.data.models.Degree
+import cl.emilym.sinatra.data.models.LocalizableString
 import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.data.models.MapRegion
 import cl.emilym.sinatra.data.models.Radian
@@ -44,15 +45,6 @@ fun <T> List<T>?.nullIfEmpty(): List<T>? {
         this.isNullOrEmpty() -> null
         else -> this
     }
-}
-
-const val FALLBACK_LANGUAGE = "en-AU"
-
-fun TranslatedString.pick(language: BCP47LanguageCode = "en-AU"): String {
-    return (translation.firstOrNull { it.language == language } ?:
-        translation.firstOrNull { it.language == FALLBACK_LANGUAGE } ?:
-        translation.firstOrNull { it.language == null } ?:
-        translation.first()).text
 }
 
 public inline fun <T> Iterable<T>.sumOfIndexed(selector: (Int,T) -> Int): Int {
