@@ -21,7 +21,7 @@ import cl.emilym.sinatra.data.models.OnColor.LIGHT
 import cl.emilym.sinatra.data.models.Route
 import cl.emilym.sinatra.data.models.TimetableStationTime
 import cl.emilym.sinatra.degrees
-import cl.emilym.sinatra.ui.widgets.toTodayInstant
+import cl.emilym.sinatra.ui.localization.toTodayInstant
 import kotlinx.datetime.Instant
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.pluralStringResource

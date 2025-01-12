@@ -1,4 +1,4 @@
-package cl.emilym.sinatra.ui.widgets
+package cl.emilym.sinatra.ui.localization
 
 import androidx.compose.runtime.Composable
 import platform.Foundation.NSDate

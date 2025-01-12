@@ -1,4 +1,4 @@
-package cl.emilym.sinatra.ui.widgets
+package cl.emilym.sinatra.ui.localization
 
 import android.text.format.DateFormat
 import androidx.compose.runtime.Composable

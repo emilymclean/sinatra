@@ -5,7 +5,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -13,8 +12,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LocalContentColor
@@ -52,6 +49,7 @@ import cl.emilym.sinatra.ui.presentation.screens.search.SearchScreen
 import cl.emilym.sinatra.ui.presentation.theme.Container
 import cl.emilym.sinatra.ui.presentation.theme.walkingColor
 import cl.emilym.sinatra.ui.text
+import cl.emilym.sinatra.ui.localization.format
 import cl.emilym.sinatra.ui.widgets.CurrentLocationCard
 import cl.emilym.sinatra.ui.widgets.GenericMarkerIcon
 import cl.emilym.sinatra.ui.widgets.JourneyStartIcon
@@ -60,15 +58,12 @@ import cl.emilym.sinatra.ui.widgets.LocalMapControl
 import cl.emilym.sinatra.ui.widgets.MapIcon
 import cl.emilym.sinatra.ui.widgets.NavigatorBackButton
 import cl.emilym.sinatra.ui.widgets.RouteRandle
-import cl.emilym.sinatra.ui.widgets.StarOutlineIcon
 import cl.emilym.sinatra.ui.widgets.WalkIcon
 import cl.emilym.sinatra.ui.widgets.currentLocation
-import cl.emilym.sinatra.ui.widgets.format
 import cl.emilym.sinatra.ui.widgets.hasLocationPermission
 import cl.emilym.sinatra.ui.widgets.routeRandleSize
 import com.mikepenz.markdown.m3.Markdown
 import org.jetbrains.compose.resources.stringResource
-import org.koin.compose.viewmodel.koinViewModel
 import sinatra.ui.generated.resources.Res
 import sinatra.ui.generated.resources.navigate_calculating_journey
 import sinatra.ui.generated.resources.navigate_calculating_journey_failed

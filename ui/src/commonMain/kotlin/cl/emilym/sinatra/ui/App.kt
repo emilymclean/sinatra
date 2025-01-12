@@ -17,8 +17,8 @@ import cl.emilym.sinatra.data.repository.LocaleRepository
 import cl.emilym.sinatra.data.repository.TransportMetadataRepository
 import cl.emilym.sinatra.ui.presentation.screens.RootMapScreen
 import cl.emilym.sinatra.ui.presentation.theme.SinatraTheme
+import cl.emilym.sinatra.ui.localization.LocalScheduleTimeZone
 import cl.emilym.sinatra.ui.widgets.LocalPermissionRequestQueue
-import cl.emilym.sinatra.ui.widgets.LocalScheduleTimeZone
 import cl.emilym.sinatra.ui.widgets.PermissionRequestQueue
 import cl.emilym.sinatra.ui.widgets.PermissionRequestQueueHandler
 import coil3.ImageLoader

@@ -35,6 +35,8 @@ import cl.emilym.sinatra.data.models.TimetableStationTime
 import cl.emilym.sinatra.degrees
 import cl.emilym.sinatra.sumOfIndexed
 import cl.emilym.sinatra.ui.color
+import cl.emilym.sinatra.ui.localization.LocalClock
+import cl.emilym.sinatra.ui.localization.toTodayInstant
 import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.max

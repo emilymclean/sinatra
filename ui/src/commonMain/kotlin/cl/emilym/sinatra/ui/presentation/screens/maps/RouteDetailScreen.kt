@@ -69,15 +69,14 @@ import cl.emilym.sinatra.ui.maps.routeStopMarkerIcon
 import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
 import cl.emilym.sinatra.ui.navigation.MapScreen
 import cl.emilym.sinatra.ui.past
-import cl.emilym.sinatra.ui.presentation.screens.maps.search.MapSearchViewModel
 import cl.emilym.sinatra.ui.text
 import cl.emilym.sinatra.ui.widgets.AccessibilityIconLockup
 import cl.emilym.sinatra.ui.widgets.AlertScaffold
 import cl.emilym.sinatra.ui.widgets.BikeIcon
 import cl.emilym.sinatra.ui.widgets.FavouriteButton
-import cl.emilym.sinatra.ui.widgets.LocalClock
+import cl.emilym.sinatra.ui.localization.LocalClock
 import cl.emilym.sinatra.ui.widgets.LocalMapControl
-import cl.emilym.sinatra.ui.widgets.LocalScheduleTimeZone
+import cl.emilym.sinatra.ui.localization.LocalScheduleTimeZone
 import cl.emilym.sinatra.ui.widgets.RouteLine
 import cl.emilym.sinatra.ui.widgets.RouteRandle
 import cl.emilym.sinatra.ui.widgets.SheetIosBackButton
@@ -100,8 +99,6 @@ import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import org.jetbrains.compose.resources.stringResource
-import org.koin.android.annotation.KoinViewModel
-import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.annotation.Factory
 import sinatra.ui.generated.resources.Res
 import sinatra.ui.generated.resources.accessibility_title

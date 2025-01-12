@@ -24,3 +24,8 @@ val canberraRegion = MapRegion(
 val canberraZoom = 10f
 
 const val NEAREST_STOP_RADIUS = 1.0
+
+object LanguageConsts {
+    const val MAINLAND_CHINESE_BCP = "zh-Hans-CN"
+    const val US_BCP = "en-US"
+}
