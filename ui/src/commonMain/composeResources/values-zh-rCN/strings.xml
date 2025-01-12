@@ -21,23 +21,23 @@
   <string name="stop_detail_distance">距离 %1$s</string>
       
   <plurals name="distance_kilometer">
-    <item quantity="other">%1$d 公里</item>
+    <item quantity="other">%1$d公里</item>
   </plurals>
       
   <plurals name="distance_meter">
-    <item quantity="other">%1$d 米</item>
+    <item quantity="other">%1$d米</item>
   </plurals>
       
   <plurals name="time_minute">
-    <item quantity="other">%1$d 分钟</item>
+    <item quantity="other">%1$d分钟</item>
   </plurals>
       
   <plurals name="time_second">
-    <item quantity="other">%1$d 秒</item>
+    <item quantity="other">%1$d秒</item>
   </plurals>
       
   <plurals name="time_hour">
-    <item quantity="other">%1$d 小时</item>
+    <item quantity="other">%1$d小时</item>
   </plurals>
       
   <string name="current_location">当前位置</string>
@@ -52,19 +52,19 @@
       
   <string name="navigate_calculating_journey_failed">我们找不到旅程</string>
       
-  <string name="navigate_walk">**步行** %1$s</string>
+  <string name="navigate_walk">**步行**%1$s</string>
       
-  <string name="navigate_walk_to_stop">**步行** %1$s 到 %1$s</string>
+  <string name="navigate_walk_to_stop">**步行** %1$s 到 %2$s</string>
       
-  <string name="navigate_travel_depart">**出发**，时间为 %2$s 从%1$s</string>
+  <string name="navigate_travel_depart">于%2$s从 %1$s 出发</string>
       
-  <string name="navigate_travel_arrive">**抵达** %1$s，时间为%2$s</string>
+  <string name="navigate_travel_arrive">于%2$s抵达 %1$s</string>
       
-  <string name="navigate_travel">行程：%2$s，前往%3$s，票价：%1$s</string>
+  <string name="navigate_travel">行程路线：%2$s，前往 %3$s，票价为 %1$s</string>
       
-  <string name="navigate_travel_journey_arrive">**抵达** %1$s，时间为%2$s</string>
+  <string name="navigate_travel_journey_arrive">于%2$s抵达 %1$s</string>
       
-  <string name="navigate_travel_journey_depart">**从 %1$s 出发**</string>
+  <string name="navigate_travel_journey_depart">从 %1$s 出发</string>
       
   <string name="map_search_nearby_stops">附近站点</string>
       
@@ -94,27 +94,27 @@
       
   <string name="estimated_arrival">预计于 %1$s 抵达</string>
       
-  <string name="estimated_arrival_late">预计到达时间为 %1$s（晚点 %2$s）</string>
+  <string name="estimated_arrival_late">预计到达时间为%1$s（晚点%2$s）</string>
       
-  <string name="estimated_arrival_early">预计到达时间为 %1$s（早 %2$s）</string>
+  <string name="estimated_arrival_early">预计到达时间为%1$s（早%2$s）</string>
       
   <string name="past_departure">于 %1$s 出发</string>
       
-  <string name="past_departure_late">于 %1$s 出发（晚点 %2$s）</string>
+  <string name="past_departure_late">于%1$s出发（晚点 %2$s）</string>
       
-  <string name="past_departure_early">于 %1$s 出发（早于 %2$s）</string>
+  <string name="past_departure_early">于%1$s出发（早于%2$s）</string>
       
   <string name="future_scheduled_departure">预计于%1$s出发</string>
       
   <string name="future_estimated_departure">预计于%1$s出发</string>
       
-  <string name="future_estimated_departure_late">预计于 %1$s 出发（晚点 %2$s）</string>
+  <string name="future_estimated_departure_late">预计于%1$s出发（晚点%2$s）</string>
       
-  <string name="future_estimated_departure_early">预计于 %1$s 出发（提前 %2$s）</string>
+  <string name="future_estimated_departure_early">预计于%1$s出发（提前%2$s）</string>
       
   <string name="route_with_heading">%1$s 至 %2$s</string>
       
-  <string name="route_heading">前往%1$s</string>
+  <string name="route_heading">至 %1$s</string>
       
   <string name="route_code_name">路线 %1$s</string>
       

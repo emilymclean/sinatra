@@ -44,7 +44,7 @@
     <string name="navigate_calculating_journey">Calculating a journey...</string>
     <string name="navigate_calculating_journey_failed">We couldn't find a journey</string>
     <string name="navigate_walk">**Walk** %1$s</string>
-    <string name="navigate_walk_to_stop">**Walk** %1$s to %1$s</string>
+    <string name="navigate_walk_to_stop">**Walk** %1$s to %2$s</string>
     <string name="navigate_travel_depart">**Depart** from %1$s at %2$s</string>
     <string name="navigate_travel_arrive">**Arrive** at %1$s at %2$s</string>
     <string name="navigate_travel">Travel for %1$s on %2$s towards %3$s</string>
