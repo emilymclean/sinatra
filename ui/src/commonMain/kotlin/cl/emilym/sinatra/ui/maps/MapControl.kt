@@ -10,6 +10,7 @@ import cl.emilym.sinatra.data.models.MapRegion
 import cl.emilym.sinatra.data.models.ScreenLocation
 import cl.emilym.sinatra.data.models.ScreenRegion
 import cl.emilym.sinatra.data.models.Zoom
+import cl.emilym.sinatra.data.repository.isIos
 import io.github.aakira.napier.Napier
 import kotlin.math.max
 
@@ -63,7 +64,7 @@ abstract class AbstractMapControl: MapControl, MapProjectionProvider {
         (contentViewportSize.width - contentViewportPadding.horizontal),
         (contentViewportSize.height - contentViewportPadding.vertical)
     )
-    private val visibleMapSize: Size get() =
+    protected val visibleMapSize: Size get() =
         Size(
             paddedContentViewportSize.width,
             (contentViewportSize.height * (1 - bottomSheetHalfHeight)) - contentViewportPadding.vertical
@@ -82,7 +83,7 @@ abstract class AbstractMapControl: MapControl, MapProjectionProvider {
 
         val halfWidth = width / 2
         val halfHeight = height / 2
-        
+
         val centre = box.centre
 
         return ScreenRegion(
@@ -168,6 +169,7 @@ abstract class AbstractMapControl: MapControl, MapProjectionProvider {
     }
 
     override fun moveToPoint(location: MapLocation, minZoom: Float?) {
+        Napier.d("Current zoom = ${zoom}, minZoom = ${minZoom}")
         zoomToPoint(
             location,
             when (minZoom) {

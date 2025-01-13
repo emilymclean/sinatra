@@ -25,6 +25,9 @@ class AppleMapControl(
     override val density: Density
 ): AbstractMapControl() {
 
+    override val zoom: Float
+        get() = calculateZoom(nativeZoom, visibleMapSize, density) + 1f
+
     @OptIn(ExperimentalForeignApi::class)
     override fun toScreenSpace(location: MapLocation): ScreenLocation? {
         val map = state.map ?: return null

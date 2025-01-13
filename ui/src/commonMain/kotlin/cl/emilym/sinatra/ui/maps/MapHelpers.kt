@@ -1,10 +1,7 @@
 package cl.emilym.sinatra.ui.maps
 
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
-import androidx.compose.ui.unit.dp
 import cl.emilym.sinatra.asDegrees
 import cl.emilym.sinatra.asRadians
 import cl.emilym.sinatra.data.models.CoordinateSpan
@@ -17,8 +14,6 @@ import cl.emilym.sinatra.data.models.Radian
 import cl.emilym.sinatra.data.models.ScreenLocation
 import cl.emilym.sinatra.data.models.Zoom
 import cl.emilym.sinatra.degrees
-import cl.emilym.sinatra.ui.widgets.toFloatPx
-import io.github.aakira.napier.Napier
 import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.atan
