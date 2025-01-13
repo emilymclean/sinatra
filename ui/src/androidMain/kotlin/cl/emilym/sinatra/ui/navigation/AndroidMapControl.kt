@@ -1,6 +1,7 @@
 package cl.emilym.sinatra.ui.navigation
 
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.unit.Density
 import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.data.models.MapRegion
 import cl.emilym.sinatra.data.models.ScreenLocation
@@ -17,6 +18,7 @@ class AndroidMapControl(
     private val cameraPositionState: CameraPositionState,
     private val mainScope: CoroutineScope,
     override val contentViewportSize: Size,
+    override val density: Density,
     override val contentViewportPadding: PrecomputedPaddingValues,
     override val bottomSheetHalfHeight: Float,
 ): AbstractMapControl() {

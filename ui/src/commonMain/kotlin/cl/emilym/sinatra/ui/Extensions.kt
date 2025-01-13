@@ -135,11 +135,7 @@ fun CoordinateSpan.adjustForLatitude(latitude: Latitude): CoordinateSpan {
     )
 }
 
-fun MapRegion.toZoom(mapSize: Size): Float {
-    return toZoom(mapSize.width.toInt(), mapSize.height.toInt())
-}
-
-fun MapRegion.toZoom(mapWidth: Pixel, mapHeight: Pixel): Float {
+fun MapRegion.toZoom(mapWidth: Float, mapHeight: Float): Float {
     val worldSize = 256.0
 
     fun latRad(lat: Degree): Radian {
@@ -148,7 +144,7 @@ fun MapRegion.toZoom(mapWidth: Pixel, mapHeight: Pixel): Float {
         return (max(min(radX2, PI),-PI) / 2.0)
     }
 
-    fun zoom(mapPx: Pixel, mapFrac: Double): Double {
+    fun zoom(mapPx: Float, mapFrac: Double): Double {
         return ln(mapPx / worldSize / mapFrac) / ln(2.0)
     }
 

@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalLayoutDirection
 import cl.emilym.sinatra.data.models.Pixel
+import cl.emilym.sinatra.ui.widgets.toFloatPx
 import cl.emilym.sinatra.ui.widgets.toIntPx
 
 data class PrecomputedPaddingValues(
@@ -36,10 +37,10 @@ data class PrecomputedPaddingValues(
     operator fun times(other: Number): PrecomputedPaddingValues {
         val otherF = other.toDouble()
         return PrecomputedPaddingValues(
-            (top * otherF).toInt(),
-            (bottom * otherF).toInt(),
-            (left * otherF).toInt(),
-            (right * otherF).toInt()
+            (top * otherF).toFloat(),
+            (bottom * otherF).toFloat(),
+            (left * otherF).toFloat(),
+            (right * otherF).toFloat()
         )
     }
 
@@ -49,9 +50,9 @@ data class PrecomputedPaddingValues(
 fun PaddingValues.precompute(): PrecomputedPaddingValues {
     val layoutDirection = LocalLayoutDirection.current
     return PrecomputedPaddingValues(
-        calculateTopPadding().toIntPx(),
-        calculateBottomPadding().toIntPx(),
-        calculateLeftPadding(layoutDirection).toIntPx(),
-        calculateRightPadding(layoutDirection).toIntPx()
+        calculateTopPadding().toFloatPx(),
+        calculateBottomPadding().toFloatPx(),
+        calculateLeftPadding(layoutDirection).toFloatPx(),
+        calculateRightPadding(layoutDirection).toFloatPx()
     )
 }

@@ -14,7 +14,7 @@ typealias Latitude = Double
 typealias Longitude = Double
 typealias Kilometer = Double
 
-typealias Pixel = Int
+typealias Pixel = Float
 typealias Radian = Double
 typealias Degree = Double
 

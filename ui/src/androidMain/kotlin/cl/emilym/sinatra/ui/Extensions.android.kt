@@ -24,11 +24,11 @@ fun LatLng.toShared(): MapLocation {
 }
 
 fun Point.toShared(): ScreenLocation {
-    return ScreenLocation(x, y)
+    return ScreenLocation(x.toFloat(), y.toFloat())
 }
 
 fun ScreenLocation.toNative(): Point {
-    return Point(x,y)
+    return Point(x.toInt(), y.toInt())
 }
 
 fun MapRegion.toNative(): LatLngBounds {

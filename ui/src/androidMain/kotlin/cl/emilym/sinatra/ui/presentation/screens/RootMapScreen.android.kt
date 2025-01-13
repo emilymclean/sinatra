@@ -16,6 +16,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.dp
 import cl.emilym.sinatra.ui.R
@@ -69,29 +70,17 @@ actual fun Map(content: @Composable MapControl.(@Composable () -> Unit) -> Unit)
 
     val insets = WindowInsets.systemBars.only(WindowInsetsSides.Top)
     val coroutineScope = rememberCoroutineScope()
-    val viewportSize = viewportSize(insets)
+    val viewportSize = viewportSize()
     val paddingValues = insets.asPaddingValues().precompute()
     val bottomSheetHalfHeight = bottomSheetHalfHeight()
+    val density = LocalDensity.current
 
-    val mapSize = viewportSize()
-    val screenSize = screenSize()
-
-    LaunchedEffect(mapSize, screenSize, cameraPositionState.projection) {
-        Napier.d("ASDFG $mapSize, $screenSize")
-        val p = cameraPositionState.projection ?: return@LaunchedEffect
-        val bounds = p.visibleRegion.latLngBounds
-        val realWidth = p.toScreenLocation(bounds.northeast).x
-        val realHeight = p.toScreenLocation(bounds.southwest).y
-        Napier.d("ASDFG Real screen size = $realWidth,$realHeight ${p.toScreenLocation(bounds.northeast)} ${p.toScreenLocation(bounds.southwest)}")
-        Napier.d("ASDFG ${bounds} ${bounds.toShared().toZoom(realWidth, realHeight)}")
-    }
-
-
-    val scope = remember(cameraPositionState, coroutineScope, viewportSize, paddingValues, bottomSheetHalfHeight) {
+    val scope = remember(cameraPositionState, coroutineScope, viewportSize, paddingValues, bottomSheetHalfHeight, density) {
         AndroidMapControl(
             cameraPositionState,
             coroutineScope,
             viewportSize,
+            density,
             paddingValues,
             bottomSheetHalfHeight
         )
@@ -114,7 +103,12 @@ actual fun Map(content: @Composable MapControl.(@Composable () -> Unit) -> Unit)
                 myLocationButtonEnabled = false,
                 zoomControlsEnabled = false
             ),
-            contentPadding = PaddingValues(0.dp),
+            contentPadding = PaddingValues(
+                windowPadding.calculateStartPadding(layoutDirection),
+                windowPadding.calculateTopPadding(),
+                windowPadding.calculateEndPadding(layoutDirection),
+                windowPadding.calculateBottomPadding(),
+            ),
             mapColorScheme = ComposeMapColorScheme.FOLLOW_SYSTEM
         ) {
             currentLocation?.let { DrawMarker(MarkerItem(it, currentLocationIcon)) }

@@ -147,7 +147,7 @@ class MapSearchViewModel(
         if (!hasZoomedToLocation && isInRegion) {
             hasZoomedToLocation = true
             screenModelScope.launch {
-//                zoomToLocation.emit(Unit)
+                zoomToLocation.emit(Unit)
             }
         }
     }
