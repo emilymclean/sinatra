@@ -2,6 +2,7 @@ package cl.emilym.sinatra.ui.widgets
 
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.platform.LocalDensity

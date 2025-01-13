@@ -18,6 +18,7 @@ import androidx.compose.ui.viewinterop.UIKitView
 import cl.emilym.sinatra.ui.maps.AppleMapControl
 import cl.emilym.sinatra.ui.maps.MapControl
 import cl.emilym.sinatra.ui.maps.MarkerItem
+import cl.emilym.sinatra.ui.maps.SafeMapControl
 import cl.emilym.sinatra.ui.maps.currentLocationIcon
 import cl.emilym.sinatra.ui.maps.iosCurrentMapItems
 import cl.emilym.sinatra.ui.maps.precompute
@@ -36,7 +37,7 @@ val globalPointOfInterestFilter = MKPointOfInterestFilter(excludingCategories = 
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-actual fun Map(content: @Composable MapControl.(@Composable () -> Unit) -> Unit) {
+actual fun Map(mapControl: MapControl) {
 
     val state = rememberMapKitState {}
 
@@ -52,6 +53,10 @@ actual fun Map(content: @Composable MapControl.(@Composable () -> Unit) -> Unit)
             paddingValues,
             bottomSheetHalfHeight
         )
+    }
+
+    LaunchedEffect(control) {
+        (mapControl as? SafeMapControl)?.wrapped = control
     }
 
     LaunchedEffect(viewportSize) {
@@ -77,25 +82,23 @@ actual fun Map(content: @Composable MapControl.(@Composable () -> Unit) -> Unit)
 
     val coroutineScope = rememberCoroutineScope()
 
-    control.content {
-        UIKitView(
-            modifier = Modifier.fillMaxSize(),
-            factory = {
-                MKMapView().apply {
-                    setZoomEnabled(true)
-                    setScrollEnabled(true)
-                    setRotateEnabled(false)
-                    setPointOfInterestFilter(globalPointOfInterestFilter)
-                }.also {
-                    coroutineScope.launch { state.setMap(it) }
-                }
-            },
-            onRelease = {
-                coroutineScope.launch { state.setMap(null) }
-            },
-            properties = UIKitInteropProperties(
-                interactionMode = UIKitInteropInteractionMode.NonCooperative
-            )
+    UIKitView(
+        modifier = Modifier.fillMaxSize(),
+        factory = {
+            MKMapView().apply {
+                setZoomEnabled(true)
+                setScrollEnabled(true)
+                setRotateEnabled(false)
+                setPointOfInterestFilter(globalPointOfInterestFilter)
+            }.also {
+                coroutineScope.launch { state.setMap(it) }
+            }
+        },
+        onRelease = {
+            coroutineScope.launch { state.setMap(null) }
+        },
+        properties = UIKitInteropProperties(
+            interactionMode = UIKitInteropInteractionMode.NonCooperative
         )
-    }
+    )
 }

@@ -1,5 +1,6 @@
 package cl.emilym.sinatra.ui.maps
 
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
@@ -11,6 +12,9 @@ import cl.emilym.sinatra.data.models.ScreenRegion
 import cl.emilym.sinatra.data.models.Zoom
 import io.github.aakira.napier.Napier
 import kotlin.math.max
+
+@Composable
+expect fun rememberMapControl(): MapControl
 
 interface MapProjectionProvider {
     fun toScreenSpace(location: MapLocation): ScreenLocation?
@@ -24,6 +28,29 @@ interface MapControl {
     fun moveToPoint(location: MapLocation, minZoom: Zoom? = null)
 
     val zoom: Float
+}
+
+class SafeMapControl: MapControl {
+    var wrapped: MapControl? = null
+
+    override fun zoomToArea(bounds: MapRegion, padding: Dp) {
+        wrapped?.zoomToArea(bounds, padding)
+    }
+
+    override fun zoomToArea(topLeft: MapLocation, bottomRight: MapLocation, padding: Dp) {
+        wrapped?.zoomToArea(topLeft, bottomRight, padding)
+    }
+
+    override fun zoomToPoint(location: MapLocation, zoom: Zoom) {
+        wrapped?.zoomToPoint(location, zoom)
+    }
+
+    override fun moveToPoint(location: MapLocation, minZoom: Zoom?) {
+        wrapped?.moveToPoint(location, minZoom)
+    }
+
+    override val zoom: Float
+        get() = wrapped?.zoom ?: 0f
 }
 
 abstract class AbstractMapControl: MapControl, MapProjectionProvider {
@@ -102,6 +129,8 @@ abstract class AbstractMapControl: MapControl, MapProjectionProvider {
         if (screenSpace.size != 2) return showBounds(
             MapRegion(topLeft, bottomRight)
         )
+
+        Napier.d("Visible map aspect = ${visibleMapAspect} (size = ${visibleMapSize})")
 
         val viewportBox = boxOverOther(
             ScreenRegion(

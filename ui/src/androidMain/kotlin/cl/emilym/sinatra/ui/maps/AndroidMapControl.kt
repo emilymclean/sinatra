@@ -1,18 +1,23 @@
-package cl.emilym.sinatra.ui.navigation
+package cl.emilym.sinatra.ui.maps
 
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.unit.Density
 import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.data.models.MapRegion
 import cl.emilym.sinatra.data.models.ScreenLocation
-import cl.emilym.sinatra.ui.maps.AbstractMapControl
-import cl.emilym.sinatra.ui.maps.PrecomputedPaddingValues
 import cl.emilym.sinatra.ui.toNative
 import cl.emilym.sinatra.ui.toShared
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.maps.android.compose.CameraPositionState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+
+@Composable
+actual fun rememberMapControl(): MapControl {
+    return remember { SafeMapControl() }
+}
 
 class AndroidMapControl(
     private val cameraPositionState: CameraPositionState,

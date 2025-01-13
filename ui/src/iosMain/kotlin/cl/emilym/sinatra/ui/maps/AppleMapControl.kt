@@ -1,17 +1,20 @@
 package cl.emilym.sinatra.ui.maps
 
-import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.geometry.Size
 import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.data.models.MapRegion
 import cl.emilym.sinatra.data.models.ScreenLocation
-import cl.emilym.sinatra.ui.adjustForLatitude
-import cl.emilym.sinatra.ui.toCoordinateSpan
 import cl.emilym.sinatra.ui.toNative
 import cl.emilym.sinatra.ui.toShared
-import cl.emilym.sinatra.ui.toZoom
 import io.github.aakira.napier.Napier
 import kotlinx.cinterop.ExperimentalForeignApi
+
+@Composable
+actual fun rememberMapControl(): MapControl {
+    return remember { SafeMapControl() }
+}
 
 class AppleMapControl(
     private val state: MapKitState,

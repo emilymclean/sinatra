@@ -1,7 +1,6 @@
 package cl.emilym.sinatra.ui.maps
 
 import cl.emilym.sinatra.data.models.Zoom
-import cl.emilym.sinatra.ui.navigation.AndroidMapControl
 import com.google.maps.android.compose.CameraPositionState
 
 actual class NativeMapScope(
