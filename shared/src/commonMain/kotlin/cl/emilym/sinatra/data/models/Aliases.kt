@@ -12,9 +12,11 @@ typealias TripId = String
 
 typealias Latitude = Double
 typealias Longitude = Double
+typealias Zoom = Float
 typealias Kilometer = Double
 
-typealias Pixel = Int
+typealias Pixel = Float
+typealias DensityPixel = Float
 typealias Radian = Double
 typealias Degree = Double
 

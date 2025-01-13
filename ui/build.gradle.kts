@@ -89,6 +89,15 @@ kotlin {
             kotlin.srcDir("build/generated/ksp/metadata")
             kotlin.srcDir("src/iosMain/resources")
         }
+        commonTest.dependencies {
+            implementation(libs.kotlin.test)
+        }
+        androidUnitTest.dependencies {
+            implementation(libs.kotlin.reflect)
+            implementation(libs.kotlin.test)
+            implementation(libs.kotlin.test.coroutines)
+            implementation(libs.mockk)
+        }
     }
 }
 

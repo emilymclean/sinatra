@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
+import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.systemBars
@@ -16,20 +17,22 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.unit.dp
 import cl.emilym.sinatra.ui.R
+import cl.emilym.sinatra.ui.asPaddingValues
 import cl.emilym.sinatra.ui.canberra
 import cl.emilym.sinatra.ui.canberraZoom
+import cl.emilym.sinatra.ui.maps.AndroidMapControl
 import cl.emilym.sinatra.ui.maps.LineItem
 import cl.emilym.sinatra.ui.maps.MapControl
 import cl.emilym.sinatra.ui.maps.MarkerItem
 import cl.emilym.sinatra.ui.maps.NativeMapScope
+import cl.emilym.sinatra.ui.maps.SafeMapControl
 import cl.emilym.sinatra.ui.maps.currentLocationIcon
 import cl.emilym.sinatra.ui.maps.defaultMarkerOffset
 import cl.emilym.sinatra.ui.maps.precompute
 import cl.emilym.sinatra.ui.maps.toNative
-import cl.emilym.sinatra.ui.navigation.AndroidMapControl
 import cl.emilym.sinatra.ui.navigation.bottomSheetHalfHeight
 import cl.emilym.sinatra.ui.navigation.currentDrawNativeMap
 import cl.emilym.sinatra.ui.navigation.currentMapItems
@@ -50,9 +53,8 @@ import com.google.maps.android.compose.Polyline
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberMarkerState
 
-
 @Composable
-actual fun Map(content: @Composable MapControl.(@Composable () -> Unit) -> Unit) {
+actual fun Map(mapControl: MapControl) {
     val context = LocalContext.current
 
     val cameraPositionState = rememberCameraPositionState {
@@ -63,62 +65,69 @@ actual fun Map(content: @Composable MapControl.(@Composable () -> Unit) -> Unit)
     val currentLocation = currentLocation()
     val currentLocationIcon = currentLocationIcon()
 
-    val insets = WindowInsets.systemBars.only(WindowInsetsSides.Top)
+    val insets = listOf<WindowInsets>(
+        WindowInsets.systemBars.only(WindowInsetsSides.Top),
+        WindowInsets.displayCutout.only(WindowInsetsSides.End)
+    )
     val coroutineScope = rememberCoroutineScope()
-    val viewportSize = viewportSize(insets)
+    val viewportSize = viewportSize()
     val paddingValues = insets.asPaddingValues().precompute()
     val bottomSheetHalfHeight = bottomSheetHalfHeight()
+    val density = LocalDensity.current
 
-
-    val scope = remember(cameraPositionState, coroutineScope, viewportSize, paddingValues, bottomSheetHalfHeight) {
+    val realMapControl = remember(cameraPositionState, coroutineScope, viewportSize, paddingValues, bottomSheetHalfHeight, density) {
         AndroidMapControl(
             cameraPositionState,
             coroutineScope,
             viewportSize,
+            density,
             paddingValues,
             bottomSheetHalfHeight
         )
     }
-    val nativeMapScope = NativeMapScope(cameraPositionState)
+    val nativeMapScope = remember(cameraPositionState, realMapControl) { NativeMapScope(cameraPositionState, realMapControl) }
 
-    scope.content {
-        GoogleMap(
-            modifier = Modifier.fillMaxSize(),
-            cameraPositionState = cameraPositionState,
-            googleMapOptionsFactory = {
-                GoogleMapOptions()
-            },
-            properties = MapProperties(
-                mapStyleOptions = MapStyleOptions.loadRawResourceStyle(context, R.raw.maps_style)
-            ),
-            uiSettings = MapUiSettings(
-                compassEnabled = false,
-                rotationGesturesEnabled = false,
-                myLocationButtonEnabled = false,
-                zoomControlsEnabled = false
-            ),
-            contentPadding = PaddingValues(
-                windowPadding.calculateStartPadding(layoutDirection),
-                windowPadding.calculateTopPadding(),
-                windowPadding.calculateEndPadding(layoutDirection),
-                windowPadding.calculateBottomPadding()
-            ),
-            mapColorScheme = ComposeMapColorScheme.FOLLOW_SYSTEM
-        ) {
-            currentLocation?.let { DrawMarker(MarkerItem(it, currentLocationIcon)) }
+    LaunchedEffect(realMapControl) {
+        (mapControl as? SafeMapControl)?.wrapped = realMapControl
+    }
 
-            currentMapItems { items ->
-                for (item in items) {
-                    when (item) {
-                        is MarkerItem -> DrawMarker(item)
-                        is LineItem -> DrawLine(item)
-                        else -> {}
-                    }
+    GoogleMap(
+        modifier = Modifier.fillMaxSize(),
+        cameraPositionState = cameraPositionState,
+        googleMapOptionsFactory = {
+            GoogleMapOptions()
+        },
+        properties = MapProperties(
+            mapStyleOptions = MapStyleOptions.loadRawResourceStyle(context, R.raw.maps_style)
+        ),
+        uiSettings = MapUiSettings(
+            compassEnabled = false,
+            rotationGesturesEnabled = false,
+            myLocationButtonEnabled = false,
+            zoomControlsEnabled = false
+        ),
+        contentPadding =
+        PaddingValues(
+            windowPadding.calculateStartPadding(layoutDirection),
+            windowPadding.calculateTopPadding(),
+            windowPadding.calculateEndPadding(layoutDirection),
+            windowPadding.calculateBottomPadding(),
+        ),
+        mapColorScheme = ComposeMapColorScheme.FOLLOW_SYSTEM
+    ) {
+        currentLocation?.let { DrawMarker(MarkerItem(it, currentLocationIcon)) }
+
+        currentMapItems { items ->
+            for (item in items) {
+                when (item) {
+                    is MarkerItem -> DrawMarker(item)
+                    is LineItem -> DrawLine(item)
+                    else -> {}
                 }
             }
-
-            nativeMapScope.currentDrawNativeMap()
         }
+
+        nativeMapScope.currentDrawNativeMap()
     }
 }
 

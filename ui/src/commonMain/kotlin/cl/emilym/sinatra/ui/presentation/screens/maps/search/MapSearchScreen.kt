@@ -48,7 +48,7 @@ import io.github.aakira.napier.Napier
 import org.koin.compose.viewmodel.koinViewModel
 
 const val zoomThreshold = 14f
-const val currentLocationZoom = zoomThreshold + 4f
+const val currentLocationZoom = zoomThreshold + 1f
 
 class MapSearchScreen: MapScreen, NativeMapScreen {
     override val key: ScreenKey = this::class.qualifiedName!!
@@ -73,7 +73,7 @@ class MapSearchScreen: MapScreen, NativeMapScreen {
 
         LaunchedEffect(zoomToCurrentLocation) {
             if (zoomToCurrentLocation == null || currentLocation == null) return@LaunchedEffect
-            mapControl.zoomToPoint(currentLocation, currentLocationZoom)
+            mapControl.moveToPoint(currentLocation, currentLocationZoom)
         }
 
         Box(
@@ -89,7 +89,7 @@ class MapSearchScreen: MapScreen, NativeMapScreen {
                     currentLocation?.let {
                         FloatingActionButton(
                             onClick = {
-                                mapControl.zoomToPoint(it, currentLocationZoom)
+                                mapControl.moveToPoint(it, currentLocationZoom)
                             },
                             Modifier.semantics {
                                 contentDescription = "Zoom to current location"

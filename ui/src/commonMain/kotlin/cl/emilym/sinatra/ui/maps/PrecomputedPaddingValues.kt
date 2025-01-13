@@ -4,6 +4,9 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalLayoutDirection
 import cl.emilym.sinatra.data.models.Pixel
+import cl.emilym.sinatra.data.models.ScreenLocation
+import cl.emilym.sinatra.data.models.ScreenRegion
+import cl.emilym.sinatra.ui.widgets.toFloatPx
 import cl.emilym.sinatra.ui.widgets.toIntPx
 
 data class PrecomputedPaddingValues(
@@ -12,6 +15,9 @@ data class PrecomputedPaddingValues(
     val left: Pixel,
     val right: Pixel
 ) {
+
+    val horizontal: Pixel get() = left + right
+    val vertical: Pixel get() = top + bottom
 
     companion object {
         fun all(value: Pixel): PrecomputedPaddingValues {
@@ -22,6 +28,15 @@ data class PrecomputedPaddingValues(
                 right = value,
             )
         }
+    }
+
+    operator fun unaryMinus(): PrecomputedPaddingValues {
+        return PrecomputedPaddingValues(
+            -top,
+            -bottom,
+            -left,
+            -right
+        )
     }
 
     operator fun plus(other: PrecomputedPaddingValues): PrecomputedPaddingValues {
@@ -36,10 +51,20 @@ data class PrecomputedPaddingValues(
     operator fun times(other: Number): PrecomputedPaddingValues {
         val otherF = other.toDouble()
         return PrecomputedPaddingValues(
-            (top * otherF).toInt(),
-            (bottom * otherF).toInt(),
-            (left * otherF).toInt(),
-            (right * otherF).toInt()
+            (top * otherF).toFloat(),
+            (bottom * otherF).toFloat(),
+            (left * otherF).toFloat(),
+            (right * otherF).toFloat()
+        )
+    }
+
+    operator fun div(other: Number): PrecomputedPaddingValues {
+        val otherF = other.toDouble()
+        return PrecomputedPaddingValues(
+            (top / otherF).toFloat(),
+            (bottom / otherF).toFloat(),
+            (left / otherF).toFloat(),
+            (right / otherF).toFloat()
         )
     }
 
@@ -49,9 +74,38 @@ data class PrecomputedPaddingValues(
 fun PaddingValues.precompute(): PrecomputedPaddingValues {
     val layoutDirection = LocalLayoutDirection.current
     return PrecomputedPaddingValues(
-        calculateTopPadding().toIntPx(),
-        calculateBottomPadding().toIntPx(),
-        calculateLeftPadding(layoutDirection).toIntPx(),
-        calculateRightPadding(layoutDirection).toIntPx()
+        calculateTopPadding().toFloatPx(),
+        calculateBottomPadding().toFloatPx(),
+        calculateLeftPadding(layoutDirection).toFloatPx(),
+        calculateRightPadding(layoutDirection).toFloatPx()
     )
 }
+
+fun ScreenRegion.padded(padding: PrecomputedPaddingValues): ScreenRegion {
+    return ScreenRegion(
+        topLeft = ScreenLocation(
+            topLeft.x - padding.left,
+            topLeft.y - padding.top,
+        ),
+        bottomRight = ScreenLocation(
+            bottomRight.x + padding.right,
+            bottomRight.y + padding.bottom
+        )
+    )
+}
+
+fun ScreenRegion.moveForPadding(padding: PrecomputedPaddingValues): ScreenRegion {
+    val shiftY = (padding.bottom - padding.top)
+    val shiftX = (padding.right - padding.left)
+    return ScreenRegion(
+        topLeft = ScreenLocation(
+            topLeft.x + shiftX,
+            topLeft.y + shiftY
+        ),
+        bottomRight = ScreenLocation(
+            bottomRight.x + shiftX,
+            bottomRight.y + shiftY
+        )
+    )
+}
+

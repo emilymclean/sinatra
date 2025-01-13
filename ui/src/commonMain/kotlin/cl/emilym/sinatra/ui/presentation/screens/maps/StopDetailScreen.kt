@@ -56,6 +56,7 @@ import cl.emilym.sinatra.ui.maps.stopMarkerIcon
 import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
 import cl.emilym.sinatra.ui.navigation.MapScreen
 import cl.emilym.sinatra.ui.open_maps
+import cl.emilym.sinatra.ui.presentation.screens.maps.search.zoomThreshold
 import cl.emilym.sinatra.ui.stopJourneyNavigation
 import cl.emilym.sinatra.ui.widgets.AccessibilityIconLockup
 import cl.emilym.sinatra.ui.widgets.AlertScaffold
@@ -186,7 +187,7 @@ class StopDetailScreen(
                     }
                     else -> {
                         LaunchedEffect(stop.location) {
-                            mapControl.zoomToPoint(stop.location)
+                            mapControl.moveToPoint(stop.location, minZoom = zoomThreshold)
                         }
 
                         Scaffold { innerPadding ->

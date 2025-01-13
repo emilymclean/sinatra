@@ -1,12 +1,10 @@
 package cl.emilym.sinatra.ui.maps
 
-import cl.emilym.gtfs.Location
 import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.lib.FloatRange
 import cl.emilym.sinatra.ui.toNative
 import kotlinx.cinterop.CValue
 import kotlinx.cinterop.ExperimentalForeignApi
-import kotlinx.cinterop.useContents
 import platform.CoreLocation.CLLocationCoordinate2D
 import platform.MapKit.MKAnnotationProtocol
 import platform.MapKit.MKMapRect

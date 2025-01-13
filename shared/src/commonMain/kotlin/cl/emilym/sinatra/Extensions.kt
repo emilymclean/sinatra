@@ -8,16 +8,17 @@ import cl.emilym.sinatra.data.models.MapRegion
 import cl.emilym.sinatra.data.models.Radian
 import com.google.transit.realtime.TranslatedString
 import io.github.aakira.napier.Napier
+import kotlin.math.PI
 
 fun Napier.e(throwable: Throwable) {
     e(throwable.message ?: "Exception", throwable)
 }
 
 val Degree.asRadians: Radian
-    get() = this * 0.01745f
+    get() = this * (PI / 180.0)
 
 val Radian.asDegrees: Degree
-    get() = this * 57.2958f
+    get() = this * (180.0 / PI)
 
 val Number.radians: Radian get() = toDouble()
 val Number.degrees: Degree get() = toDouble()
@@ -53,4 +54,11 @@ public inline fun <T> Iterable<T>.sumOfIndexed(selector: (Int,T) -> Int): Int {
         sum += selector(element.index, element.value)
     }
     return sum
+}
+
+fun Float.nullIfNaN(): Float? {
+    return when (this) {
+        Float.NaN -> null
+        else -> this
+    }
 }

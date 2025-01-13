@@ -4,4 +4,4 @@ jobName = "test"
 gradleTask = "testDebugUnitTest"
 name = "Unit Test"
 
-modules = List("shared")
+modules = List("shared", "ui")

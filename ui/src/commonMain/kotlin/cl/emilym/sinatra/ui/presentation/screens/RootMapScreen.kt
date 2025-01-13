@@ -49,6 +49,7 @@ import cafe.adriel.voyager.navigator.Navigator
 import cl.emilym.compose.units.px
 import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.ui.maps.MapControl
+import cl.emilym.sinatra.ui.maps.rememberMapControl
 import cl.emilym.sinatra.ui.navigation.CurrentBottomSheetContent
 import cl.emilym.sinatra.ui.navigation.CurrentMapOverlayContent
 import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
@@ -63,6 +64,7 @@ import cl.emilym.sinatra.ui.widgets.MapIcon
 import cl.emilym.sinatra.ui.widgets.NavigationItem
 import cl.emilym.sinatra.ui.widgets.SinatraBackHandler
 import cl.emilym.sinatra.ui.widgets.StarOutlineIcon
+import cl.emilym.sinatra.ui.widgets.ViewportSizeWidget
 import cl.emilym.sinatra.ui.widgets.bottomsheet.SinatraBottomSheetScaffold
 import cl.emilym.sinatra.ui.widgets.bottomsheet.SinatraBottomSheetScaffoldState
 import cl.emilym.sinatra.ui.widgets.bottomsheet.SinatraSheetValue
@@ -78,7 +80,7 @@ import sinatra.ui.generated.resources.navigation_bar_favourites
 import sinatra.ui.generated.resources.navigation_bar_map
 
 @Composable
-expect fun Map(content: @Composable MapControl.(@Composable () -> Unit) -> Unit)
+expect fun Map(mapControl: MapControl)
 
 class RootMapScreen: Screen {
 
@@ -92,51 +94,47 @@ class RootMapScreen: Screen {
             bottomSheetState = sheetState
         )
         Scaffold {
-            BoxWithConstraints(Modifier.fillMaxSize()) {
-                val height = maxHeight.toFloatPx()
-                val width = maxWidth.toFloatPx()
+            ViewportSizeWidget {
                 val adaptiveWindowInfo = currentWindowAdaptiveInfo()
 
                 CompositionLocalProvider(
-                    LocalBottomSheetState provides scaffoldState,
-                    LocalViewportSize provides Size(width, height)
+                    LocalBottomSheetState provides scaffoldState
                 ) {
                     if (isCurrentMapScreen()) {
-                        Map { map ->
-                            CompositionLocalProvider(
-                                LocalMapControl provides this
-                            ) {
-                                when (adaptiveWindowInfo.windowSizeClass.windowWidthSizeClass) {
-                                    WindowWidthSizeClass.COMPACT -> {
-                                        BottomSheet(scaffoldState) {
-                                            Box(Modifier.fillMaxSize()) {
-                                                map()
-                                                MapOverlay()
-                                            }
+                        val mapControl = rememberMapControl()
+                        CompositionLocalProvider(
+                            LocalMapControl provides mapControl
+                        ) {
+                            when (adaptiveWindowInfo.windowSizeClass.windowWidthSizeClass) {
+                                WindowWidthSizeClass.COMPACT -> {
+                                    BottomSheet(scaffoldState) {
+                                        ViewportSizeWidget {
+                                            Map(mapControl)
+                                            MapOverlay()
                                         }
                                     }
-                                    else -> {
-                                        Row(
+                                }
+                                else -> {
+                                    Row(
+                                        Modifier
+                                            .fillMaxSize()
+                                    ) {
+                                        Box(
                                             Modifier
-                                                .fillMaxSize()
+                                                .background(MaterialTheme.colorScheme.surface)
+                                                .fillMaxHeight()
+                                                .fillMaxWidth(0.5f)
+                                                .widthIn(max = 200.dp)
                                         ) {
-                                            Box(
-                                                Modifier
-                                                    .background(MaterialTheme.colorScheme.surface)
-                                                    .fillMaxHeight()
-                                                    .fillMaxWidth(0.5f)
-                                                    .widthIn(max = 200.dp)
+                                            CompositionLocalProvider(
+                                                LocalContentColor provides MaterialTheme.colorScheme.onSurface
                                             ) {
-                                                CompositionLocalProvider(
-                                                    LocalContentColor provides MaterialTheme.colorScheme.onSurface
-                                                ) {
-                                                    CurrentBottomSheetContent()
-                                                }
+                                                CurrentBottomSheetContent()
                                             }
-                                            Box(Modifier.fillMaxSize()) {
-                                                map()
-                                                MapOverlay()
-                                            }
+                                        }
+                                        ViewportSizeWidget {
+                                            Map(mapControl)
+                                            MapOverlay()
                                         }
                                     }
                                 }
