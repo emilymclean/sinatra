@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.MutableWindowInsets
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
@@ -20,6 +21,7 @@ import androidx.compose.foundation.layout.onConsumedWindowInsetsChanged
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContent
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
@@ -52,6 +54,7 @@ import cl.emilym.sinatra.ui.navigation.CurrentMapOverlayContent
 import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
 import cl.emilym.sinatra.ui.navigation.bottomSheetHalfHeight
 import cl.emilym.sinatra.ui.navigation.isCurrentMapScreen
+import cl.emilym.sinatra.ui.plus
 import cl.emilym.sinatra.ui.presentation.screens.maps.search.MapSearchScreen
 import cl.emilym.sinatra.ui.widgets.InfoIcon
 import cl.emilym.sinatra.ui.widgets.LocalMapControl
@@ -293,3 +296,15 @@ val bottomSheetContentPadding: Dp
             else -> 0.dp
         }
     }
+
+val mapInsets: PaddingValues
+    @Composable
+    get() = WindowInsets.systemBars.only(WindowInsetsSides.Top).asPaddingValues() +
+            WindowInsets.displayCutout.only(WindowInsetsSides.End).asPaddingValues() +
+            run {
+                val adaptiveWindowInfo = currentWindowAdaptiveInfo()
+                when (adaptiveWindowInfo.windowSizeClass.windowWidthSizeClass) {
+                    WindowWidthSizeClass.COMPACT -> PaddingValues(0.dp)
+                    else -> WindowInsets.systemBars.only(WindowInsetsSides.Bottom).asPaddingValues()
+                }
+            }

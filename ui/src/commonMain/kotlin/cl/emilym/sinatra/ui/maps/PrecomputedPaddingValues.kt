@@ -3,11 +3,22 @@ package cl.emilym.sinatra.ui.maps
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalLayoutDirection
+import cl.emilym.sinatra.data.models.DensityPixel
 import cl.emilym.sinatra.data.models.Pixel
 import cl.emilym.sinatra.data.models.ScreenLocation
 import cl.emilym.sinatra.data.models.ScreenRegion
 import cl.emilym.sinatra.ui.widgets.toFloatPx
 import cl.emilym.sinatra.ui.widgets.toIntPx
+
+data class PrecomputedPaddingValuesDp(
+    val top: DensityPixel,
+    val bottom: DensityPixel,
+    val left: DensityPixel,
+    val right: DensityPixel
+) {
+    val horizontal: DensityPixel get() = left + right
+    val vertical: DensityPixel get() = top + bottom
+}
 
 data class PrecomputedPaddingValues(
     val top: Pixel,
@@ -78,6 +89,17 @@ fun PaddingValues.precompute(): PrecomputedPaddingValues {
         calculateBottomPadding().toFloatPx(),
         calculateLeftPadding(layoutDirection).toFloatPx(),
         calculateRightPadding(layoutDirection).toFloatPx()
+    )
+}
+
+@Composable
+fun PaddingValues.precomputeDp(): PrecomputedPaddingValuesDp {
+    val layoutDirection = LocalLayoutDirection.current
+    return PrecomputedPaddingValuesDp(
+        calculateTopPadding().value,
+        calculateBottomPadding().value,
+        calculateLeftPadding(layoutDirection).value,
+        calculateRightPadding(layoutDirection).value
     )
 }
 

@@ -8,6 +8,7 @@ import cl.emilym.sinatra.data.models.ScreenLocation
 import cl.emilym.sinatra.data.models.CoordinateSpan
 import cl.emilym.sinatra.ui.maps.MarkerAnnotation
 import cl.emilym.sinatra.ui.maps.MarkerItem
+import cl.emilym.sinatra.ui.maps.PrecomputedPaddingValuesDp
 import kotlinx.cinterop.CArrayPointer
 import kotlinx.cinterop.CPointer
 import kotlinx.cinterop.CValue
@@ -38,6 +39,8 @@ import platform.MapKit.MKMapPointForCoordinate
 import platform.MapKit.MKMapPointMake
 import platform.MapKit.MKMapRect
 import platform.MapKit.MKMapRectMake
+import platform.MapKit.MKMapView
+import platform.UIKit.UIEdgeInsetsMake
 import platform.UIKit.UIScreen
 import sinatra.ui.generated.resources.Res
 import sinatra.ui.generated.resources.open_maps_ios
@@ -181,3 +184,14 @@ fun MarkerAnnotation.matches(markerItem: MarkerItem): Boolean {
 
 internal actual val Res.string.open_maps: StringResource
     get() = Res.string.open_maps_ios
+
+
+@OptIn(ExperimentalForeignApi::class)
+fun MKMapView.applyPadding(padding: PrecomputedPaddingValuesDp) {
+    layoutMargins = UIEdgeInsetsMake(
+        padding.top.toDouble(),
+        padding.left.toDouble(),
+        padding.bottom.toDouble(),
+        padding.right.toDouble(),
+    )
+}

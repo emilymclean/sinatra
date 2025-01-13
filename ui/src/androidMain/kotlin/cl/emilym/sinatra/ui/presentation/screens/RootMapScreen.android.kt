@@ -64,10 +64,7 @@ actual fun Map(mapControl: MapControl) {
     val currentLocation = currentLocation()
     val currentLocationIcon = currentLocationIcon()
 
-    val insets = WindowInsets.systemBars.only(WindowInsetsSides.Top).asPaddingValues() +
-            WindowInsets.displayCutout.only(WindowInsetsSides.End).asPaddingValues() +
-            PaddingValues(bottom = bottomSheetContentPadding)
-
+    val insets = mapInsets + PaddingValues(bottom = bottomSheetContentPadding)
     val coroutineScope = rememberCoroutineScope()
     val viewportSize = viewportSize()
     val paddingValues = insets.precompute()

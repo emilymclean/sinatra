@@ -8,6 +8,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import cl.emilym.sinatra.data.models.MapRegion
 import cl.emilym.sinatra.data.models.ScreenRegionSizeDp
+import cl.emilym.sinatra.ui.applyPadding
 import cl.emilym.sinatra.ui.canberra
 import cl.emilym.sinatra.ui.canberraZoom
 import cl.emilym.sinatra.ui.sinatraAllocArrayOf
@@ -31,6 +32,7 @@ import platform.MapKit.MKPolyline
 import platform.MapKit.addOverlay
 import platform.MapKit.removeOverlay
 import platform.UIKit.UIColor
+import platform.UIKit.UIEdgeInsetsMake
 
 
 data class CameraDescription(
@@ -81,6 +83,14 @@ class MapKitState(
     private var managedItems = mutableMapOf<String, ManagedMapItem<*>>()
 
     private val delegate = SinatraMapKitDelegate(::onAnnotationClick, ::onMapUpdate)
+
+    @OptIn(ExperimentalForeignApi::class)
+    var contentPadding: PrecomputedPaddingValuesDp? = null
+        set(value) {
+            field = value
+            value ?: return
+            map?.applyPadding(value)
+        }
 
     var contentViewportSize: ScreenRegionSizeDp? = null
     var visibleMapSize: ScreenRegionSizeDp? = null
@@ -242,6 +252,7 @@ class MapKitState(
             if (map != null) {
                 map.delegate = delegate
                 map.setRegion(cameraDescription.region)
+                contentPadding?.let { map.applyPadding(it) }
             } else {
                 managedItems.forEach { it.value.arena?.clear() }
                 managedItems.clear()
