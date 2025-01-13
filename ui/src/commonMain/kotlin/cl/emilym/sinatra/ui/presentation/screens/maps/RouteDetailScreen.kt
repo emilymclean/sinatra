@@ -117,7 +117,7 @@ import sinatra.ui.generated.resources.trip_not_found
 
 val zoomPadding
     @Composable
-    get() = 0.rdp
+    get() = 2.rdp
 
 @Factory
 class RouteDetailViewModel(
