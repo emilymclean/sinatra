@@ -6,14 +6,9 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import cl.emilym.sinatra.data.models.MapLocation
 import dev.icerock.moko.permissions.Permission
-import dev.icerock.moko.permissions.PermissionsController
-import dev.icerock.moko.permissions.compose.BindEffect
-import dev.icerock.moko.permissions.compose.rememberPermissionsControllerFactory
-import io.github.aakira.napier.Napier
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 
@@ -30,12 +25,9 @@ fun currentLocation(accuracy: LocationAccuracy = LocationAccuracy.MEDIUM): MapLo
     val permissionRequestQueue = LocalPermissionRequestQueue.current
 
     LaunchedEffect(permissionRequestQueue) {
-        hasPermission = permissionRequestQueue.request(Permission.LOCATION).apply {
-            Napier.d("Location permission request completed, value = $this")
-        }
+        hasPermission = permissionRequestQueue.request(Permission.LOCATION)
     }
 
-    Napier.d("Has permission = ${hasPermission}")
     val platformLocation = when (hasPermission) {
         true -> platformCurrentLocation(accuracy)
         false -> flowOf()
