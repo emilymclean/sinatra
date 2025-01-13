@@ -1,10 +1,11 @@
+package cl.emilym.sinatra.ui.maps
+
 import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.data.models.MapRegion
-import cl.emilym.sinatra.ui.toZoom
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class ExtensionsTest {
+class MapHelpersTest {
 
     @Test
     fun `wider map with native map zoom of 10 should calculate to 10`() {
