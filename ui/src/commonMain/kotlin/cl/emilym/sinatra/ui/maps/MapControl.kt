@@ -82,8 +82,7 @@ abstract class AbstractMapControl: MapControl, MapProjectionProvider {
 
         val halfWidth = width / 2
         val halfHeight = height / 2
-
-
+        
         val centre = box.centre
 
         return ScreenRegion(
