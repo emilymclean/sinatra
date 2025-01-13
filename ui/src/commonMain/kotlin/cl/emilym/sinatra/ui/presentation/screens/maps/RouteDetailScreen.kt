@@ -54,6 +54,8 @@ import cl.emilym.sinatra.data.models.startOfDay
 import cl.emilym.sinatra.data.repository.AlertRepository
 import cl.emilym.sinatra.data.repository.FavouriteRepository
 import cl.emilym.sinatra.data.repository.RecentVisitRepository
+import cl.emilym.sinatra.data.repository.isIos
+import cl.emilym.sinatra.data.repository.platform
 import cl.emilym.sinatra.domain.CurrentTripForRouteUseCase
 import cl.emilym.sinatra.domain.CurrentTripInformation
 import cl.emilym.sinatra.nullIfEmpty
@@ -117,7 +119,10 @@ import sinatra.ui.generated.resources.trip_not_found
 
 val zoomPadding
     @Composable
-    get() = 2.rdp
+    get() = when {
+        isIos -> 6.rdp
+        else -> 2.rdp
+    }
 
 @Factory
 class RouteDetailViewModel(

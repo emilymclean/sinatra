@@ -6,16 +6,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
-import io.github.aakira.napier.Napier
 
 @Composable
-fun ViewportSizeWidget(print: Boolean = false, content: @Composable () -> Unit) {
+fun ViewportSizeWidget(content: @Composable () -> Unit) {
     BoxWithConstraints(Modifier.fillMaxSize()) {
         val height = maxHeight.toFloatPx()
         val width = maxWidth.toFloatPx()
-
-        if (print)
-        Napier.d("Aspect = ${width / height}, size = $width,$height")
 
         CompositionLocalProvider(LocalViewportSize provides Size(width, height)) {
             content()

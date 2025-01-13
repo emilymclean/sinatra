@@ -30,13 +30,6 @@ import kotlin.math.min
 import kotlin.math.pow
 import kotlin.math.sin
 
-fun MapRegion.toCoordinateSpan(): CoordinateSpan {
-    return CoordinateSpan(
-        deltaLatitude = width,
-        deltaLongitude = height
-    )
-}
-
 @Deprecated("Don't done work :(")
 fun Zoom.toCoordinateSpan(
     viewportSize: Size

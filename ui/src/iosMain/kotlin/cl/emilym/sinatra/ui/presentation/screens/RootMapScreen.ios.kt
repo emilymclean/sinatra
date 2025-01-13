@@ -16,6 +16,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.viewinterop.UIKitInteropInteractionMode
 import androidx.compose.ui.viewinterop.UIKitInteropProperties
 import androidx.compose.ui.viewinterop.UIKitView
+import cl.emilym.sinatra.ui.asPaddingValues
 import cl.emilym.sinatra.ui.maps.AppleMapControl
 import cl.emilym.sinatra.ui.maps.MapControl
 import cl.emilym.sinatra.ui.maps.MarkerItem
@@ -28,6 +29,7 @@ import cl.emilym.sinatra.ui.maps.toPx
 import cl.emilym.sinatra.ui.navigation.bottomSheetHalfHeight
 import cl.emilym.sinatra.ui.widgets.currentLocation
 import cl.emilym.sinatra.ui.widgets.viewportSize
+import io.github.aakira.napier.Napier
 import kotlinx.coroutines.launch
 import platform.MapKit.MKMapView
 import platform.MapKit.MKPointOfInterestCategoryPublicTransport
@@ -43,7 +45,7 @@ actual fun Map(mapControl: MapControl) {
 
     val state = rememberMapKitState {}
 
-    val insets = WindowInsets.systemBars.only(WindowInsetsSides.Top)
+    val insets = listOf<WindowInsets>()
     val viewportSize = viewportSize()
     val paddingValues = insets.asPaddingValues().precompute()
     val bottomSheetHalfHeight = bottomSheetHalfHeight()

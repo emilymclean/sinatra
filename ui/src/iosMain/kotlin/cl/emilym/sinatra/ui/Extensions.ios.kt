@@ -16,9 +16,11 @@ import kotlinx.cinterop.CVariable
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.NativePlacement
 import kotlinx.cinterop.allocArray
+import kotlinx.cinterop.cValue
 import kotlinx.cinterop.interpretCPointer
 import kotlinx.cinterop.sizeOf
 import kotlinx.cinterop.useContents
+import kotlinx.cinterop.usePinned
 import org.jetbrains.compose.resources.StringResource
 import platform.CoreGraphics.CGPoint
 import platform.CoreGraphics.CGPointMake
@@ -30,9 +32,18 @@ import platform.UIKit.UIColor
 import kotlin.math.pow
 import platform.CoreGraphics.CGColorRef
 import platform.CoreGraphics.CGRect
+import platform.MapKit.MKCoordinateForMapPoint
+import platform.MapKit.MKCoordinateRegion
+import platform.MapKit.MKCoordinateRegionForMapRect
+import platform.MapKit.MKMapPoint
+import platform.MapKit.MKMapPointForCoordinate
+import platform.MapKit.MKMapPointMake
+import platform.MapKit.MKMapRect
+import platform.MapKit.MKMapRectMake
 import platform.UIKit.UIScreen
 import sinatra.ui.generated.resources.Res
 import sinatra.ui.generated.resources.open_maps_ios
+import kotlin.math.abs
 import kotlin.math.ln
 import kotlin.math.log
 
@@ -110,6 +121,34 @@ fun Color.toNativeCGColor(): CGColorRef? {
     return toNativeUIColor().CGColor
 }
 
+@OptIn(ExperimentalForeignApi::class)
+fun MapRegion.toNative(): CValue<MKCoordinateRegion> {
+    val topLeft = MKMapPointForCoordinate(topLeft.toNative())
+    val bottomRight = MKMapPointForCoordinate(bottomRight.toNative())
+    val width = abs(bottomRight.useContents { x } - topLeft.useContents { x })
+    val height = abs(bottomRight.useContents { y } - topLeft.useContents { y })
+    return MKCoordinateRegionForMapRect(
+        MKMapRectMake(
+            topLeft.useContents { x },
+            topLeft.useContents { y },
+            width,
+            height
+        )
+    )
+}
+
+@OptIn(ExperimentalForeignApi::class)
+fun MKMapRect.toNative(): MapRegion {
+    val topLeft = MKCoordinateForMapPoint(cValue<MKMapPoint> { origin }).toShared()
+    val bottomRight = MKCoordinateForMapPoint(
+        MKMapPointMake(origin.x + size.width, origin.y + size.height)
+    ).toShared()
+
+    return MapRegion(
+        topLeft,
+        bottomRight
+    )
+}
 
 @OptIn(ExperimentalForeignApi::class)
 inline operator fun <reified T : CVariable> CPointer<T>.set(index: Int, item: CValues<T>) {

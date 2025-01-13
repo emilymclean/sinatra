@@ -40,10 +40,8 @@ class AppleMapControl(
     override val nativeZoom: Float get() = state.cameraDescription.zoom(contentViewportSize.toPx(density))
 
     override fun showBounds(bounds: MapRegion) {
-        val center = bounds.center
-        val span = bounds.toCoordinateSpan()
         state.animate(CameraDescription(
-            center, span
+            bounds
         ))
     }
 
