@@ -17,6 +17,8 @@ actual fun rememberMapControl(): MapControl {
     return remember { SafeMapControl() }
 }
 
+const val ZOOM_OFFSET = 1f
+
 class AppleMapControl(
     private val state: MapKitState,
     override val contentViewportSize: ScreenRegionSizePx,
@@ -26,7 +28,7 @@ class AppleMapControl(
 ): AbstractMapControl() {
 
     override val zoom: Float
-        get() = calculateZoom(nativeZoom, visibleMapSize, density) + 1f
+        get() = calculateZoom(nativeZoom, visibleMapSize, density) + ZOOM_OFFSET
 
     @OptIn(ExperimentalForeignApi::class)
     override fun toScreenSpace(location: MapLocation): ScreenLocation? {

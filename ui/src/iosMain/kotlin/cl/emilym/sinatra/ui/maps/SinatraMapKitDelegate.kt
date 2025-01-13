@@ -46,7 +46,7 @@ class SinatraMapKitDelegate(
         viewForAnnotation: MKAnnotationProtocol
     ): MKAnnotationView? {
         val visibleRegion = mapView.visibleMapRect.useContents { toShared() }
-        val zoom = visibleMapSize?.let { visibleRegion.toZoom(it) + 1 } ?:
+        val zoom = visibleMapSize?.let { visibleRegion.toZoom(it) + ZOOM_OFFSET } ?:
             visibleRegion.toZoom(mapView.bounds.toSize().width, mapView.bounds.toSize().height)
         return when (viewForAnnotation) {
             is MarkerAnnotation -> {

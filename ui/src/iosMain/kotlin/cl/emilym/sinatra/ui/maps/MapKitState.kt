@@ -121,7 +121,7 @@ class MapKitState(
         _cameraDescription = CameraDescription(
             region
         )
-        val zoom = visibleMapSize?.let { region.toZoom(it) + 1 }
+        val zoom = visibleMapSize?.let { region.toZoom(it) + ZOOM_OFFSET }
         Napier.d("Current zoom = ${zoom}, region = ${region}")
         for (annotation in map.annotations) {
             when (annotation) {
