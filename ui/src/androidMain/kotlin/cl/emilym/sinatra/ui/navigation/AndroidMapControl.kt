@@ -31,6 +31,8 @@ class AndroidMapControl(
         return projection.fromScreenLocation(coordinate.toNative()).toShared()
     }
 
+    override val nativeZoom: Float get() = cameraPositionState.position.zoom
+
     override fun showBounds(bounds: MapRegion) {
         mainScope.launch {
             cameraPositionState.animate(

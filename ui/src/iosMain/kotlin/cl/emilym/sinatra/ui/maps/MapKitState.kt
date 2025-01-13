@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.geometry.Size
 import cl.emilym.sinatra.data.models.CoordinateSpan
 import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.ui.adjustForLatitude
@@ -39,11 +40,14 @@ import platform.UIKit.UIColor
 
 data class CameraDescription(
     val center: MapLocation,
-    val coordinateSpan: CoordinateSpan
+    val coordinateSpan: CoordinateSpan,
 ) {
 
     @OptIn(ExperimentalForeignApi::class)
     val region: CValue<MKCoordinateRegion> get() = createRegion(center, coordinateSpan)
+
+    @OptIn(ExperimentalForeignApi::class)
+    fun zoom(mapSize: Size) = center.combine(coordinateSpan).toZoom(mapSize)
 
 }
 
@@ -84,6 +88,8 @@ class MapKitState(
 
     private val delegate = SinatraMapKitDelegate(::onAnnotationClick, ::onMapUpdate)
 
+    var contentViewportSize: Size? = null
+
     private var _cameraDescription by mutableStateOf(cameraDescription)
     @OptIn(ExperimentalForeignApi::class)
     var cameraDescription: CameraDescription
@@ -120,17 +126,18 @@ class MapKitState(
     @OptIn(ExperimentalForeignApi::class)
     private fun onMapUpdate() {
         val map = map ?: return
+        val center = map.camera.centerCoordinate.toShared()
         val coordinateSpan = map.region.useContents { span.toShared() }
-        val zoom = coordinateSpan.toZoom()
+        val zoom = contentViewportSize?.let { center.combine(coordinateSpan).toZoom(it) }
         _cameraDescription = CameraDescription(
-            map.camera.centerCoordinate.toShared(),
+            center,
             coordinateSpan
         )
         for (annotation in map.annotations) {
             when (annotation) {
                 is MarkerAnnotation -> {
                     val range = annotation.visibleZoomRange ?: continue
-                    map.viewForAnnotation(annotation)?.hidden = zoom !in range
+                    map.viewForAnnotation(annotation)?.hidden = zoom?.let { zoom !in range } ?: true
                 }
             }
         }

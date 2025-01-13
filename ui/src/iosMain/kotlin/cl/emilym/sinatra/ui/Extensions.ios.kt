@@ -1,5 +1,6 @@
 package cl.emilym.sinatra.ui
 
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.data.models.MapRegion
@@ -28,6 +29,8 @@ import platform.MapKit.MKCoordinateSpanMake
 import platform.UIKit.UIColor
 import kotlin.math.pow
 import platform.CoreGraphics.CGColorRef
+import platform.CoreGraphics.CGRect
+import platform.UIKit.UIScreen
 import sinatra.ui.generated.resources.Res
 import sinatra.ui.generated.resources.open_maps_ios
 import kotlin.math.ln
@@ -47,6 +50,17 @@ fun CValue<CLLocationCoordinate2D>.toShared(): MapLocation {
         MapLocation(
             latitude,
             longitude
+        )
+    }
+}
+
+@OptIn(ExperimentalForeignApi::class)
+fun CValue<CGRect>.toSize(): Size {
+    val scale = UIScreen.mainScreen.scale.toFloat()
+    return useContents {
+        Size(
+            size.width.toFloat() * scale,
+            size.height.toFloat() * scale,
         )
     }
 }
@@ -80,13 +94,6 @@ fun CValue<CGPoint>.toShared(): ScreenLocation {
 @OptIn(ExperimentalForeignApi::class)
 fun ScreenLocation.toNative(): CValue<CGPoint> {
     return CGPointMake(x.toDouble(), y.toDouble())
-}
-
-fun MapRegion.toCoordinateSpan(): CoordinateSpan {
-    return CoordinateSpan(
-        deltaLatitude = width,
-        deltaLongitude = height
-    )
 }
 
 fun Color.toNativeUIColor(): UIColor {

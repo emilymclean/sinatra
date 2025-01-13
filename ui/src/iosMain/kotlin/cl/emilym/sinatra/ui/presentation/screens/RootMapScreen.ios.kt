@@ -54,6 +54,10 @@ actual fun Map(content: @Composable MapControl.(@Composable () -> Unit) -> Unit)
         )
     }
 
+    LaunchedEffect(viewportSize) {
+        state.contentViewportSize = viewportSize
+    }
+
     val currentLocation = currentLocation()
     val currentLocationIcon = currentLocationIcon()
 

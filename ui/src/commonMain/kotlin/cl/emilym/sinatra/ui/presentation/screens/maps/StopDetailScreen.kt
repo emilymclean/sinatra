@@ -186,7 +186,7 @@ class StopDetailScreen(
                     }
                     else -> {
                         LaunchedEffect(stop.location) {
-                            mapControl.zoomToPoint(stop.location)
+                            mapControl.moveToPoint(stop.location)
                         }
 
                         Scaffold { innerPadding ->

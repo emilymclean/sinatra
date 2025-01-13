@@ -73,7 +73,7 @@ class MapSearchScreen: MapScreen, NativeMapScreen {
 
         LaunchedEffect(zoomToCurrentLocation) {
             if (zoomToCurrentLocation == null || currentLocation == null) return@LaunchedEffect
-            mapControl.zoomToPoint(currentLocation, currentLocationZoom)
+            mapControl.moveToPoint(currentLocation, currentLocationZoom)
         }
 
         Box(
@@ -89,7 +89,7 @@ class MapSearchScreen: MapScreen, NativeMapScreen {
                     currentLocation?.let {
                         FloatingActionButton(
                             onClick = {
-                                mapControl.zoomToPoint(it, currentLocationZoom)
+                                mapControl.moveToPoint(it, currentLocationZoom)
                             },
                             Modifier.semantics {
                                 contentDescription = "Zoom to current location"

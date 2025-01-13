@@ -1,6 +1,7 @@
 package cl.emilym.sinatra.ui.maps
 
 import cl.emilym.sinatra.ui.toShared
+import cl.emilym.sinatra.ui.toSize
 import cl.emilym.sinatra.ui.toZoom
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.useContents
@@ -49,7 +50,9 @@ class SinatraMapKitDelegate(
                     ?: icon.annotationView(viewForAnnotation, viewForAnnotation.contentDescription)
                 ).apply {
                     viewForAnnotation.visibleZoomRange?.let {
-                        hidden = mapView.region.useContents { span }.toShared().toZoom() !in it
+                        hidden = mapView.centerCoordinate.toShared()
+                            .combine(mapView.region.useContents { span }.toShared())
+                            .toZoom(mapView.bounds.toSize()) !in it
                     }
                 }
             }

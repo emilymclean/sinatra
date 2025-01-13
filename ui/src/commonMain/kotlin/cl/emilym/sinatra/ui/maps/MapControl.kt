@@ -7,12 +7,17 @@ import cl.emilym.sinatra.data.models.ScreenLocation
 import cl.emilym.sinatra.data.models.ScreenRegion
 import cl.emilym.sinatra.ui.addCoordinateSpan
 import cl.emilym.sinatra.ui.toCoordinateSpan
+import cl.emilym.sinatra.ui.toZoom
 import io.github.aakira.napier.Napier
+import kotlin.math.max
 
 interface MapControl {
     fun zoomToArea(bounds: MapRegion, padding: Int)
     fun zoomToArea(topLeft: MapLocation, bottomRight: MapLocation, padding: Int)
     fun zoomToPoint(location: MapLocation, zoom: Float = 16f)
+    fun moveToPoint(location: MapLocation, minZoom: Float? = null)
+
+    val zoom: Float
 }
 
 abstract class AbstractMapControl: MapControl {
@@ -49,6 +54,22 @@ abstract class AbstractMapControl: MapControl {
 
     abstract fun showBounds(bounds: MapRegion)
     abstract fun showPoint(center: MapLocation, zoom: Float)
+
+    abstract val nativeZoom: Float
+    override val zoom: Float
+        get() {
+            val screen = listOf(
+                ScreenLocation(0,0),
+                ScreenLocation(contentViewportSize.width.toInt(), contentViewportSize.height.toInt())
+            )
+            val map = screen.mapNotNull { toMapSpace(it) }
+            if (map.size != 2) return nativeZoom
+            Napier.d("Screen coordinates = $screen, map coordinates = $map")
+            return MapRegion(
+                map[0],
+                map[1]
+            ).toZoom(contentViewportSize.width.toInt(), contentViewportSize.height.toInt())
+        }
 
     override fun zoomToArea(
         topLeft: MapLocation,
@@ -110,6 +131,18 @@ abstract class AbstractMapControl: MapControl {
         zoomToArea(
             region,
             0
+        )
+    }
+
+    override fun moveToPoint(location: MapLocation, minZoom: Float?) {
+        Napier.d("Current zoom = ${zoom}, minZoom = ${minZoom}, (native = ${nativeZoom})")
+        zoomToPoint(
+            location,
+            when (minZoom) {
+                else -> 18f
+//                null -> zoom
+//                else -> max(zoom, minZoom)
+            }
         )
     }
 

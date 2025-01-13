@@ -9,6 +9,7 @@ import cl.emilym.sinatra.ui.adjustForLatitude
 import cl.emilym.sinatra.ui.toCoordinateSpan
 import cl.emilym.sinatra.ui.toNative
 import cl.emilym.sinatra.ui.toShared
+import cl.emilym.sinatra.ui.toZoom
 import io.github.aakira.napier.Napier
 import kotlinx.cinterop.ExperimentalForeignApi
 
@@ -30,6 +31,8 @@ class AppleMapControl(
         val map = state.map ?: return null
         return map.convertPoint(coordinate.toNative(), toCoordinateFromView = map).toShared()
     }
+
+    override val nativeZoom: Float get() = state.cameraDescription.zoom(contentViewportSize)
 
     override fun showBounds(bounds: MapRegion) {
         val center = bounds.center

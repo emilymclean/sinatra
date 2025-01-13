@@ -29,6 +29,21 @@ data class MapLocation(
         }
     }
 
+    fun combine(coordinateSpan: CoordinateSpan): MapRegion {
+        val halfLat = coordinateSpan.deltaLatitude / 2
+        val halfLng = coordinateSpan.deltaLongitude / 2
+        return MapRegion(
+            MapLocation(
+                lat + halfLat,
+                lng - halfLng
+            ),
+            MapLocation(
+                lat - halfLat,
+                lng + halfLat
+            )
+        ).order()
+    }
+
 }
 
 data class MapRegion(
@@ -36,8 +51,8 @@ data class MapRegion(
     val bottomRight: MapLocation,
 ) {
 
-    val width get() = abs(bottomRight.lat - topLeft.lat)
-    val height get() = abs(bottomRight.lng - topLeft.lng)
+    val width get() = abs(bottomRight.lng - topLeft.lng)
+    val height get() = abs(bottomRight.lat - topLeft.lat)
 
     fun order(): MapRegion {
         return copy(
@@ -62,6 +77,13 @@ data class MapRegion(
         return location.lat <= topLeft.lat && location.lat >= bottomRight.lat &&
                 location.lng >= topLeft.lng && location.lng <= bottomRight.lng
     }
+
+    val northEast: MapLocation get() = MapLocation(
+        topLeft.lat, bottomRight.lng
+    )
+    val southWest: MapLocation get() = MapLocation(
+        bottomRight.lat, topLeft.lng
+    )
 
 }
 

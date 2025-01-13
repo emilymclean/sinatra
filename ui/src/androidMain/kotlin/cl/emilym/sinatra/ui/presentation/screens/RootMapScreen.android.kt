@@ -35,7 +35,10 @@ import cl.emilym.sinatra.ui.navigation.currentDrawNativeMap
 import cl.emilym.sinatra.ui.navigation.currentMapItems
 import cl.emilym.sinatra.ui.presentation.theme.defaultLineColor
 import cl.emilym.sinatra.ui.toNative
+import cl.emilym.sinatra.ui.toShared
+import cl.emilym.sinatra.ui.toZoom
 import cl.emilym.sinatra.ui.widgets.currentLocation
+import cl.emilym.sinatra.ui.widgets.screenSize
 import cl.emilym.sinatra.ui.widgets.viewportSize
 import com.google.android.gms.maps.GoogleMapOptions
 import com.google.android.gms.maps.model.CameraPosition
@@ -49,6 +52,7 @@ import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.Polyline
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberMarkerState
+import io.github.aakira.napier.Napier
 
 
 @Composable
@@ -68,6 +72,19 @@ actual fun Map(content: @Composable MapControl.(@Composable () -> Unit) -> Unit)
     val viewportSize = viewportSize(insets)
     val paddingValues = insets.asPaddingValues().precompute()
     val bottomSheetHalfHeight = bottomSheetHalfHeight()
+
+    val mapSize = viewportSize()
+    val screenSize = screenSize()
+
+    LaunchedEffect(mapSize, screenSize, cameraPositionState.projection) {
+        Napier.d("ASDFG $mapSize, $screenSize")
+        val p = cameraPositionState.projection ?: return@LaunchedEffect
+        val bounds = p.visibleRegion.latLngBounds
+        val realWidth = p.toScreenLocation(bounds.northeast).x
+        val realHeight = p.toScreenLocation(bounds.southwest).y
+        Napier.d("ASDFG Real screen size = $realWidth,$realHeight ${p.toScreenLocation(bounds.northeast)} ${p.toScreenLocation(bounds.southwest)}")
+        Napier.d("ASDFG ${bounds} ${bounds.toShared().toZoom(realWidth, realHeight)}")
+    }
 
 
     val scope = remember(cameraPositionState, coroutineScope, viewportSize, paddingValues, bottomSheetHalfHeight) {
@@ -97,12 +114,7 @@ actual fun Map(content: @Composable MapControl.(@Composable () -> Unit) -> Unit)
                 myLocationButtonEnabled = false,
                 zoomControlsEnabled = false
             ),
-            contentPadding = PaddingValues(
-                windowPadding.calculateStartPadding(layoutDirection),
-                windowPadding.calculateTopPadding(),
-                windowPadding.calculateEndPadding(layoutDirection),
-                windowPadding.calculateBottomPadding()
-            ),
+            contentPadding = PaddingValues(0.dp),
             mapColorScheme = ComposeMapColorScheme.FOLLOW_SYSTEM
         ) {
             currentLocation?.let { DrawMarker(MarkerItem(it, currentLocationIcon)) }
@@ -115,6 +127,19 @@ actual fun Map(content: @Composable MapControl.(@Composable () -> Unit) -> Unit)
                         else -> {}
                     }
                 }
+            }
+
+            cameraPositionState.projection?.visibleRegion?.latLngBounds?.let {
+                Marker(
+                    rememberMarkerState(
+                        position = it.northeast
+                    )
+                )
+                Marker(
+                    rememberMarkerState(
+                        position = it.southwest
+                    )
+                )
             }
 
             nativeMapScope.currentDrawNativeMap()

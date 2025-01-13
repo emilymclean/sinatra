@@ -9,21 +9,23 @@ import androidx.compose.ui.text.intl.Locale
 import cl.emilym.sinatra.asRadians
 import cl.emilym.sinatra.data.models.ColorPair
 import cl.emilym.sinatra.data.models.CoordinateSpan
+import cl.emilym.sinatra.data.models.Degree
 import cl.emilym.sinatra.data.models.IRouteTripStop
 import cl.emilym.sinatra.data.models.Kilometer
 import cl.emilym.sinatra.data.models.Latitude
 import cl.emilym.sinatra.data.models.LocalizableString
-import cl.emilym.sinatra.data.models.Longitude
 import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.data.models.MapRegion
 import cl.emilym.sinatra.data.models.OnColor
 import cl.emilym.sinatra.data.models.OnColor.DARK
 import cl.emilym.sinatra.data.models.OnColor.LIGHT
+import cl.emilym.sinatra.data.models.Pixel
+import cl.emilym.sinatra.data.models.Radian
 import cl.emilym.sinatra.data.models.Route
 import cl.emilym.sinatra.data.models.TimetableStationTime
 import cl.emilym.sinatra.degrees
-import cl.emilym.sinatra.ui.localization.format
 import cl.emilym.sinatra.ui.localization.toTodayInstant
+import io.github.aakira.napier.Napier
 import kotlinx.datetime.Instant
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.pluralStringResource
@@ -33,10 +35,16 @@ import sinatra.ui.generated.resources.distance_meter
 import sinatra.ui.generated.resources.time_hour
 import sinatra.ui.generated.resources.time_minute
 import sinatra.ui.generated.resources.time_second
+import kotlin.math.PI
+import kotlin.math.abs
 import kotlin.math.cos
+import kotlin.math.floor
 import kotlin.math.ln
+import kotlin.math.max
+import kotlin.math.min
 import kotlin.math.pow
 import kotlin.math.roundToInt
+import kotlin.math.sin
 import kotlin.time.Duration
 
 fun String.toColor(): Color {
@@ -103,6 +111,13 @@ fun List<TimetableStationTime>.asInstants(): List<Instant> {
     return flatMap { it.times.map { it.time.toTodayInstant() } }
 }
 
+fun MapRegion.toCoordinateSpan(): CoordinateSpan {
+    return CoordinateSpan(
+        deltaLatitude = width,
+        deltaLongitude = height
+    )
+}
+
 fun Float.toCoordinateSpan(
     viewportSize: Size
 ): CoordinateSpan {
@@ -120,10 +135,35 @@ fun CoordinateSpan.adjustForLatitude(latitude: Latitude): CoordinateSpan {
     )
 }
 
-fun CoordinateSpan.toZoom(): Float {
-    return listOf(deltaLatitude, deltaLongitude).map {
-        ln(360.0 / it) / ln(2.0)
-    }.max().toFloat()
+fun MapRegion.toZoom(mapSize: Size): Float {
+    return toZoom(mapSize.width.toInt(), mapSize.height.toInt())
+}
+
+fun MapRegion.toZoom(mapWidth: Pixel, mapHeight: Pixel): Float {
+    val worldSize = 256.0
+
+    fun latRad(lat: Degree): Radian {
+        val s = sin(lat.asRadians)
+        val radX2 = ln((1 + s) / (1 - s)) / 2.0
+        return (max(min(radX2, PI),-PI) / 2.0)
+    }
+
+    fun zoom(mapPx: Pixel, mapFrac: Double): Double {
+        return ln(mapPx / worldSize / mapFrac) / ln(2.0)
+    }
+
+    val ne = northEast
+    val sw = southWest
+
+    val latF = abs(latRad(ne.lat) - latRad(sw.lat)) / PI
+
+    val lngD = ne.lng - sw.lng
+    val lngF = (if (lngD < 0) lngD + 360 else lngD) / 360.0
+
+    val latZ = zoom(mapHeight, latF)
+    val lngZ = zoom(mapWidth, lngF)
+
+    return min(lngZ, latZ).toFloat().coerceAtLeast(1f)
 }
 
 fun MapLocation.addCoordinateSpan(span: CoordinateSpan): MapRegion {
