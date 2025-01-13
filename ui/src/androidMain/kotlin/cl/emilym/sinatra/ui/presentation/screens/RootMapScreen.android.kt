@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
+import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.systemBars
@@ -20,6 +21,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.dp
 import cl.emilym.sinatra.ui.R
+import cl.emilym.sinatra.ui.asPaddingValues
 import cl.emilym.sinatra.ui.canberra
 import cl.emilym.sinatra.ui.canberraZoom
 import cl.emilym.sinatra.ui.maps.LineItem
@@ -65,7 +67,10 @@ actual fun Map(content: @Composable MapControl.(@Composable () -> Unit) -> Unit)
     val currentLocation = currentLocation()
     val currentLocationIcon = currentLocationIcon()
 
-    val insets = WindowInsets.systemBars.only(WindowInsetsSides.Top)
+    val insets = listOf<WindowInsets>(
+        WindowInsets.systemBars.only(WindowInsetsSides.Top),
+        WindowInsets.displayCutout.only(WindowInsetsSides.End)
+    )
     val coroutineScope = rememberCoroutineScope()
     val viewportSize = viewportSize()
     val paddingValues = insets.asPaddingValues().precompute()

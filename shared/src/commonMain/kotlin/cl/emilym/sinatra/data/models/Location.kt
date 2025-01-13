@@ -128,6 +128,11 @@ data class ScreenRegion(
     val height get() = bottomRight.y - topLeft.y
 
     val aspect get() = width / height
+
+    val centre get() = ScreenLocation(
+        bottomRight.x - (width / 2),
+        bottomRight.y - (height / 2),
+    )
 }
 
 data class CoordinateSpan(

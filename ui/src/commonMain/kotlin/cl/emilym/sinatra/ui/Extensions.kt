@@ -1,11 +1,17 @@
 package cl.emilym.sinatra.ui
 
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.intl.Locale
+import androidx.compose.ui.unit.LayoutDirection
+import cl.emilym.compose.units.px
 import cl.emilym.sinatra.asRadians
 import cl.emilym.sinatra.data.models.ColorPair
 import cl.emilym.sinatra.data.models.CoordinateSpan
@@ -139,3 +145,14 @@ val Duration.text
 val LocalizableString.text: String
     @Composable
     get() = get(Locale.current.toLanguageTag())
+
+@Composable
+fun List<WindowInsets>.asPaddingValues(): PaddingValues {
+    val density = LocalDensity.current
+    return PaddingValues(
+        top = sumOf { it.getTop(density) }.px,
+        bottom = sumOf { it.getBottom(density) }.px,
+        start = sumOf { it.getLeft(density, LayoutDirection.Ltr) }.px,
+        end = sumOf { it.getRight(density, LayoutDirection.Ltr) }.px,
+    )
+}

@@ -16,6 +16,9 @@ data class PrecomputedPaddingValues(
     val right: Pixel
 ) {
 
+    val horizontal: Pixel get() = left + right
+    val vertical: Pixel get() = top + bottom
+
     companion object {
         fun all(value: Pixel): PrecomputedPaddingValues {
             return PrecomputedPaddingValues(
@@ -87,6 +90,21 @@ fun ScreenRegion.padded(padding: PrecomputedPaddingValues): ScreenRegion {
         bottomRight = ScreenLocation(
             bottomRight.x + padding.right,
             bottomRight.y + padding.bottom
+        )
+    )
+}
+
+fun ScreenRegion.moveForPadding(padding: PrecomputedPaddingValues): ScreenRegion {
+    val shiftY = (padding.bottom - padding.top)
+    val shiftX = (padding.right - padding.left)
+    return ScreenRegion(
+        topLeft = ScreenLocation(
+            topLeft.x + shiftX,
+            topLeft.y + shiftY
+        ),
+        bottomRight = ScreenLocation(
+            bottomRight.x + shiftX,
+            bottomRight.y + shiftY
         )
     )
 }

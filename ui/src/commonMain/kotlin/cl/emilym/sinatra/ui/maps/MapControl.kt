@@ -32,27 +32,57 @@ abstract class AbstractMapControl: MapControl, MapProjectionProvider {
     protected abstract val density: Density
     protected abstract val bottomSheetHalfHeight: Float
 
-    private val visibleMapSize: Size get() = contentViewportSize
-//        Size(contentViewportSize.width, contentViewportSize.height * (1 - bottomSheetHalfHeight))
+    private val paddedContentViewportSize: Size get() = Size(
+        (contentViewportSize.width - contentViewportPadding.horizontal),
+        (contentViewportSize.height - contentViewportPadding.vertical)
+    )
+    private val visibleMapSize: Size get() =
+        Size(
+            paddedContentViewportSize.width,
+            (contentViewportSize.height * (1 - bottomSheetHalfHeight)) - contentViewportPadding.vertical
+        )
 
     private val contentViewportAspect: Float get() = contentViewportSize.width / contentViewportSize.height
+    private val paddedContentViewportAspect: Float get() =
+        paddedContentViewportSize.width / paddedContentViewportSize.height
     private val visibleMapAspect: Float get() = visibleMapSize.width / visibleMapSize.height
 
     private fun boxOverOther(box: ScreenRegion, aspect: Float): ScreenRegion {
         val boxAspect = box.aspect
-        val width = if (boxAspect > aspect) box.width else (box.height * aspect)
-        val height = if (boxAspect <= aspect) box.height else (box.width / aspect)
+
+        val width: Float
+        val height: Float
+
+        when {
+            else -> {
+                width = if (boxAspect > aspect) box.width else (box.height * aspect)
+                height = if (boxAspect > aspect) (box.width / aspect) else box.height
+            }
+//            else -> {
+//                width = box.width
+//                height = box.width / aspect
+//            }
+        }
+
+        val halfWidth = width / 2
+        val halfHeight = height / 2
+
+
+        val centre = box.centre
 
         return ScreenRegion(
             topLeft = ScreenLocation(
-                (box.topLeft.x - (width / 2) + (box.width / 2)),
-                (box.topLeft.y - (height / 2) + (box.height / 2))
+                centre.x - halfWidth,
+                centre.y - halfHeight
             ),
             bottomRight = ScreenLocation(
-                (box.topLeft.x + (width / 2) + (box.width / 2)),
-                (box.topLeft.y + (height / 2) + (box.height / 2))
+                centre.x + halfWidth,
+                centre.y + halfHeight
             )
-        )
+        ).also {
+            Napier.d("Original = ${box.width},${box.height} (aspect = ${box.aspect})")
+            Napier.d("Now = ${it.width},${it.height} (aspect = ${it.aspect})")
+        }
     }
 
     abstract fun showBounds(bounds: MapRegion)
@@ -77,7 +107,10 @@ abstract class AbstractMapControl: MapControl, MapProjectionProvider {
             ScreenRegion(
                 screenSpace[0],
                 screenSpace[1],
-            ),
+            )
+            .run {
+               padded(PrecomputedPaddingValues.all(padding.value * density.density * (width / visibleMapSize.width)))
+            },
             visibleMapAspect
         )
 
@@ -85,14 +118,9 @@ abstract class AbstractMapControl: MapControl, MapProjectionProvider {
             .copy(
                 bottomRight = ScreenLocation(
                     viewportBox.bottomRight.x,
-                    (viewportBox.topLeft.y + (viewportBox.width / contentViewportAspect)),
+                    viewportBox.topLeft.y + (viewportBox.width / paddedContentViewportAspect),
                 )
-            ).run {
-                padded(
-                    ((-contentViewportPadding) + PrecomputedPaddingValues.all(padding.value * density.density))
-                            * (width / contentViewportSize.width)
-                )
-            }
+            )
 
 
         Napier.d("Screen box = ${screenBox.width}, ${screenBox.height}, aspect = ${screenBox.width / screenBox.height}, target = ${contentViewportAspect}, padding = ${contentViewportPadding}")
