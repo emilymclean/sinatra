@@ -7,9 +7,9 @@ import androidx.compose.ui.unit.Density
 import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.data.models.MapRegion
 import cl.emilym.sinatra.data.models.ScreenLocation
+import cl.emilym.sinatra.data.models.ScreenRegionSizePx
 import cl.emilym.sinatra.ui.toNative
 import cl.emilym.sinatra.ui.toShared
-import io.github.aakira.napier.Napier
 import kotlinx.cinterop.ExperimentalForeignApi
 
 @Composable
@@ -19,7 +19,7 @@ actual fun rememberMapControl(): MapControl {
 
 class AppleMapControl(
     private val state: MapKitState,
-    override val contentViewportSize: Size,
+    override val contentViewportSize: ScreenRegionSizePx,
     override val contentViewportPadding: PrecomputedPaddingValues,
     override val bottomSheetHalfHeight: Float,
     override val density: Density
@@ -40,7 +40,7 @@ class AppleMapControl(
         return map.convertPoint(coordinate.toNative(), toCoordinateFromView = map).toShared()
     }
 
-    override val nativeZoom: Float get() = state.cameraDescription.zoom(contentViewportSize.toPx(density))
+    override val nativeZoom: Float get() = state.cameraDescription.zoom(contentViewportSize.dp(density.density))
 
     override fun showBounds(bounds: MapRegion) {
         state.animate(CameraDescription(

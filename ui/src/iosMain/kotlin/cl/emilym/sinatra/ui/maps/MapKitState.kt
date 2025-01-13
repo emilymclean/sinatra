@@ -7,12 +7,13 @@ import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import cl.emilym.sinatra.data.models.MapRegion
-import cl.emilym.sinatra.data.models.ScreenLocation
+import cl.emilym.sinatra.data.models.ScreenRegionSizeDp
 import cl.emilym.sinatra.ui.canberra
 import cl.emilym.sinatra.ui.canberraZoom
 import cl.emilym.sinatra.ui.sinatraAllocArrayOf
 import cl.emilym.sinatra.ui.toNative
 import cl.emilym.sinatra.ui.toNativeUIColor
+import cl.emilym.sinatra.ui.toShared
 import cl.emilym.sinatra.ui.widgets.screenSize
 import io.github.aakira.napier.Napier
 import kotlinx.cinterop.Arena
@@ -40,9 +41,7 @@ data class CameraDescription(
     val region: CValue<MKCoordinateRegion> get() = mapRegion.toNative()
 
     @OptIn(ExperimentalForeignApi::class)
-    fun zoom(mapSize: ScreenLocation) = mapRegion.toZoom(
-        mapSize.x, mapSize.y
-    )
+    fun zoom(mapSize: ScreenRegionSizeDp) = mapRegion.toZoom(mapSize)
 
 }
 
@@ -83,7 +82,13 @@ class MapKitState(
 
     private val delegate = SinatraMapKitDelegate(::onAnnotationClick, ::onMapUpdate)
 
-    var contentViewportSize: ScreenLocation? = null
+    var contentViewportSize: ScreenRegionSizeDp? = null
+    var visibleMapSize: ScreenRegionSizeDp? = null
+        set(value) {
+            field = value
+            delegate.visibleMapSize = value
+            onMapUpdate()
+        }
 
     private var _cameraDescription by mutableStateOf(cameraDescription)
     @OptIn(ExperimentalForeignApi::class)
@@ -112,18 +117,20 @@ class MapKitState(
     @OptIn(ExperimentalForeignApi::class)
     private fun onMapUpdate() {
         val map = map ?: return
-        val region = map.visibleMapRect.useContents { toNative() }
+        val region = map.visibleMapRect.useContents { toShared() }
         _cameraDescription = CameraDescription(
             region
         )
-//        for (annotation in map.annotations) {
-//            when (annotation) {
-//                is MarkerAnnotation -> {
-//                    val range = annotation.visibleZoomRange ?: continue
-//                    map.viewForAnnotation(annotation)?.hidden = zoom?.let { zoom !in range } ?: true
-//                }
-//            }
-//        }
+        val zoom = visibleMapSize?.let { region.toZoom(it) + 1 }
+        Napier.d("Current zoom = ${zoom}, region = ${region}")
+        for (annotation in map.annotations) {
+            when (annotation) {
+                is MarkerAnnotation -> {
+                    val range = annotation.visibleZoomRange ?: continue
+                    map.viewForAnnotation(annotation)?.hidden = zoom?.let { zoom !in range } ?: true
+                }
+            }
+        }
     }
 
     @OptIn(ExperimentalForeignApi::class)

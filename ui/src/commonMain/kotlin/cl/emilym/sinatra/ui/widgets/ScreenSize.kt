@@ -3,6 +3,7 @@ package cl.emilym.sinatra.ui.widgets
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.unit.Dp
+import cl.emilym.sinatra.data.models.ScreenRegionSizePx
 
 @Composable
 expect fun screenHeight(): Dp
@@ -10,6 +11,6 @@ expect fun screenHeight(): Dp
 expect fun screenWidth(): Dp
 
 @Composable
-fun screenSize(): Size {
-    return Size(screenWidth().toFloatPx(), screenHeight().toFloatPx())
+fun screenSize(): ScreenRegionSizePx {
+    return ScreenRegionSizePx(screenWidth().toFloatPx(), screenHeight().toFloatPx())
 }

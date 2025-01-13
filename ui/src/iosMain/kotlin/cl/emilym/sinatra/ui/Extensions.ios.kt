@@ -20,7 +20,6 @@ import kotlinx.cinterop.cValue
 import kotlinx.cinterop.interpretCPointer
 import kotlinx.cinterop.sizeOf
 import kotlinx.cinterop.useContents
-import kotlinx.cinterop.usePinned
 import org.jetbrains.compose.resources.StringResource
 import platform.CoreGraphics.CGPoint
 import platform.CoreGraphics.CGPointMake
@@ -29,7 +28,6 @@ import platform.CoreLocation.CLLocationCoordinate2DMake
 import platform.MapKit.MKCoordinateSpan
 import platform.MapKit.MKCoordinateSpanMake
 import platform.UIKit.UIColor
-import kotlin.math.pow
 import platform.CoreGraphics.CGColorRef
 import platform.CoreGraphics.CGRect
 import platform.MapKit.MKCoordinateForMapPoint
@@ -44,8 +42,6 @@ import platform.UIKit.UIScreen
 import sinatra.ui.generated.resources.Res
 import sinatra.ui.generated.resources.open_maps_ios
 import kotlin.math.abs
-import kotlin.math.ln
-import kotlin.math.log
 
 @OptIn(ExperimentalForeignApi::class)
 fun MapLocation.toNative(): CValue<CLLocationCoordinate2D> {
@@ -138,7 +134,7 @@ fun MapRegion.toNative(): CValue<MKCoordinateRegion> {
 }
 
 @OptIn(ExperimentalForeignApi::class)
-fun MKMapRect.toNative(): MapRegion {
+fun MKMapRect.toShared(): MapRegion {
     val topLeft = MKCoordinateForMapPoint(cValue<MKMapPoint> { origin }).toShared()
     val bottomRight = MKCoordinateForMapPoint(
         MKMapPointMake(origin.x + size.width, origin.y + size.height)

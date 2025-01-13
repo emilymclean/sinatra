@@ -7,6 +7,7 @@ import androidx.compose.ui.unit.Density
 import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.data.models.MapRegion
 import cl.emilym.sinatra.data.models.ScreenLocation
+import cl.emilym.sinatra.data.models.ScreenRegionSizePx
 import cl.emilym.sinatra.ui.toNative
 import cl.emilym.sinatra.ui.toShared
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -22,7 +23,7 @@ actual fun rememberMapControl(): MapControl {
 class AndroidMapControl(
     private val cameraPositionState: CameraPositionState,
     private val mainScope: CoroutineScope,
-    override val contentViewportSize: Size,
+    override val contentViewportSize: ScreenRegionSizePx,
     override val density: Density,
     override val contentViewportPadding: PrecomputedPaddingValues,
     override val bottomSheetHalfHeight: Float,

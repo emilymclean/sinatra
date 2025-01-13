@@ -15,6 +15,11 @@ import kotlin.math.pow
 import kotlin.math.sin
 import kotlin.math.sqrt
 
+interface Size<T: Number> {
+    val width: T
+    val height: T
+}
+
 data class MapLocation(
     val lat: Latitude,
     val lng: Longitude
@@ -49,10 +54,10 @@ data class MapLocation(
 data class MapRegion(
     val topLeft: MapLocation,
     val bottomRight: MapLocation,
-) {
+): Size<Double> {
 
-    val width get() = abs(bottomRight.lng - topLeft.lng)
-    val height get() = abs(bottomRight.lat - topLeft.lat)
+    override val width get() = abs(bottomRight.lng - topLeft.lng)
+    override val height get() = abs(bottomRight.lat - topLeft.lat)
 
     fun order(): MapRegion {
         return copy(
@@ -123,9 +128,10 @@ data class ScreenLocation(
 data class ScreenRegion(
     val topLeft: ScreenLocation,
     val bottomRight: ScreenLocation
-) {
-    val width get() = bottomRight.x - topLeft.x
-    val height get() = bottomRight.y - topLeft.y
+): Size<Pixel> {
+    override val width get() = bottomRight.x - topLeft.x
+    override val height get() = bottomRight.y - topLeft.y
+    val size = ScreenRegionSizePx(width, height)
 
     val aspect get() = width / height
 
@@ -139,3 +145,31 @@ data class CoordinateSpan(
     val deltaLatitude: Double,
     val deltaLongitude: Double
 )
+
+data class ScreenRegionSizeDp(
+    override val width: DensityPixel,
+    override val height: DensityPixel,
+): Size<DensityPixel> {
+
+    fun px(density: Float): ScreenRegionSizePx {
+        return ScreenRegionSizePx(
+            width * density,
+            height * density
+        )
+    }
+
+}
+
+data class ScreenRegionSizePx(
+    override val width: Pixel,
+    override val height: Pixel,
+): Size<Pixel> {
+
+    fun dp(density: Float): ScreenRegionSizeDp {
+        return ScreenRegionSizeDp(
+            width / density,
+            height / density
+        )
+    }
+
+}

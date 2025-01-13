@@ -1,11 +1,7 @@
 package cl.emilym.sinatra.ui.presentation.screens
 
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.only
-import androidx.compose.foundation.layout.systemBars
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -21,15 +17,14 @@ import cl.emilym.sinatra.ui.maps.AppleMapControl
 import cl.emilym.sinatra.ui.maps.MapControl
 import cl.emilym.sinatra.ui.maps.MarkerItem
 import cl.emilym.sinatra.ui.maps.SafeMapControl
+import cl.emilym.sinatra.ui.maps.calculateVisibleMapSize
 import cl.emilym.sinatra.ui.maps.currentLocationIcon
 import cl.emilym.sinatra.ui.maps.iosCurrentMapItems
 import cl.emilym.sinatra.ui.maps.precompute
 import cl.emilym.sinatra.ui.maps.rememberMapKitState
-import cl.emilym.sinatra.ui.maps.toPx
 import cl.emilym.sinatra.ui.navigation.bottomSheetHalfHeight
 import cl.emilym.sinatra.ui.widgets.currentLocation
 import cl.emilym.sinatra.ui.widgets.viewportSize
-import io.github.aakira.napier.Napier
 import kotlinx.coroutines.launch
 import platform.MapKit.MKMapView
 import platform.MapKit.MKPointOfInterestCategoryPublicTransport
@@ -65,8 +60,11 @@ actual fun Map(mapControl: MapControl) {
         (mapControl as? SafeMapControl)?.wrapped = control
     }
 
-    LaunchedEffect(viewportSize) {
-        state.contentViewportSize = viewportSize.toPx(density)
+    LaunchedEffect(viewportSize, bottomSheetHalfHeight, paddingValues) {
+        state.contentViewportSize = viewportSize.dp(density.density)
+        state.visibleMapSize = calculateVisibleMapSize(
+            bottomSheetHalfHeight, viewportSize, paddingValues
+        ).dp(density.density)
     }
 
     val currentLocation = currentLocation()

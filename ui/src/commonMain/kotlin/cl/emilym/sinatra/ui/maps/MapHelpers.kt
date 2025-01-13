@@ -12,6 +12,8 @@ import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.data.models.MapRegion
 import cl.emilym.sinatra.data.models.Radian
 import cl.emilym.sinatra.data.models.ScreenLocation
+import cl.emilym.sinatra.data.models.ScreenRegionSizeDp
+import cl.emilym.sinatra.data.models.ScreenRegionSizePx
 import cl.emilym.sinatra.data.models.Zoom
 import cl.emilym.sinatra.degrees
 import kotlin.math.PI
@@ -27,7 +29,7 @@ import kotlin.math.sin
 
 @Deprecated("Don't done work :(")
 fun Zoom.toCoordinateSpan(
-    viewportSize: Size
+    viewportSize: ScreenRegionSizePx
 ): CoordinateSpan {
     val span = 360 / 2.0.pow(this.toDouble())
     return CoordinateSpan(
@@ -67,22 +69,39 @@ fun MapRegion.toZoom(mapWidth: DensityPixel, mapHeight: DensityPixel): Float {
     val latZ = zoom(mapHeight, latF)
     val lngZ = zoom(mapWidth, lngF)
 
-    return min(lngZ, latZ).toFloat().coerceAtLeast(1f)
+    return min(lngZ, latZ).toFloat().coerceAtLeast(0f)
 }
 
 fun MapRegion.toZoom(
-    visibleMapSize: Size,
-    density: Density
+    visibleMapSize: ScreenRegionSizeDp
 ): Zoom {
     return toZoom(
-        visibleMapSize.width / density.density,
-        visibleMapSize.height  / density.density
+        visibleMapSize.width,
+        visibleMapSize.height
+    )
+}
+
+fun MapRegion.toZoom(
+    visibleMapSize: ScreenRegionSizePx,
+    density: Density
+): Zoom {
+    return toZoom(visibleMapSize.dp(density.density))
+}
+
+fun calculateVisibleMapSize(
+    bottomSheetHalfHeight: Float,
+    contentViewportSize: ScreenRegionSizePx,
+    contentViewportPadding: PrecomputedPaddingValues
+): ScreenRegionSizePx {
+    return ScreenRegionSizePx(
+        (contentViewportSize.width - contentViewportPadding.horizontal),
+        (contentViewportSize.height * (1 - bottomSheetHalfHeight)) - contentViewportPadding.vertical
     )
 }
 
 fun MapProjectionProvider.calculateZoom(
     nativeZoom: Float,
-    visibleMapSize: Size,
+    visibleMapSize: ScreenRegionSizePx,
     density: Density
 ): Zoom {
     val screen = listOf(
@@ -140,12 +159,5 @@ fun Zoom.toMapRegion(centre: MapLocation, mapWidth: DensityPixel, mapHeight: Den
     return MapRegion(
         topLeftPixel.toMapSpace(),
         bottomRightPixel.toMapSpace()
-    )
-}
-
-fun Size.toPx(density: Density): ScreenLocation {
-    return ScreenLocation(
-        width * density.density,
-        height  * density.density
     )
 }

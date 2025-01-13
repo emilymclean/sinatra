@@ -8,6 +8,7 @@ import androidx.compose.ui.unit.Density
 import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.data.models.MapRegion
 import cl.emilym.sinatra.data.models.ScreenLocation
+import cl.emilym.sinatra.data.models.ScreenRegionSizePx
 import cl.emilym.sinatra.data.models.Zoom
 import cl.emilym.sinatra.ui.maps.MapProjectionProvider
 import cl.emilym.sinatra.ui.maps.calculateZoom
@@ -55,7 +56,7 @@ fun LatLngBounds.toShared(): MapRegion {
 
 fun MapProjectionProvider.calculateZoom(
     cameraPositionState: CameraPositionState,
-    visibleMapSize: Size,
+    visibleMapSize: ScreenRegionSizePx,
     density: Density
 ): Zoom {
     return calculateZoom(

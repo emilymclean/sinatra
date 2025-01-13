@@ -1,5 +1,6 @@
 package cl.emilym.sinatra.ui.maps
 
+import cl.emilym.sinatra.data.models.ScreenRegionSizeDp
 import cl.emilym.sinatra.ui.toShared
 import cl.emilym.sinatra.ui.toSize
 import kotlinx.cinterop.ExperimentalForeignApi
@@ -16,8 +17,10 @@ import platform.darwin.NSObject
 
 class SinatraMapKitDelegate(
     val clickCallback: (MKAnnotationProtocol) -> Unit,
-    val mapUpdateCallback: () -> Unit
+    val mapUpdateCallback: () -> Unit,
 ): NSObject(), MKMapViewDelegateProtocol {
+
+    var visibleMapSize: ScreenRegionSizeDp? = null
 
     @OptIn(ExperimentalForeignApi::class)
     override fun mapView(
@@ -42,9 +45,9 @@ class SinatraMapKitDelegate(
         mapView: MKMapView,
         viewForAnnotation: MKAnnotationProtocol
     ): MKAnnotationView? {
-        val zoom = mapView.centerCoordinate.toShared()
-            .combine(mapView.region.useContents { span }.toShared())
-            .toZoom(mapView.bounds.toSize().width, mapView.bounds.toSize().height)
+        val visibleRegion = mapView.visibleMapRect.useContents { toShared() }
+        val zoom = visibleMapSize?.let { visibleRegion.toZoom(it) + 1 } ?:
+            visibleRegion.toZoom(mapView.bounds.toSize().width, mapView.bounds.toSize().height)
         return when (viewForAnnotation) {
             is MarkerAnnotation -> {
                 val icon = viewForAnnotation.icon ?: return MKAnnotationView()

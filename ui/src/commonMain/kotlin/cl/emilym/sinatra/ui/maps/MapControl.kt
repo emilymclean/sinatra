@@ -9,6 +9,7 @@ import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.data.models.MapRegion
 import cl.emilym.sinatra.data.models.ScreenLocation
 import cl.emilym.sinatra.data.models.ScreenRegion
+import cl.emilym.sinatra.data.models.ScreenRegionSizePx
 import cl.emilym.sinatra.data.models.Zoom
 import cl.emilym.sinatra.data.repository.isIos
 import io.github.aakira.napier.Napier
@@ -56,19 +57,17 @@ class SafeMapControl: MapControl {
 
 abstract class AbstractMapControl: MapControl, MapProjectionProvider {
     protected abstract val contentViewportPadding: PrecomputedPaddingValues
-    protected abstract val contentViewportSize: Size
+    protected abstract val contentViewportSize: ScreenRegionSizePx
     protected abstract val density: Density
     protected abstract val bottomSheetHalfHeight: Float
 
-    private val paddedContentViewportSize: Size get() = Size(
+    private val paddedContentViewportSize: ScreenRegionSizePx get() = ScreenRegionSizePx(
         (contentViewportSize.width - contentViewportPadding.horizontal),
         (contentViewportSize.height - contentViewportPadding.vertical)
     )
-    protected val visibleMapSize: Size get() =
-        Size(
-            paddedContentViewportSize.width,
-            (contentViewportSize.height * (1 - bottomSheetHalfHeight)) - contentViewportPadding.vertical
-        )
+    protected val visibleMapSize: ScreenRegionSizePx get() = calculateVisibleMapSize(
+        bottomSheetHalfHeight, contentViewportSize, contentViewportPadding
+    )
 
     private val contentViewportAspect: Float get() = contentViewportSize.width / contentViewportSize.height
     private val paddedContentViewportAspect: Float get() =

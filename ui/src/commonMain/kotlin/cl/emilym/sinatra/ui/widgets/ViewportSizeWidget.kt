@@ -5,7 +5,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Size
+import cl.emilym.sinatra.data.models.ScreenRegionSizePx
 
 @Composable
 fun ViewportSizeWidget(content: @Composable () -> Unit) {
@@ -13,7 +13,7 @@ fun ViewportSizeWidget(content: @Composable () -> Unit) {
         val height = maxHeight.toFloatPx()
         val width = maxWidth.toFloatPx()
 
-        CompositionLocalProvider(LocalViewportSize provides Size(width, height)) {
+        CompositionLocalProvider(LocalViewportSize provides ScreenRegionSizePx(width, height)) {
             content()
         }
     }
