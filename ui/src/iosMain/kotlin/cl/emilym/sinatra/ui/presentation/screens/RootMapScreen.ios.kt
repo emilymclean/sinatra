@@ -12,6 +12,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.viewinterop.UIKitInteropInteractionMode
 import androidx.compose.ui.viewinterop.UIKitInteropProperties
 import androidx.compose.ui.viewinterop.UIKitView
@@ -23,6 +24,7 @@ import cl.emilym.sinatra.ui.maps.currentLocationIcon
 import cl.emilym.sinatra.ui.maps.iosCurrentMapItems
 import cl.emilym.sinatra.ui.maps.precompute
 import cl.emilym.sinatra.ui.maps.rememberMapKitState
+import cl.emilym.sinatra.ui.maps.toPx
 import cl.emilym.sinatra.ui.navigation.bottomSheetHalfHeight
 import cl.emilym.sinatra.ui.widgets.currentLocation
 import cl.emilym.sinatra.ui.widgets.viewportSize
@@ -42,16 +44,18 @@ actual fun Map(mapControl: MapControl) {
     val state = rememberMapKitState {}
 
     val insets = WindowInsets.systemBars.only(WindowInsetsSides.Top)
-    val viewportSize = viewportSize(insets)
+    val viewportSize = viewportSize()
     val paddingValues = insets.asPaddingValues().precompute()
     val bottomSheetHalfHeight = bottomSheetHalfHeight()
+    val density = LocalDensity.current
 
-    val control = remember(state, viewportSize, paddingValues, bottomSheetHalfHeight) {
+    val control = remember(state, viewportSize, paddingValues, bottomSheetHalfHeight, density) {
         AppleMapControl(
             state,
             viewportSize,
             paddingValues,
-            bottomSheetHalfHeight
+            bottomSheetHalfHeight,
+            density
         )
     }
 
@@ -60,7 +64,7 @@ actual fun Map(mapControl: MapControl) {
     }
 
     LaunchedEffect(viewportSize) {
-        state.contentViewportSize = viewportSize
+        state.contentViewportSize = viewportSize.toPx(density)
     }
 
     val currentLocation = currentLocation()

@@ -3,6 +3,7 @@ package cl.emilym.sinatra.ui.maps
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.unit.Density
 import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.data.models.MapRegion
 import cl.emilym.sinatra.data.models.ScreenLocation
@@ -20,7 +21,8 @@ class AppleMapControl(
     private val state: MapKitState,
     override val contentViewportSize: Size,
     override val contentViewportPadding: PrecomputedPaddingValues,
-    override val bottomSheetHalfHeight: Float
+    override val bottomSheetHalfHeight: Float,
+    override val density: Density
 ): AbstractMapControl() {
 
     @OptIn(ExperimentalForeignApi::class)
@@ -35,7 +37,7 @@ class AppleMapControl(
         return map.convertPoint(coordinate.toNative(), toCoordinateFromView = map).toShared()
     }
 
-    override val nativeZoom: Float get() = state.cameraDescription.zoom(contentViewportSize)
+    override val nativeZoom: Float get() = state.cameraDescription.zoom(contentViewportSize.toPx(density))
 
     override fun showBounds(bounds: MapRegion) {
         val center = bounds.center
@@ -45,17 +47,4 @@ class AppleMapControl(
         ))
     }
 
-    override fun showPoint(center: MapLocation, zoom: Float) {
-        state.animate(CameraDescription(
-            center,
-            zoom.toCoordinateSpan(
-                contentViewportSize
-            ).adjustForLatitude(center.lat)
-        ))
-    }
-
-    override fun zoomToPoint(location: MapLocation, zoom: Float) {
-        Napier.d("Zooming to point = $location")
-        super.zoomToPoint(location, zoom)
-    }
 }

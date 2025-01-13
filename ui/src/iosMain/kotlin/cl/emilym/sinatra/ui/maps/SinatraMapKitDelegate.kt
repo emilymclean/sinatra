@@ -2,7 +2,6 @@ package cl.emilym.sinatra.ui.maps
 
 import cl.emilym.sinatra.ui.toShared
 import cl.emilym.sinatra.ui.toSize
-import cl.emilym.sinatra.ui.toZoom
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.useContents
 import platform.MapKit.MKAnnotationProtocol
@@ -43,6 +42,9 @@ class SinatraMapKitDelegate(
         mapView: MKMapView,
         viewForAnnotation: MKAnnotationProtocol
     ): MKAnnotationView? {
+        val zoom = mapView.centerCoordinate.toShared()
+            .combine(mapView.region.useContents { span }.toShared())
+            .toZoom(mapView.bounds.toSize().width, mapView.bounds.toSize().height)
         return when (viewForAnnotation) {
             is MarkerAnnotation -> {
                 val icon = viewForAnnotation.icon ?: return MKAnnotationView()
@@ -50,9 +52,7 @@ class SinatraMapKitDelegate(
                     ?: icon.annotationView(viewForAnnotation, viewForAnnotation.contentDescription)
                 ).apply {
                     viewForAnnotation.visibleZoomRange?.let {
-                        hidden = mapView.centerCoordinate.toShared()
-                            .combine(mapView.region.useContents { span }.toShared())
-                            .toZoom(mapView.bounds.toSize()) !in it
+                        hidden = zoom !in it
                     }
                 }
             }

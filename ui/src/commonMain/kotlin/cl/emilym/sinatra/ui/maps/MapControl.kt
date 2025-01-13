@@ -99,7 +99,6 @@ abstract class AbstractMapControl: MapControl, MapProjectionProvider {
     }
 
     abstract fun showBounds(bounds: MapRegion)
-    abstract fun showPoint(center: MapLocation, zoom: Zoom)
 
     abstract val nativeZoom: Float
     override val zoom: Float

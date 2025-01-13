@@ -7,17 +7,16 @@ import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.unit.Density
 import cl.emilym.sinatra.data.models.CoordinateSpan
 import cl.emilym.sinatra.data.models.MapLocation
-import cl.emilym.sinatra.ui.adjustForLatitude
+import cl.emilym.sinatra.data.models.ScreenLocation
 import cl.emilym.sinatra.ui.canberra
 import cl.emilym.sinatra.ui.canberraZoom
 import cl.emilym.sinatra.ui.sinatraAllocArrayOf
-import cl.emilym.sinatra.ui.toCoordinateSpan
 import cl.emilym.sinatra.ui.toNative
 import cl.emilym.sinatra.ui.toNativeUIColor
 import cl.emilym.sinatra.ui.toShared
-import cl.emilym.sinatra.ui.toZoom
 import cl.emilym.sinatra.ui.widgets.screenSize
 import io.github.aakira.napier.Napier
 import kotlinx.cinterop.Arena
@@ -47,7 +46,9 @@ data class CameraDescription(
     val region: CValue<MKCoordinateRegion> get() = createRegion(center, coordinateSpan)
 
     @OptIn(ExperimentalForeignApi::class)
-    fun zoom(mapSize: Size) = center.combine(coordinateSpan).toZoom(mapSize)
+    fun zoom(mapSize: ScreenLocation) = center.combine(coordinateSpan).toZoom(
+        mapSize.x, mapSize.y
+    )
 
 }
 
@@ -88,7 +89,7 @@ class MapKitState(
 
     private val delegate = SinatraMapKitDelegate(::onAnnotationClick, ::onMapUpdate)
 
-    var contentViewportSize: Size? = null
+    var contentViewportSize: ScreenLocation? = null
 
     private var _cameraDescription by mutableStateOf(cameraDescription)
     @OptIn(ExperimentalForeignApi::class)
@@ -128,7 +129,10 @@ class MapKitState(
         val map = map ?: return
         val center = map.camera.centerCoordinate.toShared()
         val coordinateSpan = map.region.useContents { span.toShared() }
-        val zoom = contentViewportSize?.let { center.combine(coordinateSpan).toZoom(it) }
+        val zoom = contentViewportSize?.let { center.combine(coordinateSpan).toZoom(
+            it.x,
+            it.y
+        ) }
         _cameraDescription = CameraDescription(
             center,
             coordinateSpan

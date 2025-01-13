@@ -51,15 +51,4 @@ class AndroidMapControl(
         }
     }
 
-    override fun showPoint(center: MapLocation, zoom: Float) {
-        mainScope.launch {
-            cameraPositionState.animate(
-                CameraUpdateFactory.newLatLngZoom(
-                    center.toNative(),
-                    zoom
-                )
-            )
-        }
-    }
-
 }

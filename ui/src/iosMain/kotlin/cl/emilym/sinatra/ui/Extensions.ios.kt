@@ -85,8 +85,8 @@ fun CoordinateSpan.toNative(): CValue<MKCoordinateSpan> {
 fun CValue<CGPoint>.toShared(): ScreenLocation {
     return useContents {
         ScreenLocation(
-            x.toInt(),
-            y.toInt()
+            x.toFloat(),
+            y.toFloat()
         )
     }
 }
