@@ -36,6 +36,7 @@ import cl.emilym.sinatra.ui.maps.toNative
 import cl.emilym.sinatra.ui.navigation.bottomSheetHalfHeight
 import cl.emilym.sinatra.ui.navigation.currentDrawNativeMap
 import cl.emilym.sinatra.ui.navigation.currentMapItems
+import cl.emilym.sinatra.ui.plus
 import cl.emilym.sinatra.ui.presentation.theme.defaultLineColor
 import cl.emilym.sinatra.ui.toNative
 import cl.emilym.sinatra.ui.widgets.currentLocation
@@ -60,18 +61,13 @@ actual fun Map(mapControl: MapControl) {
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(canberra.toNative(), canberraZoom)
     }
-    val windowPadding = ScaffoldDefaults.contentWindowInsets.asPaddingValues()
-    val layoutDirection = LocalLayoutDirection.current
     val currentLocation = currentLocation()
     val currentLocationIcon = currentLocationIcon()
 
-    val insets = listOf<WindowInsets>(
-        WindowInsets.systemBars.only(WindowInsetsSides.Top),
-        WindowInsets.displayCutout.only(WindowInsetsSides.End)
-    )
+    val insets = mapInsets + PaddingValues(bottom = bottomSheetContentPadding)
     val coroutineScope = rememberCoroutineScope()
     val viewportSize = viewportSize()
-    val paddingValues = insets.asPaddingValues().precompute()
+    val paddingValues = insets.precompute()
     val bottomSheetHalfHeight = bottomSheetHalfHeight()
     val density = LocalDensity.current
 
@@ -106,13 +102,7 @@ actual fun Map(mapControl: MapControl) {
             myLocationButtonEnabled = false,
             zoomControlsEnabled = false
         ),
-        contentPadding =
-        PaddingValues(
-            windowPadding.calculateStartPadding(layoutDirection),
-            windowPadding.calculateTopPadding(),
-            windowPadding.calculateEndPadding(layoutDirection),
-            windowPadding.calculateBottomPadding(),
-        ),
+        contentPadding = insets,
         mapColorScheme = ComposeMapColorScheme.FOLLOW_SYSTEM
     ) {
         currentLocation?.let { DrawMarker(MarkerItem(it, currentLocationIcon)) }

@@ -3,37 +3,26 @@ package cl.emilym.sinatra.ui
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.unit.LayoutDirection
 import cl.emilym.compose.units.px
-import cl.emilym.sinatra.asRadians
 import cl.emilym.sinatra.data.models.ColorPair
-import cl.emilym.sinatra.data.models.CoordinateSpan
-import cl.emilym.sinatra.data.models.Degree
-import cl.emilym.sinatra.data.models.DensityPixel
 import cl.emilym.sinatra.data.models.IRouteTripStop
 import cl.emilym.sinatra.data.models.Kilometer
-import cl.emilym.sinatra.data.models.Latitude
 import cl.emilym.sinatra.data.models.LocalizableString
-import cl.emilym.sinatra.data.models.MapLocation
-import cl.emilym.sinatra.data.models.MapRegion
 import cl.emilym.sinatra.data.models.OnColor
 import cl.emilym.sinatra.data.models.OnColor.DARK
 import cl.emilym.sinatra.data.models.OnColor.LIGHT
-import cl.emilym.sinatra.data.models.Pixel
-import cl.emilym.sinatra.data.models.Radian
 import cl.emilym.sinatra.data.models.Route
 import cl.emilym.sinatra.data.models.TimetableStationTime
-import cl.emilym.sinatra.data.models.Zoom
-import cl.emilym.sinatra.degrees
 import cl.emilym.sinatra.ui.localization.toTodayInstant
-import io.github.aakira.napier.Napier
 import kotlinx.datetime.Instant
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.pluralStringResource
@@ -43,16 +32,7 @@ import sinatra.ui.generated.resources.distance_meter
 import sinatra.ui.generated.resources.time_hour
 import sinatra.ui.generated.resources.time_minute
 import sinatra.ui.generated.resources.time_second
-import kotlin.math.PI
-import kotlin.math.abs
-import kotlin.math.cos
-import kotlin.math.floor
-import kotlin.math.ln
-import kotlin.math.max
-import kotlin.math.min
-import kotlin.math.pow
 import kotlin.math.roundToInt
-import kotlin.math.sin
 import kotlin.time.Duration
 
 fun String.toColor(): Color {
@@ -154,5 +134,16 @@ fun List<WindowInsets>.asPaddingValues(): PaddingValues {
         bottom = sumOf { it.getBottom(density) }.px,
         start = sumOf { it.getLeft(density, LayoutDirection.Ltr) }.px,
         end = sumOf { it.getRight(density, LayoutDirection.Ltr) }.px,
+    )
+}
+
+@Composable
+operator fun PaddingValues.plus(other: PaddingValues): PaddingValues {
+    val layoutDirection = LocalLayoutDirection.current
+    return PaddingValues(
+        start = this.calculateStartPadding(layoutDirection) + other.calculateStartPadding(layoutDirection),
+        top = this.calculateTopPadding() + other.calculateTopPadding(),
+        end = this.calculateEndPadding(layoutDirection) + other.calculateEndPadding(layoutDirection),
+        bottom = this.calculateBottomPadding() + other.calculateBottomPadding(),
     )
 }

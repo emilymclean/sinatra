@@ -119,10 +119,7 @@ import sinatra.ui.generated.resources.trip_not_found
 
 val zoomPadding
     @Composable
-    get() = when {
-        isIos -> 6.rdp
-        else -> 2.rdp
-    }
+    get() = 2.rdp
 
 @Factory
 class RouteDetailViewModel(
