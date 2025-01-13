@@ -48,7 +48,7 @@ import io.github.aakira.napier.Napier
 import org.koin.compose.viewmodel.koinViewModel
 
 const val zoomThreshold = 14f
-const val currentLocationZoom = zoomThreshold + 4f
+const val currentLocationZoom = zoomThreshold + 1f
 
 class MapSearchScreen: MapScreen, NativeMapScreen {
     override val key: ScreenKey = this::class.qualifiedName!!

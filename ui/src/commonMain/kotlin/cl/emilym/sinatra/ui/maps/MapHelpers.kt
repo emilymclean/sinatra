@@ -1,7 +1,7 @@
 package cl.emilym.sinatra.ui.maps
 
 import androidx.compose.ui.geometry.Size
-import cafe.adriel.voyager.core.screen.Screen
+import androidx.compose.ui.unit.Density
 import cl.emilym.sinatra.asDegrees
 import cl.emilym.sinatra.asRadians
 import cl.emilym.sinatra.data.models.CoordinateSpan
@@ -76,6 +76,33 @@ fun MapRegion.toZoom(mapWidth: DensityPixel, mapHeight: DensityPixel): Float {
     val lngZ = zoom(mapWidth, lngF)
 
     return min(lngZ, latZ).toFloat().coerceAtLeast(1f)
+}
+
+fun MapRegion.toZoom(
+    visibleMapSize: Size,
+    density: Density
+): Zoom {
+    return toZoom(
+        visibleMapSize.width / density.density,
+        visibleMapSize.height  / density.density
+    )
+}
+
+fun MapProjectionProvider.calculateZoom(
+    nativeZoom: Float,
+    visibleMapSize: Size,
+    density: Density
+): Zoom {
+    val screen = listOf(
+        ScreenLocation(0f,0f),
+        ScreenLocation(
+            visibleMapSize.width,
+            visibleMapSize.height
+        )
+    )
+    val map = screen.mapNotNull { toMapSpace(it) }
+    if (map.size != 2) return nativeZoom
+    return MapRegion(map[0], map[1]).toZoom(visibleMapSize, density)
 }
 
 fun MapLocation.addCoordinateSpan(span: CoordinateSpan): MapRegion {

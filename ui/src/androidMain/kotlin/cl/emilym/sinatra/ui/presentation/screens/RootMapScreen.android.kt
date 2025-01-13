@@ -82,7 +82,7 @@ actual fun Map(content: @Composable MapControl.(@Composable () -> Unit) -> Unit)
             bottomSheetHalfHeight
         )
     }
-    val nativeMapScope = NativeMapScope(cameraPositionState)
+    val nativeMapScope = remember(cameraPositionState, scope) { NativeMapScope(cameraPositionState, scope) }
 
     scope.content {
         GoogleMap(
