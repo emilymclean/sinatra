@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContent
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -120,8 +121,8 @@ class RootMapScreen: Screen {
                                             Modifier
                                                 .background(MaterialTheme.colorScheme.surface)
                                                 .fillMaxHeight()
+                                                .widthIn(max = 740.dp)
                                                 .fillMaxWidth(0.5f)
-                                                .widthIn(max = 200.dp)
                                         ) {
                                             CompositionLocalProvider(
                                                 LocalContentColor provides MaterialTheme.colorScheme.onSurface
@@ -270,13 +271,17 @@ class RootMapScreen: Screen {
                 insets.insets = cwi.exclude(consumedWindowInsets)
             }.fillMaxSize().padding(insets.insets.asPaddingValues())
         ) {
-            Column {
-                Box(Modifier.weight(1f)) {
-                    CurrentMapOverlayContent()
-                }
-                Box(
-                    Modifier.height(bottomSheetContentPadding)
-                )
+            Box(
+                Modifier
+                    .windowInsetsPadding(
+                        WindowInsets.systemBars.only(WindowInsetsSides.Horizontal)
+                    ).windowInsetsPadding(
+                        WindowInsets.displayCutout
+                    ).padding(
+                        bottom = bottomSheetContentPadding
+                    )
+            ) {
+                CurrentMapOverlayContent()
             }
         }
     }
