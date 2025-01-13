@@ -45,7 +45,7 @@ class SinatraSheetState @OptIn(ExperimentalMaterial3Api::class) constructor(
     val skipPartiallyExpanded: Boolean,
     initialValue: SinatraSheetValue = SinatraSheetValue.Hidden,
     confirmValueChange: (SinatraSheetValue) -> Boolean = { true },
-    val skipHiddenState: Boolean = false,
+    val skipHiddenState: Boolean = true,
 ) {
 
     /**
@@ -71,7 +71,7 @@ class SinatraSheetState @OptIn(ExperimentalMaterial3Api::class) constructor(
         density: Density,
         initialValue: SinatraSheetValue = SinatraSheetValue.Hidden,
         confirmValueChange: (SinatraSheetValue) -> Boolean = { true },
-        skipHiddenState: Boolean = false,
+        skipHiddenState: Boolean = true,
     ) : this(skipPartiallyExpanded, initialValue, confirmValueChange, skipHiddenState) {
         this.density = density
     }
@@ -464,7 +464,7 @@ internal fun rememberSinatraSheetState(
     skipPartiallyExpanded: Boolean = false,
     confirmValueChange: (SinatraSheetValue) -> Boolean = { true },
     initialValue: SinatraSheetValue = SinatraSheetValue.Hidden,
-    skipHiddenState: Boolean = false,
+    skipHiddenState: Boolean = true,
 ): SinatraSheetState {
 
     val density = LocalDensity.current
