@@ -118,9 +118,14 @@ abstract class AbstractMapControl: MapControl, MapProjectionProvider {
             ScreenRegion(
                 screenSpace[0],
                 screenSpace[1],
-            )
-            .run {
-               padded(PrecomputedPaddingValues.all(padding.value * density.density * (width / visibleMapSize.width)))
+            ).run {
+                val scale = if (aspect > visibleMapAspect)
+                    width / visibleMapSize.width
+                else
+                    height / visibleMapSize.height
+                padded(PrecomputedPaddingValues.all(
+                    padding.value * density.density * scale
+                ))
             },
             visibleMapAspect
         )

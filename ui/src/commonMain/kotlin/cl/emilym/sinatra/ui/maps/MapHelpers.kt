@@ -95,7 +95,7 @@ fun calculateVisibleMapSize(
 ): ScreenRegionSizePx {
     return ScreenRegionSizePx(
         (contentViewportSize.width - contentViewportPadding.horizontal),
-        (contentViewportSize.height * (1 - bottomSheetHalfHeight)) - contentViewportPadding.vertical
+        (contentViewportSize.height * (1 - bottomSheetHalfHeight)) - contentViewportPadding.top
     )
 }
 
