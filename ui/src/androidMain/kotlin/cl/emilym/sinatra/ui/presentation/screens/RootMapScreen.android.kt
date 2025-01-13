@@ -100,12 +100,14 @@ actual fun Map(content: @Composable MapControl.(@Composable () -> Unit) -> Unit)
                 myLocationButtonEnabled = false,
                 zoomControlsEnabled = false
             ),
-            contentPadding = PaddingValues(
-                windowPadding.calculateStartPadding(layoutDirection),
-                windowPadding.calculateTopPadding(),
-                windowPadding.calculateEndPadding(layoutDirection),
-                windowPadding.calculateBottomPadding(),
-            ),
+            contentPadding =
+//                PaddingValues(0.dp),
+                PaddingValues(
+                    windowPadding.calculateStartPadding(layoutDirection),
+                    windowPadding.calculateTopPadding(),
+                    windowPadding.calculateEndPadding(layoutDirection),
+                    windowPadding.calculateBottomPadding(),
+                ),
             mapColorScheme = ComposeMapColorScheme.FOLLOW_SYSTEM
         ) {
             currentLocation?.let { DrawMarker(MarkerItem(it, currentLocationIcon)) }

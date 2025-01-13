@@ -113,10 +113,7 @@ fun List<TimetableStationTime>.asInstants(): List<Instant> {
     return flatMap { it.times.map { it.time.toTodayInstant() } }
 }
 
-
-
 internal expect val Res.string.open_maps: StringResource
-
 
 val Kilometer.text
     @Composable

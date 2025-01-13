@@ -105,20 +105,6 @@ fun MapProjectionProvider.calculateZoom(
     return MapRegion(map[0], map[1]).toZoom(visibleMapSize, density)
 }
 
-fun MapLocation.addCoordinateSpan(span: CoordinateSpan): MapRegion {
-    val adjusted = span.adjustForLatitude(lat)
-    return MapRegion(
-        MapLocation(
-            lat + adjusted.deltaLatitude,
-            ((lng + adjusted.deltaLongitude + 180) % 360) - 180,
-        ),
-        MapLocation(
-            lat - adjusted.deltaLatitude,
-            ((lng - adjusted.deltaLongitude + 180) % 360) - 180
-        )
-    )
-}
-
 private data class PixelSpace(
     val x: Double,
     val y: Double
@@ -162,10 +148,5 @@ fun Zoom.toMapRegion(centre: MapLocation, mapWidth: DensityPixel, mapHeight: Den
     return MapRegion(
         topLeftPixel.toMapSpace(),
         bottomRightPixel.toMapSpace()
-    ).also {
-        Napier.d(
-            "centre = ${centre}, zoom = ${zoom}, centrePixelSpace = ${centrePixelSpace}, zoomScale = ${zoomScale}, scaledMapSize = ${scaledMapSize}, region = ${it}, realZoom = ${it.toZoom(mapWidth, mapHeight)}",
-            tag = "MapDebug"
-        )
-    }
+    )
 }

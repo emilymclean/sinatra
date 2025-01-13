@@ -32,8 +32,8 @@ abstract class AbstractMapControl: MapControl, MapProjectionProvider {
     protected abstract val density: Density
     protected abstract val bottomSheetHalfHeight: Float
 
-    private val visibleMapSize: Size get() =
-        Size(contentViewportSize.width, contentViewportSize.height * (1 - bottomSheetHalfHeight))
+    private val visibleMapSize: Size get() = contentViewportSize
+//        Size(contentViewportSize.width, contentViewportSize.height * (1 - bottomSheetHalfHeight))
 
     private val contentViewportAspect: Float get() = contentViewportSize.width / contentViewportSize.height
     private val visibleMapAspect: Float get() = visibleMapSize.width / visibleMapSize.height
@@ -52,7 +52,7 @@ abstract class AbstractMapControl: MapControl, MapProjectionProvider {
                 (box.topLeft.x + (width / 2) + (box.width / 2)),
                 (box.topLeft.y + (height / 2) + (box.height / 2))
             )
-        ).order()
+        )
     }
 
     abstract fun showBounds(bounds: MapRegion)
@@ -62,9 +62,11 @@ abstract class AbstractMapControl: MapControl, MapProjectionProvider {
     override val zoom: Float
         get() = calculateZoom(nativeZoom, visibleMapSize, density)
 
-    private fun zoomToArea(
+
+    override fun zoomToArea(
         topLeft: MapLocation,
-        bottomRight: MapLocation
+        bottomRight: MapLocation,
+        padding: Dp
     ) {
         val screenSpace = listOfNotNull(toScreenSpace(topLeft), toScreenSpace(bottomRight))
         if (screenSpace.size != 2) return showBounds(
@@ -75,7 +77,7 @@ abstract class AbstractMapControl: MapControl, MapProjectionProvider {
             ScreenRegion(
                 screenSpace[0],
                 screenSpace[1],
-            ).order(),
+            ),
             visibleMapAspect
         )
 
@@ -85,14 +87,17 @@ abstract class AbstractMapControl: MapControl, MapProjectionProvider {
                     viewportBox.bottomRight.x,
                     (viewportBox.topLeft.y + (viewportBox.width / contentViewportAspect)),
                 )
-            )
-            .order()
+            ).run {
+                padded(
+                    ((-contentViewportPadding) + PrecomputedPaddingValues.all(padding.value * density.density))
+                            * (width / contentViewportSize.width)
+                )
+            }
 
 
-        Napier.d("Screen box = $screenBox, aspect = ${screenBox.width.toFloat() / screenBox.height.toFloat()}, target = ${contentViewportAspect}")
+        Napier.d("Screen box = ${screenBox.width}, ${screenBox.height}, aspect = ${screenBox.width / screenBox.height}, target = ${contentViewportAspect}, padding = ${contentViewportPadding}")
 
         val mapSpace = listOfNotNull(toMapSpace(screenBox.topLeft), toMapSpace((screenBox.bottomRight)))
-
         if (mapSpace.size != 2) return showBounds(
             MapRegion(topLeft, bottomRight)
         )
@@ -102,14 +107,6 @@ abstract class AbstractMapControl: MapControl, MapProjectionProvider {
             mapSpace[1],
         ).order()
         showBounds(bounds)
-    }
-
-    override fun zoomToArea(
-        topLeft: MapLocation,
-        bottomRight: MapLocation,
-        padding: Dp
-    ) {
-        zoomToArea(topLeft, bottomRight)
     }
 
     override fun zoomToArea(bounds: MapRegion, padding: Dp) {

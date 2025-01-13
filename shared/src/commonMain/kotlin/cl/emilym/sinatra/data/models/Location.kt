@@ -127,34 +127,7 @@ data class ScreenRegion(
     val width get() = bottomRight.x - topLeft.x
     val height get() = bottomRight.y - topLeft.y
 
-    val aspect get() = width.toFloat() / height
-
-    fun padded(padding: Pixel): ScreenRegion {
-        val halfPadding = padding / 2
-        return copy(
-            topLeft = ScreenLocation(
-                topLeft.x - halfPadding,
-                topLeft.y - halfPadding
-            ),
-            bottomRight = ScreenLocation(
-                bottomRight.x + halfPadding,
-                bottomRight.y + halfPadding
-            )
-        )
-    }
-
-    fun order(): ScreenRegion {
-        return copy(
-            topLeft = ScreenLocation(
-                if (topLeft.x < bottomRight.x) topLeft.x else bottomRight.x,
-                if (topLeft.y < bottomRight.y) topLeft.y else bottomRight.y
-            ),
-            bottomRight = ScreenLocation(
-                if (topLeft.x >= bottomRight.x) topLeft.x else bottomRight.x,
-                if (topLeft.y >= bottomRight.y) topLeft.y else bottomRight.y
-            )
-        )
-    }
+    val aspect get() = width / height
 }
 
 data class CoordinateSpan(
