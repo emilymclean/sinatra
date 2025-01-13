@@ -121,8 +121,8 @@ fun Color.toNativeCGColor(): CGColorRef? {
 fun MapRegion.toNative(): CValue<MKCoordinateRegion> {
     val topLeft = MKMapPointForCoordinate(topLeft.toNative())
     val bottomRight = MKMapPointForCoordinate(bottomRight.toNative())
-    val width = abs(bottomRight.useContents { x } - topLeft.useContents { x })
-    val height = abs(bottomRight.useContents { y } - topLeft.useContents { y })
+    val width = abs(topLeft.useContents { x } - bottomRight.useContents { x })
+    val height = abs(topLeft.useContents { y } - bottomRight.useContents { y })
     return MKCoordinateRegionForMapRect(
         MKMapRectMake(
             topLeft.useContents { x },
@@ -135,7 +135,9 @@ fun MapRegion.toNative(): CValue<MKCoordinateRegion> {
 
 @OptIn(ExperimentalForeignApi::class)
 fun MKMapRect.toShared(): MapRegion {
-    val topLeft = MKCoordinateForMapPoint(cValue<MKMapPoint> { origin }).toShared()
+    val topLeft = MKCoordinateForMapPoint(
+        MKMapPointMake(origin.x, origin.y)
+    ).toShared()
     val bottomRight = MKCoordinateForMapPoint(
         MKMapPointMake(origin.x + size.width, origin.y + size.height)
     ).toShared()
