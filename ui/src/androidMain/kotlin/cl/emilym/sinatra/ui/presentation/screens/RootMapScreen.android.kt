@@ -36,10 +36,7 @@ import cl.emilym.sinatra.ui.navigation.currentDrawNativeMap
 import cl.emilym.sinatra.ui.navigation.currentMapItems
 import cl.emilym.sinatra.ui.presentation.theme.defaultLineColor
 import cl.emilym.sinatra.ui.toNative
-import cl.emilym.sinatra.ui.toShared
-import cl.emilym.sinatra.ui.toZoom
 import cl.emilym.sinatra.ui.widgets.currentLocation
-import cl.emilym.sinatra.ui.widgets.screenSize
 import cl.emilym.sinatra.ui.widgets.viewportSize
 import com.google.android.gms.maps.GoogleMapOptions
 import com.google.android.gms.maps.model.CameraPosition

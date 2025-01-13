@@ -8,17 +8,15 @@ import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.data.models.MapRegion
 import cl.emilym.sinatra.data.models.ScreenLocation
 import cl.emilym.sinatra.data.models.ScreenRegion
-import cl.emilym.sinatra.ui.addCoordinateSpan
-import cl.emilym.sinatra.ui.toCoordinateSpan
-import cl.emilym.sinatra.ui.toZoom
+import cl.emilym.sinatra.data.models.Zoom
 import io.github.aakira.napier.Napier
 import kotlin.math.max
 
 interface MapControl {
     fun zoomToArea(bounds: MapRegion, padding: Dp)
     fun zoomToArea(topLeft: MapLocation, bottomRight: MapLocation, padding: Dp)
-    fun zoomToPoint(location: MapLocation, zoom: Float = 16f)
-    fun moveToPoint(location: MapLocation, minZoom: Float? = null)
+    fun zoomToPoint(location: MapLocation, zoom: Zoom = 16f)
+    fun moveToPoint(location: MapLocation, minZoom: Zoom? = null)
 
     val zoom: Float
 }
@@ -36,15 +34,15 @@ abstract class AbstractMapControl: MapControl {
 
     private fun boxOverOther(box: ScreenRegion, aspect: Float, padding: PrecomputedPaddingValues): ScreenRegion {
         val boxAspect = box.aspect
-        val width = if (boxAspect > aspect) box.width.toFloat() else (box.height * aspect)
-        val height = if (boxAspect <= aspect) box.height.toFloat() else (box.width / aspect)
+        val width = if (boxAspect > aspect) box.width else (box.height * aspect)
+        val height = if (boxAspect <= aspect) box.height else (box.width / aspect)
 
         val padding = padding * (width / contentViewportSize.width)
 
         return ScreenRegion(
             topLeft = ScreenLocation(
                 (box.topLeft.x - (width / 2) + (box.width / 2)) - padding.left,
-                (box.topLeft.y - (height / 2) + (box.height / 2)) - (padding.top / 2)
+                (box.topLeft.y - (height / 2) + (box.height / 2))
             ),
             bottomRight = ScreenLocation(
                 (box.topLeft.x + (width / 2) + (box.width / 2)) + padding.right,
@@ -57,7 +55,7 @@ abstract class AbstractMapControl: MapControl {
     abstract fun toMapSpace(coordinate: ScreenLocation): MapLocation?
 
     abstract fun showBounds(bounds: MapRegion)
-    abstract fun showPoint(center: MapLocation, zoom: Float)
+    abstract fun showPoint(center: MapLocation, zoom: Zoom)
 
     abstract val nativeZoom: Float
     override val zoom: Float
@@ -126,17 +124,18 @@ abstract class AbstractMapControl: MapControl {
     }
 
     override fun zoomToArea(bounds: MapRegion, padding: Dp) {
-        zoomToArea(bounds.topLeft, bounds.bottomRight, padding)
+        zoomToArea(bounds.topLeft, bounds.bottomRight, 0.dp)
     }
 
     override fun zoomToPoint(
         location: MapLocation,
         zoom: Float
     ) {
-        val span = zoom.toCoordinateSpan(
-            contentViewportSize
+        val region = zoom.toMapRegion(
+            location,
+            visibleMapSize.width / density.density,
+            visibleMapSize.height / density.density,
         )
-        val region = location.addCoordinateSpan(span)
         Napier.d("Region centerpoint = ${region.center}")
         zoomToArea(
             region,
@@ -145,7 +144,10 @@ abstract class AbstractMapControl: MapControl {
     }
 
     override fun moveToPoint(location: MapLocation, minZoom: Float?) {
-        Napier.d("Current zoom = ${zoom}, minZoom = ${minZoom}, (native = ${nativeZoom}, visibleMapSize = ${visibleMapSize}, contentViewportSize = ${contentViewportSize})")
+        Napier.d(
+            "Current zoom = ${zoom}, minZoom = ${minZoom}, (native = ${nativeZoom}, visibleMapSize = ${visibleMapSize}, contentViewportSize = ${contentViewportSize})",
+            tag = "MapDebug"
+        )
         zoomToPoint(
             location,
             when (minZoom) {

@@ -10,6 +10,7 @@ import cl.emilym.sinatra.asRadians
 import cl.emilym.sinatra.data.models.ColorPair
 import cl.emilym.sinatra.data.models.CoordinateSpan
 import cl.emilym.sinatra.data.models.Degree
+import cl.emilym.sinatra.data.models.DensityPixel
 import cl.emilym.sinatra.data.models.IRouteTripStop
 import cl.emilym.sinatra.data.models.Kilometer
 import cl.emilym.sinatra.data.models.Latitude
@@ -23,6 +24,7 @@ import cl.emilym.sinatra.data.models.Pixel
 import cl.emilym.sinatra.data.models.Radian
 import cl.emilym.sinatra.data.models.Route
 import cl.emilym.sinatra.data.models.TimetableStationTime
+import cl.emilym.sinatra.data.models.Zoom
 import cl.emilym.sinatra.degrees
 import cl.emilym.sinatra.ui.localization.toTodayInstant
 import io.github.aakira.napier.Napier
@@ -111,70 +113,7 @@ fun List<TimetableStationTime>.asInstants(): List<Instant> {
     return flatMap { it.times.map { it.time.toTodayInstant() } }
 }
 
-fun MapRegion.toCoordinateSpan(): CoordinateSpan {
-    return CoordinateSpan(
-        deltaLatitude = width,
-        deltaLongitude = height
-    )
-}
 
-fun Float.toCoordinateSpan(
-    viewportSize: Size
-): CoordinateSpan {
-    val span = 360 / 2.0.pow(this.toDouble())
-    return CoordinateSpan(
-        deltaLatitude = ((viewportSize.width) / 256.0) * span,
-        deltaLongitude = ((viewportSize.width) / 256.0) * span
-    )
-}
-
-fun CoordinateSpan.adjustForLatitude(latitude: Latitude): CoordinateSpan {
-    return CoordinateSpan(
-        deltaLatitude,
-        deltaLongitude * cos(latitude.degrees.asRadians)
-    )
-}
-
-fun MapRegion.toZoom(mapWidth: Float, mapHeight: Float): Float {
-    val worldSize = 256.0
-
-    fun latRad(lat: Degree): Radian {
-        val s = sin(lat.asRadians)
-        val radX2 = ln((1 + s) / (1 - s)) / 2.0
-        return (max(min(radX2, PI),-PI) / 2.0)
-    }
-
-    fun zoom(mapPx: Float, mapFrac: Double): Double {
-        return ln(mapPx / worldSize / mapFrac) / ln(2.0)
-    }
-
-    val ne = northEast
-    val sw = southWest
-
-    val latF = abs(latRad(ne.lat) - latRad(sw.lat)) / PI
-
-    val lngD = ne.lng - sw.lng
-    val lngF = (if (lngD < 0) lngD + 360 else lngD) / 360.0
-
-    val latZ = zoom(mapHeight, latF)
-    val lngZ = zoom(mapWidth, lngF)
-
-    return min(lngZ, latZ).toFloat().coerceAtLeast(1f)
-}
-
-fun MapLocation.addCoordinateSpan(span: CoordinateSpan): MapRegion {
-    val adjusted = span.adjustForLatitude(lat)
-    return MapRegion(
-        MapLocation(
-            lat + adjusted.deltaLatitude,
-            ((lng + adjusted.deltaLongitude + 180) % 360) - 180,
-        ),
-        MapLocation(
-            lat - adjusted.deltaLatitude,
-            ((lng - adjusted.deltaLongitude + 180) % 360) - 180
-        )
-    )
-}
 
 internal expect val Res.string.open_maps: StringResource
 

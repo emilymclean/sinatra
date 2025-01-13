@@ -54,7 +54,7 @@ class MapSearchScreen: MapScreen, NativeMapScreen {
     override val key: ScreenKey = this::class.qualifiedName!!
 
     override val bottomSheetHalfHeight: Float
-        get() = 0.66f
+        get() = 0.25f
 
     @Composable
     override fun Content() {
