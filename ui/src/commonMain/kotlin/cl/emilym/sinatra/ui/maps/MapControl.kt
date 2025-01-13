@@ -77,19 +77,8 @@ abstract class AbstractMapControl: MapControl, MapProjectionProvider {
     private fun boxOverOther(box: ScreenRegion, aspect: Float): ScreenRegion {
         val boxAspect = box.aspect
 
-        val width: Float
-        val height: Float
-
-        when {
-            else -> {
-                width = if (boxAspect > aspect) box.width else (box.height * aspect)
-                height = if (boxAspect > aspect) (box.width / aspect) else box.height
-            }
-//            else -> {
-//                width = box.width
-//                height = box.width / aspect
-//            }
-        }
+        val width = if (boxAspect > aspect) box.width else (box.height * aspect)
+        val height = if (boxAspect > aspect) (box.width / aspect) else box.height
 
         val halfWidth = width / 2
         val halfHeight = height / 2
@@ -106,10 +95,7 @@ abstract class AbstractMapControl: MapControl, MapProjectionProvider {
                 centre.x + halfWidth,
                 centre.y + halfHeight
             )
-        ).also {
-            Napier.d("Original = ${box.width},${box.height} (aspect = ${box.aspect})")
-            Napier.d("Now = ${it.width},${it.height} (aspect = ${it.aspect})")
-        }
+        )
     }
 
     abstract fun showBounds(bounds: MapRegion)
@@ -129,8 +115,6 @@ abstract class AbstractMapControl: MapControl, MapProjectionProvider {
         if (screenSpace.size != 2) return showBounds(
             MapRegion(topLeft, bottomRight)
         )
-
-        Napier.d("Visible map aspect = ${visibleMapAspect} (size = ${visibleMapSize})")
 
         val viewportBox = boxOverOther(
             ScreenRegion(
@@ -179,7 +163,6 @@ abstract class AbstractMapControl: MapControl, MapProjectionProvider {
             visibleMapSize.width / density.density,
             visibleMapSize.height / density.density,
         )
-        Napier.d("Region centerpoint = ${region.center}")
         zoomToArea(
             region,
             0.dp
@@ -187,10 +170,6 @@ abstract class AbstractMapControl: MapControl, MapProjectionProvider {
     }
 
     override fun moveToPoint(location: MapLocation, minZoom: Float?) {
-        Napier.d(
-            "Current zoom = ${zoom}, minZoom = ${minZoom}, (native = ${nativeZoom}, visibleMapSize = ${visibleMapSize}, contentViewportSize = ${contentViewportSize})",
-            tag = "MapDebug"
-        )
         zoomToPoint(
             location,
             when (minZoom) {
