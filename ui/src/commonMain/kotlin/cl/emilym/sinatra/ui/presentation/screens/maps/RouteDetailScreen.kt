@@ -201,9 +201,13 @@ class RouteDetailScreen(
     private val serviceId: ServiceId? = null,
     private val tripId: TripId? = null,
     private val stopId: StopId? = null,
-    private val startOfDay: Instant? = null
+    startOfDay: Instant? = null
 ): MapScreen {
-    override val key: ScreenKey = "${this::class.qualifiedName!!}/$routeId/$serviceId/$tripId/$stopId"
+    private val _startOfDay: Long? = startOfDay?.toEpochMilliseconds()
+    private val startOfDay: Instant?
+        get() = _startOfDay?.let { Instant.fromEpochMilliseconds(it) }
+
+    override val key: ScreenKey = "${this::class.qualifiedName!!}/$routeId/$serviceId/$tripId/$stopId/$_startOfDay"
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
