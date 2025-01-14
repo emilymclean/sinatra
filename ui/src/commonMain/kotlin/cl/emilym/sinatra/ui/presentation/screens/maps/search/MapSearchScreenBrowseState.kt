@@ -27,7 +27,7 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun MapSearchScreenBrowseState(
     viewModel: RouteListViewModel,
-    mainViewModel:MapSearchViewModel
+    mainViewModel: MapSearchViewModel
 ) {
     val bottomSheetState = LocalBottomSheetState.current?.bottomSheetState
 
@@ -44,6 +44,13 @@ fun MapSearchScreenBrowseState(
             val navigator = LocalNavigator.currentOrThrow
             val routes by viewModel.routes.collectAsState(RequestState.Initial())
             val alerts by mainViewModel.alerts.collectAsState(RequestState.Initial())
+
+            LaunchedEffect(routes) {
+                if (routes is RequestState.Failure) {
+                    bottomSheetState?.expand()
+                }
+            }
+
             RequestStateWidget(routes, { viewModel.retry() }) { routes ->
                 LazyColumn(
                     contentPadding = innerPadding
