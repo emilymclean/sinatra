@@ -2,34 +2,35 @@ package cl.emilym.sinatra.ui.widgets
 
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.LayoutDirection
 import org.jetbrains.compose.resources.painterResource
 import sinatra.ui.generated.resources.Res
 import sinatra.ui.generated.resources.accessible
 import sinatra.ui.generated.resources.back
 import sinatra.ui.generated.resources.bike
+import sinatra.ui.generated.resources.bus
 import sinatra.ui.generated.resources.external_link
 import sinatra.ui.generated.resources.forward
 import sinatra.ui.generated.resources.info
-import sinatra.ui.generated.resources.warning
-import sinatra.ui.generated.resources.severe_warning
+import sinatra.ui.generated.resources.journey_start
 import sinatra.ui.generated.resources.map
+import sinatra.ui.generated.resources.marker_icon
 import sinatra.ui.generated.resources.my_location
+import sinatra.ui.generated.resources.navigate
 import sinatra.ui.generated.resources.no_results
 import sinatra.ui.generated.resources.no_routes
 import sinatra.ui.generated.resources.not_accessible
 import sinatra.ui.generated.resources.search
+import sinatra.ui.generated.resources.severe_warning
 import sinatra.ui.generated.resources.star
 import sinatra.ui.generated.resources.star_outline
-import sinatra.ui.generated.resources.marker_icon
-import sinatra.ui.generated.resources.bus
 import sinatra.ui.generated.resources.tram
-import sinatra.ui.generated.resources.navigate
 import sinatra.ui.generated.resources.walk
-import sinatra.ui.generated.resources.journey_start
+import sinatra.ui.generated.resources.warning
 
 @Composable
 fun AccessibleIcon(
@@ -244,7 +245,10 @@ fun BackIcon(
     tint: Color = LocalContentColor.current
 ) {
     Icon(
-        painterResource(Res.drawable.back),
+        when (LocalLayoutDirection.current) {
+            LayoutDirection.Ltr -> painterResource(Res.drawable.back)
+            LayoutDirection.Rtl -> painterResource(Res.drawable.forward)
+        },
         contentDescription = null,
         modifier = modifier,
         tint = tint
@@ -257,7 +261,10 @@ fun ForwardIcon(
     tint: Color = LocalContentColor.current
 ) {
     Icon(
-        painterResource(Res.drawable.forward),
+        when (LocalLayoutDirection.current) {
+            LayoutDirection.Ltr -> painterResource(Res.drawable.forward)
+            LayoutDirection.Rtl -> painterResource(Res.drawable.back)
+        },
         contentDescription = null,
         modifier = modifier,
         tint = tint
