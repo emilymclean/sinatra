@@ -1,6 +1,7 @@
 package cl.emilym.sinatra.domain.search
 
 import cl.emilym.sinatra.data.models.Stop
+import cl.emilym.sinatra.data.models.StopVisibility
 import cl.emilym.sinatra.data.repository.StopRepository
 import io.mockk.*
 import kotlinx.coroutines.runBlocking
@@ -38,7 +39,7 @@ class StopTypeSearcherTest {
     @Test
     fun `scoreMultiplier should return 0_75 for stop with parent station`() {
         // Arrange
-        val stop = Stop("123", "parent123", "Main Street", mockk(), mockk())
+        val stop = Stop("123", "parent123", "Main Street", null, mockk(), mockk(), StopVisibility(false, true, false, null))
 
         // Act
         val multiplier = stopTypeSearcher.scoreMultiplier(stop)
@@ -50,7 +51,7 @@ class StopTypeSearcherTest {
     @Test
     fun `scoreMultiplier should return 1_0 for stop without parent station`() {
         // Arrange
-        val stop = Stop("123", null, "Main Street", mockk(), mockk())
+        val stop = Stop("123", null, "Main Street", null, mockk(), mockk(), StopVisibility(false, true, false, null))
 
         // Act
         val multiplier = stopTypeSearcher.scoreMultiplier(stop)
@@ -62,7 +63,7 @@ class StopTypeSearcherTest {
     @Test
     fun `wrap should return SearchResult with StopResult`() {
         // Arrange
-        val stop = Stop("123", null, "Main Street", mockk(), mockk())
+        val stop = Stop("123", null, "Main Street", "null", mockk(), mockk(), StopVisibility(false, true, false, null))
 
         // Act
         val result = stopTypeSearcher.wrap(stop)

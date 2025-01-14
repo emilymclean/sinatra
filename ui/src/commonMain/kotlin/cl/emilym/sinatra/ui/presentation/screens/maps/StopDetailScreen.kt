@@ -37,14 +37,15 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import cl.emilym.compose.errorwidget.ErrorWidget
 import cl.emilym.compose.requeststate.RequestState
 import cl.emilym.compose.requeststate.RequestStateWidget
+import cl.emilym.compose.requeststate.child
 import cl.emilym.compose.requeststate.handle
 import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.FeatureFlags
 import cl.emilym.sinatra.data.models.Alert
 import cl.emilym.sinatra.data.models.IStopTimetableTime
 import cl.emilym.sinatra.data.models.ReferencedTime
-import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.data.models.StopId
+import cl.emilym.sinatra.data.models.StopWithChildren
 import cl.emilym.sinatra.data.repository.AlertRepository
 import cl.emilym.sinatra.data.repository.FavouriteRepository
 import cl.emilym.sinatra.data.repository.RecentVisitRepository
@@ -67,6 +68,8 @@ import cl.emilym.sinatra.ui.widgets.MapIcon
 import cl.emilym.sinatra.ui.widgets.NavigateIcon
 import cl.emilym.sinatra.ui.widgets.NoBusIcon
 import cl.emilym.sinatra.ui.widgets.SheetIosBackButton
+import cl.emilym.sinatra.ui.widgets.StopCard
+import cl.emilym.sinatra.ui.widgets.Subheading
 import cl.emilym.sinatra.ui.widgets.UpcomingRouteCard
 import cl.emilym.sinatra.ui.widgets.WheelchairAccessibleIcon
 import cl.emilym.sinatra.ui.widgets.createRequestStateFlowFlow
@@ -79,7 +82,6 @@ import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
-import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.annotation.Factory
 import sinatra.ui.generated.resources.Res
 import sinatra.ui.generated.resources.accessibility_not_wheelchair_accessible
@@ -88,6 +90,7 @@ import sinatra.ui.generated.resources.no_upcoming_vehicles
 import sinatra.ui.generated.resources.stop_detail_navigate
 import sinatra.ui.generated.resources.stop_not_found
 import sinatra.ui.generated.resources.upcoming_vehicles
+import sinatra.ui.generated.resources.stop_detail_child_stations
 
 @Factory
 class StopDetailViewModel(
@@ -102,7 +105,9 @@ class StopDetailViewModel(
     val alerts = _alerts.presentable()
 
     val favourited = MutableStateFlow(false)
-    val stop = MutableStateFlow<RequestState<Stop?>>(RequestState.Initial())
+    private val stopWithChildren = MutableStateFlow<RequestState<StopWithChildren?>>(RequestState.Initial())
+    val stop = stopWithChildren.child { it?.stop }
+    val children = stopWithChildren.child { it?.children }
 
     val _upcoming = createRequestStateFlowFlow<List<IStopTimetableTime>>()
     val upcoming = _upcoming.presentable()
@@ -122,8 +127,8 @@ class StopDetailViewModel(
 
     fun retryStop(stopId: StopId) {
         screenModelScope.launch {
-            stop.handle {
-                stopRepository.stop(stopId).item
+            stopWithChildren.handle {
+                stopRepository.stopWithChildren(stopId).item
             }
         }
     }
@@ -174,6 +179,7 @@ class StopDetailScreen(
         }
 
         val stop by viewModel.stop.collectAsState(RequestState.Initial())
+        val children by viewModel.children.collectAsState(RequestState.Initial())
         val upcoming by viewModel.upcoming.collectAsState(RequestState.Initial())
         val alerts by viewModel.alerts.collectAsState(RequestState.Initial())
         Box(
@@ -264,6 +270,21 @@ class StopDetailScreen(
                                     }
                                 }
                                 item { Box(Modifier.height(1.rdp)) }
+                                (children as? RequestState.Success)?.value?.let { children ->
+                                    if (stop.visibility.showChildren && children.isNotEmpty()) {
+                                        item {
+                                            Subheading(stringResource(Res.string.stop_detail_child_stations))
+                                        }
+                                        items(children) {
+                                            StopCard(
+                                                it,
+                                                onClick = { navigator.push(StopDetailScreen(it.id)) },
+                                                showStopIcon = true
+                                            )
+                                        }
+                                        item { Box(Modifier.height(1.rdp)) }
+                                    }
+                                }
                                 Upcoming(viewModel, upcoming, navigator)
                                 item { Box(Modifier.height(1.rdp)) }
                             }
@@ -307,16 +328,7 @@ class StopDetailScreen(
 
             is RequestState.Success -> {
                 item {
-                    Row(
-                        Modifier.padding(horizontal = 1.rdp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(1.rdp)
-                    ) {
-                        Text(
-                            stringResource(Res.string.upcoming_vehicles),
-                            style = MaterialTheme.typography.titleMedium
-                        )
-                    }
+                    Subheading(stringResource(Res.string.upcoming_vehicles))
                 }
                 when {
                     upcoming.value.isNotEmpty() -> items(upcoming.value) {

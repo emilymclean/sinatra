@@ -139,7 +139,7 @@ class MapSearchScreen: MapScreen, NativeMapScreen {
     override fun NativeMapScope.DrawMapNative() {
         val viewModel = koinScreenModel<MapSearchViewModel>()
         val stopsRS by viewModel.stops.collectAsState(RequestState.Initial())
-        val stops = (stopsRS as? RequestState.Success)?.value?.filter { it.parentStation == null } ?: return
+        val stops = (stopsRS as? RequestState.Success)?.value ?: return
 
         DrawMapSearchScreenMapNative(stops)
     }
@@ -148,7 +148,7 @@ class MapSearchScreen: MapScreen, NativeMapScreen {
     override fun mapItems(): List<MapItem> {
         val viewModel = koinScreenModel<MapSearchViewModel>()
         val stopsRS by viewModel.stops.collectAsState(RequestState.Initial())
-        val stops = (stopsRS as? RequestState.Success)?.value?.filter { it.parentStation == null } ?: return listOf()
+        val stops = (stopsRS as? RequestState.Success)?.value ?: return listOf()
 
         return mapSearchScreenMapItems(stops)
     }

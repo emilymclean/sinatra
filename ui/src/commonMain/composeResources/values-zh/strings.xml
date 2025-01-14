@@ -83,6 +83,8 @@
   <string name="trip_not_found">目前没有符合所请求路线的行程。</string>
       
   <string name="stops_title">站点</string>
+
+  <string name="stop_detail_child_stations">附加车站</string>
       
   <string name="current_stops_title">即将停靠的站点</string>
       

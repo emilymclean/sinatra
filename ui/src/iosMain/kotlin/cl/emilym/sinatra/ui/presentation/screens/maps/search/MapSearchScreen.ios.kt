@@ -26,7 +26,12 @@ actual fun mapSearchScreenMapItems(stops: List<Stop>): List<MarkerItem> {
         it.toMarkerItem(
             navigator,
             icon,
-            if (it.important) null else FloatRange(14f, Float.MAX_VALUE)
+            when {
+                it.visibility.visibleZoomedIn && it.visibility.visibleZoomedOut -> null
+                it.visibility.visibleZoomedIn -> FloatRange(zoomThreshold, Float.MAX_VALUE)
+                else -> FloatRange(0f, zoomThreshold)
+            },
+            it.visibility.visibleZoomedIn || it.visibility.visibleZoomedOut
         )
     } }
 
@@ -36,7 +41,8 @@ actual fun mapSearchScreenMapItems(stops: List<Stop>): List<MarkerItem> {
 private fun Stop.toMarkerItem(
     navigator: Navigator,
     icon: MarkerIcon,
-    zoomThreshold: FloatRange?
+    zoomThreshold: FloatRange?,
+    visible: Boolean
 ): MarkerItem {
     return MarkerItem(
         location,
@@ -46,6 +52,7 @@ private fun Stop.toMarkerItem(
         },
         id = "mapSearchScreen-stop-${id}",
         visibleZoomRange = zoomThreshold,
+        visible = visible,
         contentDescription = "Stop ${name}"
     )
 }

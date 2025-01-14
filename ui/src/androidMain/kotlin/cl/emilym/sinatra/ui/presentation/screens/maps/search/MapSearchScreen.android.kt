@@ -35,7 +35,7 @@ actual fun NativeMapScope.DrawMapSearchScreenMapNative(stops: List<Stop>) {
                 navigator.push(StopDetailScreen(stop.id))
                 true
             },
-            visible = visible || stop.important,
+            visible = (visible && stop.visibility.visibleZoomedIn) || (!visible && stop.visibility.visibleZoomedOut),
             contentDescription = "Stop ${stop.name}"
         )
     }

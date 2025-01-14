@@ -1,6 +1,7 @@
 package cl.emilym.sinatra.ui.maps
 
 import cl.emilym.sinatra.data.models.MapLocation
+import cl.emilym.sinatra.data.models.Zoom
 import cl.emilym.sinatra.lib.FloatRange
 import cl.emilym.sinatra.ui.toNative
 import kotlinx.cinterop.CValue
@@ -32,6 +33,7 @@ class MarkerAnnotation(
     location: MapLocation,
     icon: MarkerIcon?,
     visibleZoomRange: FloatRange?,
+    visible: Boolean,
     contentDescription: String?
 ): NSObject(), MKAnnotationProtocol {
 
@@ -42,6 +44,8 @@ class MarkerAnnotation(
     var icon: MarkerIcon? = icon
         private set
     var visibleZoomRange: FloatRange? = visibleZoomRange
+        private set
+    var visible: Boolean = visible
         private set
     var contentDescription: String? = contentDescription
         private set
@@ -59,7 +63,14 @@ class MarkerAnnotation(
         location = item.location
         icon = item.icon
         visibleZoomRange = item.visibleZoomRange
+        visible = item.visible
         contentDescription = item.contentDescription
+    }
+
+    fun isHidden(zoom: Zoom?): Boolean {
+        return !visible || visibleZoomRange?.let { visibleZoomRange ->
+            zoom?.let { zoom -> zoom !in visibleZoomRange }
+        } ?: false
     }
 
     companion object {
@@ -69,6 +80,7 @@ class MarkerAnnotation(
                 location = item.location,
                 icon = item.icon,
                 visibleZoomRange = item.visibleZoomRange,
+                visible = item.visible,
                 contentDescription = item.contentDescription
             )
         }
