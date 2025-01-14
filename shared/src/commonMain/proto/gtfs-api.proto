@@ -85,6 +85,12 @@ message Route {
   optional string designation = 7;
   required RouteType type = 4;
   optional string realTimeUrl = 8;
+  optional RouteVisibility routeVisibility = 9;
+}
+
+message RouteVisibility {
+  optional bool hidden = 1;
+  optional double searchWeight = 2;
 }
 
 message ColorPair {

@@ -13,6 +13,7 @@ import cl.emilym.sinatra.data.models.RouteServiceAccessibility
 import cl.emilym.sinatra.data.models.RouteTripInformation
 import cl.emilym.sinatra.data.models.RouteTripStop
 import cl.emilym.sinatra.data.models.RouteType
+import cl.emilym.sinatra.data.models.RouteVisibility
 import cl.emilym.sinatra.data.models.ServiceBikesAllowed
 import cl.emilym.sinatra.data.models.ServiceWheelchairAccessible
 import cl.emilym.sinatra.data.models.StopId
@@ -32,7 +33,9 @@ data class RouteEntity(
     val name: String,
     val realTimeUrl: String?,
     val type: String,
-    val designation: String?
+    val designation: String?,
+    val hidden: Boolean = RouteVisibility.HIDDEN_DEFAULT,
+    val searchWeight: Double? = RouteVisibility.SEARCH_WEIGHT_DEFAULT
 ) {
 
     fun toModel(): Route {
@@ -46,7 +49,11 @@ data class RouteEntity(
             name,
             realTimeUrl,
             RouteType.valueOf(type),
-            designation
+            designation,
+            RouteVisibility(
+                hidden,
+                searchWeight
+            )
         )
     }
 
@@ -61,7 +68,9 @@ data class RouteEntity(
                 m.name,
                 m.realTimeUrl,
                 m.type.name,
-                m.designation
+                m.designation,
+                m.routeVisibility.hidden,
+                m.routeVisibility.searchWeight
             )
         }
     }

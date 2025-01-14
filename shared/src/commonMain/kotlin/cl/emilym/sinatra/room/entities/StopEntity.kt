@@ -1,7 +1,9 @@
 package cl.emilym.sinatra.room.entities
 
+import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import androidx.room.Relation
 import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.data.models.Stop.Companion.importantStops
@@ -62,3 +64,12 @@ class StopEntity(
     }
 
 }
+
+data class StopEntityWithChildren(
+    @Embedded val stop: StopEntity,
+    @Relation(
+        parentColumn = "id",
+        entityColumn = "parentId"
+    )
+    val children: List<StopEntity>,
+)

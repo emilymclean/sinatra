@@ -686,6 +686,7 @@ public data class Route(
     val designation: String? = null,
     val type: cl.emilym.gtfs.RouteType,
     val realTimeUrl: String? = null,
+    val routeVisibility: cl.emilym.gtfs.RouteVisibility? = null,
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
 ) : pbandk.Message {
     override operator fun plus(other: pbandk.Message?): cl.emilym.gtfs.Route = protoMergeImpl(other)
@@ -698,7 +699,7 @@ public data class Route(
             fullName = "proto.Route",
             messageClass = cl.emilym.gtfs.Route::class,
             messageCompanion = this,
-            fields = buildList(8) {
+            fields = buildList(9) {
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
@@ -777,6 +778,59 @@ public data class Route(
                         type = pbandk.FieldDescriptor.Type.Primitive.String(hasPresence = true),
                         jsonName = "realTimeUrl",
                         value = cl.emilym.gtfs.Route::realTimeUrl
+                    )
+                )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "routeVisibility",
+                        number = 9,
+                        type = pbandk.FieldDescriptor.Type.Message(messageCompanion = cl.emilym.gtfs.RouteVisibility.Companion),
+                        jsonName = "routeVisibility",
+                        value = cl.emilym.gtfs.Route::routeVisibility
+                    )
+                )
+            }
+        )
+    }
+}
+
+@pbandk.Export
+public data class RouteVisibility(
+    val hidden: Boolean? = null,
+    val searchWeight: Double? = null,
+    override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
+) : pbandk.Message {
+    override operator fun plus(other: pbandk.Message?): cl.emilym.gtfs.RouteVisibility = protoMergeImpl(other)
+    override val descriptor: pbandk.MessageDescriptor<cl.emilym.gtfs.RouteVisibility> get() = Companion.descriptor
+    override val protoSize: Int by lazy { super.protoSize }
+    public companion object : pbandk.Message.Companion<cl.emilym.gtfs.RouteVisibility> {
+        public val defaultInstance: cl.emilym.gtfs.RouteVisibility by lazy { cl.emilym.gtfs.RouteVisibility() }
+        override fun decodeWith(u: pbandk.MessageDecoder): cl.emilym.gtfs.RouteVisibility = cl.emilym.gtfs.RouteVisibility.decodeWithImpl(u)
+
+        override val descriptor: pbandk.MessageDescriptor<cl.emilym.gtfs.RouteVisibility> = pbandk.MessageDescriptor(
+            fullName = "proto.RouteVisibility",
+            messageClass = cl.emilym.gtfs.RouteVisibility::class,
+            messageCompanion = this,
+            fields = buildList(2) {
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "hidden",
+                        number = 1,
+                        type = pbandk.FieldDescriptor.Type.Primitive.Bool(hasPresence = true),
+                        jsonName = "hidden",
+                        value = cl.emilym.gtfs.RouteVisibility::hidden
+                    )
+                )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "searchWeight",
+                        number = 2,
+                        type = pbandk.FieldDescriptor.Type.Primitive.Double(hasPresence = true),
+                        jsonName = "searchWeight",
+                        value = cl.emilym.gtfs.RouteVisibility::searchWeight
                     )
                 )
             }
@@ -1825,6 +1879,7 @@ private fun Route.protoMergeImpl(plus: pbandk.Message?): Route = (plus as? Route
         colors = colors?.plus(plus.colors) ?: plus.colors,
         designation = plus.designation ?: designation,
         realTimeUrl = plus.realTimeUrl ?: realTimeUrl,
+        routeVisibility = routeVisibility?.plus(plus.routeVisibility) ?: plus.routeVisibility,
         unknownFields = unknownFields + plus.unknownFields
     )
 } ?: this
@@ -1839,6 +1894,7 @@ private fun Route.Companion.decodeWithImpl(u: pbandk.MessageDecoder): Route {
     var designation: String? = null
     var type: cl.emilym.gtfs.RouteType? = null
     var realTimeUrl: String? = null
+    var routeVisibility: cl.emilym.gtfs.RouteVisibility? = null
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
@@ -1850,6 +1906,7 @@ private fun Route.Companion.decodeWithImpl(u: pbandk.MessageDecoder): Route {
             6 -> colors = _fieldValue as cl.emilym.gtfs.ColorPair
             7 -> designation = _fieldValue as String
             8 -> realTimeUrl = _fieldValue as String
+            9 -> routeVisibility = _fieldValue as cl.emilym.gtfs.RouteVisibility
         }
     }
 
@@ -1866,7 +1923,35 @@ private fun Route.Companion.decodeWithImpl(u: pbandk.MessageDecoder): Route {
         throw pbandk.InvalidProtocolBufferException.missingRequiredField("type")
     }
     return Route(id!!, code!!, displayCode, colors,
-        name!!, designation, type!!, realTimeUrl, unknownFields)
+        name!!, designation, type!!, realTimeUrl,
+        routeVisibility, unknownFields)
+}
+
+@pbandk.Export
+@pbandk.JsName("orDefaultForRouteVisibility")
+public fun RouteVisibility?.orDefault(): cl.emilym.gtfs.RouteVisibility = this ?: RouteVisibility.defaultInstance
+
+private fun RouteVisibility.protoMergeImpl(plus: pbandk.Message?): RouteVisibility = (plus as? RouteVisibility)?.let {
+    it.copy(
+        hidden = plus.hidden ?: hidden,
+        searchWeight = plus.searchWeight ?: searchWeight,
+        unknownFields = unknownFields + plus.unknownFields
+    )
+} ?: this
+
+@Suppress("UNCHECKED_CAST")
+private fun RouteVisibility.Companion.decodeWithImpl(u: pbandk.MessageDecoder): RouteVisibility {
+    var hidden: Boolean? = null
+    var searchWeight: Double? = null
+
+    val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
+        when (_fieldNumber) {
+            1 -> hidden = _fieldValue as Boolean
+            2 -> searchWeight = _fieldValue as Double
+        }
+    }
+
+    return RouteVisibility(hidden, searchWeight, unknownFields)
 }
 
 private fun ColorPair.protoMergeImpl(plus: pbandk.Message?): ColorPair = (plus as? ColorPair)?.let {
