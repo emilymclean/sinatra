@@ -19,13 +19,13 @@ fun PlaceCard(
     showPlaceIcon: Boolean = false,
 ) {
     ListCard(
-        {
-            if (showPlaceIcon) {
+        if (showPlaceIcon) {
+            {
                 RandleScaffold {
                     GenericMarkerIcon()
                 }
             }
-        },
+        } else null,
         Modifier
             .semantics {
                 contentDescription = "Place listing"
