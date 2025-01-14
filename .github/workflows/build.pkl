@@ -10,8 +10,8 @@ hidden instantVersionNumberOffset = 0
 hidden gradleVersionNameName = "version"
 hidden gradleVersionCodeName = "versionCode"
 
-local releaseFileName = "sinatra-android-${{ matrix.build.name }}-v${{ needs.version.outputs.version }}"
-local iosReleaseFileName = "sinatra-ios-iosApp-release-v${{ needs.version.outputs.version }}"
+local releaseFileName = "sinatra-${{ matrix.build.name }}-v${{ needs.version.outputs.version }}"
+local iosReleaseFileName = "sinatra-iosApp-release-v${{ needs.version.outputs.version }}"
 
 hidden releaseTrackPublishingConfiguration: List<AppReleaseDescriptor>(isDistinctBy((e) -> List(e.appModule, e.flavor))) = List()
 
