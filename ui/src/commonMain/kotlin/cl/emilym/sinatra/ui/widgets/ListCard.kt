@@ -36,7 +36,7 @@ fun RandleScaffold(
 
 @Composable
 fun ListCard(
-    icon: @Composable () -> Unit,
+    icon: (@Composable () -> Unit)?,
     modifier: Modifier = Modifier,
     onClick: (() -> Unit)? = null,
     content: @Composable () -> Unit,
@@ -62,8 +62,10 @@ fun ListCard(
             .then(modifier),
         horizontalArrangement = Arrangement.spacedBy(1.rdp)
     ) {
-        Box(Modifier.clearAndSetSemantics {  }) {
-            icon()
+        icon?.let {
+            Box(Modifier.clearAndSetSemantics {  }) {
+                icon()
+            }
         }
         Column(Modifier.weight(1f)) {
             content()

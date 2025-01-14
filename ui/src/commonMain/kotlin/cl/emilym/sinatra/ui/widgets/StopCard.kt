@@ -67,13 +67,13 @@ fun StopCard(
     showStopIcon: Boolean = false,
 ) {
     ListCard(
-        {
-            if (showStopIcon) {
+        if (showStopIcon) {
+            {
                 RandleScaffold {
                     BusIcon()
                 }
             }
-        },
+        } else null,
         Modifier
             .semantics {
                 contentDescription = "Stop listing"
