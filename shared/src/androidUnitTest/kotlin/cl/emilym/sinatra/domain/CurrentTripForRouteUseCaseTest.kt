@@ -7,6 +7,7 @@ import cl.emilym.sinatra.data.models.RouteServiceAccessibility
 import cl.emilym.sinatra.data.models.RouteTripInformation
 import cl.emilym.sinatra.data.models.RouteTripTimetable
 import cl.emilym.sinatra.data.models.RouteType
+import cl.emilym.sinatra.data.models.RouteVisibility
 import cl.emilym.sinatra.data.models.Service
 import cl.emilym.sinatra.data.models.ServiceBikesAllowed
 import cl.emilym.sinatra.data.models.ServiceWheelchairAccessible
@@ -59,7 +60,11 @@ class CurrentTripForRouteUseCaseTest {
         "Route 1",
         null,
         RouteType.LIGHT_RAIL,
-        null
+        null,
+        RouteVisibility(
+            false,
+            null
+        )
     )
     val tripInformation = RouteTripInformation(
         Time.parse("PT12H"),

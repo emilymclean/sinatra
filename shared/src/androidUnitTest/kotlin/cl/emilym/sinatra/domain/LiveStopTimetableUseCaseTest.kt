@@ -2,6 +2,7 @@ package cl.emilym.sinatra.domain
 
 import cl.emilym.sinatra.data.models.Route
 import cl.emilym.sinatra.data.models.RouteType
+import cl.emilym.sinatra.data.models.RouteVisibility
 import cl.emilym.sinatra.data.models.StationTime
 import cl.emilym.sinatra.data.models.StopTimetableTime
 import cl.emilym.sinatra.data.models.Time
@@ -64,7 +65,11 @@ class LiveStopTimetableUseCaseTest {
                     "R1",
                     null,
                     RouteType.BUS,
-                    null
+                    null,
+                    RouteVisibility(
+                        false,
+                        null
+                    )
                 )
             )
         )
@@ -100,7 +105,11 @@ class LiveStopTimetableUseCaseTest {
                     "R1",
                     realTimeUrl,
                     RouteType.BUS,
-                    null
+                    null,
+                    RouteVisibility(
+                        false,
+                        null
+                    )
                 )
             )
         )
@@ -153,7 +162,11 @@ class LiveStopTimetableUseCaseTest {
                     "R1",
                     realTimeUrl,
                     RouteType.BUS,
-                    null
+                    null,
+                    RouteVisibility(
+                        false,
+                        null
+                    )
                 )
             )
         )
@@ -214,7 +227,11 @@ class LiveStopTimetableUseCaseTest {
                     "R1",
                     realTimeUrl,
                     RouteType.BUS,
-                    null
+                    null,
+                    RouteVisibility(
+                        false,
+                        null
+                    )
                 )
             )
         )
@@ -276,7 +293,11 @@ class LiveStopTimetableUseCaseTest {
                     "R1",
                     realTimeUrl,
                     RouteType.BUS,
-                    null
+                    null,
+                    RouteVisibility(
+                        false,
+                        null
+                    )
                 )
             )
         )
