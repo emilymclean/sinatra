@@ -11,23 +11,31 @@ data class Stop(
     val id: StopId,
     val parentStation: StopId?,
     val name: String,
+    val _simpleName: String?,
     val location: MapLocation,
     val accessibility: StopAccessibility,
+    val visibility: StopVisibility
 ): Serializable {
 
     companion object {
+        val importantStops =
+            listOf("GGN", "MCK", "MPN", "NLR", "WSN", "SFD", "EPC", "PLP", "SWN", "DKN", "MCR", "IPA", "ELA", "ALG")
+
         fun fromPB(pb: cl.emilym.gtfs.Stop): Stop {
             return Stop(
                 pb.id,
                 pb.parentStation,
                 pb.name,
+                pb.simpleName,
                 MapLocation.fromPB(pb.location),
-                StopAccessibility.fromPB(pb.accessibility)
+                StopAccessibility.fromPB(pb.accessibility),
+                StopVisibility.fromPB(pb.id, pb.visibility)
             )
         }
     }
 
     val simpleName: String get() {
+        _simpleName?.let { return it }
         for (t in SIMPLE_TERMINATORS) {
             if (!name.contains(t)) continue
             return name.substring(0, name.indexOf(t))
@@ -35,8 +43,29 @@ data class Stop(
         return name
     }
 
-    val important: Boolean by lazy {
-        id in listOf("GGN", "MCK", "MPN", "NLR", "WSN", "SFD", "EPC", "PLP", "SWN", "DKN", "MCR", "IPA", "ELA", "ALG")
+}
+
+data class StopVisibility(
+    val visibleZoomedOut: Boolean,
+    val visibleZoomedIn: Boolean,
+    val showChildren: Boolean,
+    val searchWeight: Double?
+) {
+
+    companion object {
+        const val VISIBLE_ZOOMED_OUT_DEFAULT = false
+        const val VISIBLE_ZOOMED_IN_DEFAULT = true
+        const val SHOW_CHILDREN_DEFAULT = true
+        val SEARCH_WEIGHT_DEFAULT: Double? = null
+
+        fun fromPB(stopId: StopId, pb: cl.emilym.gtfs.StopVisibility?): StopVisibility {
+            return StopVisibility(
+                pb?.visibleZoomedOut ?: (stopId in Stop.importantStops),
+                pb?.visibleZoomedIn ?: VISIBLE_ZOOMED_IN_DEFAULT,
+                pb?.showChildren ?: SHOW_CHILDREN_DEFAULT,
+                pb?.searchWeight ?: SEARCH_WEIGHT_DEFAULT
+            )
+        }
     }
 
 }

@@ -52,12 +52,21 @@ message Stop {
   required string id = 1;
   optional string parentStation = 5;
   required string name = 2;
+  optional string simpleName = 7;
   required Location location = 3;
   required StopAccessibility accessibility = 4;
+  optional StopVisibility visibility = 6;
 }
 
 message StopAccessibility {
   required WheelchairStopAccessibility stopWheelchairAccessible = 1;
+}
+
+message StopVisibility {
+  optional bool visibleZoomedOut = 1;
+  optional bool visibleZoomedIn = 2;
+  optional bool showChildren = 3;
+  optional double searchWeight = 4;
 }
 
 enum WheelchairStopAccessibility {

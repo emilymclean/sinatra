@@ -4,7 +4,9 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.data.models.Stop
+import cl.emilym.sinatra.data.models.Stop.Companion.importantStops
 import cl.emilym.sinatra.data.models.StopAccessibility
+import cl.emilym.sinatra.data.models.StopVisibility
 import cl.emilym.sinatra.data.models.StopWheelchairAccessibility
 
 @Entity
@@ -12,9 +14,14 @@ class StopEntity(
     @PrimaryKey val id: String,
     val parentStation: String?,
     val name: String,
+    val simpleName: String? = null,
     val lat: Double,
     val lng: Double,
-    val wheelchairAccessible: String
+    val wheelchairAccessible: String,
+    val visibleZoomedOut: Boolean? = null,
+    val visibleZoomedIn: Boolean = StopVisibility.VISIBLE_ZOOMED_IN_DEFAULT,
+    val showChildren: Boolean = StopVisibility.SHOW_CHILDREN_DEFAULT,
+    val searchWeight: Double? = StopVisibility.SEARCH_WEIGHT_DEFAULT
 ) {
 
     fun toModel(): Stop {
@@ -22,9 +29,16 @@ class StopEntity(
             id,
             parentStation,
             name,
+            simpleName,
             MapLocation(lat, lng),
             StopAccessibility(
                 StopWheelchairAccessibility.valueOf(wheelchairAccessible)
+            ),
+            StopVisibility(
+                visibleZoomedOut ?: (id in importantStops),
+                visibleZoomedIn,
+                showChildren,
+                searchWeight,
             )
         )
     }
@@ -35,9 +49,14 @@ class StopEntity(
                 stop.id,
                 stop.parentStation,
                 stop.name,
+                stop._simpleName,
                 stop.location.lat,
                 stop.location.lng,
-                stop.accessibility.wheelchair.name
+                stop.accessibility.wheelchair.name,
+                stop.visibility.visibleZoomedOut,
+                stop.visibility.visibleZoomedIn,
+                stop.visibility.showChildren,
+                stop.visibility.searchWeight
             )
         }
     }

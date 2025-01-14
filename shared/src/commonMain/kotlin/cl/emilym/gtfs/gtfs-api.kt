@@ -488,8 +488,10 @@ public data class Stop(
     val id: String,
     val parentStation: String? = null,
     val name: String,
+    val simpleName: String? = null,
     val location: cl.emilym.gtfs.Location,
     val accessibility: cl.emilym.gtfs.StopAccessibility,
+    val visibility: cl.emilym.gtfs.StopVisibility? = null,
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
 ) : pbandk.Message {
     override operator fun plus(other: pbandk.Message?): cl.emilym.gtfs.Stop = protoMergeImpl(other)
@@ -502,7 +504,7 @@ public data class Stop(
             fullName = "proto.Stop",
             messageClass = cl.emilym.gtfs.Stop::class,
             messageCompanion = this,
-            fields = buildList(5) {
+            fields = buildList(7) {
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
@@ -553,6 +555,26 @@ public data class Stop(
                         value = cl.emilym.gtfs.Stop::parentStation
                     )
                 )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "visibility",
+                        number = 6,
+                        type = pbandk.FieldDescriptor.Type.Message(messageCompanion = cl.emilym.gtfs.StopVisibility.Companion),
+                        jsonName = "visibility",
+                        value = cl.emilym.gtfs.Stop::visibility
+                    )
+                )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "simpleName",
+                        number = 7,
+                        type = pbandk.FieldDescriptor.Type.Primitive.String(hasPresence = true),
+                        jsonName = "simpleName",
+                        value = cl.emilym.gtfs.Stop::simpleName
+                    )
+                )
             }
         )
     }
@@ -582,6 +604,71 @@ public data class StopAccessibility(
                         type = pbandk.FieldDescriptor.Type.Enum(enumCompanion = cl.emilym.gtfs.WheelchairStopAccessibility.Companion, hasPresence = true),
                         jsonName = "stopWheelchairAccessible",
                         value = cl.emilym.gtfs.StopAccessibility::stopWheelchairAccessible
+                    )
+                )
+            }
+        )
+    }
+}
+
+@pbandk.Export
+public data class StopVisibility(
+    val visibleZoomedOut: Boolean? = null,
+    val visibleZoomedIn: Boolean? = null,
+    val showChildren: Boolean? = null,
+    val searchWeight: Double? = null,
+    override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
+) : pbandk.Message {
+    override operator fun plus(other: pbandk.Message?): cl.emilym.gtfs.StopVisibility = protoMergeImpl(other)
+    override val descriptor: pbandk.MessageDescriptor<cl.emilym.gtfs.StopVisibility> get() = Companion.descriptor
+    override val protoSize: Int by lazy { super.protoSize }
+    public companion object : pbandk.Message.Companion<cl.emilym.gtfs.StopVisibility> {
+        public val defaultInstance: cl.emilym.gtfs.StopVisibility by lazy { cl.emilym.gtfs.StopVisibility() }
+        override fun decodeWith(u: pbandk.MessageDecoder): cl.emilym.gtfs.StopVisibility = cl.emilym.gtfs.StopVisibility.decodeWithImpl(u)
+
+        override val descriptor: pbandk.MessageDescriptor<cl.emilym.gtfs.StopVisibility> = pbandk.MessageDescriptor(
+            fullName = "proto.StopVisibility",
+            messageClass = cl.emilym.gtfs.StopVisibility::class,
+            messageCompanion = this,
+            fields = buildList(4) {
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "visibleZoomedOut",
+                        number = 1,
+                        type = pbandk.FieldDescriptor.Type.Primitive.Bool(hasPresence = true),
+                        jsonName = "visibleZoomedOut",
+                        value = cl.emilym.gtfs.StopVisibility::visibleZoomedOut
+                    )
+                )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "visibleZoomedIn",
+                        number = 2,
+                        type = pbandk.FieldDescriptor.Type.Primitive.Bool(hasPresence = true),
+                        jsonName = "visibleZoomedIn",
+                        value = cl.emilym.gtfs.StopVisibility::visibleZoomedIn
+                    )
+                )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "showChildren",
+                        number = 3,
+                        type = pbandk.FieldDescriptor.Type.Primitive.Bool(hasPresence = true),
+                        jsonName = "showChildren",
+                        value = cl.emilym.gtfs.StopVisibility::showChildren
+                    )
+                )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "searchWeight",
+                        number = 4,
+                        type = pbandk.FieldDescriptor.Type.Primitive.Double(hasPresence = true),
+                        jsonName = "searchWeight",
+                        value = cl.emilym.gtfs.StopVisibility::searchWeight
                     )
                 )
             }
@@ -1631,8 +1718,10 @@ private fun RouteServicesEndpoint.Companion.decodeWithImpl(u: pbandk.MessageDeco
 private fun Stop.protoMergeImpl(plus: pbandk.Message?): Stop = (plus as? Stop)?.let {
     it.copy(
         parentStation = plus.parentStation ?: parentStation,
+        simpleName = plus.simpleName ?: simpleName,
         location = location.plus(plus.location),
         accessibility = accessibility.plus(plus.accessibility),
+        visibility = visibility?.plus(plus.visibility) ?: plus.visibility,
         unknownFields = unknownFields + plus.unknownFields
     )
 } ?: this
@@ -1642,8 +1731,10 @@ private fun Stop.Companion.decodeWithImpl(u: pbandk.MessageDecoder): Stop {
     var id: String? = null
     var parentStation: String? = null
     var name: String? = null
+    var simpleName: String? = null
     var location: cl.emilym.gtfs.Location? = null
     var accessibility: cl.emilym.gtfs.StopAccessibility? = null
+    var visibility: cl.emilym.gtfs.StopVisibility? = null
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
@@ -1652,6 +1743,8 @@ private fun Stop.Companion.decodeWithImpl(u: pbandk.MessageDecoder): Stop {
             3 -> location = _fieldValue as cl.emilym.gtfs.Location
             4 -> accessibility = _fieldValue as cl.emilym.gtfs.StopAccessibility
             5 -> parentStation = _fieldValue as String
+            6 -> visibility = _fieldValue as cl.emilym.gtfs.StopVisibility
+            7 -> simpleName = _fieldValue as String
         }
     }
 
@@ -1667,8 +1760,8 @@ private fun Stop.Companion.decodeWithImpl(u: pbandk.MessageDecoder): Stop {
     if (accessibility == null) {
         throw pbandk.InvalidProtocolBufferException.missingRequiredField("accessibility")
     }
-    return Stop(id!!, parentStation, name!!, location!!,
-        accessibility!!, unknownFields)
+    return Stop(id!!, parentStation, name!!, simpleName,
+        location!!, accessibility!!, visibility, unknownFields)
 }
 
 private fun StopAccessibility.protoMergeImpl(plus: pbandk.Message?): StopAccessibility = (plus as? StopAccessibility)?.let {
@@ -1691,6 +1784,39 @@ private fun StopAccessibility.Companion.decodeWithImpl(u: pbandk.MessageDecoder)
         throw pbandk.InvalidProtocolBufferException.missingRequiredField("stopWheelchairAccessible")
     }
     return StopAccessibility(stopWheelchairAccessible!!, unknownFields)
+}
+
+@pbandk.Export
+@pbandk.JsName("orDefaultForStopVisibility")
+public fun StopVisibility?.orDefault(): cl.emilym.gtfs.StopVisibility = this ?: StopVisibility.defaultInstance
+
+private fun StopVisibility.protoMergeImpl(plus: pbandk.Message?): StopVisibility = (plus as? StopVisibility)?.let {
+    it.copy(
+        visibleZoomedOut = plus.visibleZoomedOut ?: visibleZoomedOut,
+        visibleZoomedIn = plus.visibleZoomedIn ?: visibleZoomedIn,
+        showChildren = plus.showChildren ?: showChildren,
+        searchWeight = plus.searchWeight ?: searchWeight,
+        unknownFields = unknownFields + plus.unknownFields
+    )
+} ?: this
+
+@Suppress("UNCHECKED_CAST")
+private fun StopVisibility.Companion.decodeWithImpl(u: pbandk.MessageDecoder): StopVisibility {
+    var visibleZoomedOut: Boolean? = null
+    var visibleZoomedIn: Boolean? = null
+    var showChildren: Boolean? = null
+    var searchWeight: Double? = null
+
+    val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
+        when (_fieldNumber) {
+            1 -> visibleZoomedOut = _fieldValue as Boolean
+            2 -> visibleZoomedIn = _fieldValue as Boolean
+            3 -> showChildren = _fieldValue as Boolean
+            4 -> searchWeight = _fieldValue as Double
+        }
+    }
+
+    return StopVisibility(visibleZoomedOut, visibleZoomedIn, showChildren, searchWeight, unknownFields)
 }
 
 private fun Route.protoMergeImpl(plus: pbandk.Message?): Route = (plus as? Route)?.let {
