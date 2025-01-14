@@ -54,9 +54,7 @@ class SinatraMapKitDelegate(
                 (mapView.dequeueReusableAnnotationViewWithIdentifier(icon.reuseIdentifier)
                     ?: icon.annotationView(viewForAnnotation, viewForAnnotation.contentDescription)
                 ).apply {
-                    viewForAnnotation.visibleZoomRange?.let {
-                        hidden = zoom !in it
-                    }
+                    hidden = viewForAnnotation.isHidden(zoom)
                 }
             }
             else -> MKAnnotationView()

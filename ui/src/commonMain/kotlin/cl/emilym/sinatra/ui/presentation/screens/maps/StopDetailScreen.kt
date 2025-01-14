@@ -44,7 +44,6 @@ import cl.emilym.sinatra.FeatureFlags
 import cl.emilym.sinatra.data.models.Alert
 import cl.emilym.sinatra.data.models.IStopTimetableTime
 import cl.emilym.sinatra.data.models.ReferencedTime
-import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.data.models.StopId
 import cl.emilym.sinatra.data.models.StopWithChildren
 import cl.emilym.sinatra.data.repository.AlertRepository
@@ -83,7 +82,6 @@ import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
-import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.annotation.Factory
 import sinatra.ui.generated.resources.Res
 import sinatra.ui.generated.resources.accessibility_not_wheelchair_accessible
@@ -107,9 +105,9 @@ class StopDetailViewModel(
     val alerts = _alerts.presentable()
 
     val favourited = MutableStateFlow(false)
-    val _stopWithChildren = MutableStateFlow<RequestState<StopWithChildren?>>(RequestState.Initial())
-    val stop = _stopWithChildren.child { it?.stop }
-    val children = _stopWithChildren.child { it?.children }
+    private val stopWithChildren = MutableStateFlow<RequestState<StopWithChildren?>>(RequestState.Initial())
+    val stop = stopWithChildren.child { it?.stop }
+    val children = stopWithChildren.child { it?.children }
 
     val _upcoming = createRequestStateFlowFlow<List<IStopTimetableTime>>()
     val upcoming = _upcoming.presentable()
@@ -129,7 +127,7 @@ class StopDetailViewModel(
 
     fun retryStop(stopId: StopId) {
         screenModelScope.launch {
-            _stopWithChildren.handle {
+            stopWithChildren.handle {
                 stopRepository.stopWithChildren(stopId).item
             }
         }

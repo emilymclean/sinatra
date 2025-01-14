@@ -136,8 +136,7 @@ class MapKitState(
         for (annotation in map.annotations) {
             when (annotation) {
                 is MarkerAnnotation -> {
-                    val range = annotation.visibleZoomRange ?: continue
-                    map.viewForAnnotation(annotation)?.hidden = zoom?.let { zoom !in range } ?: true
+                    map.viewForAnnotation(annotation)?.hidden = annotation.isHidden(zoom)
                 }
             }
         }
