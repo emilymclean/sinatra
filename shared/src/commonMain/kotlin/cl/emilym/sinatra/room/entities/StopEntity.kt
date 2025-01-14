@@ -23,9 +23,9 @@ class StopEntity(
     val wheelchairAccessible: String,
     @ColumnInfo(defaultValue = "NULL")
     val visibleZoomedOut: Boolean? = null,
-    @ColumnInfo(defaultValue = "1")
-    val visibleZoomedIn: Boolean = StopVisibility.VISIBLE_ZOOMED_IN_DEFAULT,
-    @ColumnInfo(defaultValue = "1")
+    @ColumnInfo(defaultValue = "NULL")
+    val visibleZoomedIn: Boolean? = null,
+    @ColumnInfo(defaultValue = "0")
     val showChildren: Boolean = StopVisibility.SHOW_CHILDREN_DEFAULT,
     @ColumnInfo(defaultValue = "NULL")
     val searchWeight: Double? = StopVisibility.SEARCH_WEIGHT_DEFAULT
@@ -43,7 +43,7 @@ class StopEntity(
             ),
             StopVisibility(
                 visibleZoomedOut ?: (id in importantStops),
-                visibleZoomedIn,
+                visibleZoomedIn ?: ((id in importantStops) || parentStation == null),
                 showChildren,
                 searchWeight,
             )

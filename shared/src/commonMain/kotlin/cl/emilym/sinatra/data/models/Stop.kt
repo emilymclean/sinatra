@@ -18,6 +18,7 @@ data class Stop(
 ): Serializable {
 
     companion object {
+        @Deprecated("Replaced by visibility.visibleZoomedOut & visibility.visibleZoomedIn")
         val importantStops =
             listOf("GGN", "MCK", "MPN", "NLR", "WSN", "SFD", "EPC", "PLP", "SWN", "DKN", "MCR", "IPA", "ELA", "ALG")
 
@@ -29,7 +30,7 @@ data class Stop(
                 pb.simpleName,
                 MapLocation.fromPB(pb.location),
                 StopAccessibility.fromPB(pb.accessibility),
-                StopVisibility.fromPB(pb.id, pb.visibility)
+                StopVisibility.fromPB(pb, pb.visibility)
             )
         }
     }
@@ -53,14 +54,13 @@ data class StopVisibility(
 ) {
 
     companion object {
-        const val VISIBLE_ZOOMED_IN_DEFAULT = true
         const val SHOW_CHILDREN_DEFAULT = false
         val SEARCH_WEIGHT_DEFAULT: Double? = null
 
-        fun fromPB(stopId: StopId, pb: cl.emilym.gtfs.StopVisibility?): StopVisibility {
+        fun fromPB(stopPb: cl.emilym.gtfs.Stop, pb: cl.emilym.gtfs.StopVisibility?): StopVisibility {
             return StopVisibility(
-                pb?.visibleZoomedOut ?: (stopId in Stop.importantStops),
-                pb?.visibleZoomedIn ?: VISIBLE_ZOOMED_IN_DEFAULT,
+                pb?.visibleZoomedOut ?: (stopPb.id in Stop.importantStops),
+                pb?.visibleZoomedIn ?: ((stopPb.id in Stop.importantStops) || stopPb.parentStation == null),
                 pb?.showChildren ?: SHOW_CHILDREN_DEFAULT,
                 pb?.searchWeight ?: SEARCH_WEIGHT_DEFAULT
             )

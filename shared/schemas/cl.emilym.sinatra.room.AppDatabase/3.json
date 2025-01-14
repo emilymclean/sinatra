@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 3,
-    "identityHash": "21e050ed23c28b4bea4edae68f8ad612",
+    "identityHash": "477b27d5ddd894db61e4d12c36fe6bcc",
     "entities": [
       {
         "tableName": "ShaEntity",
@@ -48,7 +48,7 @@
       },
       {
         "tableName": "StopEntity",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `parentStation` TEXT, `name` TEXT NOT NULL, `simpleName` TEXT, `lat` REAL NOT NULL, `lng` REAL NOT NULL, `wheelchairAccessible` TEXT NOT NULL, `visibleZoomedOut` INTEGER DEFAULT NULL, `visibleZoomedIn` INTEGER NOT NULL DEFAULT 1, `showChildren` INTEGER NOT NULL DEFAULT 0, `searchWeight` REAL DEFAULT NULL, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `parentStation` TEXT, `name` TEXT NOT NULL, `simpleName` TEXT, `lat` REAL NOT NULL, `lng` REAL NOT NULL, `wheelchairAccessible` TEXT NOT NULL, `visibleZoomedOut` INTEGER DEFAULT NULL, `visibleZoomedIn` INTEGER DEFAULT NULL, `showChildren` INTEGER NOT NULL DEFAULT 0, `searchWeight` REAL DEFAULT NULL, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -100,8 +100,7 @@
             "fieldPath": "visibleZoomedIn",
             "columnName": "visibleZoomedIn",
             "affinity": "INTEGER",
-            "notNull": true,
-            "defaultValue": "1"
+            "defaultValue": "NULL"
           },
           {
             "fieldPath": "showChildren",
@@ -659,7 +658,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '21e050ed23c28b4bea4edae68f8ad612')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '477b27d5ddd894db61e4d12c36fe6bcc')"
     ]
   }
 }
