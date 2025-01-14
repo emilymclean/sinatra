@@ -105,14 +105,14 @@ jobs:
         buildToolsVersion: 35.0.0
     - name: Rename apk
       if: ${{ matrix.build.release }}
-      run: mv ${{ steps.sign.outputs.signedFile }} ./${{ matrix.build.name }}.apk
+      run: mv ${{ steps.sign.outputs.signedFile }} ./sinatra-android-${{ matrix.build.name }}-${{ matrix.build.variant }}-v${{ needs.version.outputs.version }}.apk
     - name: Rename apk
       if: ${{ !matrix.build.release }}
-      run: mv ${{ matrix.build.path }}/${{ matrix.build.fileName }}.apk ./${{ matrix.build.name }}.apk
+      run: mv ${{ matrix.build.path }}/${{ matrix.build.fileName }}.apk ./sinatra-android-${{ matrix.build.name }}-${{ matrix.build.variant }}-v${{ needs.version.outputs.version }}.apk
     - uses: actions/upload-artifact@v4
       with:
         name: ${{ matrix.build.name }}-apk
-        path: ./${{ matrix.build.name }}.apk
+        path: ./sinatra-android-${{ matrix.build.name }}-${{ matrix.build.variant }}-v${{ needs.version.outputs.version }}.apk
     - if: matrix.build.hasMappingFile
       uses: actions/upload-artifact@v4
       with:
@@ -163,7 +163,7 @@ jobs:
       uses: shogo82148/actions-upload-release-asset@v1
       with:
         upload_url: ${{ needs.release.outputs.upload_url }}
-        asset_path: ./${{ matrix.build.name }}.apk
+        asset_path: ./sinatra-android-${{ matrix.build.name }}-${{ matrix.build.variant }}-v${{ needs.version.outputs.version }}.apk
         asset_name: sinatra-android-${{ matrix.build.variant }}-v${{ needs.version.outputs.version }}.apk
         asset_content_type: application/zip
     - name: Upload Artifact to Release
@@ -228,14 +228,14 @@ jobs:
         buildToolsVersion: 35.0.0
     - name: Rename aab
       if: ${{ matrix.build.release }}
-      run: mv ${{ steps.sign.outputs.signedFile }} ./${{ matrix.build.name }}.aab
+      run: mv ${{ steps.sign.outputs.signedFile }} ./sinatra-android-${{ matrix.build.name }}-${{ matrix.build.variant }}-v${{ needs.version.outputs.version }}.aab
     - name: Rename aab
       if: ${{ !matrix.build.release }}
-      run: mv ${{ matrix.build.path }}/${{ matrix.build.fileName }}.aab ./${{ matrix.build.name }}.aab
+      run: mv ${{ matrix.build.path }}/${{ matrix.build.fileName }}.aab ./sinatra-android-${{ matrix.build.name }}-${{ matrix.build.variant }}-v${{ needs.version.outputs.version }}.aab
     - uses: actions/upload-artifact@v4
       with:
         name: ${{ matrix.build.name }}-aab
-        path: ./${{ matrix.build.name }}.aab
+        path: ./sinatra-android-${{ matrix.build.name }}-${{ matrix.build.variant }}-v${{ needs.version.outputs.version }}.aab
     - if: matrix.build.hasMappingFile
       uses: actions/upload-artifact@v4
       with:
@@ -314,8 +314,8 @@ jobs:
         code-signing-identity: ${{ secrets.CODE_SIGNING_IDENTITY }}
         team-id: ${{ secrets.TEAM_ID }}
     - name: Rename ipa
-      run: mv output.ipa ./iosApp.ipa
+      run: mv output.ipa ./sinatra-ios-iosApp-release-v${{ needs.version.outputs.version }}.ipa
     - uses: actions/upload-artifact@v4
       with:
         name: iosApp-release-ipa
-        path: ./iosApp.ipa
+        path: ./sinatra-ios-iosApp-release-v${{ needs.version.outputs.version }}.ipa
