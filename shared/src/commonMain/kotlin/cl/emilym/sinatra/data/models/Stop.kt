@@ -108,6 +108,11 @@ enum class StopWheelchairAccessibility(
     }
 }
 
+data class StopWithChildren(
+    val stop: Stop,
+    val children: List<Stop>
+)
+
 data class StopTimetable(
     override val times: List<StopTimetableTime>
 ) : IStopTimetable {

@@ -25,7 +25,7 @@ class StopEntity(
     val visibleZoomedOut: Boolean? = null,
     @ColumnInfo(defaultValue = "1")
     val visibleZoomedIn: Boolean = StopVisibility.VISIBLE_ZOOMED_IN_DEFAULT,
-    @ColumnInfo(defaultValue = "0")
+    @ColumnInfo(defaultValue = "1")
     val showChildren: Boolean = StopVisibility.SHOW_CHILDREN_DEFAULT,
     @ColumnInfo(defaultValue = "NULL")
     val searchWeight: Double? = StopVisibility.SEARCH_WEIGHT_DEFAULT
@@ -74,7 +74,7 @@ data class StopEntityWithChildren(
     @Embedded val stop: StopEntity,
     @Relation(
         parentColumn = "id",
-        entityColumn = "parentId"
+        entityColumn = "parentStation"
     )
     val children: List<StopEntity>,
 )

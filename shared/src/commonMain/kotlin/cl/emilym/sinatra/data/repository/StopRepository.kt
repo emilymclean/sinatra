@@ -7,6 +7,7 @@ import cl.emilym.sinatra.data.models.ResourceKey
 import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.data.models.StopId
 import cl.emilym.sinatra.data.models.StopTimetable
+import cl.emilym.sinatra.data.models.StopWithChildren
 import cl.emilym.sinatra.data.models.flatMap
 import cl.emilym.sinatra.data.models.map
 import cl.emilym.sinatra.data.persistence.StopPersistence
@@ -86,14 +87,25 @@ class StopRepository(
     private val stopsCleanupWorker: StopsCleanupWorker,
     private val stopTimetableCleanupWorker: StopTimetableCleanupWorker,
     private val stopPersistence: StopPersistence,
-    private val transportMetadataRepository: TransportMetadataRepository
 ) {
 
     suspend fun stops() = stopsCacheWorker.get()
+
     suspend fun stop(stopId: StopId): Cachable<Stop?> {
         val all = stopsCacheWorker.get()
         return all.map { stopPersistence.get(stopId) }
     }
+
+    suspend fun children(parentId: StopId): Cachable<List<Stop>> {
+        val all = stopsCacheWorker.get()
+        return all.map { stopPersistence.children(parentId) }
+    }
+
+    suspend fun stopWithChildren(stopId: StopId): Cachable<StopWithChildren?> {
+        val all = stopsCacheWorker.get()
+        return all.map { stopPersistence.getWithChildren(stopId) }
+    }
+
     suspend fun timetable(
         stopId: StopId,
         startOfDay: Instant? = null
