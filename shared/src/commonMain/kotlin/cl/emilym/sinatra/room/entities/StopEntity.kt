@@ -1,5 +1,6 @@
 package cl.emilym.sinatra.room.entities
 
+import androidx.room.ColumnInfo
 import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.PrimaryKey
@@ -20,9 +21,13 @@ class StopEntity(
     val lat: Double,
     val lng: Double,
     val wheelchairAccessible: String,
+    @ColumnInfo(defaultValue = "NULL")
     val visibleZoomedOut: Boolean? = null,
+    @ColumnInfo(defaultValue = "1")
     val visibleZoomedIn: Boolean = StopVisibility.VISIBLE_ZOOMED_IN_DEFAULT,
+    @ColumnInfo(defaultValue = "0")
     val showChildren: Boolean = StopVisibility.SHOW_CHILDREN_DEFAULT,
+    @ColumnInfo(defaultValue = "NULL")
     val searchWeight: Double? = StopVisibility.SEARCH_WEIGHT_DEFAULT
 ) {
 

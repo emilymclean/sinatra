@@ -1,5 +1,6 @@
 package cl.emilym.sinatra.room.entities
 
+import androidx.room.ColumnInfo
 import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.ForeignKey
@@ -17,6 +18,7 @@ import cl.emilym.sinatra.data.models.RouteVisibility
 import cl.emilym.sinatra.data.models.ServiceBikesAllowed
 import cl.emilym.sinatra.data.models.ServiceWheelchairAccessible
 import cl.emilym.sinatra.data.models.StopId
+import cl.emilym.sinatra.data.models.StopVisibility
 import cl.emilym.sinatra.room.referenced
 import cl.emilym.sinatra.room.time
 import cl.emilym.sinatra.room.toLong
@@ -34,7 +36,9 @@ data class RouteEntity(
     val realTimeUrl: String?,
     val type: String,
     val designation: String?,
+    @ColumnInfo(defaultValue = "0")
     val hidden: Boolean = RouteVisibility.HIDDEN_DEFAULT,
+    @ColumnInfo(defaultValue = "NULL")
     val searchWeight: Double? = RouteVisibility.SEARCH_WEIGHT_DEFAULT
 ) {
 

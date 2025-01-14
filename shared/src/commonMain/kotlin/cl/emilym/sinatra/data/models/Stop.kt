@@ -53,9 +53,8 @@ data class StopVisibility(
 ) {
 
     companion object {
-        const val VISIBLE_ZOOMED_OUT_DEFAULT = false
         const val VISIBLE_ZOOMED_IN_DEFAULT = true
-        const val SHOW_CHILDREN_DEFAULT = true
+        const val SHOW_CHILDREN_DEFAULT = false
         val SEARCH_WEIGHT_DEFAULT: Double? = null
 
         fun fromPB(stopId: StopId, pb: cl.emilym.gtfs.StopVisibility?): StopVisibility {

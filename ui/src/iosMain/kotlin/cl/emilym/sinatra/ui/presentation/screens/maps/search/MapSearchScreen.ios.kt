@@ -26,7 +26,11 @@ actual fun mapSearchScreenMapItems(stops: List<Stop>): List<MarkerItem> {
         it.toMarkerItem(
             navigator,
             icon,
-            if (it.important) null else FloatRange(14f, Float.MAX_VALUE)
+            when {
+                it.visibility.visibleZoomedIn && it.visibility.visibleZoomedOut -> null
+                it.visibility.visibleZoomedIn -> FloatRange(14f, Float.MAX_VALUE)
+                else -> FloatRange(0f, 14f)
+            }
         )
     } }
 
