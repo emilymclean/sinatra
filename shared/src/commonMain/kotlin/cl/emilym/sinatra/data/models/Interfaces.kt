@@ -51,8 +51,4 @@ interface IStopTimetableTime: StopTime {
     val route: Route?
 
     override val stationTime: TimetableStationTime
-        get() = TimetableStationTime(
-            StationTime.Scheduled(arrivalTime),
-            StationTime.Scheduled(departureTime),
-        )
 }

@@ -22,6 +22,7 @@ import platform.CoreGraphics.CGPointMake
 import platform.MapKit.MKAnnotationProtocol
 import platform.MapKit.MKAnnotationView
 import platform.UIKit.UIImage
+import platform.UIKit.accessibilityLabel
 import platform.darwin.NSObject
 import sinatra.ui.generated.resources.Res
 
@@ -29,7 +30,7 @@ actual interface MarkerIcon {
     val reuseIdentifier: String
     val anchor: MarkerIconOffset
 
-    fun annotationView(annotation: MKAnnotationProtocol): MKAnnotationView
+    fun annotationView(annotation: MKAnnotationProtocol, contentDescription: String? = null): MKAnnotationView
 }
 
 class UIImageMarkerIcon(
@@ -38,9 +39,9 @@ class UIImageMarkerIcon(
     val image: UIImage?
 ): MarkerIcon {
 
-    override fun annotationView(annotation: MKAnnotationProtocol): MKAnnotationView {
+    override fun annotationView(annotation: MKAnnotationProtocol, contentDescription: String?): MKAnnotationView {
         return UIImageAnnotationView(
-            image, anchor, annotation, reuseIdentifier
+            image, anchor, annotation, reuseIdentifier, contentDescription
         )
     }
 
@@ -65,7 +66,8 @@ class UIImageAnnotationView(
     image: UIImage?,
     anchor: MarkerIconOffset,
     annotation: MKAnnotationProtocol,
-    reuseIdentifier: String
+    reuseIdentifier: String,
+    contentDescription: String?
 ): MKAnnotationView(annotation, reuseIdentifier) {
     init {
         image?.let {
@@ -77,6 +79,7 @@ class UIImageAnnotationView(
                 )
             }
         }
+        accessibilityLabel = contentDescription
     }
 }
 
@@ -90,19 +93,21 @@ actual fun circularIcon(color: Color, borderColor: Color, size: Dp, borderWidth:
     val markerPadding = (markerCirclePadding * platformSizeAdjustment()).toIntPx()
     val markerRadius = ((size * platformSizeAdjustment()) / 2).toIntPx()
 
-    return UIImageMarkerIcon(
-        image = uiImageBuilder(canvasSize.toDouble(), canvasSize.toDouble()) {
-            circle(
-                borderColor,
-                markerPadding - halfBorderSize,
-                markerPadding - halfBorderSize,
-                markerRadius + halfBorderSize
-            )
-            circle(color, markerPadding, markerPadding, markerRadius)
-        },
-        anchor = MarkerIconOffset(0.5f, 0.5f),
-        reuseIdentifier = "circleIcon-${color.toArgb()}-${borderColor.toArgb()}-${size.toIntPx()}-${borderWidth.toIntPx()}"
-    )
+    return remember(color, borderColor, size, borderWidth) {
+        UIImageMarkerIcon(
+            image = uiImageBuilder(canvasSize.toDouble(), canvasSize.toDouble()) {
+                circle(
+                    borderColor,
+                    markerPadding - halfBorderSize,
+                    markerPadding - halfBorderSize,
+                    markerRadius + halfBorderSize
+                )
+                circle(color, markerPadding, markerPadding, markerRadius)
+            },
+            anchor = MarkerIconOffset(0.5f, 0.5f),
+            reuseIdentifier = "circleIcon-${color.toArgb()}-${borderColor.toArgb()}-${size.value}-${borderWidth.value}"
+        )
+    }
 }
 
 @OptIn(ExperimentalResourceApi::class)
@@ -117,20 +122,22 @@ actual fun spotMarkerIcon(
 
     val locationPdf = remember { runBlocking { Res.readBytes("files/location.pdf") } }
 
-    return UIImageMarkerIcon(
-        image = uiImageBuilder(sizePx.toDouble(), sizePx.toDouble()) {
-            pdf(locationPdf, borderColor, 0, 0, sizePx, sizePx)
-            pdf(
-                locationPdf,
-                tint,
-                borderSize, borderSize,
-                sizePx - (borderSize * 2),
-                sizePx - (borderSize * 2),
-            )
-        },
-        anchor = MarkerIconOffset(0.5f, 1f),
-        reuseIdentifier = "spotMarkerIcon-${tint.toArgb()}-${borderColor.toArgb()}-${size.toIntPx()}"
-    )
+    return remember(tint, borderColor, size, locationPdf) {
+        UIImageMarkerIcon(
+            image = uiImageBuilder(sizePx.toDouble(), sizePx.toDouble()) {
+                pdf(locationPdf, borderColor, 0, 0, sizePx, sizePx)
+                pdf(
+                    locationPdf,
+                    tint,
+                    borderSize, borderSize,
+                    sizePx - (borderSize * 2),
+                    sizePx - (borderSize * 2),
+                )
+            },
+            anchor = MarkerIconOffset(0.5f, 1f),
+            reuseIdentifier = "spotMarkerIcon-${tint.toArgb()}-${borderColor.toArgb()}-${size.value}"
+        )
+    }
 }
 
 actual fun platformSizeAdjustment(): Float = 0.4f

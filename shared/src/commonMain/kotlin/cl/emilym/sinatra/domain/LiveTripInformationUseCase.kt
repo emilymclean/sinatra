@@ -9,6 +9,7 @@ import cl.emilym.sinatra.data.models.StationTime
 import cl.emilym.sinatra.data.models.Time
 import cl.emilym.sinatra.data.models.TimetableStationTime
 import cl.emilym.sinatra.data.models.TripId
+import cl.emilym.sinatra.data.models.isSameDay
 import cl.emilym.sinatra.data.models.map
 import cl.emilym.sinatra.data.models.toTime
 import cl.emilym.sinatra.data.repository.LiveServiceRepository
@@ -22,7 +23,10 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 import kotlinx.datetime.Instant
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import org.koin.core.annotation.Factory
+import kotlin.math.exp
 import kotlin.time.Duration.Companion.seconds
 
 abstract class LiveUseCase {
@@ -31,8 +35,17 @@ abstract class LiveUseCase {
         specific: TripUpdate.StopTimeEvent?,
         delay: Int?,
         expected: Time,
-        scheduleStartOfDay: Instant
+        scheduleStartOfDay: Instant,
+        scheduleTimeZone: TimeZone
     ): StationTime {
+        val today = scheduleStartOfDay.toLocalDateTime(scheduleTimeZone)
+        if (!expected.instant.toLocalDateTime(scheduleTimeZone).isSameDay(today) &&
+            (specific?.time == null ||
+                    !Instant.fromEpochSeconds(specific.time).toLocalDateTime(scheduleTimeZone).isSameDay(today)
+            )
+        )
+            return StationTime.Scheduled(expected)
+
         return StationTime.Live(
             specific?.time?.let {
                 Instant.fromEpochSeconds(it).toTime(scheduleStartOfDay)
@@ -50,19 +63,20 @@ abstract class LiveUseCase {
 class LiveTripInformationUseCase(
     private val liveServiceRepository: LiveServiceRepository,
     private val routeRepository: RouteRepository,
-    private val transportMetadataRepository: TransportMetadataRepository
+    private val metadataRepository: TransportMetadataRepository
 ): LiveUseCase() {
 
     suspend fun invoke(
         liveInformationUrl: String,
         routeId: RouteId,
         serviceId: ServiceId,
-        tripId: TripId
+        tripId: TripId,
+        startOfDay: Instant
     ): Flow<Cachable<IRouteTripInformation>> {
-        val scheduledTimetable = routeRepository.tripTimetable(routeId, serviceId, tripId)
-        return liveServiceRepository.getRealtimeUpdates(liveInformationUrl).map<FeedMessage, Cachable<IRouteTripInformation>> {
-            val scheduleStartOfDay = transportMetadataRepository.scheduleStartOfDay()
+        val scheduleTimeZone = metadataRepository.timeZone()
 
+        val scheduledTimetable = routeRepository.tripTimetable(routeId, serviceId, tripId, startOfDay)
+        return liveServiceRepository.getRealtimeUpdates(liveInformationUrl).map<FeedMessage, Cachable<IRouteTripInformation>> {
             val updates = it.entity
                 .filterNot { it.isDeleted == true }
                 .mapNotNull { it.tripUpdate }
@@ -81,13 +95,15 @@ class LiveTripInformationUseCase(
                                 s?.arrival,
                                 delay,
                                 it.arrivalTime!!,
-                                scheduleStartOfDay
+                                startOfDay,
+                                scheduleTimeZone
                             ),
                             departure = decodeTime(
                                 s?.departure,
                                 delay,
                                 it.departureTime!!,
-                                scheduleStartOfDay
+                                startOfDay,
+                                scheduleTimeZone
                             )
                         )
                     }

@@ -31,6 +31,8 @@ import androidx.compose.ui.unit.dp
 import kotlin.math.max
 import kotlin.math.roundToInt
 
+val DRAG_HANDLE_HEIGHT = (22.dp * 2) + 4.dp
+
 @Composable
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 fun SinatraBottomSheetScaffold(
@@ -40,7 +42,6 @@ fun SinatraBottomSheetScaffold(
     sheetPeekHeight: Dp = 56.dp,
     sheetHalfHeight: Float = 0.5f,
     sheetMaxWidth: Dp = 640.dp,
-    sheetShape: Shape = MaterialTheme.shapes.extraLarge.copy(bottomStart = CornerSize(0f), bottomEnd = CornerSize(0f)),
     sheetContainerColor: Color = MaterialTheme.colorScheme.surfaceContainer,
     sheetContentColor: Color = contentColorFor(sheetContainerColor),
     sheetTonalElevation: Dp = 1.dp,
@@ -73,6 +74,7 @@ fun SinatraBottomSheetScaffold(
                 state = scaffoldState.bottomSheetState,
                 peekHeight = sheetPeekHeight,
                 sheetMaxWidth = sheetMaxWidth,
+                sheetHalfHeight = sheetHalfHeight,
                 sheetSwipeEnabled = sheetSwipeEnabled,
                 calculateAnchors = { sheetSize ->
                     val sheetHeight = sheetSize.height
@@ -89,7 +91,6 @@ fun SinatraBottomSheetScaffold(
                         SinatraSheetValue.HalfExpanded at maxOf(layoutHeight - (sheetHeight * sheetHalfHeight), 0f)
                     }
                 },
-                shape = sheetShape,
                 containerColor = sheetContainerColor,
                 contentColor = sheetContentColor,
                 tonalElevation = sheetTonalElevation,
@@ -182,7 +183,9 @@ private fun SinatraBottomSheetScaffoldLayout(
                 modifier = modifier,
                 color = containerColor,
                 contentColor = contentColor,
-            ) { body(PaddingValues(bottom = sheetPeekHeight)) }
+            ) {
+                body(PaddingValues(bottom = sheetPeekHeight))
+            }
         }[0].measure(bodyConstraints)
 
         val snackbarPlaceable = subcompose(SinatraBottomSheetScaffoldLayoutSlot.Snackbar, snackbarHost)[0]

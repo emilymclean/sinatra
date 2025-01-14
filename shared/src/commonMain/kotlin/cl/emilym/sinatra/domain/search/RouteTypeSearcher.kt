@@ -13,6 +13,7 @@ class RouteTypeSearcher(
 
     override fun scoreMultiplier(item: Route): Double {
         return when {
+            item.routeVisibility.searchWeight != null -> item.routeVisibility.searchWeight
             item.colors != null -> 1.7
             item.name == "NIS" -> 0.2
             else -> 1.1

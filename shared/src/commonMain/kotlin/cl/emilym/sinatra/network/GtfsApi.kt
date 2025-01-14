@@ -100,11 +100,26 @@ interface GtfsApi {
     @GET
     suspend fun markdownContent(@Url url: String): String
 
+    @GET
+    suspend fun contentDynamic(@Url url: String): Pages
+
     @GET("content.pb")
     suspend fun content(): Pages
 
     @GET("content.pb.sha")
     suspend fun contentDigest(): String
+
+    @GET("content.android.pb")
+    suspend fun contentAndroid(): Pages
+
+    @GET("content.android.pb.sha")
+    suspend fun contentAndroidDigest(): String
+
+    @GET("content.ios.pb")
+    suspend fun contentIos(): Pages
+
+    @GET("content.ios.pb.sha")
+    suspend fun contentIosDigest(): String
 
     @GET("network_graph.eng")
     suspend fun networkGraph(): ByteArray

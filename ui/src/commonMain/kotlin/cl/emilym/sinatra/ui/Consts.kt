@@ -1,7 +1,9 @@
 package cl.emilym.sinatra.ui
 
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.dp
 import cl.emilym.sinatra.data.models.MapLocation
+import cl.emilym.sinatra.data.models.MapRegion
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
 import kotlinx.datetime.format.DayOfWeekNames
@@ -13,20 +15,17 @@ val minimumTouchTarget = 48.dp
 val canberra = MapLocation(
     -35.2802, 149.1310
 )
+
+val canberraRegion = MapRegion(
+    MapLocation(-35.105698, 148.717365),
+    MapLocation(-36.063920, 149.546833)
+)
+
 val canberraZoom = 10f
 
-val timeFormat = LocalTime.Format {
-    amPmHour(Padding.NONE)
-    char(':')
-    minute()
-    char(' ')
-    amPmMarker("am", "pm")
-}
-
-val dayOfWeekDateTimeFormat = LocalDateTime.Format {
-    dayOfWeek(DayOfWeekNames.ENGLISH_FULL)
-    chars(", ")
-    time(timeFormat)
-}
-
 const val NEAREST_STOP_RADIUS = 1.0
+
+object LanguageConsts {
+    const val MAINLAND_CHINESE_BCP = "zh-Hans-CN"
+    const val US_BCP = "en-US"
+}

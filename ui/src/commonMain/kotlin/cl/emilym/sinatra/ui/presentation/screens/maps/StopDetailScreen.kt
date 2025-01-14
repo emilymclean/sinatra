@@ -15,6 +15,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -23,24 +24,28 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
+import cafe.adriel.voyager.core.model.ScreenModel
+import cafe.adriel.voyager.core.model.screenModelScope
 import cafe.adriel.voyager.core.screen.ScreenKey
+import cafe.adriel.voyager.koin.koinScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import cl.emilym.compose.errorwidget.ErrorWidget
 import cl.emilym.compose.requeststate.RequestState
 import cl.emilym.compose.requeststate.RequestStateWidget
+import cl.emilym.compose.requeststate.child
 import cl.emilym.compose.requeststate.handle
 import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.FeatureFlags
 import cl.emilym.sinatra.data.models.Alert
 import cl.emilym.sinatra.data.models.IStopTimetableTime
-import cl.emilym.sinatra.data.models.StationTime
-import cl.emilym.sinatra.data.models.Stop
+import cl.emilym.sinatra.data.models.ReferencedTime
 import cl.emilym.sinatra.data.models.StopId
-import cl.emilym.sinatra.data.models.StopTimetableTime
+import cl.emilym.sinatra.data.models.StopWithChildren
 import cl.emilym.sinatra.data.repository.AlertRepository
 import cl.emilym.sinatra.data.repository.FavouriteRepository
 import cl.emilym.sinatra.data.repository.RecentVisitRepository
@@ -52,6 +57,7 @@ import cl.emilym.sinatra.ui.maps.stopMarkerIcon
 import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
 import cl.emilym.sinatra.ui.navigation.MapScreen
 import cl.emilym.sinatra.ui.open_maps
+import cl.emilym.sinatra.ui.presentation.screens.maps.search.zoomThreshold
 import cl.emilym.sinatra.ui.stopJourneyNavigation
 import cl.emilym.sinatra.ui.widgets.AccessibilityIconLockup
 import cl.emilym.sinatra.ui.widgets.AlertScaffold
@@ -62,6 +68,8 @@ import cl.emilym.sinatra.ui.widgets.MapIcon
 import cl.emilym.sinatra.ui.widgets.NavigateIcon
 import cl.emilym.sinatra.ui.widgets.NoBusIcon
 import cl.emilym.sinatra.ui.widgets.SheetIosBackButton
+import cl.emilym.sinatra.ui.widgets.StopCard
+import cl.emilym.sinatra.ui.widgets.Subheading
 import cl.emilym.sinatra.ui.widgets.UpcomingRouteCard
 import cl.emilym.sinatra.ui.widgets.WheelchairAccessibleIcon
 import cl.emilym.sinatra.ui.widgets.createRequestStateFlowFlow
@@ -69,36 +77,37 @@ import cl.emilym.sinatra.ui.widgets.handleFlowProperly
 import cl.emilym.sinatra.ui.widgets.openMaps
 import cl.emilym.sinatra.ui.widgets.pick
 import cl.emilym.sinatra.ui.widgets.presentable
-import io.github.aakira.napier.Napier
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
-import org.koin.android.annotation.KoinViewModel
-import org.koin.compose.viewmodel.koinViewModel
+import org.koin.core.annotation.Factory
 import sinatra.ui.generated.resources.Res
 import sinatra.ui.generated.resources.accessibility_not_wheelchair_accessible
 import sinatra.ui.generated.resources.accessibility_wheelchair_accessible
 import sinatra.ui.generated.resources.no_upcoming_vehicles
+import sinatra.ui.generated.resources.stop_detail_navigate
 import sinatra.ui.generated.resources.stop_not_found
 import sinatra.ui.generated.resources.upcoming_vehicles
-import sinatra.ui.generated.resources.stop_detail_navigate
+import sinatra.ui.generated.resources.stop_detail_child_stations
 
-@KoinViewModel
+@Factory
 class StopDetailViewModel(
     private val stopRepository: StopRepository,
     private val upcomingRoutesForStopUseCase: UpcomingRoutesForStopUseCase,
     private val favouriteRepository: FavouriteRepository,
     private val recentVisitRepository: RecentVisitRepository,
     private val alertRepository: AlertRepository
-): ViewModel() {
+): ScreenModel {
 
     private val _alerts = createRequestStateFlowFlow<List<Alert>>()
     val alerts = _alerts.presentable()
 
     val favourited = MutableStateFlow(false)
-    val stop = MutableStateFlow<RequestState<Stop?>>(RequestState.Initial())
+    private val stopWithChildren = MutableStateFlow<RequestState<StopWithChildren?>>(RequestState.Initial())
+    val stop = stopWithChildren.child { it?.stop }
+    val children = stopWithChildren.child { it?.children }
 
     val _upcoming = createRequestStateFlowFlow<List<IStopTimetableTime>>()
     val upcoming = _upcoming.presentable()
@@ -108,24 +117,24 @@ class StopDetailViewModel(
         retryUpcoming(stopId)
         retryAlerts(stopId)
 
-        viewModelScope.launch {
+        screenModelScope.launch {
             favourited.emitAll(favouriteRepository.stopIsFavourited(stopId))
         }
-        viewModelScope.launch {
+        screenModelScope.launch {
             recentVisitRepository.addStopVisit(stopId)
         }
     }
 
     fun retryStop(stopId: StopId) {
-        viewModelScope.launch {
-            stop.handle {
-                stopRepository.stop(stopId).item
+        screenModelScope.launch {
+            stopWithChildren.handle {
+                stopRepository.stopWithChildren(stopId).item
             }
         }
     }
 
     fun retryUpcoming(stopId: StopId) {
-        viewModelScope.launch {
+        screenModelScope.launch {
             _upcoming.handleFlowProperly {
                 upcomingRoutesForStopUseCase(stopId).map { it.item }
             }
@@ -133,7 +142,7 @@ class StopDetailViewModel(
     }
 
     fun retryAlerts(stopId: StopId) {
-        viewModelScope.launch {
+        screenModelScope.launch {
             _alerts.handleFlowProperly {
                 alertRepository.alerts(stopId = stopId)
             }
@@ -142,7 +151,7 @@ class StopDetailViewModel(
 
     fun favourite(stopId: StopId, favourited: Boolean) {
         this.favourited.value = favourited
-        viewModelScope.launch {
+        screenModelScope.launch {
             favouriteRepository.setStopFavourite(stopId, favourited)
         }
     }
@@ -156,13 +165,13 @@ class StopDetailScreen(
 
     @Composable
     override fun BottomSheetContent() {
-        val viewModel = koinViewModel<StopDetailViewModel>()
+        val viewModel = koinScreenModel<StopDetailViewModel>()
         val bottomSheetState = LocalBottomSheetState.current
         val navigator = LocalNavigator.currentOrThrow
         val mapControl = LocalMapControl.current
 
         LaunchedEffect(bottomSheetState) {
-            bottomSheetState.bottomSheetState.halfExpand()
+            bottomSheetState?.bottomSheetState?.halfExpand()
         }
 
         LaunchedEffect(stopId) {
@@ -170,6 +179,7 @@ class StopDetailScreen(
         }
 
         val stop by viewModel.stop.collectAsState(RequestState.Initial())
+        val children by viewModel.children.collectAsState(RequestState.Initial())
         val upcoming by viewModel.upcoming.collectAsState(RequestState.Initial())
         val alerts by viewModel.alerts.collectAsState(RequestState.Initial())
         Box(
@@ -183,76 +193,101 @@ class StopDetailScreen(
                     }
                     else -> {
                         LaunchedEffect(stop.location) {
-                            mapControl.zoomToPoint(stop.location)
+                            mapControl.moveToPoint(stop.location, minZoom = zoomThreshold)
                         }
 
-                        LazyColumn(
-                            Modifier.fillMaxSize(),
-                        ) {
-                            item { Box(Modifier.height(1.rdp)) }
-                            item {
-                                Row(
-                                    Modifier.padding(horizontal = 1.rdp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(1.rdp)
-                                ) {
-                                    SheetIosBackButton()
-                                    Column(Modifier.weight(1f)) {
-                                        Text(
-                                            stop.name,
-                                            style = MaterialTheme.typography.titleLarge
+                        Scaffold { innerPadding ->
+                            LazyColumn(
+                                Modifier.fillMaxSize(),
+                                contentPadding = innerPadding
+                            ) {
+                                item { Box(Modifier.height(1.rdp)) }
+                                item {
+                                    Row(
+                                        Modifier.padding(horizontal = 1.rdp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(1.rdp)
+                                    ) {
+                                        SheetIosBackButton()
+                                        Column(Modifier.weight(1f)) {
+                                            Text(
+                                                stop.name,
+                                                style = MaterialTheme.typography.titleLarge
+                                            )
+                                        }
+                                        val favourited by viewModel.favourited.collectAsState(false)
+                                        FavouriteButton(
+                                            favourited,
+                                            { viewModel.favourite(stopId, it) },
+                                            Modifier.semantics {
+                                                contentDescription = "Favourite stop"
+                                                selected = favourited
+                                            }
                                         )
                                     }
-                                    val favourited by viewModel.favourited.collectAsState(false)
-                                    FavouriteButton(favourited, { viewModel.favourite(stopId, it) })
                                 }
-                            }
-                            item {
-                                AlertScaffold((alerts as? RequestState.Success)?.value)
-                            }
-                            item { Box(Modifier.height(1.rdp)) }
-                            item {
-                                Column(Modifier.padding(horizontal = 1.rdp)) {
-                                    AccessibilityIconLockup(
-                                        {
-                                            WheelchairAccessibleIcon(stop.accessibility.wheelchair.isAccessible)
-                                        }
-                                    ) {
-                                        Text(when(stop.accessibility.wheelchair.isAccessible) {
-                                            true -> stringResource(Res.string.accessibility_wheelchair_accessible)
-                                            false -> stringResource(Res.string.accessibility_not_wheelchair_accessible)
-                                        })
-                                    }
-                                }
-                            }
-                            item { Box(Modifier.height(1.rdp)) }
-                            if (FeatureFlags.STOP_DETAIL_SHOW_IN_MAPS_BUTTON) {
                                 item {
-                                    val uriHandler = LocalUriHandler.current
-                                    Button(
-                                        onClick = { openMaps(uriHandler, stop.location) },
-                                        modifier = Modifier.fillMaxWidth().padding(horizontal = 1.rdp)
-                                    ) {
-                                        MapIcon()
-                                        Box(Modifier.width(0.5.rdp))
-                                        Text(stringResource(Res.string.open_maps))
+                                    AlertScaffold((alerts as? RequestState.Success)?.value)
+                                }
+                                item { Box(Modifier.height(1.rdp)) }
+                                item {
+                                    Column(Modifier.padding(horizontal = 1.rdp)) {
+                                        AccessibilityIconLockup(
+                                            {
+                                                WheelchairAccessibleIcon(stop.accessibility.wheelchair.isAccessible)
+                                            }
+                                        ) {
+                                            Text(when(stop.accessibility.wheelchair.isAccessible) {
+                                                true -> stringResource(Res.string.accessibility_wheelchair_accessible)
+                                                false -> stringResource(Res.string.accessibility_not_wheelchair_accessible)
+                                            })
+                                        }
                                     }
                                 }
                                 item { Box(Modifier.height(1.rdp)) }
-                            }
-                            item {
-                                Button(
-                                    onClick = { navigator.stopJourneyNavigation(stop) },
-                                    modifier = Modifier.fillMaxWidth().padding(horizontal = 1.rdp)
-                                ) {
-                                    NavigateIcon()
-                                    Box(Modifier.width(0.5.rdp))
-                                    Text(stringResource(Res.string.stop_detail_navigate))
+                                if (FeatureFlags.STOP_DETAIL_SHOW_IN_MAPS_BUTTON) {
+                                    item {
+                                        val uriHandler = LocalUriHandler.current
+                                        Button(
+                                            onClick = { openMaps(uriHandler, stop.location) },
+                                            modifier = Modifier.fillMaxWidth().padding(horizontal = 1.rdp)
+                                        ) {
+                                            MapIcon()
+                                            Box(Modifier.width(0.5.rdp))
+                                            Text(stringResource(Res.string.open_maps))
+                                        }
+                                    }
+                                    item { Box(Modifier.height(1.rdp)) }
                                 }
+                                item {
+                                    Button(
+                                        onClick = { navigator.stopJourneyNavigation(stop) },
+                                        modifier = Modifier.fillMaxWidth().padding(horizontal = 1.rdp)
+                                    ) {
+                                        NavigateIcon()
+                                        Box(Modifier.width(0.5.rdp))
+                                        Text(stringResource(Res.string.stop_detail_navigate))
+                                    }
+                                }
+                                item { Box(Modifier.height(1.rdp)) }
+                                (children as? RequestState.Success)?.value?.let { children ->
+                                    if (stop.visibility.showChildren && children.isNotEmpty()) {
+                                        item {
+                                            Subheading(stringResource(Res.string.stop_detail_child_stations))
+                                        }
+                                        items(children) {
+                                            StopCard(
+                                                it,
+                                                onClick = { navigator.push(StopDetailScreen(it.id)) },
+                                                showStopIcon = true
+                                            )
+                                        }
+                                        item { Box(Modifier.height(1.rdp)) }
+                                    }
+                                }
+                                Upcoming(viewModel, upcoming, navigator)
+                                item { Box(Modifier.height(1.rdp)) }
                             }
-                            item { Box(Modifier.height(1.rdp)) }
-                            Upcoming(viewModel, upcoming, navigator)
-                            item { Box(Modifier.height(1.rdp)) }
                         }
                     }
                 }
@@ -293,16 +328,7 @@ class StopDetailScreen(
 
             is RequestState.Success -> {
                 item {
-                    Row(
-                        Modifier.padding(horizontal = 1.rdp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(1.rdp)
-                    ) {
-                        Text(
-                            stringResource(Res.string.upcoming_vehicles),
-                            style = MaterialTheme.typography.titleMedium
-                        )
-                    }
+                    Subheading(stringResource(Res.string.upcoming_vehicles))
                 }
                 when {
                     upcoming.value.isNotEmpty() -> items(upcoming.value) {
@@ -311,7 +337,11 @@ class StopDetailScreen(
                             it.stationTime.pick(),
                             modifier = Modifier.fillMaxWidth(),
                             onClick = { navigator.push(RouteDetailScreen(
-                                it.routeId, it.serviceId, it.tripId, stopId
+                                it.routeId,
+                                it.serviceId,
+                                it.tripId,
+                                stopId,
+                                (it.stationTime.arrival.time as? ReferencedTime)?.startOfDay
                             )) }
                         )
                     }
@@ -332,7 +362,7 @@ class StopDetailScreen(
 
     @Composable
     override fun mapItems(): List<MapItem> {
-        val viewModel = koinViewModel<StopDetailViewModel>()
+        val viewModel = koinScreenModel<StopDetailViewModel>()
         val stopRS by viewModel.stop.collectAsState(RequestState.Initial())
         val stop = (stopRS as? RequestState.Success)?.value ?: return listOf()
 

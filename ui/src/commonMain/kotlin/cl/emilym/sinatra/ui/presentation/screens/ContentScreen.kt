@@ -21,10 +21,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import cafe.adriel.voyager.core.model.ScreenModel
+import cafe.adriel.voyager.core.model.screenModelScope
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.core.screen.ScreenKey
+import cafe.adriel.voyager.koin.koinScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import cl.emilym.compose.requeststate.RequestState
@@ -43,15 +44,14 @@ import cl.emilym.sinatra.ui.widgets.createRequestStateFlow
 import com.mikepenz.markdown.m3.Markdown
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
-import org.koin.android.annotation.KoinViewModel
-import org.koin.compose.viewmodel.koinViewModel
+import org.koin.core.annotation.Factory
 import sinatra.ui.generated.resources.Res
 import sinatra.ui.generated.resources.no_content_page
 
-@KoinViewModel
+@Factory
 class ContentViewModel(
     private val contentRepository: ContentRepository
-): ViewModel() {
+): ScreenModel {
 
     val content = createRequestStateFlow<Content?>()
 
@@ -60,7 +60,7 @@ class ContentViewModel(
     }
 
     fun retry(id: ContentId) {
-        viewModelScope.launch {
+        screenModelScope.launch {
             content.handle {
                 contentRepository.content(id)
             }
@@ -76,7 +76,7 @@ open class ContentScreen(
 
     @Composable
     override fun Content() {
-        val viewModel = koinViewModel<ContentViewModel>()
+        val viewModel = koinScreenModel<ContentViewModel>()
         val content by viewModel.content.collectAsState(RequestState.Initial())
 
         LaunchedEffect(id) {

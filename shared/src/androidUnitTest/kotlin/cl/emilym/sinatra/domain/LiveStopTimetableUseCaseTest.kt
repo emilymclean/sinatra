@@ -2,11 +2,13 @@ package cl.emilym.sinatra.domain
 
 import cl.emilym.sinatra.data.models.Route
 import cl.emilym.sinatra.data.models.RouteType
+import cl.emilym.sinatra.data.models.RouteVisibility
 import cl.emilym.sinatra.data.models.StationTime
 import cl.emilym.sinatra.data.models.StopTimetableTime
 import cl.emilym.sinatra.data.models.Time
 import cl.emilym.sinatra.data.repository.LiveServiceRepository
 import cl.emilym.sinatra.data.repository.TransportMetadataRepository
+import cl.emilym.sinatra.timeZone
 import com.google.transit.realtime.FeedMessage
 import io.github.aakira.napier.Napier
 import io.mockk.coEvery
@@ -18,6 +20,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.Instant
+import kotlinx.datetime.TimeZone
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -62,11 +65,16 @@ class LiveStopTimetableUseCaseTest {
                     "R1",
                     null,
                     RouteType.BUS,
-                    null
+                    null,
+                    RouteVisibility(
+                        false,
+                        null
+                    )
                 )
             )
         )
         coEvery { transportMetadataRepository.scheduleStartOfDay() } returns mockk()
+        coEvery { transportMetadataRepository.timeZone() } returns timeZone
 
         val result = useCase(stopId, scheduled).toList()
 
@@ -97,7 +105,11 @@ class LiveStopTimetableUseCaseTest {
                     "R1",
                     realTimeUrl,
                     RouteType.BUS,
-                    null
+                    null,
+                    RouteVisibility(
+                        false,
+                        null
+                    )
                 )
             )
         )
@@ -115,6 +127,7 @@ class LiveStopTimetableUseCaseTest {
         }
         coEvery { transportMetadataRepository.scheduleStartOfDay() } returns scheduleStartOfDay
         coEvery { liveServiceRepository.getRealtimeUpdates(realTimeUrl) } returns flowOf(updates)
+        coEvery { transportMetadataRepository.timeZone() } returns timeZone
 
         val result = useCase(sId, scheduled).toList()
 
@@ -149,7 +162,11 @@ class LiveStopTimetableUseCaseTest {
                     "R1",
                     realTimeUrl,
                     RouteType.BUS,
-                    null
+                    null,
+                    RouteVisibility(
+                        false,
+                        null
+                    )
                 )
             )
         )
@@ -175,6 +192,7 @@ class LiveStopTimetableUseCaseTest {
         }
         coEvery { transportMetadataRepository.scheduleStartOfDay() } returns scheduleStartOfDay
         coEvery { liveServiceRepository.getRealtimeUpdates(realTimeUrl) } returns flowOf(updates)
+        coEvery { transportMetadataRepository.timeZone() } returns timeZone
 
         val result = useCase(sId, scheduled).toList()
 
@@ -209,7 +227,11 @@ class LiveStopTimetableUseCaseTest {
                     "R1",
                     realTimeUrl,
                     RouteType.BUS,
-                    null
+                    null,
+                    RouteVisibility(
+                        false,
+                        null
+                    )
                 )
             )
         )
@@ -236,6 +258,7 @@ class LiveStopTimetableUseCaseTest {
         }
         coEvery { transportMetadataRepository.scheduleStartOfDay() } returns scheduleStartOfDay
         coEvery { liveServiceRepository.getRealtimeUpdates(realTimeUrl) } returns flowOf(updates)
+        coEvery { transportMetadataRepository.timeZone() } returns timeZone
 
         val result = useCase(sId, scheduled).toList()
 
@@ -270,12 +293,17 @@ class LiveStopTimetableUseCaseTest {
                     "R1",
                     realTimeUrl,
                     RouteType.BUS,
-                    null
+                    null,
+                    RouteVisibility(
+                        false,
+                        null
+                    )
                 )
             )
         )
         coEvery { transportMetadataRepository.scheduleStartOfDay() } returns mockk()
         coEvery { liveServiceRepository.getRealtimeUpdates(realTimeUrl) } returns flow { throw Exception("Network error") }
+        coEvery { transportMetadataRepository.timeZone() } returns timeZone
 //        every { Napier.e(any(), any<Throwable>(), any()) } just Runs
 
         val result = useCase(stopId, scheduled).toList()

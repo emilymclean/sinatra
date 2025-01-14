@@ -9,6 +9,10 @@ interface MapItem {
     val visible: Boolean
 }
 
+interface DescribedMapItem {
+    val contentDescription: String?
+}
+
 interface ClickableMapItem {
     val onClick: (() -> Unit)?
 }
@@ -19,8 +23,9 @@ data class MarkerItem(
     override val onClick: (() -> Unit)? = null,
     override val visible: Boolean = true,
     override val id: String = uuid(),
-    val visibleZoomRange: FloatRange? = null
-): MapItem, ClickableMapItem {
+    val visibleZoomRange: FloatRange? = null,
+    override val contentDescription: String? = null
+): MapItem, ClickableMapItem, DescribedMapItem {
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

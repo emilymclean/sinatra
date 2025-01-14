@@ -11,7 +11,8 @@ data class Route(
     val name: String,
     val realTimeUrl: String?,
     val type: RouteType,
-    val designation: String?
+    val designation: String?,
+    val routeVisibility: RouteVisibility
 ) {
 
     companion object {
@@ -24,7 +25,8 @@ data class Route(
                 pb.name,
                 pb.realTimeUrl,
                 RouteType.fromPB(pb.type),
-                pb.designation
+                pb.designation,
+                RouteVisibility.fromPB(pb.routeVisibility)
             )
         }
     }
@@ -43,6 +45,25 @@ enum class RouteType {
             }
         }
     }
+}
+
+data class RouteVisibility(
+    val hidden: Boolean,
+    val searchWeight: Double?
+) {
+
+    companion object {
+        const val HIDDEN_DEFAULT = false
+        val SEARCH_WEIGHT_DEFAULT: Double? = null
+
+        fun fromPB(pb: cl.emilym.gtfs.RouteVisibility?): RouteVisibility {
+            return RouteVisibility(
+                pb?.hidden ?: HIDDEN_DEFAULT,
+                pb?.searchWeight ?: SEARCH_WEIGHT_DEFAULT
+            )
+        }
+    }
+
 }
 
 data class RouteServiceTimetable(

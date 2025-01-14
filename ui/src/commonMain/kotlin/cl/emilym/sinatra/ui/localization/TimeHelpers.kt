@@ -1,12 +1,10 @@
-package cl.emilym.sinatra.ui.widgets
+package cl.emilym.sinatra.ui.localization
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.staticCompositionLocalOf
 import cl.emilym.sinatra.data.models.Time
 import cl.emilym.sinatra.data.models.isSameDay
 import cl.emilym.sinatra.data.models.startOfDay
-import cl.emilym.sinatra.ui.dayOfWeekDateTimeFormat
-import cl.emilym.sinatra.ui.timeFormat
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDateTime
@@ -41,9 +39,21 @@ fun Time.isInPast(): Boolean {
 
 @Composable
 fun Instant.format(): String {
-    val tz = LocalLocalTimeZone.current
-    val inTz = toLocalDateTime(tz)
-    val startInTz = startOfDay(tz).toLocalDateTime(tz)
+    val localTimeZone = LocalLocalTimeZone.current
+    val scheduleTimeZone = LocalScheduleTimeZone.current
+
+    val scheduleTime = format(scheduleTimeZone)
+    return when {
+        localTimeZone.id != scheduleTimeZone.id -> "$scheduleTime (${scheduleTimeZone.id})"
+        else -> scheduleTime
+    }
+}
+
+@Composable
+private fun Instant.format(timeZone: TimeZone): String {
+    val inTz = toLocalDateTime(timeZone)
+    val startInTz = startOfDay(timeZone).toLocalDateTime(timeZone)
+    val timeFormat = timeFormat
 
     return when {
         inTz.isSameDay(startInTz) -> inTz.format(LocalDateTime.Format {

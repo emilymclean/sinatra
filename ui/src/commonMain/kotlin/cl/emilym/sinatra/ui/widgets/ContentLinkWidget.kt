@@ -3,6 +3,7 @@ package cl.emilym.sinatra.ui.widgets
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
@@ -13,6 +14,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
@@ -44,6 +50,9 @@ fun ContentLinkWidget(
         modifier = Modifier
             .heightIn(min = minimumTouchTarget)
             .background(Container)
+            .semantics(mergeDescendants = true) {
+                role = Role.Button
+            }
             .clickable {
                 when (link) {
                     is ContentLink.External -> {
@@ -61,16 +70,18 @@ fun ContentLinkWidget(
         horizontalArrangement = Arrangement.spacedBy(0.5.rdp)
     ) {
         Text(link.title, modifier = Modifier.weight(1f))
-        when (link) {
-            is ContentLink.External -> {
-                ExternalLinkIcon(
-                    tint = MaterialTheme.colorScheme.secondary
-                )
-            }
-            else -> {
-                ForwardIcon(
-                    tint = MaterialTheme.colorScheme.secondary
-                )
+        Box(Modifier.clearAndSetSemantics {  }) {
+            when (link) {
+                is ContentLink.External -> {
+                    ExternalLinkIcon(
+                        tint = MaterialTheme.colorScheme.secondary
+                    )
+                }
+                else -> {
+                    ForwardIcon(
+                        tint = MaterialTheme.colorScheme.secondary
+                    )
+                }
             }
         }
     }

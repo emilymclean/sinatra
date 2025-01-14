@@ -2,8 +2,10 @@ package cl.emilym.sinatra.ui.navigation
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.height
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.window.core.layout.WindowWidthSizeClass
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.CurrentScreen
 import cafe.adriel.voyager.navigator.LocalNavigator
@@ -39,7 +41,11 @@ interface NativeMapScreen {
 fun bottomSheetHalfHeight(): Float {
     val navigator = LocalNavigator.currentOrThrow
     val currentScreen = navigator.lastItem
-    return (currentScreen as? MapScreen)?.bottomSheetHalfHeight ?: DEFAULT_HALF_HEIGHT
+    val adaptiveWindowInfo = currentWindowAdaptiveInfo()
+    return when (adaptiveWindowInfo.windowSizeClass.windowWidthSizeClass) {
+        WindowWidthSizeClass.COMPACT -> (currentScreen as? MapScreen)?.bottomSheetHalfHeight ?: DEFAULT_HALF_HEIGHT
+        else -> 0f
+    }
 }
 
 @Composable

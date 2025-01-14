@@ -1,0 +1,4 @@
+<resources xmlns:tools="http://schemas.android.com/tools" tools:locale="en-US">
+    <string name="navigation_bar_favourites">Favorites</string>
+    <string name="favourites_nothing_favourited">Any routes or stops you favorite can be found here</string>
+</resources>

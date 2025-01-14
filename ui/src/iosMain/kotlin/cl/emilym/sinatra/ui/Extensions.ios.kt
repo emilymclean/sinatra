@@ -1,5 +1,6 @@
 package cl.emilym.sinatra.ui
 
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.data.models.MapRegion
@@ -7,6 +8,7 @@ import cl.emilym.sinatra.data.models.ScreenLocation
 import cl.emilym.sinatra.data.models.CoordinateSpan
 import cl.emilym.sinatra.ui.maps.MarkerAnnotation
 import cl.emilym.sinatra.ui.maps.MarkerItem
+import cl.emilym.sinatra.ui.maps.PrecomputedPaddingValuesDp
 import kotlinx.cinterop.CArrayPointer
 import kotlinx.cinterop.CPointer
 import kotlinx.cinterop.CValue
@@ -15,6 +17,7 @@ import kotlinx.cinterop.CVariable
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.NativePlacement
 import kotlinx.cinterop.allocArray
+import kotlinx.cinterop.cValue
 import kotlinx.cinterop.interpretCPointer
 import kotlinx.cinterop.sizeOf
 import kotlinx.cinterop.useContents
@@ -26,12 +29,22 @@ import platform.CoreLocation.CLLocationCoordinate2DMake
 import platform.MapKit.MKCoordinateSpan
 import platform.MapKit.MKCoordinateSpanMake
 import platform.UIKit.UIColor
-import kotlin.math.pow
 import platform.CoreGraphics.CGColorRef
+import platform.CoreGraphics.CGRect
+import platform.MapKit.MKCoordinateForMapPoint
+import platform.MapKit.MKCoordinateRegion
+import platform.MapKit.MKCoordinateRegionForMapRect
+import platform.MapKit.MKMapPoint
+import platform.MapKit.MKMapPointForCoordinate
+import platform.MapKit.MKMapPointMake
+import platform.MapKit.MKMapRect
+import platform.MapKit.MKMapRectMake
+import platform.MapKit.MKMapView
+import platform.UIKit.UIEdgeInsetsMake
+import platform.UIKit.UIScreen
 import sinatra.ui.generated.resources.Res
 import sinatra.ui.generated.resources.open_maps_ios
-import kotlin.math.ln
-import kotlin.math.log
+import kotlin.math.abs
 
 @OptIn(ExperimentalForeignApi::class)
 fun MapLocation.toNative(): CValue<CLLocationCoordinate2D> {
@@ -47,6 +60,17 @@ fun CValue<CLLocationCoordinate2D>.toShared(): MapLocation {
         MapLocation(
             latitude,
             longitude
+        )
+    }
+}
+
+@OptIn(ExperimentalForeignApi::class)
+fun CValue<CGRect>.toSize(): Size {
+    val scale = UIScreen.mainScreen.scale.toFloat()
+    return useContents {
+        Size(
+            size.width.toFloat() * scale,
+            size.height.toFloat() * scale,
         )
     }
 }
@@ -71,8 +95,8 @@ fun CoordinateSpan.toNative(): CValue<MKCoordinateSpan> {
 fun CValue<CGPoint>.toShared(): ScreenLocation {
     return useContents {
         ScreenLocation(
-            x.toInt(),
-            y.toInt()
+            x.toFloat(),
+            y.toFloat()
         )
     }
 }
@@ -80,13 +104,6 @@ fun CValue<CGPoint>.toShared(): ScreenLocation {
 @OptIn(ExperimentalForeignApi::class)
 fun ScreenLocation.toNative(): CValue<CGPoint> {
     return CGPointMake(x.toDouble(), y.toDouble())
-}
-
-fun MapRegion.toCoordinateSpan(): CoordinateSpan {
-    return CoordinateSpan(
-        deltaLatitude = width,
-        deltaLongitude = height
-    )
 }
 
 fun Color.toNativeUIColor(): UIColor {
@@ -103,6 +120,36 @@ fun Color.toNativeCGColor(): CGColorRef? {
     return toNativeUIColor().CGColor
 }
 
+@OptIn(ExperimentalForeignApi::class)
+fun MapRegion.toNative(): CValue<MKCoordinateRegion> {
+    val topLeft = MKMapPointForCoordinate(topLeft.toNative())
+    val bottomRight = MKMapPointForCoordinate(bottomRight.toNative())
+    val width = abs(topLeft.useContents { x } - bottomRight.useContents { x })
+    val height = abs(topLeft.useContents { y } - bottomRight.useContents { y })
+    return MKCoordinateRegionForMapRect(
+        MKMapRectMake(
+            topLeft.useContents { x },
+            topLeft.useContents { y },
+            width,
+            height
+        )
+    )
+}
+
+@OptIn(ExperimentalForeignApi::class)
+fun MKMapRect.toShared(): MapRegion {
+    val topLeft = MKCoordinateForMapPoint(
+        MKMapPointMake(origin.x, origin.y)
+    ).toShared()
+    val bottomRight = MKCoordinateForMapPoint(
+        MKMapPointMake(origin.x + size.width, origin.y + size.height)
+    ).toShared()
+
+    return MapRegion(
+        topLeft,
+        bottomRight
+    )
+}
 
 @OptIn(ExperimentalForeignApi::class)
 inline operator fun <reified T : CVariable> CPointer<T>.set(index: Int, item: CValues<T>) {
@@ -137,3 +184,14 @@ fun MarkerAnnotation.matches(markerItem: MarkerItem): Boolean {
 
 internal actual val Res.string.open_maps: StringResource
     get() = Res.string.open_maps_ios
+
+
+@OptIn(ExperimentalForeignApi::class)
+fun MKMapView.applyPadding(padding: PrecomputedPaddingValuesDp) {
+    layoutMargins = UIEdgeInsetsMake(
+        padding.top.toDouble(),
+        padding.left.toDouble(),
+        padding.bottom.toDouble(),
+        padding.right.toDouble(),
+    )
+}

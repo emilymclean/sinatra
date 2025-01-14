@@ -1,4 +1,30 @@
-# Sinatra
+<p align="center">
+    <a href="https://github.com/emilymclean/sinatra" rel="noopener">
+        <img width=150px src="https://emilym.cl/assets/img/in_app_icon.png" alt="Sinatra Icon"/>
+    </a>
+    <h1 align="center">Sinatra</h1>
+    <p align="center">
+        Sinatra is a companion app for the Canberra MyWay+ network made by locals for locals.
+    </p>
+</p>
+
+<div align="center">
+
+[![Build App](https://github.com/emilymclean/sinatra/actions/workflows/build.yml/badge.svg)](https://github.com/emilymclean/sinatra/actions/workflows/build.yml)
+[![Unit Test](https://github.com/emilymclean/sinatra/actions/workflows/test.yml/badge.svg)](https://github.com/emilymclean/sinatra/actions/workflows/test.yml)
+[![Lint](https://github.com/emilymclean/sinatra/actions/workflows/lint.yml/badge.svg)](https://github.com/emilymclean/sinatra/actions/workflows/lint.yml)
+
+</div>
+
+<p align="center">
+    <a href="https://play.google.com/store/apps/details?id=cl.emilym.sinatra" rel="noopener">
+        <img height=50px src="https://emilym.cl/assets/img/googleplay.png" alt="Get it on Google Play"/>
+    </a>
+    <a href="https://apps.apple.com/us/app/sinatra-for-canberra/id6739419456" rel="noopener">
+        <img height=50px src="https://emilym.cl/assets/img/appstore.svg" alt="Download on the App Store"/>
+    </a>
+</p>
+
 Sinatra is a companion app for the Canberra MyWay+ network made by locals for locals. Our goal is to 
 make it easier to find route and stop information, offering a fresh, streamlined experience alongside 
 the official app.

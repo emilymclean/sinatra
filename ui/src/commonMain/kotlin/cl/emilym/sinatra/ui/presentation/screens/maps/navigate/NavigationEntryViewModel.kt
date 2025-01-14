@@ -1,7 +1,7 @@
 package cl.emilym.sinatra.ui.presentation.screens.maps.navigate
 
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import cafe.adriel.voyager.core.model.ScreenModel
+import cafe.adriel.voyager.core.model.screenModelScope
 import cl.emilym.compose.requeststate.RequestState
 import cl.emilym.compose.requeststate.handle
 import cl.emilym.sinatra.data.models.MapLocation
@@ -41,6 +41,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.koin.android.annotation.KoinViewModel
+import org.koin.core.annotation.Factory
 
 private sealed interface State {
     data object Journey: State
@@ -58,14 +59,14 @@ sealed interface NavigationEntryState {
     ): NavigationEntryState
 }
 
-@KoinViewModel
+@Factory
 class NavigationEntryViewModel(
     private val calculateJourneyUseCase: CalculateJourneyUseCase,
     private val routeStopSearchUseCase: RouteStopSearchUseCase,
     private val networkGraphRepository: NetworkGraphRepository,
     private val recentVisitRepository: RecentVisitRepository,
     private val stopRepository: StopRepository
-): ViewModel(), SearchScreenViewModel {
+): ScreenModel, SearchScreenViewModel {
 
     override val query = MutableStateFlow<String?>(null)
 
@@ -131,7 +132,7 @@ class NavigationEntryViewModel(
                 }
             ) }
         }
-    }.stateIn(viewModelScope, SharingStarted.Eagerly, State.Journey)
+    }.stateIn(screenModelScope, SharingStarted.Eagerly, State.Journey)
 
     override val results = state.mapLatest {
         when (it) {
@@ -149,7 +150,7 @@ class NavigationEntryViewModel(
     }
 
     fun retryLoadingGraph() {
-        viewModelScope.launch {
+        screenModelScope.launch {
             navigationState.value = NavigationState.GraphLoading
             try {
                 withContext(Dispatchers.IO) {
@@ -164,7 +165,7 @@ class NavigationEntryViewModel(
     }
 
     override fun retryRecentVisits() {
-        viewModelScope.launch {
+        screenModelScope.launch {
             _recentVisits.handleFlowProperly {
                 recentVisitRepository.all()
             }
@@ -172,7 +173,7 @@ class NavigationEntryViewModel(
     }
 
     fun retryStops() {
-        viewModelScope.launch {
+        screenModelScope.launch {
             stops.handle {
                 stopRepository.stops().item
             }
@@ -248,9 +249,12 @@ class NavigationEntryViewModel(
             is NavigationLocation.CurrentLocation -> {
                 save(currentLocation, true)
             }
+            is NavigationLocation.None -> {
+                save(null, false)
+            }
         }
         navigationLocation.recentVisit?.let {
-            viewModelScope.launch {
+            screenModelScope.launch {
                 recentVisitRepository.add(it)
             }
         }
@@ -262,7 +266,7 @@ class NavigationEntryViewModel(
         val destination = _destination ?: return
         val origin = _origin ?: return
 
-        viewModelScope.launch {
+        screenModelScope.launch {
             navigationState.value = NavigationState.JourneyCalculating
             try {
                 navigationState.value = NavigationState.JourneyFound(

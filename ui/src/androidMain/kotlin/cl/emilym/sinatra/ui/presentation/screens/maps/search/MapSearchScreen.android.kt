@@ -24,8 +24,7 @@ actual fun NativeMapScope.DrawMapSearchScreenMapNative(stops: List<Stop>) {
     val anchor = remember { icon.anchor.toNative() }
     val markerStates = stops.map { rememberMarkerState(position = it.location.toNative()) }
 
-    val visible =
-        remember(cameraPositionState.position.zoom) { cameraPositionState.position.zoom >= zoomThreshold }
+    val visible = remember(zoom) { zoom >= zoomThreshold }
     for (i in stops.indices) {
         val stop = stops[i]
         Marker(
@@ -36,7 +35,8 @@ actual fun NativeMapScope.DrawMapSearchScreenMapNative(stops: List<Stop>) {
                 navigator.push(StopDetailScreen(stop.id))
                 true
             },
-            visible = visible || stop.important
+            visible = (visible && stop.visibility.visibleZoomedIn) || (!visible && stop.visibility.visibleZoomedOut),
+            contentDescription = "Stop ${stop.name}"
         )
     }
 }

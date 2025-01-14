@@ -52,6 +52,9 @@ android {
     buildFeatures {
         compose = true
     }
+    androidResources {
+        generateLocaleConfig = true
+    }
 }
 
 dependencies {
@@ -82,6 +85,7 @@ dependencies {
     // Voyager
     implementation(libs.voyager.navigator)
     implementation(libs.voyager.koin)
+    implementation(libs.voyager.screenmodel)
 }
 
 ksp {

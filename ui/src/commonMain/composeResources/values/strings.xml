@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:locale="en-AU">
     <string name="navigation_bar_map">Map</string>
     <string name="navigation_bar_favourites">Favourites</string>
     <string name="navigation_bar_about">About</string>
@@ -40,11 +40,11 @@
 
     <string name="navigate_lat_lng">%1$d, %2$d</string>
     <string name="navigate_current_location">Current Location</string>
-    <string name="navigate_downloading_graph">Loading navigation information...</string>
-    <string name="navigate_calculating_journey">Calculating a journey...</string>
+    <string name="navigate_downloading_graph">Loading navigation information…</string>
+    <string name="navigate_calculating_journey">Calculating a journey…</string>
     <string name="navigate_calculating_journey_failed">We couldn't find a journey</string>
     <string name="navigate_walk">**Walk** %1$s</string>
-    <string name="navigate_walk_to_stop">**Walk** %1$s to %1$s</string>
+    <string name="navigate_walk_to_stop">**Walk** %1$s to %2$s</string>
     <string name="navigate_travel_depart">**Depart** from %1$s at %2$s</string>
     <string name="navigate_travel_arrive">**Arrive** at %1$s at %2$s</string>
     <string name="navigate_travel">Travel for %1$s on %2$s towards %3$s</string>
@@ -58,11 +58,12 @@
     <string name="no_search_results">We couldn't find anything for "%1$s".</string>
     <string name="no_content_page">The requested page could not be found.</string>
 
-    <string name="route_not_found">The requested route has has no stops.</string>
+    <string name="route_not_found">The requested route has no stops.</string>
     <string name="stop_not_found">The requested stop could not be found.</string>
     <string name="trip_not_found">There are currently no trips for the requested route.</string>
 
     <string name="stops_title">Stops</string>
+    <string name="stop_detail_child_stations">Additional stops</string>
     <string name="current_stops_title">Upcoming stops</string>
     <string name="past_stops_title">Past stops</string>
     <string name="accessibility_title">Accessibility</string>
@@ -98,4 +99,37 @@
     <string name="service_accessibility_none_bikes_allowed">Bikes are allowed on no services</string>
     <string name="route_accessibility_bikes_allowed">Bikes are allowed on route</string>
     <string name="route_accessibility_no_bikes_allowed">Bikes are not allowed on route</string>
+
+    <string name="navigate_entry_select_origin">Pick a starting point</string>
+    <string name="navigate_entry_select_destination">Pick a destination</string>
+
+    <string name="time_am">am</string>
+    <string name="time_pm">pm</string>
+    <string name="day_of_week_monday">Monday</string>
+    <string name="day_of_week_tuesday">Tuesday</string>
+    <string name="day_of_week_wednesday">Wednesday</string>
+    <string name="day_of_week_thursday">Thursday</string>
+    <string name="day_of_week_friday">Friday</string>
+    <string name="day_of_week_saturday">Saturday</string>
+    <string name="day_of_week_sunday">Sunday</string>
+
+    <string name="alert_default_title">Alert</string>
+    <string name="alert_due_to">%1$s due to %2$s</string>
+    <string name="alert_accessibility_issue">accessibility issue</string>
+    <string name="alert_detour">detour</string>
+    <string name="alert_additional_service">additional service</string>
+    <string name="alert_modified_service">modified service</string>
+    <string name="alert_reduced_service">reduced service</string>
+    <string name="alert_significant_delays">significant delays</string>
+    <string name="alert_stop_moved">stop moved</string>
+    <string name="alert_strike">industrial action</string>
+    <string name="alert_accident">accident</string>
+    <string name="alert_construction">construction</string>
+    <string name="alert_demonstration">demonstration</string>
+    <string name="alert_holiday">holiday</string>
+    <string name="alert_maintenance">maintenance</string>
+    <string name="alert_medical_emergency">medical emergency</string>
+    <string name="alert_police_activity">police activity</string>
+    <string name="alert_technical_issues">technical issues</string>
+    <string name="alert_weather">weather</string>
 </resources>

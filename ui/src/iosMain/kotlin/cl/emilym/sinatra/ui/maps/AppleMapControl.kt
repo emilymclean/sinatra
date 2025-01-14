@@ -1,23 +1,34 @@
 package cl.emilym.sinatra.ui.maps
 
-import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.unit.Density
 import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.data.models.MapRegion
 import cl.emilym.sinatra.data.models.ScreenLocation
-import cl.emilym.sinatra.ui.adjustForLatitude
-import cl.emilym.sinatra.ui.toCoordinateSpan
+import cl.emilym.sinatra.data.models.ScreenRegionSizePx
 import cl.emilym.sinatra.ui.toNative
 import cl.emilym.sinatra.ui.toShared
-import io.github.aakira.napier.Napier
 import kotlinx.cinterop.ExperimentalForeignApi
+
+@Composable
+actual fun rememberMapControl(): MapControl {
+    return remember { SafeMapControl() }
+}
+
+const val ZOOM_OFFSET = 1f
 
 class AppleMapControl(
     private val state: MapKitState,
-    override val contentViewportSize: Size,
+    override val contentViewportSize: ScreenRegionSizePx,
     override val contentViewportPadding: PrecomputedPaddingValues,
-    override val bottomSheetHalfHeight: Float
+    override val bottomSheetHalfHeight: Float,
+    override val density: Density
 ): AbstractMapControl() {
+
+    override val zoom: Float
+        get() = calculateZoom(nativeZoom, visibleMapSize, density) + ZOOM_OFFSET
 
     @OptIn(ExperimentalForeignApi::class)
     override fun toScreenSpace(location: MapLocation): ScreenLocation? {
@@ -31,25 +42,12 @@ class AppleMapControl(
         return map.convertPoint(coordinate.toNative(), toCoordinateFromView = map).toShared()
     }
 
+    override val nativeZoom: Float get() = state.cameraDescription.zoom(contentViewportSize.dp(density.density))
+
     override fun showBounds(bounds: MapRegion) {
-        val center = bounds.center
-        val span = bounds.toCoordinateSpan()
         state.animate(CameraDescription(
-            center, span
+            bounds
         ))
     }
 
-    override fun showPoint(center: MapLocation, zoom: Float) {
-        state.animate(CameraDescription(
-            center,
-            zoom.toCoordinateSpan(
-                contentViewportSize
-            ).adjustForLatitude(center.lat)
-        ))
-    }
-
-    override fun zoomToPoint(location: MapLocation, zoom: Float) {
-        Napier.d("Zooming to point = $location")
-        super.zoomToPoint(location, zoom)
-    }
 }

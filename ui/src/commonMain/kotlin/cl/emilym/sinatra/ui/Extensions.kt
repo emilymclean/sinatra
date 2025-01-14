@@ -1,25 +1,28 @@
 package cl.emilym.sinatra.ui
 
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import cl.emilym.sinatra.asRadians
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.text.intl.Locale
+import androidx.compose.ui.unit.LayoutDirection
+import cl.emilym.compose.units.px
 import cl.emilym.sinatra.data.models.ColorPair
-import cl.emilym.sinatra.data.models.CoordinateSpan
 import cl.emilym.sinatra.data.models.IRouteTripStop
 import cl.emilym.sinatra.data.models.Kilometer
-import cl.emilym.sinatra.data.models.Latitude
-import cl.emilym.sinatra.data.models.MapLocation
-import cl.emilym.sinatra.data.models.MapRegion
+import cl.emilym.sinatra.data.models.LocalizableString
 import cl.emilym.sinatra.data.models.OnColor
 import cl.emilym.sinatra.data.models.OnColor.DARK
 import cl.emilym.sinatra.data.models.OnColor.LIGHT
 import cl.emilym.sinatra.data.models.Route
 import cl.emilym.sinatra.data.models.TimetableStationTime
-import cl.emilym.sinatra.degrees
-import cl.emilym.sinatra.ui.widgets.toTodayInstant
+import cl.emilym.sinatra.ui.localization.toTodayInstant
 import kotlinx.datetime.Instant
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.pluralStringResource
@@ -29,9 +32,6 @@ import sinatra.ui.generated.resources.distance_meter
 import sinatra.ui.generated.resources.time_hour
 import sinatra.ui.generated.resources.time_minute
 import sinatra.ui.generated.resources.time_second
-import kotlin.math.cos
-import kotlin.math.ln
-import kotlin.math.pow
 import kotlin.math.roundToInt
 import kotlin.time.Duration
 
@@ -99,45 +99,7 @@ fun List<TimetableStationTime>.asInstants(): List<Instant> {
     return flatMap { it.times.map { it.time.toTodayInstant() } }
 }
 
-fun Float.toCoordinateSpan(
-    viewportSize: Size
-): CoordinateSpan {
-    val span = 360 / 2.0.pow(this.toDouble())
-    return CoordinateSpan(
-        deltaLatitude = ((viewportSize.width) / 256.0) * span,
-        deltaLongitude = ((viewportSize.width) / 256.0) * span
-    )
-}
-
-fun CoordinateSpan.adjustForLatitude(latitude: Latitude): CoordinateSpan {
-    return CoordinateSpan(
-        deltaLatitude,
-        deltaLongitude * cos(latitude.degrees.asRadians)
-    )
-}
-
-fun CoordinateSpan.toZoom(): Float {
-    return listOf(deltaLatitude, deltaLongitude).map {
-        ln(360.0 / it) / ln(2.0)
-    }.max().toFloat()
-}
-
-fun MapLocation.addCoordinateSpan(span: CoordinateSpan): MapRegion {
-    val adjusted = span.adjustForLatitude(lat)
-    return MapRegion(
-        MapLocation(
-            lat + adjusted.deltaLatitude,
-            ((lng + adjusted.deltaLongitude + 180) % 360) - 180,
-        ),
-        MapLocation(
-            lat - adjusted.deltaLatitude,
-            ((lng - adjusted.deltaLongitude + 180) % 360) - 180
-        )
-    )
-}
-
 internal expect val Res.string.open_maps: StringResource
-
 
 val Kilometer.text
     @Composable
@@ -159,3 +121,29 @@ val Duration.text
         inWholeMinutes < 60 -> pluralStringResource(Res.plurals.time_minute, inWholeMinutes.toInt(), inWholeMinutes)
         else -> pluralStringResource(Res.plurals.time_hour, inWholeHours.toInt(), inWholeHours)
     }
+
+val LocalizableString.text: String
+    @Composable
+    get() = get(Locale.current.toLanguageTag())
+
+@Composable
+fun List<WindowInsets>.asPaddingValues(): PaddingValues {
+    val density = LocalDensity.current
+    return PaddingValues(
+        top = sumOf { it.getTop(density) }.px,
+        bottom = sumOf { it.getBottom(density) }.px,
+        start = sumOf { it.getLeft(density, LayoutDirection.Ltr) }.px,
+        end = sumOf { it.getRight(density, LayoutDirection.Ltr) }.px,
+    )
+}
+
+@Composable
+operator fun PaddingValues.plus(other: PaddingValues): PaddingValues {
+    val layoutDirection = LocalLayoutDirection.current
+    return PaddingValues(
+        start = this.calculateStartPadding(layoutDirection) + other.calculateStartPadding(layoutDirection),
+        top = this.calculateTopPadding() + other.calculateTopPadding(),
+        end = this.calculateEndPadding(layoutDirection) + other.calculateEndPadding(layoutDirection),
+        bottom = this.calculateBottomPadding() + other.calculateBottomPadding(),
+    )
+}

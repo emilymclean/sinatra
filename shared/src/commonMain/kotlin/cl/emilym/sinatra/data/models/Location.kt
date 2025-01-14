@@ -15,6 +15,11 @@ import kotlin.math.pow
 import kotlin.math.sin
 import kotlin.math.sqrt
 
+interface Size<T: Number> {
+    val width: T
+    val height: T
+}
+
 data class MapLocation(
     val lat: Latitude,
     val lng: Longitude
@@ -29,15 +34,30 @@ data class MapLocation(
         }
     }
 
+    fun combine(coordinateSpan: CoordinateSpan): MapRegion {
+        val halfLat = coordinateSpan.deltaLatitude / 2
+        val halfLng = coordinateSpan.deltaLongitude / 2
+        return MapRegion(
+            MapLocation(
+                lat + halfLat,
+                lng - halfLng
+            ),
+            MapLocation(
+                lat - halfLat,
+                lng + halfLat
+            )
+        ).order()
+    }
+
 }
 
 data class MapRegion(
     val topLeft: MapLocation,
     val bottomRight: MapLocation,
-) {
+): Size<Double> {
 
-    val width get() = abs(bottomRight.lat - topLeft.lat)
-    val height get() = abs(bottomRight.lng - topLeft.lng)
+    override val width get() = abs(bottomRight.lng - topLeft.lng)
+    override val height get() = abs(bottomRight.lat - topLeft.lat)
 
     fun order(): MapRegion {
         return copy(
@@ -57,6 +77,18 @@ data class MapRegion(
         ((max(topLeft.lng, bottomRight.lng) - min(topLeft.lng, bottomRight.lng)) / 2) + min(topLeft.lng, bottomRight.lng),
     )
     val center: MapLocation get() = naiveCenter
+
+    fun contains(location: MapLocation): Boolean {
+        return location.lat <= topLeft.lat && location.lat >= bottomRight.lat &&
+                location.lng >= topLeft.lng && location.lng <= bottomRight.lng
+    }
+
+    val northEast: MapLocation get() = MapLocation(
+        topLeft.lat, bottomRight.lng
+    )
+    val southWest: MapLocation get() = MapLocation(
+        bottomRight.lat, topLeft.lng
+    )
 
 }
 
@@ -96,41 +128,48 @@ data class ScreenLocation(
 data class ScreenRegion(
     val topLeft: ScreenLocation,
     val bottomRight: ScreenLocation
-) {
-    val width get() = bottomRight.x - topLeft.x
-    val height get() = bottomRight.y - topLeft.y
+): Size<Pixel> {
+    override val width get() = bottomRight.x - topLeft.x
+    override val height get() = bottomRight.y - topLeft.y
+    val size = ScreenRegionSizePx(width, height)
 
-    val aspect get() = width.toFloat() / height
+    val aspect get() = width / height
 
-    fun padded(padding: Pixel): ScreenRegion {
-        val halfPadding = padding / 2
-        return copy(
-            topLeft = ScreenLocation(
-                topLeft.x - halfPadding,
-                topLeft.y - halfPadding
-            ),
-            bottomRight = ScreenLocation(
-                bottomRight.x + halfPadding,
-                bottomRight.y + halfPadding
-            )
-        )
-    }
-
-    fun order(): ScreenRegion {
-        return copy(
-            topLeft = ScreenLocation(
-                if (topLeft.x < bottomRight.x) topLeft.x else bottomRight.x,
-                if (topLeft.y < bottomRight.y) topLeft.y else bottomRight.y
-            ),
-            bottomRight = ScreenLocation(
-                if (topLeft.x >= bottomRight.x) topLeft.x else bottomRight.x,
-                if (topLeft.y >= bottomRight.y) topLeft.y else bottomRight.y
-            )
-        )
-    }
+    val centre get() = ScreenLocation(
+        bottomRight.x - (width / 2),
+        bottomRight.y - (height / 2),
+    )
 }
 
 data class CoordinateSpan(
     val deltaLatitude: Double,
     val deltaLongitude: Double
 )
+
+data class ScreenRegionSizeDp(
+    override val width: DensityPixel,
+    override val height: DensityPixel,
+): Size<DensityPixel> {
+
+    fun px(density: Float): ScreenRegionSizePx {
+        return ScreenRegionSizePx(
+            width * density,
+            height * density
+        )
+    }
+
+}
+
+data class ScreenRegionSizePx(
+    override val width: Pixel,
+    override val height: Pixel,
+): Size<Pixel> {
+
+    fun dp(density: Float): ScreenRegionSizeDp {
+        return ScreenRegionSizeDp(
+            width / density,
+            height / density
+        )
+    }
+
+}

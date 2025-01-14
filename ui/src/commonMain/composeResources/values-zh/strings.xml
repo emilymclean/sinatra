@@ -1,0 +1,211 @@
+<resources  xmlns:tools="http://schemas.android.com/tools" tools:locale="zh-Hans-CH">
+      
+  <string name="navigation_bar_map">地图</string>
+      
+  <string name="navigation_bar_favourites">收藏夹</string>
+      
+  <string name="navigation_bar_about">关于</string>
+      
+  <string name="favourites_nothing_favourited">您收藏的任何路线或站点都可以在这里找到。</string>
+      
+  <string name="about_app_version">版本 %1$s (%2$s)</string>
+      
+  <string name="open_maps_android">在 Google Maps</string>
+      
+  <string name="open_maps_ios">在 Apple Maps</string>
+      
+  <string name="stop_detail_navigate">导航至停止</string>
+      
+  <string name="stop_detail_nearest_stop">最近的站点</string>
+      
+  <string name="stop_detail_distance">距离 %1$s</string>
+      
+  <plurals name="distance_kilometer">
+    <item quantity="other">%1$d公里</item>
+  </plurals>
+      
+  <plurals name="distance_meter">
+    <item quantity="other">%1$d米</item>
+  </plurals>
+      
+  <plurals name="time_minute">
+    <item quantity="other">%1$d分钟</item>
+  </plurals>
+      
+  <plurals name="time_second">
+    <item quantity="other">%1$d秒</item>
+  </plurals>
+      
+  <plurals name="time_hour">
+    <item quantity="other">%1$d小时</item>
+  </plurals>
+      
+  <string name="current_location">当前位置</string>
+      
+  <string name="navigate_lat_lng">%1$d，%2$d</string>
+      
+  <string name="navigate_current_location">当前位置</string>
+      
+  <string name="navigate_downloading_graph">正在加载导航信息...</string>
+      
+  <string name="navigate_calculating_journey">正在计算旅程...</string>
+      
+  <string name="navigate_calculating_journey_failed">我们找不到合适的路线</string>
+      
+  <string name="navigate_walk">步行%1$s</string>
+      
+  <string name="navigate_walk_to_stop">步行%1$s到 %2$s</string>
+      
+  <string name="navigate_travel_depart">于%2$s从 %1$s 出发</string>
+      
+  <string name="navigate_travel_arrive">于%2$s抵达 %1$s</string>
+      
+  <string name="navigate_travel">行程路线：%2$s，前往 %3$s，票价为 %1$s</string>
+      
+  <string name="navigate_travel_journey_arrive">于%2$s抵达 %1$s</string>
+      
+  <string name="navigate_travel_journey_depart">从 %1$s 出发</string>
+      
+  <string name="map_search_nearby_stops">附近站点</string>
+      
+  <string name="search_recently_viewed">最近浏览</string>
+      
+  <string name="search_hint">搜索站点或路线。</string>
+      
+  <string name="no_search_results">我们找不到关于“%1$s”的任何内容。</string>
+      
+  <string name="no_content_page">找不到所请求的页面。</string>
+      
+  <string name="route_not_found">请求的路线没有站点。</string>
+      
+  <string name="stop_not_found">找不到要求的停靠点。</string>
+      
+  <string name="trip_not_found">目前没有符合所请求路线的行程。</string>
+      
+  <string name="stops_title">站点</string>
+
+  <string name="stop_detail_child_stations">附加车站</string>
+      
+  <string name="current_stops_title">即将停靠的站点</string>
+      
+  <string name="past_stops_title">过去的站点</string>
+      
+  <string name="accessibility_title">无障碍设施</string>
+      
+  <string name="scheduled_arrival">预计于%1$s抵达</string>
+      
+  <string name="estimated_arrival">预计于 %1$s 抵达</string>
+      
+  <string name="estimated_arrival_late">预计到达时间为%1$s（晚点%2$s）</string>
+      
+  <string name="estimated_arrival_early">预计到达时间为%1$s（早%2$s）</string>
+      
+  <string name="past_departure">于 %1$s 出发</string>
+      
+  <string name="past_departure_late">于%1$s出发（晚点 %2$s）</string>
+      
+  <string name="past_departure_early">于%1$s出发（早于%2$s）</string>
+      
+  <string name="future_scheduled_departure">预计于%1$s出发</string>
+      
+  <string name="future_estimated_departure">预计于%1$s出发</string>
+      
+  <string name="future_estimated_departure_late">预计于%1$s出发（晚点%2$s）</string>
+      
+  <string name="future_estimated_departure_early">预计于%1$s出发（提前%2$s）</string>
+      
+  <string name="route_with_heading">%1$s 至 %2$s</string>
+      
+  <string name="route_heading">至 %1$s</string>
+      
+  <string name="route_code_name">路线 %1$s</string>
+      
+  <string name="upcoming_vehicles">即将开通的航线</string>
+      
+  <string name="no_upcoming_vehicles">今天剩余时间没有安排航线。</string>
+      
+  <string name="accessibility_wheelchair_accessible">轮椅无障碍</string>
+      
+  <string name="accessibility_not_wheelchair_accessible">无法轮椅通行</string>
+      
+  <string name="route_accessibility_wheelchair_accessible">这条路线适合轮椅通行</string>
+      
+  <string name="route_accessibility_not_wheelchair_accessible">这条路线不适合轮椅通行</string>
+      
+  <string name="service_accessibility_some_wheelchair_accessible">部分服务可供轮椅通行</string>
+      
+  <string name="service_accessibility_all_wheelchair_accessible">所有服务均可供轮椅通行</string>
+      
+  <string name="service_accessibility_none_wheelchair_accessible">没有提供轮椅通道的服务</string>
+      
+  <string name="service_accessibility_some_bikes_allowed">部分服务允许自行车通行</string>
+      
+  <string name="service_accessibility_all_bikes_allowed">所有交通服务均允许自行车通行</string>
+      
+  <string name="service_accessibility_none_bikes_allowed">自行车不得驶入无服务区</string>
+      
+  <string name="route_accessibility_bikes_allowed">允许自行车在此路线行驶</string>
+      
+  <string name="route_accessibility_no_bikes_allowed">禁止自行车在此路线行驶</string>
+      
+  <string name="navigate_entry_select_origin">选择一个起点</string>
+      
+  <string name="navigate_entry_select_destination">選擇目的地</string>
+
+  <string name="time_am">上午</string>
+
+  <string name="time_pm">下午</string>
+
+  <string name="day_of_week_monday">星期一</string>
+
+  <string name="day_of_week_tuesday">星期二</string>
+
+  <string name="day_of_week_wednesday">星期三</string>
+
+  <string name="day_of_week_thursday">星期四</string>
+
+  <string name="day_of_week_friday">星期五</string>
+
+  <string name="day_of_week_saturday">星期六</string>
+
+  <string name="day_of_week_sunday">星期日</string>
+
+  <string name="alert_default_title">警报</string>
+
+  <string name="alert_due_to">%1$s因为%2$s</string>
+
+  <string name="alert_accessibility_issue">可访问性问题</string>
+
+  <string name="alert_detour">車輛改道</string>
+
+  <string name="alert_additional_service">附加服务</string>
+
+  <string name="alert_modified_service">修改服务</string>
+
+  <string name="alert_reduced_service">减少服务</string>
+
+  <string name="alert_significant_delays">严重延误</string>
+
+  <string name="alert_stop_moved">停止移动</string>
+
+  <string name="alert_strike">工业行动</string>
+
+  <string name="alert_accident">事故</string>
+
+  <string name="alert_construction">建造</string>
+
+  <string name="alert_demonstration">示范</string>
+
+  <string name="alert_holiday">假期</string>
+
+  <string name="alert_maintenance">维护</string>
+
+  <string name="alert_medical_emergency">医疗紧急情况</string>
+
+  <string name="alert_police_activity">警方活动</string>
+
+  <string name="alert_technical_issues">技术问题</string>
+
+  <string name="alert_weather">天气</string>
+  
+</resources>

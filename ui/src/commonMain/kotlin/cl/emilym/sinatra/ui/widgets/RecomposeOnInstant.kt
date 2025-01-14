@@ -8,6 +8,7 @@ import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import cl.emilym.sinatra.ui.localization.LocalClock
 import kotlinx.coroutines.delay
 import kotlinx.datetime.Instant
 import kotlin.time.Duration

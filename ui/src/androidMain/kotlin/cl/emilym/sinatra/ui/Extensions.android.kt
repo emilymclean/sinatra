@@ -1,11 +1,20 @@
 package cl.emilym.sinatra.ui
 
 import android.graphics.Point
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.unit.Density
 import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.data.models.MapRegion
 import cl.emilym.sinatra.data.models.ScreenLocation
+import cl.emilym.sinatra.data.models.ScreenRegionSizePx
+import cl.emilym.sinatra.data.models.Zoom
+import cl.emilym.sinatra.ui.maps.MapProjectionProvider
+import cl.emilym.sinatra.ui.maps.calculateZoom
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
+import com.google.maps.android.compose.CameraPositionState
 import org.jetbrains.compose.resources.StringResource
 import sinatra.ui.generated.resources.Res
 import sinatra.ui.generated.resources.open_maps_android
@@ -24,11 +33,11 @@ fun LatLng.toShared(): MapLocation {
 }
 
 fun Point.toShared(): ScreenLocation {
-    return ScreenLocation(x, y)
+    return ScreenLocation(x.toFloat(), y.toFloat())
 }
 
 fun ScreenLocation.toNative(): Point {
-    return Point(x,y)
+    return Point(x.toInt(), y.toInt())
 }
 
 fun MapRegion.toNative(): LatLngBounds {
@@ -42,6 +51,18 @@ fun LatLngBounds.toShared(): MapRegion {
     return MapRegion(
         MapLocation(northeast.latitude, southwest.longitude),
         MapLocation(southwest.latitude, northeast.longitude),
+    )
+}
+
+fun MapProjectionProvider.calculateZoom(
+    cameraPositionState: CameraPositionState,
+    visibleMapSize: ScreenRegionSizePx,
+    density: Density
+): Zoom {
+    return calculateZoom(
+        cameraPositionState.position.zoom,
+        visibleMapSize,
+        density
     )
 }
 

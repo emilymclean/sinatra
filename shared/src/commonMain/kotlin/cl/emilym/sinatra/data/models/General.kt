@@ -1,5 +1,7 @@
 package cl.emilym.sinatra.data.models
 
+import com.google.transit.realtime.TranslatedString
+
 enum class AlertSeverity {
     INFO, WARNING, SEVERE;
 
@@ -16,16 +18,27 @@ enum class AlertSeverity {
     }
 }
 
-data class Alert(
-    val title: String,
-    val message: String?,
-    val severity: AlertSeverity,
-    val more: ContentLink?
-) {
+sealed interface Alert {
+    val severity: AlertSeverity
+
+    data class Content(
+        val title: String,
+        val message: String?,
+        override val severity: AlertSeverity,
+        val more: ContentLink?
+    ): Alert
+
+    data class Realtime(
+        val effect: com.google.transit.realtime.Alert.Effect?,
+        val cause: com.google.transit.realtime.Alert.Cause?,
+        val headerText: LocalizableString?,
+        val url: LocalizableString?,
+        override val severity: AlertSeverity,
+    ): Alert
 
     companion object {
         fun fromContentPB(pb: cl.emilym.gtfs.content.Banner): Alert {
-            return Alert(
+            return Alert.Content(
                 pb.title,
                 pb.message,
                 when (pb.severity) {
@@ -41,5 +54,4 @@ data class Alert(
             )
         }
     }
-
 }

@@ -1,6 +1,7 @@
 package cl.emilym.sinatra.ui.maps
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
@@ -41,21 +42,23 @@ actual fun circularIcon(color: Color, borderColor: Color, size: Dp, borderWidth:
     val canvasSize = (totalMarkerCircleSize * platformSizeAdjustment()).toIntPx()
     val markerPadding = (markerCirclePadding * platformSizeAdjustment()).toIntPx()
     val markerRadius = ((size * platformSizeAdjustment()) / 2).toIntPx()
-    return MarkerIconBuilder(
-        factory = {
-            bitmapDescriptorBuilder(
-                canvasSize, canvasSize
-            ) {
-                circle(
-                    borderColor,
-                    markerPadding - halfBorderSize,
-                    markerPadding - halfBorderSize,
-                    markerRadius + halfBorderSize
-                )
-                circle(color, markerPadding, markerPadding, markerRadius)
+    return remember(color, borderColor, size, borderWidth) {
+        MarkerIconBuilder(
+            factory = {
+                bitmapDescriptorBuilder(
+                    canvasSize, canvasSize
+                ) {
+                    circle(
+                        borderColor,
+                        markerPadding - halfBorderSize,
+                        markerPadding - halfBorderSize,
+                        markerRadius + halfBorderSize
+                    )
+                    circle(color, markerPadding, markerPadding, markerRadius)
+                }
             }
-        }
-    )
+        )
+    }
 }
 
 @Composable
@@ -77,20 +80,22 @@ actual fun spotMarkerIcon(
         setTint(borderColor.toArgb())
     }
 
-    return MarkerIconBuilder(
-        factory = {
-            bitmapDescriptorBuilder(sizePx, sizePx) {
-                drawable(borderDrawable, 0, 0, sizePx, sizePx)
-                drawable(
-                    overDrawable,
-                    borderSize, borderSize,
-                    sizePx - (borderSize * 2),
-                    sizePx - (borderSize * 2),
-                )
-            }
-        },
-        anchor = MarkerIconOffset(0.5f, 1f)
-    )
+    return remember(tint, borderColor, size) {
+        MarkerIconBuilder(
+            factory = {
+                bitmapDescriptorBuilder(sizePx, sizePx) {
+                    drawable(borderDrawable, 0, 0, sizePx, sizePx)
+                    drawable(
+                        overDrawable,
+                        borderSize, borderSize,
+                        sizePx - (borderSize * 2),
+                        sizePx - (borderSize * 2),
+                    )
+                }
+            },
+            anchor = MarkerIconOffset(0.5f, 1f)
+        )
+    }
 }
 
 actual fun platformSizeAdjustment(): Float = 1f

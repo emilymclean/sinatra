@@ -13,6 +13,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.data.models.Route
@@ -55,7 +57,11 @@ fun RouteCard(
 ) {
     ListCard(
         { RouteRandle(route) },
-        modifier,
+        Modifier
+            .semantics {
+                contentDescription = "Route listing for ${route.displayCode}"
+            }
+            .then(modifier),
         onClick
     ) {
         Text(route.name)

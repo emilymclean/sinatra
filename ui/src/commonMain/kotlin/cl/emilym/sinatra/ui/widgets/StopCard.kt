@@ -1,7 +1,6 @@
 package cl.emilym.sinatra.ui.widgets
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
@@ -10,6 +9,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.data.models.ServiceAccessibility
 import cl.emilym.sinatra.data.models.ServiceBikesAllowed
@@ -20,6 +21,8 @@ import cl.emilym.sinatra.data.models.StopAccessibility
 import cl.emilym.sinatra.data.models.StopWheelchairAccessibility
 import cl.emilym.sinatra.data.models.TimetableStationTime
 import cl.emilym.sinatra.ui.text
+import cl.emilym.sinatra.ui.localization.format
+import cl.emilym.sinatra.ui.localization.isInPast
 import org.jetbrains.compose.resources.stringResource
 import sinatra.ui.generated.resources.Res
 import sinatra.ui.generated.resources.estimated_arrival
@@ -71,7 +74,11 @@ fun StopCard(
                 }
             }
         },
-        modifier,
+        Modifier
+            .semantics {
+                contentDescription = "Stop listing"
+            }
+            .then(modifier),
         onClick,
     ) {
         Row(
