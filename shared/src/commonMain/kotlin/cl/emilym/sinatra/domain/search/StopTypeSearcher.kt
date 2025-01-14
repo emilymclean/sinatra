@@ -13,6 +13,7 @@ class StopTypeSearcher(
 
     override fun scoreMultiplier(item: Stop): Double {
         return when {
+            item.visibility.searchWeight != null -> item.visibility.searchWeight
             item.parentStation != null -> 0.75
             else -> 1.0
         }

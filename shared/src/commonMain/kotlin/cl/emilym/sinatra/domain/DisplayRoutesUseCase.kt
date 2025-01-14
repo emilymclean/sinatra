@@ -14,7 +14,7 @@ class DisplayRoutesUseCase(
     suspend operator fun invoke(): Cachable<List<Route>> {
         val ignoredRoutes = routeRepository.ignoredRoutes()
         return routeRepository.routes().map {
-            it.filterNot { it.id in ignoredRoutes }.sortedWith(compareBy(
+            it.filterNot { it.id in ignoredRoutes || it.routeVisibility.hidden }.sortedWith(compareBy(
                 { it.designation == null }, { it.code.toIntOrNull() }
             ))
         }
