@@ -1,6 +1,6 @@
 package cl.emilym.sinatra.data.models
 
-import cl.emilym.kmp.serializable.Serializable
+import cl.emilym.kmp.serializable.JavaSerializable
 import cl.emilym.sinatra.asDegrees
 import cl.emilym.sinatra.asRadians
 import cl.emilym.sinatra.degrees
@@ -23,7 +23,7 @@ interface Size<T: Number> {
 data class MapLocation(
     val lat: Latitude,
     val lng: Longitude
-): Serializable {
+): JavaSerializable {
 
     companion object {
         fun fromPB(pb: cl.emilym.gtfs.Location): MapLocation {

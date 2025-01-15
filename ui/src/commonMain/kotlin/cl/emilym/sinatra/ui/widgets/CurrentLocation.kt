@@ -8,7 +8,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import cl.emilym.sinatra.data.models.MapLocation
-import dev.icerock.moko.permissions.Permission
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 

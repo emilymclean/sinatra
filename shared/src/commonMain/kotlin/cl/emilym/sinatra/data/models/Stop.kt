@@ -1,7 +1,7 @@
 package cl.emilym.sinatra.data.models
 
 import cl.emilym.gtfs.WheelchairStopAccessibility
-import cl.emilym.kmp.serializable.Serializable
+import cl.emilym.kmp.serializable.JavaSerializable
 import kotlinx.datetime.Instant
 import kotlin.time.Duration
 
@@ -15,7 +15,7 @@ data class Stop(
     val location: MapLocation,
     val accessibility: StopAccessibility,
     val visibility: StopVisibility
-): Serializable {
+): JavaSerializable {
 
     companion object {
         @Deprecated("Replaced by visibility.visibleZoomedOut & visibility.visibleZoomedIn")
@@ -76,7 +76,7 @@ data class StopWithDistance(
 
 data class StopAccessibility(
     val wheelchair: StopWheelchairAccessibility
-): Serializable {
+): JavaSerializable {
 
     companion object {
         fun fromPB(pb: cl.emilym.gtfs.StopAccessibility): StopAccessibility {

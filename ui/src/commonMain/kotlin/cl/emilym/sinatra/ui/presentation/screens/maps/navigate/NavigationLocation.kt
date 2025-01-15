@@ -1,7 +1,7 @@
 package cl.emilym.sinatra.ui.presentation.screens.maps.navigate
 
 import androidx.compose.runtime.Composable
-import cl.emilym.kmp.serializable.Serializable
+import cl.emilym.kmp.serializable.JavaSerializable
 import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.data.models.Place
 import cl.emilym.sinatra.data.models.RecentVisit
@@ -12,7 +12,7 @@ import sinatra.ui.generated.resources.Res
 import sinatra.ui.generated.resources.navigate_lat_lng
 import sinatra.ui.generated.resources.navigate_current_location
 
-sealed interface NavigationLocation: Serializable {
+sealed interface NavigationLocation: JavaSerializable {
     interface LocatableNavigationLocation: NavigationLocation {
         val location: MapLocation
     }

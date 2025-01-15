@@ -15,13 +15,12 @@ compose-viewmodel = "2.8.2"
 compose-adaptive = "1.0.0"
 compose-adaptive-navigation-suite = "1.7.0"
 compose-plugin = "1.7.0"
-parcelable = "0.1.1"
-serializable = "0.1.1"
+serializable = "0.1.4"
 kotlin-datetime = "0.6.1"
 coil-compose = "3.0.0-rc01"
-units = "2.0.0"
-requeststate = "2.0.0"
-errorwidget = "2.0.0"
+units = "2.0.3"
+requeststate = "2.0.2"
+errorwidget = "2.0.2"
 koin = "4.0.0"
 koin-annotations = "1.4.0"
 kotlinx-serialization = "1.7.3"
@@ -95,7 +94,6 @@ ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "kto
 
 # Emily
 emily-units = { module = "cl.emilym.compose:units", version.ref = "units" }
-emily-parcelable = { module = "cl.emilym.kmp:parcelable", version.ref = "parcelable" }
 emily-serializable = { module = "cl.emilym.kmp:serializable", version.ref = "serializable" }
 emily-requeststate = { module = "cl.emilym.compose:requeststate", version.ref = "requeststate" }
 emily-errorwidget = { module = "cl.emilym.compose:errorwidget", version.ref = "errorwidget" }

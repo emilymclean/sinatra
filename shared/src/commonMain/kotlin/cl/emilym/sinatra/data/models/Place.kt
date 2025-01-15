@@ -1,6 +1,6 @@
 package cl.emilym.sinatra.data.models
 
-import cl.emilym.kmp.serializable.Serializable
+import cl.emilym.kmp.serializable.JavaSerializable
 import cl.emilym.sinatra.data.models.dto.NominatimPlace
 
 data class Place(
@@ -8,7 +8,7 @@ data class Place(
     val name: String,
     val displayName: String,
     val location: MapLocation
-): Serializable {
+): JavaSerializable {
 
     companion object {
 

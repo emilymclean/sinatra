@@ -2,7 +2,7 @@ package cl.emilym.sinatra.ui
 
 import cafe.adriel.voyager.core.registry.ScreenProvider
 import cafe.adriel.voyager.navigator.Navigator
-import cl.emilym.kmp.serializable.Serializable
+import cl.emilym.kmp.serializable.JavaSerializable
 import cl.emilym.sinatra.data.models.Place
 import cl.emilym.sinatra.data.models.Route
 import cl.emilym.sinatra.data.models.Stop
@@ -11,7 +11,7 @@ import cl.emilym.sinatra.ui.presentation.screens.maps.StopDetailScreen
 import cl.emilym.sinatra.ui.presentation.screens.maps.navigate.NavigateEntryScreen
 import cl.emilym.sinatra.ui.presentation.screens.maps.navigate.NavigationLocation
 
-sealed interface ScreenRoute: ScreenProvider, Serializable {}
+sealed interface ScreenRoute: ScreenProvider, JavaSerializable {}
 
 fun Navigator.placeCardDefaultNavigation(place: Place) {
     push(NavigateEntryScreen(NavigationLocation.Place(place)))

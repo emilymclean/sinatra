@@ -24,6 +24,8 @@ kotlin {
     iosX64()
     iosArm64()
     iosSimulatorArm64()
+    macosX64()
+    macosArm64()
 
     cocoapods {
         summary = "Some description for the Shared Module"
@@ -43,6 +45,7 @@ kotlin {
             implementation(libs.maps.compose)
             implementation(libs.androidx.activity.compose)
             implementation(libs.play.services.location)
+            implementation(libs.moko.permissions)
         }
         commonMain.dependencies {
             implementation(project(":shared"))
@@ -74,17 +77,15 @@ kotlin {
             implementation(libs.coil.compose)
             implementation(libs.coil.network)
 
-            // Location
-            implementation(libs.moko.permissions)
-            implementation(libs.moko.permissions)
-
             // Voyager
             implementation(libs.voyager.navigator)
             // https://github.com/adrielcafe/voyager/issues/515
 //            implementation(libs.voyager.koin)
             implementation(libs.voyager.screenmodel)
         }
-        iosMain.dependencies {}
+        iosMain.dependencies {
+            implementation(libs.moko.permissions)
+        }
         iosMain {
             kotlin.srcDir("build/generated/ksp/metadata")
             kotlin.srcDir("src/iosMain/resources")
