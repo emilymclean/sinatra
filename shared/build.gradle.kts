@@ -98,11 +98,15 @@ dependencies {
     add("kspIosX64", libs.koin.ksp.compiler)
     add("kspIosArm64", libs.koin.ksp.compiler)
     add("kspIosSimulatorArm64", libs.koin.ksp.compiler)
+    add("kspMacosArm64", libs.koin.ksp.compiler)
+    add("kspMacosX64", libs.koin.ksp.compiler)
 
     add("kspAndroid", libs.room.compiler)
     add("kspIosX64", libs.room.compiler)
     add("kspIosArm64", libs.room.compiler)
     add("kspIosSimulatorArm64", libs.room.compiler)
+    add("kspMacosX64", libs.room.compiler)
+    add("kspMacosArm64", libs.room.compiler)
 }
 
 room {

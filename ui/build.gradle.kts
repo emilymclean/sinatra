@@ -87,8 +87,11 @@ kotlin {
             implementation(libs.moko.permissions)
         }
         iosMain {
-            kotlin.srcDir("build/generated/ksp/metadata")
             kotlin.srcDir("src/iosMain/resources")
+        }
+        appleMain {
+            kotlin.srcDir("build/generated/ksp/metadata")
+            kotlin.srcDir("src/appleMain/resources")
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
@@ -107,6 +110,8 @@ dependencies {
     add("kspAndroid", libs.koin.ksp.compiler)
     add("kspIosX64", libs.koin.ksp.compiler)
     add("kspIosArm64", libs.koin.ksp.compiler)
+    add("kspMacosArm64", libs.koin.ksp.compiler)
+    add("kspMacosX64", libs.koin.ksp.compiler)
     add("kspIosSimulatorArm64", libs.koin.ksp.compiler)
 }
 
