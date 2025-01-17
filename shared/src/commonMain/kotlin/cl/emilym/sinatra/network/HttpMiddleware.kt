@@ -11,6 +11,7 @@ import cl.emilym.gtfs.StopDetailEndpoint
 import cl.emilym.gtfs.StopEndpoint
 import cl.emilym.gtfs.StopTimetable
 import cl.emilym.gtfs.content.Pages
+import cl.emilym.sinatra.BuildKonfig
 import cl.emilym.sinatra.NoApiUrlException
 import cl.emilym.sinatra.data.repository.LocaleRepository
 import cl.emilym.sinatra.data.repository.RemoteConfigRepository
@@ -34,7 +35,6 @@ import kotlinx.serialization.json.Json
 import org.koin.core.annotation.Factory
 import pbandk.decodeFromByteArray
 
-const val TEMPORARY_URL_GTFS = "replaceable-main-api.com"
 const val TEMPORARY_URL_NOMINATIM = "replaceable-nomatim.com"
 
 expect val engine: HttpClientEngine
@@ -44,10 +44,6 @@ fun urlReplaceInterceptor(
 ): suspend Sender.(HttpRequestBuilder) -> HttpClientCall {
     return { request ->
         when(request.url.host) {
-            TEMPORARY_URL_GTFS -> {
-                val realUrl = remoteConfigRepository.apiUrl()
-                request.url(request.url.buildString().replace(TEMPORARY_URL_GTFS, realUrl))
-            }
             TEMPORARY_URL_NOMINATIM -> {
                 val realUrl = remoteConfigRepository.nominatimUrl()
                 request.url(request.url.buildString().replace(TEMPORARY_URL_NOMINATIM, realUrl ?: throw NoApiUrlException()))
@@ -123,7 +119,7 @@ fun gtfsApi(
     ktorfitBuilder: Ktorfit.Builder,
 ): GtfsApi {
     return ktorfitBuilder.build {
-        baseUrl("https://$TEMPORARY_URL_GTFS/canberra/v1/")
+        baseUrl(BuildKonfig.apiUrl)
     }.createGtfsApi()
 }
 

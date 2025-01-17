@@ -1,4 +1,6 @@
+import com.codingfeline.buildkonfig.compiler.FieldSpec.Type.STRING
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -8,6 +10,24 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.ktorfit)
     alias(libs.plugins.room)
+    id("com.codingfeline.buildkonfig")
+}
+
+fun loadProperties(file: File): Properties {
+    val props = Properties()
+    if (file.exists()) {
+        file.inputStream().use { props.load(it) }
+    }
+    return props
+}
+
+val localProperties = loadProperties(rootProject.file("local.properties"))
+val localDefaultsProperties = loadProperties(rootProject.file("local.defaults.properties"))
+
+fun propertyValue(key: String): String? {
+    return project.findProperty(key)?.toString() ?:
+    localProperties.getProperty(key) ?:
+    localDefaultsProperties.getProperty(key)
 }
 
 kotlin {
@@ -116,5 +136,15 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
+    }
+}
+
+buildkonfig {
+    packageName = "cl.emilym.sinatra"
+
+    defaultConfigs {
+        defaultConfigs {
+            buildConfigField(STRING, "apiUrl", propertyValue("apiUrl")!!)
+        }
     }
 }
