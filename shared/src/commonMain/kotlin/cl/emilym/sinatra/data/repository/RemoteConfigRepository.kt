@@ -11,17 +11,11 @@ class RemoteConfigRepository(
 ) {
 
     companion object {
-        const val API_URL_KEY = "api_url"
         const val DATA_CACHE_PERIOD_MULTIPLIER_KEY = "data_cache_period_multiplier"
         const val NOMINATIM_API_URL_KEY = "nominatim_api_url"
         const val NOMINATIM_EMAIL_KEY = "nominatim_email"
         const val NOMINATIM_USER_AGENT_KEY = "nominatim_user_agent"
         const val CONTENT_URL_KEY = "content_url"
-    }
-
-    @Throws(NoApiUrlException::class, CancellationException::class)
-    suspend fun apiUrl(): String {
-        return remoteConfigClient.string(API_URL_KEY) ?: throw NoApiUrlException()
     }
 
     suspend fun nominatimUrl(): String? {
