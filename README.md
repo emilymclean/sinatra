@@ -35,17 +35,22 @@ you need, fast and frustration-free.
 Made with 🩷 in Canberra, Australia.
 
 ## Running the App
+### Prebuilt
 Universal Android APKs are automatically built for both the develop and main branch, the latest of
 which can be found [here](https://github.com/emilymclean/sinatra/releases/latest). The build named
 "debug" automatically points at the development environment, while "release" points at production.
 Note that release builds built on the develop branch may not be functional, while develop builds
 may quickly become out of date.
 
-To build from source, the app requires the provisioning of a Google Maps API key on Android, as well 
-as a Firebase project with both Crashlytics and Remote Config enabled. The values gathered from 
-Remote Config can be found in `RemoteConfigRepository.kt` and most are optional, however `api_url`
-**must** be set to a valid [GTFS api endpoint](https://github.com/emilymclean/gtfs-api). Likewise, to enable address resolution, 
-`nominatim_api_url` must also be provided.
+### From Source
+To build from source, the app requires a Google Maps API key on Android, as well 
+as a Firebase project with Firebase Crashlytics and Remote Config enabled. The values the project 
+uses can be found in `RemoteConfigRepository.kt`. The Firebase project should have four targets configured:
+* `cl.emilym.sinatra` for Android and iOS
+* `cl.emilym.sinatra.develop` for Android and iOS
+
+Once you have these set up, the `setup-environment.sh` is able to complete the setup of your local
+development environment, from which you can contribute to or build the app.
 
 ## Technical Details
 Sinatra is a Compose/Kotlin Multiplatform app that targets both Android and iOS. The majority of the

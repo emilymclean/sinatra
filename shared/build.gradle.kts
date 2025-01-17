@@ -144,7 +144,7 @@ buildkonfig {
 
     defaultConfigs {
         defaultConfigs {
-            buildConfigField(STRING, "apiUrl", propertyValue("apiUrl")!!)
+            buildConfigField(STRING, "apiUrl", propertyValue("apiUrl")!!, const = true)
         }
     }
 }
