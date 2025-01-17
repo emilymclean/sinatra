@@ -3,7 +3,7 @@ package cl.emilym.sinatra.ui
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
+import cl.emilym.sinatra.ui.widgets.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.text.intl.Locale
@@ -70,7 +70,7 @@ class AppScreen: Screen {
     override fun Content() {
         val viewModel = koinScreenModel<AppViewModel>()
         val permissionQueue = remember { PermissionRequestQueue() }
-        val timeZone by viewModel.scheduleTimeZone.collectAsState(TimeZone.currentSystemDefault())
+        val timeZone by viewModel.scheduleTimeZone.collectAsStateWithLifecycle()
 
         val currentLocale = Locale.current
         LaunchedEffect(currentLocale) {

@@ -20,7 +20,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
+import cl.emilym.sinatra.ui.widgets.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -96,10 +96,10 @@ class NavigateEntryScreen(
     @Composable
     override fun mapItems(): List<MapItem> {
         val viewModel = koinScreenModel<NavigationEntryViewModel>()
-        val state by viewModel.state.collectAsState(null)
+        val state by viewModel.state.collectAsStateWithLifecycle()
         val journey = ((state as? NavigationEntryState.Journey)?.state as? NavigationState.JourneyFound)?.journey ?: return emptyList()
-        val originLocation by viewModel.originLocation.collectAsState()
-        val destinationLocation by viewModel.destinationLocation.collectAsState()
+        val originLocation by viewModel.originLocation.collectAsStateWithLifecycle()
+        val destinationLocation by viewModel.destinationLocation.collectAsStateWithLifecycle()
 
         val items = mutableListOf<MapItem>()
 
@@ -168,7 +168,7 @@ class NavigateEntryScreen(
     @Composable
     override fun BottomSheetContent() {
         val viewModel = koinScreenModel<NavigationEntryViewModel>()
-        val state by viewModel.state.collectAsState(null)
+        val state by viewModel.state.collectAsStateWithLifecycle()
         val currentLocation = currentLocation()
 
         val hasLocationPermission = hasLocationPermission()
@@ -196,8 +196,8 @@ class NavigateEntryScreen(
 
         val bottomSheet = LocalBottomSheetState.current
         val mapControl = LocalMapControl.current
-        val originLocation by viewModel.originLocation.collectAsState()
-        val destinationLocation by viewModel.destinationLocation.collectAsState()
+        val originLocation by viewModel.originLocation.collectAsStateWithLifecycle()
+        val destinationLocation by viewModel.destinationLocation.collectAsStateWithLifecycle()
         val zoomPadding = zoomPadding
 
         LaunchedEffect(state) {
@@ -274,8 +274,8 @@ class NavigateEntryScreen(
                                 .clip(MaterialTheme.shapes.large)
                                 .background(Container)
                         ) {
-                            val origin by viewModel.origin.collectAsState()
-                            val destination by viewModel.destination.collectAsState()
+                            val origin by viewModel.origin.collectAsStateWithLifecycle()
+                            val destination by viewModel.destination.collectAsStateWithLifecycle()
                             origin?.let { origin ->
                                 NavigationLocationDisplay(
                                     origin,
@@ -366,8 +366,8 @@ class NavigateEntryScreen(
         val lastLeg = journey.legs.last()
         val firstLeg = journey.legs.first()
         val viewModel = koinScreenModel<NavigationEntryViewModel>()
-        val destination by viewModel.destination.collectAsState()
-        val origin by viewModel.origin.collectAsState()
+        val destination by viewModel.destination.collectAsStateWithLifecycle()
+        val origin by viewModel.origin.collectAsStateWithLifecycle()
 
         Column(Modifier.fillMaxWidth()) {
             when (firstLeg) {

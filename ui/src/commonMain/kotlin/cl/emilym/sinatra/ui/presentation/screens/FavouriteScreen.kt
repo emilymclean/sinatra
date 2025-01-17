@@ -12,11 +12,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.core.screen.ScreenKey
@@ -33,12 +31,13 @@ import cl.emilym.sinatra.ui.presentation.screens.maps.StopDetailScreen
 import cl.emilym.sinatra.ui.widgets.ListHint
 import cl.emilym.sinatra.ui.widgets.PlaceCard
 import cl.emilym.sinatra.ui.widgets.RouteCard
+import cl.emilym.sinatra.ui.widgets.SinatraScreenModel
 import cl.emilym.sinatra.ui.widgets.StarOutlineIcon
 import cl.emilym.sinatra.ui.widgets.StopCard
+import cl.emilym.sinatra.ui.widgets.collectAsStateWithLifecycle
 import cl.emilym.sinatra.ui.widgets.createRequestStateFlowFlow
 import cl.emilym.sinatra.ui.widgets.handleFlowProperly
-import cl.emilym.sinatra.ui.widgets.presentable
-import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.koin.core.annotation.Factory
@@ -49,10 +48,10 @@ import sinatra.ui.generated.resources.navigation_bar_favourites
 @Factory
 class FavouriteViewModel(
     private val favouriteRepository: FavouriteRepository
-): ScreenModel {
+): SinatraScreenModel {
 
     private val _favourites = createRequestStateFlowFlow<List<Favourite>>()
-    val favourites: Flow<RequestState<List<Favourite>>> = _favourites.presentable()
+    val favourites: StateFlow<RequestState<List<Favourite>>> = _favourites.presentable()
 
     init {
         retry()
@@ -82,7 +81,7 @@ class FavouriteScreen: Screen {
                 )
             }
         ) { internalPadding ->
-            val favourites by viewModel.favourites.collectAsState(RequestState.Initial())
+            val favourites by viewModel.favourites.collectAsStateWithLifecycle()
             Box(
                 Modifier.fillMaxSize().padding(internalPadding),
                 contentAlignment = Alignment.Center

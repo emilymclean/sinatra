@@ -1,5 +1,7 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jetbrains.kotlin.gradle.tasks.KotlinNativeCompile
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -43,6 +45,7 @@ kotlin {
             implementation(libs.maps.compose)
             implementation(libs.androidx.activity.compose)
             implementation(libs.play.services.location)
+            implementation(libs.androidx.lifecycle.runtime.compose)
         }
         commonMain.dependencies {
             implementation(project(":shared"))

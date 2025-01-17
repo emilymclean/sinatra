@@ -1,6 +1,5 @@
 package cl.emilym.sinatra.ui.presentation.screens.maps.navigate
 
-import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import cl.emilym.compose.requeststate.RequestState
 import cl.emilym.compose.requeststate.handle
@@ -22,9 +21,9 @@ import cl.emilym.sinatra.ui.NEAREST_STOP_RADIUS
 import cl.emilym.sinatra.ui.presentation.screens.maps.search.NEARBY_STOPS_LIMIT
 import cl.emilym.sinatra.ui.presentation.screens.search.SearchScreenViewModel
 import cl.emilym.sinatra.ui.presentation.screens.search.searchHandler
+import cl.emilym.sinatra.ui.widgets.SinatraScreenModel
 import cl.emilym.sinatra.ui.widgets.createRequestStateFlowFlow
 import cl.emilym.sinatra.ui.widgets.handleFlowProperly
-import cl.emilym.sinatra.ui.widgets.presentable
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -32,15 +31,14 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
-import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.koin.android.annotation.KoinViewModel
 import org.koin.core.annotation.Factory
 
 private sealed interface State {
@@ -66,7 +64,7 @@ class NavigationEntryViewModel(
     private val networkGraphRepository: NetworkGraphRepository,
     private val recentVisitRepository: RecentVisitRepository,
     private val stopRepository: StopRepository
-): ScreenModel, SearchScreenViewModel {
+): SinatraScreenModel, SearchScreenViewModel {
 
     override val query = MutableStateFlow<String?>(null)
 
@@ -107,12 +105,12 @@ class NavigationEntryViewModel(
             is RequestState.Success -> RequestState.Success(it.value.filter { it !is RecentVisit.Route })
             else -> it
         }
-    }
+    }.state(RequestState.Initial())
 
     private val navigationState = MutableStateFlow<NavigationState>(NavigationState.GraphLoading)
     private val _state = MutableStateFlow<State>(State.Journey)
 
-    override val nearbyStops: Flow<List<StopWithDistance>?> = stops.combine(lastLocation) { stops, lastLocation ->
+    override val nearbyStops: StateFlow<List<StopWithDistance>?> = stops.combine(lastLocation) { stops, lastLocation ->
         if (stops !is RequestState.Success || lastLocation == null) return@combine null
         val stops = stops.value.nullIfEmpty() ?: return@combine null
         stops.map { StopWithDistance(it, distance(lastLocation, it.location)) }
@@ -120,7 +118,7 @@ class NavigationEntryViewModel(
             .nullIfEmpty()
             ?.sortedBy { it.distance }
             ?.take(NEARBY_STOPS_LIMIT)
-    }
+    }.state(null)
 
     val state = _state.flatMapLatest {
         when (it) {
@@ -132,14 +130,14 @@ class NavigationEntryViewModel(
                 }
             ) }
         }
-    }.stateIn(screenModelScope, SharingStarted.Eagerly, State.Journey)
+    }.state(State.Journey)
 
     override val results = state.mapLatest {
         when (it) {
             is NavigationEntryState.Search -> it.results
             else -> RequestState.Initial()
         }
-    }
+    }.state(RequestState.Initial())
 
     fun init(destination: NavigationLocation, origin: NavigationLocation) {
         retryLoadingGraph()

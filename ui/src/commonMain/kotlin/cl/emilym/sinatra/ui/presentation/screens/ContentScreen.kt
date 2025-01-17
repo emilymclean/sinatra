@@ -16,7 +16,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
+import cl.emilym.sinatra.ui.widgets.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -77,7 +77,7 @@ open class ContentScreen(
     @Composable
     override fun Content() {
         val viewModel = koinScreenModel<ContentViewModel>()
-        val content by viewModel.content.collectAsState(RequestState.Initial())
+        val content by viewModel.content.collectAsStateWithLifecycle()
 
         LaunchedEffect(id) {
             viewModel.init(id)
