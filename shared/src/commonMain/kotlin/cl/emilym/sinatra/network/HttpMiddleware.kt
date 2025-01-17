@@ -35,23 +35,7 @@ import kotlinx.serialization.json.Json
 import org.koin.core.annotation.Factory
 import pbandk.decodeFromByteArray
 
-const val TEMPORARY_URL_NOMINATIM = "replaceable-nomatim.com"
-
 expect val engine: HttpClientEngine
-
-fun urlReplaceInterceptor(
-    remoteConfigRepository: RemoteConfigRepository
-): suspend Sender.(HttpRequestBuilder) -> HttpClientCall {
-    return { request ->
-        when(request.url.host) {
-            TEMPORARY_URL_NOMINATIM -> {
-                val realUrl = remoteConfigRepository.nominatimUrl()
-                request.url(request.url.buildString().replace(TEMPORARY_URL_NOMINATIM, realUrl ?: throw NoApiUrlException()))
-            }
-        }
-        execute(request)
-    }
-}
 
 fun loggingInterceptor(): suspend Sender.(HttpRequestBuilder) -> HttpClientCall {
     return { request ->
@@ -71,7 +55,6 @@ fun languagesHeader(
 
 @Factory
 fun ktorDependency(
-    remoteConfigRepository: RemoteConfigRepository,
     localeRepository: LocaleRepository
 ) = HttpClient(engine) {
     install(ContentNegotiation) {
@@ -80,7 +63,6 @@ fun ktorDependency(
         })
     }
 }.apply {
-    plugin(HttpSend).intercept(urlReplaceInterceptor(remoteConfigRepository))
     plugin(HttpSend).intercept(languagesHeader(localeRepository))
     plugin(HttpSend).intercept(loggingInterceptor())
 }
@@ -127,7 +109,5 @@ fun gtfsApi(
 fun nominatimApi(
     ktorfitBuilder: Ktorfit.Builder
 ): NominatimApi {
-    return ktorfitBuilder.build {
-        baseUrl("https://$TEMPORARY_URL_NOMINATIM/")
-    }.createNominatimApi()
+    return ktorfitBuilder.build {}.createNominatimApi()
 }

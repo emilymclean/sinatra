@@ -4,11 +4,13 @@ import cl.emilym.sinatra.data.models.dto.NominatimPlace
 import de.jensklingenberg.ktorfit.http.GET
 import de.jensklingenberg.ktorfit.http.Header
 import de.jensklingenberg.ktorfit.http.Query
+import de.jensklingenberg.ktorfit.http.Url
 
 interface NominatimApi {
 
-    @GET("search")
+    @GET
     suspend fun search(
+        @Url url: String,
         @Query("q") query: String,
         @Query("format") format: String = "jsonv2",
         @Query("countrycodes") countryCodes: List<String> = listOf("au"),

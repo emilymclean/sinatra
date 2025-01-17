@@ -1,6 +1,5 @@
 package cl.emilym.sinatra.data.client
 
-import cl.emilym.sinatra.BuildInformation
 import cl.emilym.sinatra.data.models.Place
 import cl.emilym.sinatra.data.repository.RemoteConfigRepository
 import cl.emilym.sinatra.network.NominatimApi
@@ -23,6 +22,7 @@ class PlaceClient(
     @OptIn(ExperimentalUuidApi::class)
     suspend fun search(query: String): List<Place> {
         val response = nominatimApi.search(
+            "https://${remoteConfigRepository.nominatimUrl() ?: return emptyList()}/search",
             query,
             userAgent = remoteConfigRepository.nominatimUserAgent(),
             email = remoteConfigRepository.nominatimEmail()
