@@ -79,6 +79,7 @@ function buildJob(
       "${{ matrix.build.module }}:\(command)${{ matrix.build.command }}\(postCommand)",
       new Mapping {
         ["ORG_GRADLE_PROJECT_appVersionName"] = "${{ needs.version.outputs.version }}"
+        ["ORG_GRADLE_PROJECT_apiUrl"] = "${{ matrix.build.release && vars.PRODUCTION_API_URL || vars.DEVELOP_API_URL }}"
         ["ORG_GRADLE_PROJECT_appVersionCode"] = if (hasInstant)
             "${{ matrix.build.instant && needs.version-instant.outputs.versionCode || needs.version.outputs.versionCode }}"
           else

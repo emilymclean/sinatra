@@ -90,6 +90,7 @@ jobs:
     - name: Build with Gradle
       env:
         ORG_GRADLE_PROJECT_appVersionName: ${{ needs.version.outputs.version }}
+        ORG_GRADLE_PROJECT_apiUrl: ${{ matrix.build.release && vars.PRODUCTION_API_URL || vars.DEVELOP_API_URL }}
         ORG_GRADLE_PROJECT_appVersionCode: ${{ needs.version.outputs.versionCode }}
       run: ./gradlew ${{ matrix.build.module }}:package${{ matrix.build.command }}UniversalApk
     - id: sign
@@ -213,6 +214,7 @@ jobs:
     - name: Build with Gradle
       env:
         ORG_GRADLE_PROJECT_appVersionName: ${{ needs.version.outputs.version }}
+        ORG_GRADLE_PROJECT_apiUrl: ${{ matrix.build.release && vars.PRODUCTION_API_URL || vars.DEVELOP_API_URL }}
         ORG_GRADLE_PROJECT_appVersionCode: ${{ needs.version.outputs.versionCode }}
       run: ./gradlew ${{ matrix.build.module }}:bundle${{ matrix.build.command }}
     - id: sign
