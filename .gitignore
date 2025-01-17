@@ -147,3 +147,7 @@ ui/src/iosMain/kotlin/cl/emilym/sinatra/ui/NominatimInformation.kt
 iosApp/iosApp/Firebase/GoogleService-Info-Debug.plist
 
 iosApp/iosApp/Firebase/GoogleService-Info-Release.plist
+
+androidApp/src/debug/google-services.json
+
+androidApp/src/main/google-services.json
