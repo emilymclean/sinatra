@@ -48,9 +48,6 @@ read -p "Enter a Firebase project ID: " project_id
 
 read -p "Enter a Google Maps API Key: " maps_api_key
 
-read -p "Enter a server url [https://develop.api.sinatra-transport.com]: " api_endpoint
-api_endpoint="${api_endpoint:-https://develop.api.sinatra-transport.com}"
-
 app_list="$(firebase apps:list --non-interactive --project "$project_id" --json)"
 readarray -t app_namespaces < <(jq -r '.result[] | "\(.namespace) \(.platform)"' <<< "$app_list")
 readarray -t app_ids < <(jq -r '.result[].appId' <<< "$app_list")
@@ -69,7 +66,5 @@ firebase apps:sdkconfig --non-interactive --project "$project_id" IOS "${app_ids
 firebase apps:sdkconfig --non-interactive --project "$project_id" IOS "${app_ids[$(index_of "cl.emilym.sinatra IOS" "${app_namespaces[@]}")]}" > iosApp/iosApp/Firebase/GoogleService-Info-Release.plist
 
 touch secrets.properties
-touch local.properties
 
 update_property secrets.properties "MAPS_API_KEY" "$maps_api_key"
-update_property local.properties "apiUrl" "$api_endpoint"
