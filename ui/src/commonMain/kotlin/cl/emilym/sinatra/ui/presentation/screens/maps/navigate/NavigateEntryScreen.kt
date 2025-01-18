@@ -27,6 +27,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.unit.dp
+import cafe.adriel.voyager.core.annotation.ExperimentalVoyagerApi
+import cafe.adriel.voyager.core.lifecycle.LifecycleEffectOnce
 import cafe.adriel.voyager.core.screen.ScreenKey
 import cafe.adriel.voyager.koin.koinScreenModel
 import cl.emilym.compose.errorwidget.ErrorWidget
@@ -165,6 +167,7 @@ class NavigateEntryScreen(
         return items
     }
 
+    @OptIn(ExperimentalVoyagerApi::class)
     @Composable
     override fun BottomSheetContent() {
         val viewModel = koinScreenModel<NavigationEntryViewModel>()
@@ -172,7 +175,7 @@ class NavigateEntryScreen(
         val currentLocation = currentLocation()
 
         val hasLocationPermission = hasLocationPermission()
-        LaunchedEffect(destination, origin) {
+        LifecycleEffectOnce {
             viewModel.init(
                 destination,
                 origin ?: (

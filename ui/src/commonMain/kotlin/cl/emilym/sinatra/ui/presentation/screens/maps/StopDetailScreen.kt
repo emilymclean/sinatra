@@ -27,6 +27,8 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
+import cafe.adriel.voyager.core.annotation.ExperimentalVoyagerApi
+import cafe.adriel.voyager.core.lifecycle.LifecycleEffectOnce
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import cafe.adriel.voyager.core.screen.ScreenKey
@@ -164,6 +166,7 @@ class StopDetailScreen(
 ): MapScreen {
     override val key: ScreenKey = "${this::class.qualifiedName!!}/$stopId"
 
+    @OptIn(ExperimentalVoyagerApi::class)
     @Composable
     override fun BottomSheetContent() {
         val viewModel = koinScreenModel<StopDetailViewModel>()
@@ -175,7 +178,7 @@ class StopDetailScreen(
             bottomSheetState?.bottomSheetState?.halfExpand()
         }
 
-        LaunchedEffect(stopId) {
+        LifecycleEffectOnce {
             viewModel.init(stopId)
         }
 

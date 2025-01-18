@@ -24,6 +24,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
+import cafe.adriel.voyager.core.annotation.ExperimentalVoyagerApi
+import cafe.adriel.voyager.core.lifecycle.LifecycleEffectOnce
 import cafe.adriel.voyager.core.model.screenModelScope
 import cafe.adriel.voyager.core.screen.ScreenKey
 import cafe.adriel.voyager.koin.koinScreenModel
@@ -205,7 +207,7 @@ class RouteDetailScreen(
 
     override val key: ScreenKey = "${this::class.qualifiedName!!}/$routeId/$serviceId/$tripId/$stopId/$_startOfDay"
 
-    @OptIn(ExperimentalMaterial3Api::class)
+    @OptIn(ExperimentalMaterial3Api::class, ExperimentalVoyagerApi::class)
     @Composable
     override fun BottomSheetContent() {
         val viewModel = koinScreenModel<RouteDetailViewModel>()
@@ -215,7 +217,7 @@ class RouteDetailScreen(
             bottomSheetState?.bottomSheetState?.halfExpand()
         }
 
-        LaunchedEffect(routeId, serviceId, tripId, startOfDay) {
+        LifecycleEffectOnce {
             viewModel.init(routeId, serviceId, tripId, startOfDay)
         }
 
