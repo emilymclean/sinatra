@@ -4,7 +4,16 @@ import kotlin.time.Duration
 
 data class Journey(
     val legs: List<JourneyLeg>
-)
+) {
+
+    val departureTime: Time
+        get() = legs.first().departureTime
+    val arrivalTime: Time
+        get() = legs.last().arrivalTime
+
+    val deduplicationKey by lazy { legs.joinToString(";") { it.deduplicationKey } }
+
+}
 
 sealed interface JourneyLeg {
     interface RouteJourneyLeg: JourneyLeg {
@@ -14,13 +23,19 @@ sealed interface JourneyLeg {
     val travelTime: Duration
     val departureTime: Time
     val arrivalTime: Time
+    val deduplicationKey: String
 
     data class Transfer(
         override val stops: List<Stop>,
         override val travelTime: Duration,
         override val departureTime: Time,
         override val arrivalTime: Time
-    ): JourneyLeg, RouteJourneyLeg
+    ): JourneyLeg, RouteJourneyLeg {
+
+        override val deduplicationKey get() =
+            "transfer:${stops.joinToString(",") { it.id }}"
+
+    }
 
     data class Travel(
         override val stops: List<Stop>,
@@ -29,11 +44,21 @@ sealed interface JourneyLeg {
         val heading: String,
         override val departureTime: Time,
         override val arrivalTime: Time
-    ): JourneyLeg, RouteJourneyLeg
+    ): JourneyLeg, RouteJourneyLeg {
+
+        override val deduplicationKey get() =
+            "travel:${stops.joinToString(",") { it.id }}:${route.id}:${heading}"
+
+    }
 
     data class TransferPoint(
         override val travelTime: Duration,
         override val departureTime: Time,
         override val arrivalTime: Time
-    ): JourneyLeg
+    ): JourneyLeg {
+
+        override val deduplicationKey get() =
+            "transferPoint"
+
+    }
 }

@@ -277,7 +277,7 @@ class NavigationEntryViewModel(
                             destination,
                             exact = this@NavigationEntryViewModel.destination.value is NavigationLocation.Stop
                         )
-                    ).also {
+                    ).first().also {
                         Napier.d("Journey = $it")
                     }
                 )
