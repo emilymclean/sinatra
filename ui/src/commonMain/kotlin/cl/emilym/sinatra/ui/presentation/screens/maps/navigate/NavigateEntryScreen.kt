@@ -35,6 +35,8 @@ import cafe.adriel.voyager.core.annotation.ExperimentalVoyagerApi
 import cafe.adriel.voyager.core.lifecycle.LifecycleEffectOnce
 import cafe.adriel.voyager.core.screen.ScreenKey
 import cafe.adriel.voyager.koin.koinScreenModel
+import cafe.adriel.voyager.navigator.LocalNavigator
+import cafe.adriel.voyager.navigator.currentOrThrow
 import cl.emilym.compose.errorwidget.ErrorWidget
 import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.bounds
@@ -56,6 +58,7 @@ import cl.emilym.sinatra.ui.presentation.theme.Container
 import cl.emilym.sinatra.ui.presentation.theme.walkingColor
 import cl.emilym.sinatra.ui.text
 import cl.emilym.sinatra.ui.localization.format
+import cl.emilym.sinatra.ui.widgets.BackButton
 import cl.emilym.sinatra.ui.widgets.CurrentLocationCard
 import cl.emilym.sinatra.ui.widgets.GenericMarkerIcon
 import cl.emilym.sinatra.ui.widgets.JourneyOptionCard
@@ -66,6 +69,7 @@ import cl.emilym.sinatra.ui.widgets.LocalMapControl
 import cl.emilym.sinatra.ui.widgets.MapIcon
 import cl.emilym.sinatra.ui.widgets.NavigatorBackButton
 import cl.emilym.sinatra.ui.widgets.RouteRandle
+import cl.emilym.sinatra.ui.widgets.SinatraBackHandler
 import cl.emilym.sinatra.ui.widgets.WalkIcon
 import cl.emilym.sinatra.ui.widgets.currentLocation
 import cl.emilym.sinatra.ui.widgets.hasLocationPermission
@@ -179,6 +183,7 @@ class NavigateEntryScreen(
         val viewModel = koinScreenModel<NavigationEntryViewModel>()
         val state by viewModel.state.collectAsStateWithLifecycle()
         val currentLocation = currentLocation()
+        val navigator = LocalNavigator.currentOrThrow
 
         val hasLocationPermission = hasLocationPermission()
         LifecycleEffectOnce {
@@ -202,6 +207,12 @@ class NavigateEntryScreen(
                 JourneyState(viewModel, state)
             is NavigationEntryState.Search -> SearchState(viewModel)
             null -> {}
+        }
+
+        SinatraBackHandler(true) {
+            if (viewModel.back()) {
+                navigator.pop()
+            }
         }
 
         val bottomSheet = LocalBottomSheetState.current
@@ -270,11 +281,16 @@ class NavigateEntryScreen(
                 contentPadding = innerPadding
             ) {
                 item {
+                    val navigator = LocalNavigator.currentOrThrow
                     Row(
                         Modifier.padding(1.rdp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        NavigatorBackButton()
+                        BackButton {
+                            if (viewModel.back()) {
+                                navigator.pop()
+                            }
+                        }
                         Column(
                             Modifier
                                 .fillMaxWidth()
@@ -374,14 +390,18 @@ class NavigateEntryScreen(
             }
             is NavigationState.GraphReady -> {}
             is NavigationState.JourneysFound -> {
-                items(state.journeys) {
+                items(state.journeys.size) {
+                    val journey = state.journeys[it]
                     JourneyOptionCard(
-                        it,
+                        journey,
                         modifier = Modifier.fillMaxWidth(),
                         onClick = {
-                            viewModel.selectJourney(it)
+                            viewModel.selectJourney(journey)
                         }
                     )
+                    if (it != state.journeys.lastIndex) {
+                        HorizontalDivider(Modifier.padding(start = 1.rdp, end = iconInset))
+                    }
                 }
             }
             else -> {}

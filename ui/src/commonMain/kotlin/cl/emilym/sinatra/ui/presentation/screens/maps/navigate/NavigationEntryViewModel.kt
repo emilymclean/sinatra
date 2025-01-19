@@ -145,10 +145,6 @@ class NavigationEntryViewModel(
         }
     }.state(RequestState.Initial())
 
-    val canNavigateBackToJourneySelection = navigationState.map {
-        ((it as? NavigationState.JourneysFound)?.journeys?.size ?: 0) > 1
-    }.state(false)
-
     fun init(destination: NavigationLocation, origin: NavigationLocation) {
         retryLoadingGraph()
         retryRecentVisits()
@@ -235,6 +231,21 @@ class NavigationEntryViewModel(
     fun openJourneyCalculation() {
         _state.value = State.JourneySelection
         calculate()
+    }
+
+    fun back(): Boolean {
+        return when(_state.value) {
+            is State.JourneySelected -> {
+                when {
+                    ((navigationState.value as? NavigationState.JourneysFound)?.journeys?.size ?: 0) > 1 -> {
+                        _state.value = State.JourneySelection
+                        false
+                    }
+                    else -> true
+                }
+            }
+            else -> true
+        }
     }
 
     fun selectJourney(journey: Journey) {

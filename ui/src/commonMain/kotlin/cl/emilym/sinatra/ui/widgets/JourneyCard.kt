@@ -38,7 +38,6 @@ fun JourneyOptionCard(
             verticalArrangement = Arrangement.spacedBy(0.5.rdp)
         ) {
             Row(
-                verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(1.rdp)
             ) {
                 JourneyLine(
