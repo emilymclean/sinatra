@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material3.MaterialTheme
@@ -13,6 +14,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.em
+import androidx.compose.ui.unit.sp
 import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.data.models.Journey
 import cl.emilym.sinatra.data.models.JourneyLeg
@@ -86,9 +89,17 @@ fun JourneyLine(
 
                 when (leg) {
                     is JourneyLeg.Transfer, is JourneyLeg.TransferPoint -> {
-                        WalkIcon(
-                            modifier = Modifier.size(1.rdp),
-                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            WalkIcon(
+                                modifier = Modifier.size(1.rdp),
+                            )
+                            Text(
+                                "${leg.travelTime.inWholeMinutes}",
+                                style = MaterialTheme.typography.labelSmall
+                            )
+                        }
                     }
                     is JourneyLeg.Travel -> {
                         RouteRandle(
