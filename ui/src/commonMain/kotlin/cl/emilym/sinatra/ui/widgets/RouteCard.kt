@@ -39,7 +39,7 @@ fun RouteRandle(
             .clip(CircleShape)
             .then(
                 when {
-                    borderSize >= 4.dp -> Modifier.border(borderSize, Color.White, CircleShape)
+                    borderSize >= 2.dp -> Modifier.border(borderSize, Color.White, CircleShape)
                     else -> Modifier
                 }
             )
