@@ -3,6 +3,7 @@ package cl.emilym.sinatra.ui.presentation.screens.maps.navigate
 import cafe.adriel.voyager.core.model.screenModelScope
 import cl.emilym.compose.requeststate.RequestState
 import cl.emilym.compose.requeststate.handle
+import cl.emilym.sinatra.data.models.Journey
 import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.data.models.RecentVisit
 import cl.emilym.sinatra.data.models.Stop
@@ -28,29 +29,33 @@ import io.github.aakira.napier.Napier
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.koin.core.annotation.Factory
 
 private sealed interface State {
-    data object Journey: State
+    data object JourneySelection: State
+    data class JourneySelected(
+        val journey: Journey
+    ): State
     data class Search(
         val targetIsOrigin: Boolean
     ): State
 }
 
 sealed interface NavigationEntryState {
-    data class Journey(
+    data class JourneySelection(
         val state: NavigationState
+    ): NavigationEntryState
+    data class JourneySelected(
+        val journey: Journey
     ): NavigationEntryState
     data class Search(
         val results: RequestState<List<SearchResult>>
@@ -108,7 +113,7 @@ class NavigationEntryViewModel(
     }.state(RequestState.Initial())
 
     private val navigationState = MutableStateFlow<NavigationState>(NavigationState.GraphLoading)
-    private val _state = MutableStateFlow<State>(State.Journey)
+    private val _state = MutableStateFlow<State>(State.JourneySelection)
 
     override val nearbyStops: StateFlow<List<StopWithDistance>?> = stops.combine(lastLocation) { stops, lastLocation ->
         if (stops !is RequestState.Success || lastLocation == null) return@combine null
@@ -122,7 +127,8 @@ class NavigationEntryViewModel(
 
     val state = _state.flatMapLatest {
         when (it) {
-            is State.Journey -> navigationState.map { NavigationEntryState.Journey(it) }
+            is State.JourneySelection -> navigationState.map { NavigationEntryState.JourneySelection(it) }
+            is State.JourneySelected -> flowOf(NavigationEntryState.JourneySelected(it.journey))
             is State.Search -> searchHandler(routeStopSearchUseCase) { NavigationEntryState.Search(
                 when (it) {
                     is RequestState.Success -> RequestState.Success(it.value.filter { it !is SearchResult.RouteResult })
@@ -130,7 +136,7 @@ class NavigationEntryViewModel(
                 }
             ) }
         }
-    }.state(State.Journey)
+    }.state(NavigationEntryState.JourneySelection(NavigationState.GraphLoading))
 
     override val results = state.mapLatest {
         when (it) {
@@ -138,6 +144,10 @@ class NavigationEntryViewModel(
             else -> RequestState.Initial()
         }
     }.state(RequestState.Initial())
+
+    val canNavigateBackToJourneySelection = navigationState.map {
+        ((it as? NavigationState.JourneysFound)?.journeys?.size ?: 0) > 1
+    }.state(false)
 
     fun init(destination: NavigationLocation, origin: NavigationLocation) {
         retryLoadingGraph()
@@ -219,12 +229,16 @@ class NavigationEntryViewModel(
             true -> setOrigin(item)
             false -> setDestination(item)
         }
-        _state.value = State.Journey
+        _state.value = State.JourneySelection
     }
 
-    fun openJourney() {
-        _state.value = State.Journey
+    fun openJourneyCalculation() {
+        _state.value = State.JourneySelection
         calculate()
+    }
+
+    fun selectJourney(journey: Journey) {
+        _state.value = State.JourneySelected(journey)
     }
 
     fun updateCurrentLocation(location: MapLocation) {
@@ -267,20 +281,22 @@ class NavigationEntryViewModel(
         screenModelScope.launch {
             navigationState.value = NavigationState.JourneyCalculating
             try {
-                navigationState.value = NavigationState.JourneyFound(
-                    calculateJourneyUseCase(
-                        JourneyLocation(
-                            origin,
-                            exact = this@NavigationEntryViewModel.origin.value is NavigationLocation.Stop
-                        ),
-                        JourneyLocation(
-                            destination,
-                            exact = this@NavigationEntryViewModel.destination.value is NavigationLocation.Stop
-                        )
-                    ).first().also {
-                        Napier.d("Journey = $it")
-                    }
+                val result = calculateJourneyUseCase(
+                    JourneyLocation(
+                        origin,
+                        exact = this@NavigationEntryViewModel.origin.value is NavigationLocation.Stop
+                    ),
+                    JourneyLocation(
+                        destination,
+                        exact = this@NavigationEntryViewModel.destination.value is NavigationLocation.Stop
+                    )
                 )
+                navigationState.value = NavigationState.JourneysFound(
+                    result
+                )
+                if (result.size == 1) {
+                    _state.value = State.JourneySelected(result.first())
+                }
             } catch (e: Exception) {
                 Napier.e(e)
                 navigationState.value = NavigationState.JourneyFailed(e)

@@ -115,10 +115,11 @@ class CalculateJourneyUseCase(
                     throw RouterException.noJourneyFound()
                 }
 
-                Napier.d("options = ${options}")
-
                 options
-                    .sortedByDescending { it.arrivalTime }
+                    .sortedWith(compareBy(
+                        { it.arrivalTime },
+                        { it.legs.filterIsInstance<JourneyLeg.Travel>().size }
+                    ))
                     .distinctBy { it.deduplicationKey }
             }
         }

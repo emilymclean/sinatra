@@ -11,6 +11,9 @@ data class Journey(
     val arrivalTime: Time
         get() = legs.last().arrivalTime
 
+    val duration: Duration
+        get() = (arrivalTime.instant - departureTime.instant)
+
     val deduplicationKey by lazy { legs.joinToString(";") { it.deduplicationKey } }
 
 }
