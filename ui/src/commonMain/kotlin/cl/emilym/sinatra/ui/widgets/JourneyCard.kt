@@ -74,26 +74,31 @@ fun JourneyLine(
         for (i in journey.legs.indices) {
             val leg = journey.legs[i]
 
-            when (leg) {
-                is JourneyLeg.Transfer, is JourneyLeg.TransferPoint -> {
-                    WalkIcon(
-                        modifier = Modifier.align(Alignment.CenterVertically).size(1.rdp),
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(0.5.rdp),
+                modifier = Modifier.align(Alignment.CenterVertically),
+            ) {
+                if (i != 0) {
+                    ForwardIcon(
+                        modifier = Modifier.size(1.rdp)
                     )
                 }
-                is JourneyLeg.Travel -> {
-                    RouteRandle(
-                        leg.route,
-                        modifier = Modifier.align(Alignment.CenterVertically),
-                        size = 1.5.rdp
-                    )
-                }
-                else -> {}
-            }
 
-            if (i != journey.legs.lastIndex) {
-                ForwardIcon(
-                    modifier = Modifier.align(Alignment.CenterVertically).size(1.rdp)
-                )
+                when (leg) {
+                    is JourneyLeg.Transfer, is JourneyLeg.TransferPoint -> {
+                        WalkIcon(
+                            modifier = Modifier.size(1.rdp),
+                        )
+                    }
+                    is JourneyLeg.Travel -> {
+                        RouteRandle(
+                            leg.route,
+                            size = 1.5.rdp
+                        )
+                    }
+                    else -> {}
+                }
             }
         }
     }
