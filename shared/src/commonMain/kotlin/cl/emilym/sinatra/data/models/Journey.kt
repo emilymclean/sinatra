@@ -7,7 +7,12 @@ data class Journey(
 ) {
 
     val departureTime: Time
-        get() = legs.first().departureTime
+        get() {
+            val f = legs.first()
+            if (legs.size > 2 && f is JourneyLeg.TransferPoint)
+                return legs[1].departureTime - f.travelTime
+            return f.departureTime
+        }
     val arrivalTime: Time
         get() = legs.last().arrivalTime
 
