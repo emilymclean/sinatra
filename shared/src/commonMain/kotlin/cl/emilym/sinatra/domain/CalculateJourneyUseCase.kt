@@ -163,14 +163,17 @@ class CalculateJourneyUseCase(
         for (i in raptorJourney.connections.indices) {
             val stops = raptorJourney.connections[i].stops.mapNotNull { s -> stops.item.firstOrNull { it.id == s } }
             legs += when (val connection = raptorJourney.connections[i]) {
-                is RaptorJourneyConnection.Travel -> JourneyLeg.Travel(
-                    stops,
-                    (connection.endTime - connection.startTime).seconds,
-                    routes.item.first { it?.id == connection.routeId }!!,
-                    connection.heading,
-                    Time.create(connection.startTime.seconds, startOfDay),
-                    Time.create(connection.endTime.seconds, startOfDay)
-                )
+                is RaptorJourneyConnection.Travel -> {
+                    val startOfDayIndexed = startOfDay + connection.dayIndex.days
+                    JourneyLeg.Travel(
+                        stops,
+                        (connection.endTime - connection.startTime).seconds,
+                        routes.item.first { it?.id == connection.routeId }!!,
+                        connection.heading,
+                        Time.create(connection.startTime.seconds, startOfDayIndexed),
+                        Time.create(connection.endTime.seconds, startOfDayIndexed)
+                    )
+                }
                 is RaptorJourneyConnection.Transfer -> JourneyLeg.Transfer(
                     stops,
                     connection.travelTime.seconds,
