@@ -11,3 +11,4 @@ typealias HeadingIndex = Int
 typealias StopIndex = Int
 typealias DaySeconds = Long
 typealias Seconds = Long
+typealias Milliseconds = Long

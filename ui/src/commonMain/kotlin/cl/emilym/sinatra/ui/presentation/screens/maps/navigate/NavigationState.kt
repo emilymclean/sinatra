@@ -11,8 +11,8 @@ sealed interface NavigationState {
     ): NavigationState
 
     data object JourneyCalculating: NavigationState
-    data class JourneyFound(
-        val journey: Journey
+    data class JourneysFound(
+        val journeys: List<Journey>
     ): NavigationState
     data class JourneyFailed(
         val exception: Exception

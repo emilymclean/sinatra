@@ -62,7 +62,8 @@ class RaptorTest {
                 "Gungahlin Pl",
                 startTime=32476,
                 endTime=33307,
-                travelTime=831
+                travelTime=831,
+                dayIndex = 0,
             )
         )), result)
     }
@@ -87,7 +88,8 @@ class RaptorTest {
                 "Gungahlin Pl",
                 startTime=32476,
                 endTime=33307,
-                travelTime=831
+                travelTime=831,
+                dayIndex = 0,
             ),
             RaptorJourneyConnection.Transfer(
                 listOf("8105", "MCK"),
@@ -114,7 +116,8 @@ class RaptorTest {
                 heading = "Fraser",
                 startTime = 32700,
                 endTime = 33420,
-                travelTime = 720
+                travelTime = 720,
+                dayIndex = 0,
             ),
             RaptorJourneyConnection.Travel(
                 listOf("8889", "3356", "3406"),
@@ -122,7 +125,8 @@ class RaptorTest {
                 heading = "City ANU",
                 startTime = 33360,
                 endTime = 33540,
-                travelTime = 180
+                travelTime = 180,
+                dayIndex = 0,
             ),
             RaptorJourneyConnection.Transfer(
                 listOf("3406", "8129"),
@@ -134,7 +138,8 @@ class RaptorTest {
                 heading = "Gungahlin Pl",
                 startTime=33600,
                 endTime=34957,
-                travelTime=1357
+                travelTime=1357,
+                dayIndex = 0,
             ),
             RaptorJourneyConnection.Transfer(
                 listOf("8105", "MCK"),
@@ -162,7 +167,8 @@ class RaptorTest {
                 "Gungahlin Pl",
                 startTime=32626,
                 endTime=33457,
-                travelTime=831
+                travelTime=831,
+                dayIndex = 0,
             ),
             RaptorJourneyConnection.Transfer(
                 listOf("8105", "MCK"),

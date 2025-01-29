@@ -10,6 +10,9 @@ hidden instantVersionNumberOffset = 0
 hidden gradleVersionNameName = "version"
 hidden gradleVersionCodeName = "versionCode"
 
+local releaseFileName = "sinatra-${{ matrix.build.name }}-v${{ needs.version.outputs.version }}"
+local iosReleaseFileName = "sinatra-iosApp-release-v${{ needs.version.outputs.version }}"
+
 hidden releaseTrackPublishingConfiguration: List<AppReleaseDescriptor>(isDistinctBy((e) -> List(e.appModule, e.flavor))) = List()
 
 function debugUniversalBuildDescriptor(_appModule: String) = new BuildDescriptor {
@@ -98,19 +101,19 @@ function buildJob(
     }
     new CommandStep {
       name = "Rename \(extension)"
-      run = "mv ${{ steps.sign.outputs.signedFile }} ./${{ matrix.build.name }}.\(extension)"
+      run = "mv ${{ steps.sign.outputs.signedFile }} ./\(releaseFileName).\(extension)"
       `if` = "${{ matrix.build.release }}"
     }
     new CommandStep {
       name = "Rename \(extension)"
-      run = "mv ${{ matrix.build.path }}/${{ matrix.build.fileName }}.\(extension) ./${{ matrix.build.name }}.\(extension)"
+      run = "mv ${{ matrix.build.path }}/${{ matrix.build.fileName }}.\(extension) ./\(releaseFileName).\(extension)"
       `if` = "${{ !matrix.build.release }}"
     }
     new ActionStep {
       uses = "actions/upload-artifact@v4"
       with = new Mapping {
         ["name"] = "${{ matrix.build.name }}-\(extension)"
-        ["path"] = "./${{ matrix.build.name }}.\(extension)"
+        ["path"] = "./\(releaseFileName).\(extension)"
       }
     }
     new ActionStep {
@@ -162,7 +165,7 @@ function releaseJob(
       }
       with = new Mapping {
         ["upload_url"] = "${{ needs.release.outputs.upload_url }}"
-        ["asset_path"] = "./${{ matrix.build.name }}.\(extension)"
+        ["asset_path"] = "./\(releaseFileName).\(extension)"
         ["asset_name"] = "sinatra-android-${{ matrix.build.variant }}-v${{ needs.version.outputs.version }}.\(extension)"
         ["asset_content_type"] = "application/zip"
       }
@@ -430,13 +433,13 @@ jobs = new Mapping {
       }
       new CommandStep {
         name = "Rename ipa"
-        run = "mv output.ipa ./iosApp.ipa"
+        run = "mv output.ipa ./\(iosReleaseFileName).ipa"
       }
       new ActionStep {
         uses = "actions/upload-artifact@v4"
         with = new Mapping {
           ["name"] = "iosApp-release-ipa"
-          ["path"] = "./iosApp.ipa"
+          ["path"] = "./\(iosReleaseFileName).ipa"
         }
       }
     }

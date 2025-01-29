@@ -16,7 +16,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
+import cl.emilym.sinatra.ui.widgets.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -74,10 +74,10 @@ fun SearchScreen(
 ) {
     val focusRequester = remember { FocusRequester() }
 
-    val results by viewModel.results.collectAsState(RequestState.Initial())
+    val results by viewModel.results.collectAsStateWithLifecycle()
 
-    val recentlyViewed by viewModel.recentVisits.collectAsState(RequestState.Initial())
-    val nearbyStops by viewModel.nearbyStops.collectAsState(null)
+    val recentlyViewed by viewModel.recentVisits.collectAsStateWithLifecycle()
+    val nearbyStops by viewModel.nearbyStops.collectAsStateWithLifecycle()
 
     val bottomSheetState = LocalBottomSheetState.current?.bottomSheetState
     LaunchedEffect(Unit) {
@@ -88,7 +88,7 @@ fun SearchScreen(
         onBackPressed()
     }
 
-    val query by viewModel.query.collectAsState()
+    val query by viewModel.query.collectAsStateWithLifecycle()
     Scaffold { innerPadding ->
         LazyColumn(
             Modifier.fillMaxWidth().heightIn(min = viewportHeight()),

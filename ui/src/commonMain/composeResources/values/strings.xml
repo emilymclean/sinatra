@@ -36,6 +36,15 @@
         <item quantity="other">%1$d hours</item>
     </plurals>
 
+    <plurals name="time_minute_short">
+        <item quantity="one">%1$d min</item>
+        <item quantity="other">%1$d mins</item>
+    </plurals>
+    <plurals name="time_second_short">
+        <item quantity="one">%1$d sec</item>
+        <item quantity="other">%1$d secs</item>
+    </plurals>
+
     <string name="current_location">Current Location</string>
 
     <string name="navigate_lat_lng">%1$d, %2$d</string>
@@ -50,6 +59,8 @@
     <string name="navigate_travel">Travel for %1$s on %2$s towards %3$s</string>
     <string name="navigate_travel_journey_arrive">**Arrive** at %1$s at %2$s</string>
     <string name="navigate_travel_journey_depart">**Depart** from %1$s</string>
+
+    <string name="journey_card_period">%1$s — %2$s</string>
 
     <string name="map_search_nearby_stops">Nearby Stops</string>
 

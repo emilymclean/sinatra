@@ -59,6 +59,7 @@ class Raptor(
         val dist = Array(nodeCount) { Long.MAX_VALUE }
         val prev = Array<Int?>(nodeCount) { null }
         val prevEdge = Array<NetworkGraphEdge?>(nodeCount) { null }
+        val dayIndex = Array<Int?>(nodeCount) { null }
 
         for (departureStopIndex in departureStopIndices) {
             dist[departureStopIndex.first] = departureStopIndex.second.addedTime
@@ -80,6 +81,7 @@ class Raptor(
                     prev[v] = u
                     prevEdge[v] = neighbour.edge
                     dist[v] = alt
+                    dayIndex[v] = neighbour.dayIndex
                     Q.add(v, alt)
                 }
                 if (neighbour.edge.type == EdgeType.TRAVEL) {
@@ -100,6 +102,7 @@ class Raptor(
                         prev[tV] = u
                         prevEdge[tV] = neighbour.edge
                         dist[tV] = alt + penalty
+                        dayIndex[v] = neighbour.dayIndex
                         Q.add(tV, alt)
                     }
                 }
@@ -151,6 +154,7 @@ class Raptor(
                             graph.mappings.headings[node.headingIndex.toInt()],
                             0,
                             edge.departureTime.toLong() + edge.cost.toLong(),
+                            dayIndex[cursor] ?: 0,
                             0
                         )
                     }
@@ -170,7 +174,8 @@ class Raptor(
                     c.copy(
                         stops = listOf(graph.mappings.stopIds[node.stopIndex.toInt()]) + c.stops,
                         startTime = edge.departureTime.toLong(),
-                        travelTime = c.endTime - edge.departureTime.toLong()
+                        travelTime = c.endTime - edge.departureTime.toLong(),
+                        dayIndex = dayIndex[cursor] ?: 0
                     )
                 }
                 EdgeType.TRANSFER, EdgeType.TRANSFER_NON_ADJUSTABLE -> {
@@ -199,11 +204,11 @@ class Raptor(
 
         return edges.flatMap {
             when (it.type) {
-                EdgeType.UNWEIGHTED -> listOf(NodeCost(it.connectedNodeIndex.toInt(), 0L, it))
+                EdgeType.UNWEIGHTED -> listOf(NodeCost(it.connectedNodeIndex.toInt(), 0L, it, null))
                 EdgeType.TRANSFER, EdgeType.TRANSFER_NON_ADJUSTABLE -> {
                     if (ignoreTransfer) return@flatMap emptyList()
                     if (it.cost.toLong() > (config?.maximumWalkingTime ?: Long.MAX_VALUE)) return@flatMap emptyList()
-                    listOf(NodeCost(it.connectedNodeIndex.toInt(), it.cost.toLong() + (config?.transferPenalty ?: 0L), it))
+                    listOf(NodeCost(it.connectedNodeIndex.toInt(), it.cost.toLong() + (config?.transferPenalty ?: 0L), it, null))
                 }
                 EdgeType.TRAVEL -> {
                     val daysActive = (-1..1).filter { d -> servicesAreActive(it.availableServices, d) }
@@ -211,7 +216,7 @@ class Raptor(
                     daysActive.mapNotNull { d ->
                         val dt = it.departureTime.toInt() + (86400 * d)
                         if ((dt + 60) < departureTime) return@mapNotNull null
-                        NodeCost(it.connectedNodeIndex.toInt(), (dt - departureTime) + it.cost.toLong(), it)
+                        NodeCost(it.connectedNodeIndex.toInt(), (dt - departureTime) + it.cost.toLong(), it, d)
                     }
                 }
             }

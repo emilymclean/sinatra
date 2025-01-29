@@ -29,13 +29,15 @@ class LiveServiceRepository(
 
     suspend fun getRealtimeUpdates(url: String): Flow<FeedMessage> {
         return liveServicePersistence.get(url) { trigger ->
-            trigger.mapLatest {
-                try {
-                    Result.success(liveServiceClient.getLiveUpdates(url))
-                } catch (e: Exception) {
-                    Result.failure(e)
+            trigger
+                .mapLatest {
+                    try {
+                        Result.success(liveServiceClient.getLiveUpdates(url))
+                    } catch (e: Exception) {
+                        Result.failure(e)
+                    }
                 }
-            }.shareIn(coroutineScope, SharingStarted.WhileSubscribed(), replay = 1)
+                .shareIn(coroutineScope, SharingStarted.WhileSubscribed(), replay = 1)
         }
     }
 

@@ -32,6 +32,8 @@ import sinatra.ui.generated.resources.distance_meter
 import sinatra.ui.generated.resources.time_hour
 import sinatra.ui.generated.resources.time_minute
 import sinatra.ui.generated.resources.time_second
+import sinatra.ui.generated.resources.time_minute_short
+import sinatra.ui.generated.resources.time_second_short
 import kotlin.math.roundToInt
 import kotlin.time.Duration
 
@@ -116,11 +118,14 @@ val Kilometer.text
 
 val Duration.text
     @Composable
-    get() = when {
-        inWholeSeconds < 60 -> pluralStringResource(Res.plurals.time_second, inWholeSeconds.toInt(), inWholeSeconds)
-        inWholeMinutes < 60 -> pluralStringResource(Res.plurals.time_minute, inWholeMinutes.toInt(), inWholeMinutes)
-        else -> pluralStringResource(Res.plurals.time_hour, inWholeHours.toInt(), inWholeHours)
-    }
+    get() = text(false)
+
+@Composable
+fun Duration.text(short: Boolean) = when {
+    inWholeSeconds < 60 -> pluralStringResource(if (short) Res.plurals.time_second_short else Res.plurals.time_second, inWholeSeconds.toInt(), inWholeSeconds)
+    inWholeMinutes < 60 -> pluralStringResource(if (short) Res.plurals.time_minute_short else Res.plurals.time_minute, inWholeMinutes.toInt(), inWholeMinutes)
+    else -> pluralStringResource(Res.plurals.time_hour, inWholeHours.toInt(), inWholeHours)
+}
 
 val LocalizableString.text: String
     @Composable

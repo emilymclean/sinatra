@@ -5,6 +5,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -12,6 +14,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LocalContentColor
@@ -20,15 +24,19 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
+import cl.emilym.sinatra.ui.widgets.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.unit.dp
+import cafe.adriel.voyager.core.annotation.ExperimentalVoyagerApi
+import cafe.adriel.voyager.core.lifecycle.LifecycleEffectOnce
 import cafe.adriel.voyager.core.screen.ScreenKey
 import cafe.adriel.voyager.koin.koinScreenModel
+import cafe.adriel.voyager.navigator.LocalNavigator
+import cafe.adriel.voyager.navigator.currentOrThrow
 import cl.emilym.compose.errorwidget.ErrorWidget
 import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.bounds
@@ -50,14 +58,18 @@ import cl.emilym.sinatra.ui.presentation.theme.Container
 import cl.emilym.sinatra.ui.presentation.theme.walkingColor
 import cl.emilym.sinatra.ui.text
 import cl.emilym.sinatra.ui.localization.format
+import cl.emilym.sinatra.ui.widgets.BackButton
 import cl.emilym.sinatra.ui.widgets.CurrentLocationCard
 import cl.emilym.sinatra.ui.widgets.GenericMarkerIcon
+import cl.emilym.sinatra.ui.widgets.JourneyOptionCard
 import cl.emilym.sinatra.ui.widgets.JourneyStartIcon
+import cl.emilym.sinatra.ui.widgets.ListCard
 import cl.emilym.sinatra.ui.widgets.ListHint
 import cl.emilym.sinatra.ui.widgets.LocalMapControl
 import cl.emilym.sinatra.ui.widgets.MapIcon
 import cl.emilym.sinatra.ui.widgets.NavigatorBackButton
 import cl.emilym.sinatra.ui.widgets.RouteRandle
+import cl.emilym.sinatra.ui.widgets.SinatraBackHandler
 import cl.emilym.sinatra.ui.widgets.WalkIcon
 import cl.emilym.sinatra.ui.widgets.currentLocation
 import cl.emilym.sinatra.ui.widgets.hasLocationPermission
@@ -96,10 +108,10 @@ class NavigateEntryScreen(
     @Composable
     override fun mapItems(): List<MapItem> {
         val viewModel = koinScreenModel<NavigationEntryViewModel>()
-        val state by viewModel.state.collectAsState(null)
-        val journey = ((state as? NavigationEntryState.Journey)?.state as? NavigationState.JourneyFound)?.journey ?: return emptyList()
-        val originLocation by viewModel.originLocation.collectAsState()
-        val destinationLocation by viewModel.destinationLocation.collectAsState()
+        val state by viewModel.state.collectAsStateWithLifecycle()
+        val journey = (state as? NavigationEntryState.JourneySelected)?.journey ?: return emptyList()
+        val originLocation by viewModel.originLocation.collectAsStateWithLifecycle()
+        val destinationLocation by viewModel.destinationLocation.collectAsStateWithLifecycle()
 
         val items = mutableListOf<MapItem>()
 
@@ -165,14 +177,16 @@ class NavigateEntryScreen(
         return items
     }
 
+    @OptIn(ExperimentalVoyagerApi::class)
     @Composable
     override fun BottomSheetContent() {
         val viewModel = koinScreenModel<NavigationEntryViewModel>()
-        val state by viewModel.state.collectAsState(null)
+        val state by viewModel.state.collectAsStateWithLifecycle()
         val currentLocation = currentLocation()
+        val navigator = LocalNavigator.currentOrThrow
 
         val hasLocationPermission = hasLocationPermission()
-        LaunchedEffect(destination, origin) {
+        LifecycleEffectOnce {
             viewModel.init(
                 destination,
                 origin ?: (
@@ -189,34 +203,39 @@ class NavigateEntryScreen(
         }
 
         when (val state = state) {
-            is NavigationEntryState.Journey -> JourneyState(viewModel, state.state)
+            is NavigationEntryState.JourneySelected, is NavigationEntryState.JourneySelection ->
+                JourneyState(viewModel, state)
             is NavigationEntryState.Search -> SearchState(viewModel)
             null -> {}
         }
 
+        SinatraBackHandler(true) {
+            if (viewModel.back()) {
+                navigator.pop()
+            }
+        }
+
         val bottomSheet = LocalBottomSheetState.current
         val mapControl = LocalMapControl.current
-        val originLocation by viewModel.originLocation.collectAsState()
-        val destinationLocation by viewModel.destinationLocation.collectAsState()
+        val originLocation by viewModel.originLocation.collectAsStateWithLifecycle()
+        val destinationLocation by viewModel.destinationLocation.collectAsStateWithLifecycle()
         val zoomPadding = zoomPadding
 
         LaunchedEffect(state) {
             when (val state = state) {
-                is NavigationEntryState.Journey -> when (state.state) {
-                    is NavigationState.JourneyFound -> {
-                        bottomSheet?.bottomSheetState?.halfExpand()
-                        mapControl.zoomToArea(
-                            (state.state.journey.legs
-                                .filterIsInstance<JourneyLeg.RouteJourneyLeg>()
-                                .flatMap { it.stops.map { it.location } } +
-                                    listOfNotNull(originLocation, destinationLocation)
-                            ).bounds(),
-                            zoomPadding
-                        )
-                    }
-                    else -> bottomSheet?.bottomSheetState?.expand()
+                is NavigationEntryState.JourneySelected -> {
+                    bottomSheet?.bottomSheetState?.halfExpand()
+                    mapControl.zoomToArea(
+                        (state.journey.legs
+                            .filterIsInstance<JourneyLeg.RouteJourneyLeg>()
+                            .flatMap { it.stops.map { it.location } } +
+                                listOfNotNull(originLocation, destinationLocation)
+                                ).bounds(),
+                        zoomPadding
+                    )
                 }
-                is NavigationEntryState.Search -> bottomSheet?.bottomSheetState?.expand()
+                is NavigationEntryState.Search,
+                is NavigationEntryState.JourneySelection -> bottomSheet?.bottomSheetState?.expand()
                 null -> {}
             }
         }
@@ -230,7 +249,7 @@ class NavigateEntryScreen(
         Box(Modifier.fillMaxSize()) {
             SearchScreen(
                 viewModel,
-                { viewModel.openJourney() },
+                { viewModel.openJourneyCalculation() },
                 { viewModel.onSearchItemClicked(NavigationLocation.Stop(it)) },
                 {},
                 { viewModel.onSearchItemClicked(NavigationLocation.Place(it)) }
@@ -253,7 +272,7 @@ class NavigateEntryScreen(
     @Composable
     fun JourneyState(
         viewModel: NavigationEntryViewModel,
-        navigationState: NavigationState
+        state: NavigationEntryState
     ) {
         Scaffold { innerPadding ->
             LazyColumn(
@@ -262,11 +281,16 @@ class NavigateEntryScreen(
                 contentPadding = innerPadding
             ) {
                 item {
+                    val navigator = LocalNavigator.currentOrThrow
                     Row(
                         Modifier.padding(1.rdp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        NavigatorBackButton()
+                        BackButton {
+                            if (viewModel.back()) {
+                                navigator.pop()
+                            }
+                        }
                         Column(
                             Modifier
                                 .fillMaxWidth()
@@ -274,8 +298,8 @@ class NavigateEntryScreen(
                                 .clip(MaterialTheme.shapes.large)
                                 .background(Container)
                         ) {
-                            val origin by viewModel.origin.collectAsState()
-                            val destination by viewModel.destination.collectAsState()
+                            val origin by viewModel.origin.collectAsStateWithLifecycle()
+                            val destination by viewModel.destination.collectAsStateWithLifecycle()
                             origin?.let { origin ->
                                 NavigationLocationDisplay(
                                     origin,
@@ -295,68 +319,92 @@ class NavigateEntryScreen(
                     }
                 }
 
-                navigationState.let { state ->
-                    when (state) {
-                        is NavigationState.GraphLoading, NavigationState.JourneyCalculating -> {
-                            item {
-                                Box(
-                                    Modifier.fillMaxWidth(),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Column(
-                                        Modifier.padding(1.rdp),
-                                        horizontalAlignment = Alignment.CenterHorizontally,
-                                        verticalArrangement = Arrangement.spacedBy(1.rdp)
-                                    ) {
-                                        CircularProgressIndicator()
-                                        Text(stringResource(
-                                            if (state == NavigationState.GraphLoading) {
-                                                Res.string.navigate_downloading_graph
-                                            } else {
-                                                Res.string.navigate_calculating_journey
-                                            }
-                                        ))
-                                    }
+                when (state) {
+                    is NavigationEntryState.JourneySelection -> JourneySelection(
+                        viewModel,
+                        state.state
+                    )
+                    is NavigationEntryState.JourneySelected -> item {
+                        DisplayJourney(state.journey)
+                    }
+                    else -> {}
+                }
+            }
+        }
+    }
+
+    fun LazyListScope.JourneySelection(
+        viewModel: NavigationEntryViewModel,
+        state: NavigationState
+    ) {
+        when (state) {
+            is NavigationState.GraphLoading, NavigationState.JourneyCalculating -> {
+                item {
+                    Box(
+                        Modifier.fillMaxWidth(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            Modifier.padding(1.rdp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(1.rdp)
+                        ) {
+                            CircularProgressIndicator()
+                            Text(stringResource(
+                                if (state == NavigationState.GraphLoading) {
+                                    Res.string.navigate_downloading_graph
+                                } else {
+                                    Res.string.navigate_calculating_journey
                                 }
-                            }
+                            ))
                         }
-                        is NavigationState.GraphFailed -> {
-                            item {
-                                Box(
-                                    Modifier.padding(1.rdp).fillMaxWidth(),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    ErrorWidget(
-                                        if (state is NavigationState.GraphFailed) state.exception else
-                                            (state as? NavigationState.JourneyFailed)?.exception,
-                                        retry = { viewModel.retryLoadingGraph() }
-                                    )
-                                }
-                            }
-                        }
-                        is NavigationState.JourneyFailed -> {
-                            item {
-                                Box(
-                                    Modifier.padding(1.rdp).fillMaxWidth(),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    ListHint(
-                                        stringResource(Res.string.navigate_calculating_journey_failed),
-                                        icon = { MapIcon(tint = MaterialTheme.colorScheme.primary) }
-                                    )
-                                }
-                            }
-                        }
-                        is NavigationState.GraphReady -> {}
-                        is NavigationState.JourneyFound -> {
-                            item {
-                                DisplayJourney(state.journey)
-                            }
-                        }
-                        else -> {}
                     }
                 }
             }
+            is NavigationState.GraphFailed -> {
+                item {
+                    Box(
+                        Modifier.padding(1.rdp).fillMaxWidth(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        ErrorWidget(
+                            if (state is NavigationState.GraphFailed) state.exception else
+                                (state as? NavigationState.JourneyFailed)?.exception,
+                            retry = { viewModel.retryLoadingGraph() }
+                        )
+                    }
+                }
+            }
+            is NavigationState.JourneyFailed -> {
+                item {
+                    Box(
+                        Modifier.padding(1.rdp).fillMaxWidth(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        ListHint(
+                            stringResource(Res.string.navigate_calculating_journey_failed),
+                            icon = { MapIcon(tint = MaterialTheme.colorScheme.primary) }
+                        )
+                    }
+                }
+            }
+            is NavigationState.GraphReady -> {}
+            is NavigationState.JourneysFound -> {
+                items(state.journeys.size) {
+                    val journey = state.journeys[it]
+                    JourneyOptionCard(
+                        journey,
+                        modifier = Modifier.fillMaxWidth(),
+                        onClick = {
+                            viewModel.selectJourney(journey)
+                        }
+                    )
+                    if (it != state.journeys.lastIndex) {
+                        HorizontalDivider(Modifier.padding(start = 1.rdp, end = iconInset))
+                    }
+                }
+            }
+            else -> {}
         }
     }
 
@@ -366,8 +414,8 @@ class NavigateEntryScreen(
         val lastLeg = journey.legs.last()
         val firstLeg = journey.legs.first()
         val viewModel = koinScreenModel<NavigationEntryViewModel>()
-        val destination by viewModel.destination.collectAsState()
-        val origin by viewModel.origin.collectAsState()
+        val destination by viewModel.destination.collectAsStateWithLifecycle()
+        val origin by viewModel.origin.collectAsStateWithLifecycle()
 
         Column(Modifier.fillMaxWidth()) {
             when (firstLeg) {

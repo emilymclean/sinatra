@@ -10,11 +10,14 @@ import cl.emilym.sinatra.data.models.startOfDay
 import cl.emilym.sinatra.data.repository.ServiceRepository
 import cl.emilym.sinatra.data.repository.StopRepository
 import cl.emilym.sinatra.data.repository.TransportMetadataRepository
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.datetime.Clock
 import org.koin.core.annotation.Factory
@@ -63,6 +66,7 @@ class UpcomingRoutesForStopUseCase(
                 delay(1.minutes)
             }
         }
+        .flowOn(Dispatchers.IO)
         .flatMapLatest { original ->
             when (original.item.isEmpty()) {
                 true -> flowOf(original.map { it })
@@ -71,6 +75,11 @@ class UpcomingRoutesForStopUseCase(
                     original.item
                 ).map { live -> original.map { live } }
             }
+        }
+        .flowOn(Dispatchers.IO)
+        // Literally does nothing but change Cachable<out List<IStopTimetableTime>> to not out
+        .map {
+            it.map { it.map { it } }
         }
     }
 
