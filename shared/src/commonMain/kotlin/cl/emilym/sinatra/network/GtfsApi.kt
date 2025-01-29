@@ -127,6 +127,12 @@ interface GtfsApi {
     @GET("network_graph.eng.sha")
     suspend fun networkGraphDigest(): String
 
+    @GET("journey-config.pb")
+    suspend fun journeyConfig(): ByteArray
+
+    @GET("journey-config.pb.sha")
+    suspend fun journeyConfigDigest(): String
+
     @GET
     @Headers("Accept: */*")
     suspend fun getLiveUpdates(@Url url: String): FeedMessage

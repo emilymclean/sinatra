@@ -48,6 +48,17 @@ message RouteServicesEndpoint {
   repeated string serviceIds = 1;
 }
 
+message JourneySearchConfigEndpoint {
+  required int32 maximumComputationTime = 1;
+  repeated JourneySearchOption options = 2;
+}
+
+message JourneySearchOption {
+  optional int32 maximumWalkingTime = 1;
+  optional int32 transferPenalty = 2;
+  optional int32 changeOverPenalty = 3;
+}
+
 message Stop {
   required string id = 1;
   optional string parentStation = 5;

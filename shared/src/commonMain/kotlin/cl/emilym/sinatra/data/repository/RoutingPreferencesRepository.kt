@@ -8,7 +8,7 @@ import kotlin.time.Duration.Companion.minutes
 class RoutingPreferencesRepository {
 
     suspend fun maximumWalkingTime(): Duration {
-        return 10.minutes
+        return 30.minutes
     }
 
     suspend fun requiresWheelchair(): Boolean {

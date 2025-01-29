@@ -39,6 +39,14 @@
   <plurals name="time_hour">
     <item quantity="other">%1$d小时</item>
   </plurals>
+
+  <plurals name="time_minute_short">
+    <item quantity="other">%1$d分钟</item>
+  </plurals>
+
+  <plurals name="time_second_short">
+    <item quantity="other">%1$d秒</item>
+  </plurals>
       
   <string name="current_location">当前位置</string>
       
