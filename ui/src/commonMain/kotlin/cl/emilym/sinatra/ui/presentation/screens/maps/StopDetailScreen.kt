@@ -46,6 +46,7 @@ import cl.emilym.sinatra.FeatureFlags
 import cl.emilym.sinatra.data.models.Alert
 import cl.emilym.sinatra.data.models.IStopTimetableTime
 import cl.emilym.sinatra.data.models.ReferencedTime
+import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.data.models.StopId
 import cl.emilym.sinatra.data.models.StopWithChildren
 import cl.emilym.sinatra.data.repository.AlertRepository
@@ -53,6 +54,7 @@ import cl.emilym.sinatra.data.repository.FavouriteRepository
 import cl.emilym.sinatra.data.repository.RecentVisitRepository
 import cl.emilym.sinatra.data.repository.StopRepository
 import cl.emilym.sinatra.domain.UpcomingRoutesForStopUseCase
+import cl.emilym.sinatra.lib.naturalComparator
 import cl.emilym.sinatra.ui.maps.MapItem
 import cl.emilym.sinatra.ui.maps.MarkerItem
 import cl.emilym.sinatra.ui.maps.stopMarkerIcon
@@ -110,7 +112,11 @@ class StopDetailViewModel(
     val favourited = MutableStateFlow(false)
     private val stopWithChildren = createRequestStateFlow<StopWithChildren?>()
     val stop = stopWithChildren.child { it?.stop }.state(RequestState.Initial())
-    val children = stopWithChildren.child { it?.children }.state(RequestState.Initial())
+    val children = stopWithChildren
+        .child {
+            it?.children?.sortedWith(compareBy(naturalComparator()) { it.name })
+        }
+        .state(RequestState.Initial())
 
     val _upcoming = createRequestStateFlowFlow<List<IStopTimetableTime>>()
     val upcoming = _upcoming.presentable()
