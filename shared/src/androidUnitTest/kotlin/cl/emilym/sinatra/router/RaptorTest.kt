@@ -17,7 +17,9 @@ class RaptorTest {
         const val STOP_ID_SWINDEN_STREET_GGN = "8119"
         const val STOP_ID_SWINDEN_STREET = "SWN"
         const val STOP_ID_MANNING_CLARK_GGN = "8105"
+        const val STOP_ID_MANNING_CLARK_ALG = "8104"
         const val STOP_ID_MANNING_CLARK = "MCK"
+        const val STOP_ID_SANDFORD_STREET_ALG = "8112"
         const val STOP_ID_CANBERRA_RAILWAY_STATION = "3320"
     }
 
@@ -192,6 +194,40 @@ class RaptorTest {
                 STOP_ID_MANNING_CLARK
             )
         }
+    }
+
+    @Test
+    fun testNegativeValueOutcomeJourney() {
+        val raptor = Raptor(
+            graph,
+            listOf(
+                listOf("SA"),
+                listOf("SU"),
+                listOf("WD")
+            ),
+            RaptorConfig(
+                maximumWalkingTime = 25 * 60L,
+                transferPenalty = 10 * 60L,
+                changeOverPenalty = 15 * 60L,
+                penaltyMultiplier = 1000f
+            )
+        )
+        val result = raptor.calculate(
+            Duration.parseIsoString("PT23H55M").inWholeSeconds,
+            STOP_ID_MANNING_CLARK_ALG,
+            STOP_ID_SANDFORD_STREET_ALG,
+        )
+        assertEquals(RaptorJourney(listOf(
+            RaptorJourneyConnection.Travel(
+                listOf("8104", "8106", "8108", "8110", "8112"),
+                "X1",
+                "Sandford St",
+                startTime=86524,
+                endTime=86947,
+                travelTime=423,
+                dayIndex = 0,
+            ),
+        )), result)
     }
 
 }
