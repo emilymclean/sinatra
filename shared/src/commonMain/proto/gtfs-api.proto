@@ -57,6 +57,7 @@ message JourneySearchOption {
   optional int32 maximumWalkingTime = 1;
   optional int32 transferPenalty = 2;
   optional int32 changeOverPenalty = 3;
+  optional double penaltyMultiplier = 4;
 }
 
 message Stop {

@@ -26,13 +26,15 @@ data class JourneySearchConfig(
 data class JourneySearchOption(
     val maximumWalkingTime: Duration,
     val transferPenalty: Duration,
-    val changeOverPenalty: Duration
+    val changeOverPenalty: Duration,
+    val penaltyMultiplier: Double
 ) {
 
     val raptor: RaptorConfig get() = RaptorConfig(
         maximumWalkingTime.inWholeSeconds,
         transferPenalty.inWholeSeconds,
-        changeOverPenalty.inWholeSeconds
+        changeOverPenalty.inWholeSeconds,
+        penaltyMultiplier.toFloat()
     )
 
     companion object {
@@ -40,7 +42,8 @@ data class JourneySearchOption(
             return JourneySearchOption(
                 pb.maximumWalkingTime?.milliseconds ?: ZERO,
                 pb.transferPenalty?.milliseconds ?: ZERO,
-                pb.changeOverPenalty?.milliseconds ?: ZERO
+                pb.changeOverPenalty?.milliseconds ?: ZERO,
+                pb.penaltyMultiplier ?: 1000.0
             )
         }
     }

@@ -530,6 +530,7 @@ public data class JourneySearchOption(
     val maximumWalkingTime: Int? = null,
     val transferPenalty: Int? = null,
     val changeOverPenalty: Int? = null,
+    val penaltyMultiplier: Double? = null,
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
 ) : pbandk.Message {
     override operator fun plus(other: pbandk.Message?): cl.emilym.gtfs.JourneySearchOption = protoMergeImpl(other)
@@ -543,7 +544,7 @@ public data class JourneySearchOption(
             fullName = "proto.JourneySearchOption",
             messageClass = cl.emilym.gtfs.JourneySearchOption::class,
             messageCompanion = this,
-            fields = buildList(3) {
+            fields = buildList(4) {
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
@@ -572,6 +573,16 @@ public data class JourneySearchOption(
                         type = pbandk.FieldDescriptor.Type.Primitive.Int32(hasPresence = true),
                         jsonName = "changeOverPenalty",
                         value = cl.emilym.gtfs.JourneySearchOption::changeOverPenalty
+                    )
+                )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "penaltyMultiplier",
+                        number = 4,
+                        type = pbandk.FieldDescriptor.Type.Primitive.Double(hasPresence = true),
+                        jsonName = "penaltyMultiplier",
+                        value = cl.emilym.gtfs.JourneySearchOption::penaltyMultiplier
                     )
                 )
             }
@@ -1899,6 +1910,7 @@ private fun JourneySearchOption.protoMergeImpl(plus: pbandk.Message?): JourneySe
         maximumWalkingTime = plus.maximumWalkingTime ?: maximumWalkingTime,
         transferPenalty = plus.transferPenalty ?: transferPenalty,
         changeOverPenalty = plus.changeOverPenalty ?: changeOverPenalty,
+        penaltyMultiplier = plus.penaltyMultiplier ?: penaltyMultiplier,
         unknownFields = unknownFields + plus.unknownFields
     )
 } ?: this
@@ -1908,16 +1920,18 @@ private fun JourneySearchOption.Companion.decodeWithImpl(u: pbandk.MessageDecode
     var maximumWalkingTime: Int? = null
     var transferPenalty: Int? = null
     var changeOverPenalty: Int? = null
+    var penaltyMultiplier: Double? = null
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
             1 -> maximumWalkingTime = _fieldValue as Int
             2 -> transferPenalty = _fieldValue as Int
             3 -> changeOverPenalty = _fieldValue as Int
+            4 -> penaltyMultiplier = _fieldValue as Double
         }
     }
 
-    return JourneySearchOption(maximumWalkingTime, transferPenalty, changeOverPenalty, unknownFields)
+    return JourneySearchOption(maximumWalkingTime, transferPenalty, changeOverPenalty, penaltyMultiplier, unknownFields)
 }
 
 private fun Stop.protoMergeImpl(plus: pbandk.Message?): Stop = (plus as? Stop)?.let {

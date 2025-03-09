@@ -7,6 +7,8 @@ import cl.emilym.sinatra.nullIfEmpty
 import cl.emilym.sinatra.router.data.EdgeType
 import cl.emilym.sinatra.router.data.NetworkGraph
 import cl.emilym.sinatra.router.data.NetworkGraphEdge
+import kotlin.math.roundToInt
+import kotlin.math.roundToLong
 
 data class RaptorStop(
     val id: StopId,
@@ -16,13 +18,19 @@ data class RaptorStop(
 data class RaptorConfig(
     val maximumWalkingTime: Seconds,
     val transferPenalty: Seconds,
-    val changeOverPenalty: Seconds
+    val changeOverPenalty: Seconds,
+    val penaltyMultiplier: Float = 1000f,
 )
 
 class Raptor(
     private val graph: NetworkGraph,
     activeServices: List<List<ServiceId>>,
-    private val config: RaptorConfig? = null
+    private val config: RaptorConfig = RaptorConfig(
+        Long.MAX_VALUE,
+        0,
+        0,
+        1f,
+    )
 ) {
 
     private val activeServices = activeServices.map {
@@ -57,6 +65,7 @@ class Raptor(
         // Dijkstra
         val Q = FibonacciHeap<Int,Long>()
         val dist = Array(nodeCount) { Long.MAX_VALUE }
+        val distP = Array(nodeCount) { Long.MAX_VALUE }
         val prev = Array<Int?>(nodeCount) { null }
         val prevEdge = Array<NetworkGraphEdge?>(nodeCount) { null }
         val dayIndex = Array<Int?>(nodeCount) { null }
@@ -76,17 +85,19 @@ class Raptor(
 
             for (neighbour in neighbours) {
                 val v = neighbour.index
+                val altP = distP[u] + neighbour.cost
                 val alt = dist[u] + neighbour.cost
-                if (alt < dist[v]) {
+                if (altP < distP[v]) {
                     prev[v] = u
                     prevEdge[v] = neighbour.edge
+                    distP[v] = altP
                     dist[v] = alt
                     dayIndex[v] = neighbour.dayIndex
                     Q.add(v, alt)
                 }
                 if (neighbour.edge.type == EdgeType.TRAVEL) {
                     val tV = getNode(neighbour.edge.connectedNodeIndex.toInt()).stopIndex.toInt()
-                    val penalty = config?.changeOverPenalty?.let {
+                    val addedCost = config.changeOverPenalty.let {
                         with(prevEdge[tV]) {
                             when (this?.type) {
                                 EdgeType.TRAVEL -> with(getNode(prev[tV]!!)) {
@@ -97,11 +108,13 @@ class Raptor(
                                 else -> 0L
                             }
                         }
-                    } ?: 0L
-                    if ((alt + penalty) < dist[tV]) {
+                    }
+                    val addedCostP = (altP + (addedCost * config.penaltyMultiplier)).roundToLong()
+                    if ((altP + addedCostP) < distP[tV]) {
                         prev[tV] = u
                         prevEdge[tV] = neighbour.edge
-                        dist[tV] = alt + penalty
+                        distP[tV] = altP + addedCostP
+                        dist[tV] = alt + addedCost
                         dayIndex[v] = neighbour.dayIndex
                         Q.add(tV, alt)
                     }
@@ -119,7 +132,7 @@ class Raptor(
             options.filter {
                 prevEdge[it.first]?.type != EdgeType.TRANSFER ||
                         (prevEdge[it.first]?.type == EdgeType.TRANSFER &&
-                                (dist[it.first] + it.second.addedTime) >= (config?.maximumWalkingTime ?: Long.MAX_VALUE))
+                                (dist[it.first] + it.second.addedTime) >= config.maximumWalkingTime)
             }.nullIfEmpty()
         )?.minBy { dist[it.first] + it.second.addedTime }?.first ?: throw RouterException.noJourneyFound()
 
@@ -207,8 +220,8 @@ class Raptor(
                 EdgeType.UNWEIGHTED -> listOf(NodeCost(it.connectedNodeIndex.toInt(), 0L, it, null))
                 EdgeType.TRANSFER, EdgeType.TRANSFER_NON_ADJUSTABLE -> {
                     if (ignoreTransfer) return@flatMap emptyList()
-                    if (it.cost.toLong() > (config?.maximumWalkingTime ?: Long.MAX_VALUE)) return@flatMap emptyList()
-                    listOf(NodeCost(it.connectedNodeIndex.toInt(), it.cost.toLong() + (config?.transferPenalty ?: 0L), it, null))
+                    if (it.cost.toLong() > (config.maximumWalkingTime)) return@flatMap emptyList()
+                    listOf(NodeCost(it.connectedNodeIndex.toInt(), it.cost.toLong() + (config.transferPenalty), it, null))
                 }
                 EdgeType.TRAVEL -> {
                     val daysActive = (-1..1).filter { d -> servicesAreActive(it.availableServices, d) }
