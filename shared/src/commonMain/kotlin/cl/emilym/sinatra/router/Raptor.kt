@@ -7,8 +7,6 @@ import cl.emilym.sinatra.nullIfEmpty
 import cl.emilym.sinatra.router.data.EdgeType
 import cl.emilym.sinatra.router.data.NetworkGraph
 import cl.emilym.sinatra.router.data.NetworkGraphEdge
-import kotlin.math.roundToInt
-import kotlin.math.roundToLong
 
 data class RaptorStop(
     val id: StopId,
@@ -17,20 +15,16 @@ data class RaptorStop(
 
 data class RaptorConfig(
     val maximumWalkingTime: Seconds,
-    val transferPenalty: Seconds,
-    val changeOverPenalty: Seconds,
-    val penaltyMultiplier: Float = 1000f,
+    val transferTime: Seconds,
+    val transferPenalty: Int,
+    val changeOverTime: Seconds,
+    val changeOverPenalty: Int,
 )
 
 class Raptor(
     private val graph: NetworkGraph,
     activeServices: List<List<ServiceId>>,
-    private val config: RaptorConfig = RaptorConfig(
-        Long.MAX_VALUE,
-        0,
-        0,
-        1f,
-    )
+    private val config: RaptorConfig
 ) {
 
     private val activeServices = activeServices.map {
@@ -98,24 +92,22 @@ class Raptor(
                 }
                 if (neighbour.edge.type == EdgeType.TRAVEL) {
                     val tV = getNode(neighbour.edge.connectedNodeIndex.toInt()).stopIndex.toInt()
-                    val addedCost = config.changeOverPenalty.let {
-                        with(prevEdge[tV]) {
-                            when (this?.type) {
-                                EdgeType.TRAVEL -> with(getNode(prev[tV]!!)) {
-                                    if (routeIndex != getNode(u).routeIndex)
-                                        it
-                                    else 0L
-                                }
-                                else -> 0L
+                    var addedTime = 0L
+                    var addedPenalty = 0L
+                    when (prevEdge[tV]?.type) {
+                        EdgeType.TRAVEL -> when {
+                            getNode(prev[tV]!!).routeIndex != getNode(u).routeIndex -> {
+                                addedTime = config.changeOverTime
+                                addedPenalty = config.changeOverPenalty.toLong()
                             }
                         }
+                        else -> {}
                     }
-                    val addedCostP = (addedCost * config.penaltyMultiplier).toLong()
-                    if ((altP + addedCostP) < distP[tV]) {
+                    if ((altP + addedPenalty) < distP[tV]) {
                         prev[tV] = u
                         prevEdge[tV] = neighbour.edge
-                        distP[tV] = altP + addedCostP
-                        dist[tV] = alt + addedCost
+                        distP[tV] = altP + addedPenalty
+                        dist[tV] = alt + addedTime
                         dayIndex[v] = neighbour.dayIndex
                         Q.add(tV, alt)
                     }
@@ -224,8 +216,8 @@ class Raptor(
                     if (it.cost.toLong() > (config.maximumWalkingTime)) return@flatMap emptyList()
                     listOf(NodeCost(
                         it.connectedNodeIndex.toInt(),
-                        it.cost.toLong() + (config.transferPenalty),
-                        it.cost.toLong() + (config.transferPenalty * config.penaltyMultiplier).toLong(),
+                        it.cost.toLong() + config.transferTime,
+                        it.cost.toLong() + config.transferPenalty,
                         it,
                         null
                     ))
@@ -234,9 +226,9 @@ class Raptor(
                     val daysActive = (-1..1).filter { d -> servicesAreActive(it.availableServices, d) }
                     if (daysActive.isEmpty()) return@flatMap emptyList()
                     daysActive.mapNotNull { d ->
-                        val dt = it.departureTime.toInt() + (86400 * d)
-                        if ((dt + 60) < departureTime) return@mapNotNull null
-                        val cost = (dt - departureTime) + it.cost.toLong()
+                        val segmentDepartureTime = it.departureTime.toInt() + (86400 * d)
+                        if ((segmentDepartureTime + 60) < departureTime) return@mapNotNull null
+                        val cost = (segmentDepartureTime - departureTime) + it.cost.toLong()
                         NodeCost(it.connectedNodeIndex.toInt(), cost, cost, it, d)
                     }
                 }

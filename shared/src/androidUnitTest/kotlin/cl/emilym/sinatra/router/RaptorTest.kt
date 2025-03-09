@@ -1,10 +1,7 @@
 package cl.emilym.sinatra.router
 
-import android.net.Network
 import cl.emilym.sinatra.RouterException
 import cl.emilym.sinatra.router.data.NetworkGraph
-import io.github.aakira.napier.Napier
-import pbandk.decodeFromByteArray
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -32,9 +29,10 @@ class RaptorTest {
         graph = NetworkGraph.byteFormatForByteArray(this::class.java.classLoader.getResource("network_graph.eng").readBytes())
         config = RaptorConfig(
             maximumWalkingTime = 10 * 60L,
-            transferPenalty = 0 * 60L,
-            changeOverPenalty = 0 * 60L,
-            penaltyMultiplier = 1f
+            transferTime = 0,
+            transferPenalty = 0,
+            changeOverTime = 0,
+            changeOverPenalty = 0
         )
         raptor = Raptor(graph, List(3) { graph.mappings.serviceIds }, config)
     }
@@ -185,8 +183,10 @@ class RaptorTest {
         assertFails {
             val raptor = Raptor(graph, List(3) { graph.mappings.serviceIds }, config = RaptorConfig(
                 maximumWalkingTime = 0 * 60L,
-                transferPenalty = 0 * 60L,
-                changeOverPenalty = 0 * 60L
+                transferTime = 0,
+                transferPenalty = 0,
+                changeOverTime = 0,
+                changeOverPenalty = 0
             ))
             raptor.calculate(
                 Duration.parseIsoString("PT25H").inWholeSeconds,
@@ -207,9 +207,10 @@ class RaptorTest {
             ),
             RaptorConfig(
                 maximumWalkingTime = 25 * 60L,
-                transferPenalty = 10 * 60L,
-                changeOverPenalty = 15 * 60L,
-                penaltyMultiplier = 1000f
+                transferTime = 10 * 60L,
+                transferPenalty = 10 * 60 * 1000,
+                changeOverTime = 15 * 60L,
+                changeOverPenalty = 15 * 60 * 1000,
             )
         )
         val result = raptor.calculate(
