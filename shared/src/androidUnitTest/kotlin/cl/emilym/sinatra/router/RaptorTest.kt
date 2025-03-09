@@ -31,7 +31,8 @@ class RaptorTest {
         config = RaptorConfig(
             maximumWalkingTime = 10 * 60L,
             transferPenalty = 0 * 60L,
-            changeOverPenalty = 0 * 60L
+            changeOverPenalty = 0 * 60L,
+            penaltyMultiplier = 1f
         )
         raptor = Raptor(graph, List(3) { graph.mappings.serviceIds }, config)
     }

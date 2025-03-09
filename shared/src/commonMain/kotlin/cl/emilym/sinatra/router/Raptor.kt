@@ -72,6 +72,7 @@ class Raptor(
 
         for (departureStopIndex in departureStopIndices) {
             dist[departureStopIndex.first] = departureStopIndex.second.addedTime
+            distP[departureStopIndex.first] = departureStopIndex.second.addedTime
             Q.add(departureStopIndex.first, 0)
         }
 
@@ -85,7 +86,7 @@ class Raptor(
 
             for (neighbour in neighbours) {
                 val v = neighbour.index
-                val altP = distP[u] + neighbour.cost
+                val altP = distP[u] + neighbour.costP
                 val alt = dist[u] + neighbour.cost
                 if (altP < distP[v]) {
                     prev[v] = u
@@ -109,7 +110,7 @@ class Raptor(
                             }
                         }
                     }
-                    val addedCostP = (altP + (addedCost * config.penaltyMultiplier)).roundToLong()
+                    val addedCostP = (addedCost * config.penaltyMultiplier).toLong()
                     if ((altP + addedCostP) < distP[tV]) {
                         prev[tV] = u
                         prevEdge[tV] = neighbour.edge
@@ -217,11 +218,17 @@ class Raptor(
 
         return edges.flatMap {
             when (it.type) {
-                EdgeType.UNWEIGHTED -> listOf(NodeCost(it.connectedNodeIndex.toInt(), 0L, it, null))
+                EdgeType.UNWEIGHTED -> listOf(NodeCost(it.connectedNodeIndex.toInt(), 0L, 0L, it, null))
                 EdgeType.TRANSFER, EdgeType.TRANSFER_NON_ADJUSTABLE -> {
                     if (ignoreTransfer) return@flatMap emptyList()
                     if (it.cost.toLong() > (config.maximumWalkingTime)) return@flatMap emptyList()
-                    listOf(NodeCost(it.connectedNodeIndex.toInt(), it.cost.toLong() + (config.transferPenalty), it, null))
+                    listOf(NodeCost(
+                        it.connectedNodeIndex.toInt(),
+                        it.cost.toLong() + (config.transferPenalty),
+                        it.cost.toLong() + (config.transferPenalty * config.penaltyMultiplier).toLong(),
+                        it,
+                        null
+                    ))
                 }
                 EdgeType.TRAVEL -> {
                     val daysActive = (-1..1).filter { d -> servicesAreActive(it.availableServices, d) }
@@ -229,7 +236,8 @@ class Raptor(
                     daysActive.mapNotNull { d ->
                         val dt = it.departureTime.toInt() + (86400 * d)
                         if ((dt + 60) < departureTime) return@mapNotNull null
-                        NodeCost(it.connectedNodeIndex.toInt(), (dt - departureTime) + it.cost.toLong(), it, d)
+                        val cost = (dt - departureTime) + it.cost.toLong()
+                        NodeCost(it.connectedNodeIndex.toInt(), cost, cost, it, d)
                     }
                 }
             }
