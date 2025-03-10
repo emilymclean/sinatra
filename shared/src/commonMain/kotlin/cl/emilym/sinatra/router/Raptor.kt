@@ -88,7 +88,7 @@ class Raptor(
                     distP[v] = altP
                     dist[v] = alt
                     dayIndex[v] = neighbour.dayIndex
-                    Q.add(v, alt)
+                    Q.add(v, altP)
                 }
                 if (neighbour.edge.type == EdgeType.TRAVEL) {
                     val tV = getNode(neighbour.edge.connectedNodeIndex.toInt()).stopIndex.toInt()
@@ -109,7 +109,7 @@ class Raptor(
                         distP[tV] = altP + addedPenalty
                         dist[tV] = alt + addedTime
                         dayIndex[v] = neighbour.dayIndex
-                        Q.add(tV, alt)
+                        Q.add(tV, altP)
                     }
                 }
             }
@@ -210,7 +210,9 @@ class Raptor(
 
         return edges.flatMap {
             when (it.type) {
-                EdgeType.UNWEIGHTED -> listOf(NodeCost(it.connectedNodeIndex.toInt(), 0L, 0L, it, null))
+                EdgeType.UNWEIGHTED -> listOf(
+                    NodeCost(it.connectedNodeIndex.toInt(), 0L, 0L, it, null)
+                )
                 EdgeType.TRANSFER, EdgeType.TRANSFER_NON_ADJUSTABLE -> {
                     if (ignoreTransfer) return@flatMap emptyList()
                     if (it.cost.toLong() > (config.maximumWalkingTime)) return@flatMap emptyList()
