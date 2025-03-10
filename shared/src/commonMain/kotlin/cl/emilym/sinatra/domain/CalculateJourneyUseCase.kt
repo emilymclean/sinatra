@@ -126,7 +126,7 @@ class CalculateJourneyUseCase(
     }
 
     private suspend fun calculateJourney(
-        config: RaptorConfig?,
+        config: RaptorConfig,
         departureStops: List<RaptorStop>,
         arrivalStops: List<RaptorStop>
     ): Journey? {

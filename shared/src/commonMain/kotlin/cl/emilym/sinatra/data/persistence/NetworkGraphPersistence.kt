@@ -53,17 +53,16 @@ class JourneyConfigPersistence(
                 JourneySearchOption(
                     10.minutes,
                     5.minutes,
+                    5 * 60 * 100,
                     5.minutes,
+                    5 * 60 * 100
                 ),
                 JourneySearchOption(
-                    25.minutes,
-                    15.minutes,
-                    25.minutes,
-                ),
-                JourneySearchOption(
-                    25.minutes,
-                    10.minutes,
-                    15.minutes,
+                    30.minutes,
+                    5.minutes,
+                    5 * 60 * 100,
+                    5.minutes,
+                    5 * 60 * 100
                 )
             )
         )

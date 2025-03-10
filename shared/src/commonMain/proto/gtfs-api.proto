@@ -55,8 +55,10 @@ message JourneySearchConfigEndpoint {
 
 message JourneySearchOption {
   optional int32 maximumWalkingTime = 1;
-  optional int32 transferPenalty = 2;
-  optional int32 changeOverPenalty = 3;
+  optional int32 transferTime = 2;
+  optional int32 changeOverTime = 3;
+  optional int32 transferPenalty = 4;
+  optional int32 changeOverPenalty = 5;
 }
 
 message Stop {

@@ -1,10 +1,7 @@
 package cl.emilym.sinatra.router
 
-import android.net.Network
 import cl.emilym.sinatra.RouterException
 import cl.emilym.sinatra.router.data.NetworkGraph
-import io.github.aakira.napier.Napier
-import pbandk.decodeFromByteArray
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -17,7 +14,9 @@ class RaptorTest {
         const val STOP_ID_SWINDEN_STREET_GGN = "8119"
         const val STOP_ID_SWINDEN_STREET = "SWN"
         const val STOP_ID_MANNING_CLARK_GGN = "8105"
+        const val STOP_ID_MANNING_CLARK_ALG = "8104"
         const val STOP_ID_MANNING_CLARK = "MCK"
+        const val STOP_ID_SANDFORD_STREET_ALG = "8112"
         const val STOP_ID_CANBERRA_RAILWAY_STATION = "3320"
     }
 
@@ -30,8 +29,10 @@ class RaptorTest {
         graph = NetworkGraph.byteFormatForByteArray(this::class.java.classLoader.getResource("network_graph.eng").readBytes())
         config = RaptorConfig(
             maximumWalkingTime = 10 * 60L,
-            transferPenalty = 0 * 60L,
-            changeOverPenalty = 0 * 60L
+            transferTime = 0,
+            transferPenalty = 0,
+            changeOverTime = 0,
+            changeOverPenalty = 0
         )
         raptor = Raptor(graph, List(3) { graph.mappings.serviceIds }, config)
     }
@@ -182,8 +183,10 @@ class RaptorTest {
         assertFails {
             val raptor = Raptor(graph, List(3) { graph.mappings.serviceIds }, config = RaptorConfig(
                 maximumWalkingTime = 0 * 60L,
-                transferPenalty = 0 * 60L,
-                changeOverPenalty = 0 * 60L
+                transferTime = 0,
+                transferPenalty = 0,
+                changeOverTime = 0,
+                changeOverPenalty = 0
             ))
             raptor.calculate(
                 Duration.parseIsoString("PT25H").inWholeSeconds,
@@ -191,6 +194,41 @@ class RaptorTest {
                 STOP_ID_MANNING_CLARK
             )
         }
+    }
+
+    @Test
+    fun testNegativeValueOutcomeJourney() {
+        val raptor = Raptor(
+            graph,
+            listOf(
+                listOf("SA"),
+                listOf("SU"),
+                listOf("WD")
+            ),
+            RaptorConfig(
+                maximumWalkingTime = 25 * 60L,
+                transferTime = 10 * 60L,
+                transferPenalty = 10 * 60 * 1000,
+                changeOverTime = 15 * 60L,
+                changeOverPenalty = 15 * 60 * 1000,
+            )
+        )
+        val result = raptor.calculate(
+            Duration.parseIsoString("PT23H55M").inWholeSeconds,
+            STOP_ID_MANNING_CLARK_ALG,
+            STOP_ID_SANDFORD_STREET_ALG,
+        )
+        assertEquals(RaptorJourney(listOf(
+            RaptorJourneyConnection.Travel(
+                listOf("8104", "8106", "8108", "8110", "8112"),
+                "X1",
+                "Sandford St",
+                startTime=86524,
+                endTime=86947,
+                travelTime=423,
+                dayIndex = 0,
+            ),
+        )), result)
     }
 
 }
