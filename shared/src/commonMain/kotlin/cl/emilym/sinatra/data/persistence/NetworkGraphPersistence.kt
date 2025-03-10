@@ -53,9 +53,16 @@ class JourneyConfigPersistence(
                 JourneySearchOption(
                     10.minutes,
                     5.minutes,
-                    5.minutes.inWholeSeconds.toInt(),
+                    10.minutes.inWholeMilliseconds.toInt(),
                     5.minutes,
-                    5.minutes.inWholeSeconds.toInt()
+                    10.minutes.inWholeMilliseconds.toInt()
+                ),
+                JourneySearchOption(
+                    30.minutes,
+                    5.minutes,
+                    10.minutes.inWholeMilliseconds.toInt(),
+                    5.minutes,
+                    10.minutes.inWholeMilliseconds.toInt()
                 )
             )
         )
