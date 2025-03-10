@@ -31,7 +31,6 @@ jobs:
       run: |-
         printf "MAPS_API_KEY=${MAPS_API_KEY}" >> secrets.properties
         printf "${GOOGLE_SERVICES_JSON}" >> androidApp/google-services.json
-        printf "apiUrl=${{vars.PRODUCTION_API_URL}" >> gradle.properties
     - name: Setup gradle
       uses: gradle/actions/setup-gradle@v3
     - name: Lint with Gradle
