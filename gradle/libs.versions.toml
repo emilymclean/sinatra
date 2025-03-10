@@ -1,10 +1,11 @@
 [versions]
 agp = "8.7.2"
-buildkonfigGradlePlugin = "0.15.2"
+buildkonfigGradlePlugin = "0.17.0"
 kotlin = "2.1.0"
 compose = "1.7.5"
 compose-material3 = "1.3.1"
 androidx-activityCompose = "1.9.3"
+lifecycleRuntimeCompose = "2.8.7"
 mapsCompose = "6.4.0"
 mockk = "1.13.14"
 moko-maps = "0.6.0"
@@ -61,6 +62,10 @@ compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview"
 compose-material3 = { module = "androidx.compose.material3:material3", version.ref = "compose-material3" }
 compose-adaptive = { group = "org.jetbrains.compose.material3.adaptive", name = "adaptive", version.ref = "compose-adaptive" }
 compose-adaptive-navigation = { group = "org.jetbrains.compose.material3.adaptive", name = "adaptive-navigation", version.ref = "compose-adaptive" }
+compose-adaptive-navigation-suite = { group = "org.jetbrains.compose.material3", name = "material3-adaptive-navigation-suite", version.ref = "compose-adaptive-navigation-suite" }
+compose-viewmodel = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "compose-viewmodel" }
+compose-constraintlayout = { module = "tech.annexflow.compose:constraintlayout-compose-multiplatform", version.ref = "constraintlayout" }
+androidx-lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycleRuntimeCompose" }
 
 # Coil
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil-compose" }

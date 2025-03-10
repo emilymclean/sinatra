@@ -484,6 +484,124 @@ public data class RouteServicesEndpoint(
 }
 
 @pbandk.Export
+public data class JourneySearchConfigEndpoint(
+    val maximumComputationTime: Int,
+    val options: List<cl.emilym.gtfs.JourneySearchOption> = emptyList(),
+    override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
+) : pbandk.Message {
+    override operator fun plus(other: pbandk.Message?): cl.emilym.gtfs.JourneySearchConfigEndpoint = protoMergeImpl(other)
+    override val descriptor: pbandk.MessageDescriptor<cl.emilym.gtfs.JourneySearchConfigEndpoint> get() = Companion.descriptor
+    override val protoSize: Int by lazy { super.protoSize }
+    public companion object : pbandk.Message.Companion<cl.emilym.gtfs.JourneySearchConfigEndpoint> {
+        override fun decodeWith(u: pbandk.MessageDecoder): cl.emilym.gtfs.JourneySearchConfigEndpoint = cl.emilym.gtfs.JourneySearchConfigEndpoint.decodeWithImpl(u)
+
+        override val descriptor: pbandk.MessageDescriptor<cl.emilym.gtfs.JourneySearchConfigEndpoint> = pbandk.MessageDescriptor(
+            fullName = "proto.JourneySearchConfigEndpoint",
+            messageClass = cl.emilym.gtfs.JourneySearchConfigEndpoint::class,
+            messageCompanion = this,
+            fields = buildList(2) {
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "maximumComputationTime",
+                        number = 1,
+                        type = pbandk.FieldDescriptor.Type.Primitive.Int32(hasPresence = true),
+                        jsonName = "maximumComputationTime",
+                        value = cl.emilym.gtfs.JourneySearchConfigEndpoint::maximumComputationTime
+                    )
+                )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "options",
+                        number = 2,
+                        type = pbandk.FieldDescriptor.Type.Repeated<cl.emilym.gtfs.JourneySearchOption>(valueType = pbandk.FieldDescriptor.Type.Message(messageCompanion = cl.emilym.gtfs.JourneySearchOption.Companion)),
+                        jsonName = "options",
+                        value = cl.emilym.gtfs.JourneySearchConfigEndpoint::options
+                    )
+                )
+            }
+        )
+    }
+}
+
+@pbandk.Export
+public data class JourneySearchOption(
+    val maximumWalkingTime: Int? = null,
+    val transferTime: Int? = null,
+    val changeOverTime: Int? = null,
+    val transferPenalty: Int? = null,
+    val changeOverPenalty: Int? = null,
+    override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
+) : pbandk.Message {
+    override operator fun plus(other: pbandk.Message?): cl.emilym.gtfs.JourneySearchOption = protoMergeImpl(other)
+    override val descriptor: pbandk.MessageDescriptor<cl.emilym.gtfs.JourneySearchOption> get() = Companion.descriptor
+    override val protoSize: Int by lazy { super.protoSize }
+    public companion object : pbandk.Message.Companion<cl.emilym.gtfs.JourneySearchOption> {
+        public val defaultInstance: cl.emilym.gtfs.JourneySearchOption by lazy { cl.emilym.gtfs.JourneySearchOption() }
+        override fun decodeWith(u: pbandk.MessageDecoder): cl.emilym.gtfs.JourneySearchOption = cl.emilym.gtfs.JourneySearchOption.decodeWithImpl(u)
+
+        override val descriptor: pbandk.MessageDescriptor<cl.emilym.gtfs.JourneySearchOption> = pbandk.MessageDescriptor(
+            fullName = "proto.JourneySearchOption",
+            messageClass = cl.emilym.gtfs.JourneySearchOption::class,
+            messageCompanion = this,
+            fields = buildList(5) {
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "maximumWalkingTime",
+                        number = 1,
+                        type = pbandk.FieldDescriptor.Type.Primitive.Int32(hasPresence = true),
+                        jsonName = "maximumWalkingTime",
+                        value = cl.emilym.gtfs.JourneySearchOption::maximumWalkingTime
+                    )
+                )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "transferTime",
+                        number = 2,
+                        type = pbandk.FieldDescriptor.Type.Primitive.Int32(hasPresence = true),
+                        jsonName = "transferTime",
+                        value = cl.emilym.gtfs.JourneySearchOption::transferTime
+                    )
+                )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "changeOverTime",
+                        number = 3,
+                        type = pbandk.FieldDescriptor.Type.Primitive.Int32(hasPresence = true),
+                        jsonName = "changeOverTime",
+                        value = cl.emilym.gtfs.JourneySearchOption::changeOverTime
+                    )
+                )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "transferPenalty",
+                        number = 4,
+                        type = pbandk.FieldDescriptor.Type.Primitive.Int32(hasPresence = true),
+                        jsonName = "transferPenalty",
+                        value = cl.emilym.gtfs.JourneySearchOption::transferPenalty
+                    )
+                )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "changeOverPenalty",
+                        number = 5,
+                        type = pbandk.FieldDescriptor.Type.Primitive.Int32(hasPresence = true),
+                        jsonName = "changeOverPenalty",
+                        value = cl.emilym.gtfs.JourneySearchOption::changeOverPenalty
+                    )
+                )
+            }
+        )
+    }
+}
+
+@pbandk.Export
 public data class Stop(
     val id: String,
     val parentStation: String? = null,
@@ -1767,6 +1885,68 @@ private fun RouteServicesEndpoint.Companion.decodeWithImpl(u: pbandk.MessageDeco
     }
 
     return RouteServicesEndpoint(pbandk.ListWithSize.Builder.fixed(serviceIds), unknownFields)
+}
+
+private fun JourneySearchConfigEndpoint.protoMergeImpl(plus: pbandk.Message?): JourneySearchConfigEndpoint = (plus as? JourneySearchConfigEndpoint)?.let {
+    it.copy(
+        options = options + plus.options,
+        unknownFields = unknownFields + plus.unknownFields
+    )
+} ?: this
+
+@Suppress("UNCHECKED_CAST")
+private fun JourneySearchConfigEndpoint.Companion.decodeWithImpl(u: pbandk.MessageDecoder): JourneySearchConfigEndpoint {
+    var maximumComputationTime: Int? = null
+    var options: pbandk.ListWithSize.Builder<cl.emilym.gtfs.JourneySearchOption>? = null
+
+    val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
+        when (_fieldNumber) {
+            1 -> maximumComputationTime = _fieldValue as Int
+            2 -> options = (options ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as kotlin.sequences.Sequence<cl.emilym.gtfs.JourneySearchOption> }
+        }
+    }
+
+    if (maximumComputationTime == null) {
+        throw pbandk.InvalidProtocolBufferException.missingRequiredField("maximumComputationTime")
+    }
+    return JourneySearchConfigEndpoint(maximumComputationTime!!, pbandk.ListWithSize.Builder.fixed(options), unknownFields)
+}
+
+@pbandk.Export
+@pbandk.JsName("orDefaultForJourneySearchOption")
+public fun JourneySearchOption?.orDefault(): cl.emilym.gtfs.JourneySearchOption = this ?: JourneySearchOption.defaultInstance
+
+private fun JourneySearchOption.protoMergeImpl(plus: pbandk.Message?): JourneySearchOption = (plus as? JourneySearchOption)?.let {
+    it.copy(
+        maximumWalkingTime = plus.maximumWalkingTime ?: maximumWalkingTime,
+        transferTime = plus.transferTime ?: transferTime,
+        changeOverTime = plus.changeOverTime ?: changeOverTime,
+        transferPenalty = plus.transferPenalty ?: transferPenalty,
+        changeOverPenalty = plus.changeOverPenalty ?: changeOverPenalty,
+        unknownFields = unknownFields + plus.unknownFields
+    )
+} ?: this
+
+@Suppress("UNCHECKED_CAST")
+private fun JourneySearchOption.Companion.decodeWithImpl(u: pbandk.MessageDecoder): JourneySearchOption {
+    var maximumWalkingTime: Int? = null
+    var transferTime: Int? = null
+    var changeOverTime: Int? = null
+    var transferPenalty: Int? = null
+    var changeOverPenalty: Int? = null
+
+    val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
+        when (_fieldNumber) {
+            1 -> maximumWalkingTime = _fieldValue as Int
+            2 -> transferTime = _fieldValue as Int
+            3 -> changeOverTime = _fieldValue as Int
+            4 -> transferPenalty = _fieldValue as Int
+            5 -> changeOverPenalty = _fieldValue as Int
+        }
+    }
+
+    return JourneySearchOption(maximumWalkingTime, transferTime, changeOverTime, transferPenalty,
+        changeOverPenalty, unknownFields)
 }
 
 private fun Stop.protoMergeImpl(plus: pbandk.Message?): Stop = (plus as? Stop)?.let {

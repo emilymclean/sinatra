@@ -16,6 +16,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.data.models.Route
 import cl.emilym.sinatra.ui.color
@@ -28,17 +30,24 @@ val routeRandleSize
 @Composable
 fun RouteRandle(
     route: Route,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    size: Dp = routeRandleSize
 ) {
+    val borderSize = (size * 0.06f)
     val extraModifier = when {
         route.colors != null -> Modifier
             .clip(CircleShape)
-            .border(0.15.rdp, Color.White, CircleShape)
+            .then(
+                when {
+                    borderSize >= 2.dp -> Modifier.border(borderSize, Color.White, CircleShape)
+                    else -> Modifier
+                }
+            )
             .background(route.colors!!.color())
         else -> Modifier
     }
     Box(
-        Modifier.size(routeRandleSize).then(extraModifier).padding(0.3.rdp).then(modifier),
+        Modifier.size(size).then(extraModifier).padding((size * 0.12f)).then(modifier),
         contentAlignment = Alignment.Center
     ) {
         AutoSizeText(

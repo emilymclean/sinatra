@@ -8,7 +8,9 @@ import cl.emilym.sinatra.router.data.NetworkGraphNode
 data class NodeCost(
     val index: NodeIndex,
     val cost: Long,
-    val edge: NetworkGraphEdge
+    val costP: Long,
+    val edge: NetworkGraphEdge,
+    val dayIndex: Int? = null
 )
 
 data class NodeAndIndex<T: NetworkGraphNode, I: NodeIndex>(
@@ -78,6 +80,7 @@ sealed interface RaptorJourneyConnection {
         val heading: String,
         val startTime: DaySeconds,
         val endTime: DaySeconds,
+        val dayIndex: Int,
         override val travelTime: Seconds
     ): RaptorJourneyConnection
 }

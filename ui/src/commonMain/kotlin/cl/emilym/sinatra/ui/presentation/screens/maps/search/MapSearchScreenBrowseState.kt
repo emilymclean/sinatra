@@ -8,7 +8,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
+import cl.emilym.sinatra.ui.widgets.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -42,8 +42,8 @@ fun MapSearchScreenBrowseState(
             contentAlignment = Alignment.Center
         ) {
             val navigator = LocalNavigator.currentOrThrow
-            val routes by viewModel.routes.collectAsState(RequestState.Initial())
-            val alerts by mainViewModel.alerts.collectAsState(RequestState.Initial())
+            val routes by viewModel.routes.collectAsStateWithLifecycle()
+            val alerts by mainViewModel.alerts.collectAsStateWithLifecycle()
 
             LaunchedEffect(routes) {
                 if (routes is RequestState.Failure) {

@@ -17,7 +17,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -25,7 +24,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
-import cafe.adriel.voyager.core.model.ScreenModel
+import cafe.adriel.voyager.core.annotation.ExperimentalVoyagerApi
+import cafe.adriel.voyager.core.lifecycle.LifecycleEffectOnce
 import cafe.adriel.voyager.core.model.screenModelScope
 import cafe.adriel.voyager.core.screen.ScreenKey
 import cafe.adriel.voyager.koin.koinScreenModel
@@ -54,8 +54,6 @@ import cl.emilym.sinatra.data.models.startOfDay
 import cl.emilym.sinatra.data.repository.AlertRepository
 import cl.emilym.sinatra.data.repository.FavouriteRepository
 import cl.emilym.sinatra.data.repository.RecentVisitRepository
-import cl.emilym.sinatra.data.repository.isIos
-import cl.emilym.sinatra.data.repository.platform
 import cl.emilym.sinatra.domain.CurrentTripForRouteUseCase
 import cl.emilym.sinatra.domain.CurrentTripInformation
 import cl.emilym.sinatra.nullIfEmpty
@@ -63,6 +61,8 @@ import cl.emilym.sinatra.ui.NEAREST_STOP_RADIUS
 import cl.emilym.sinatra.ui.asInstants
 import cl.emilym.sinatra.ui.color
 import cl.emilym.sinatra.ui.current
+import cl.emilym.sinatra.ui.localization.LocalClock
+import cl.emilym.sinatra.ui.localization.LocalScheduleTimeZone
 import cl.emilym.sinatra.ui.maps.LineItem
 import cl.emilym.sinatra.ui.maps.MapItem
 import cl.emilym.sinatra.ui.maps.MarkerItem
@@ -76,22 +76,20 @@ import cl.emilym.sinatra.ui.widgets.AccessibilityIconLockup
 import cl.emilym.sinatra.ui.widgets.AlertScaffold
 import cl.emilym.sinatra.ui.widgets.BikeIcon
 import cl.emilym.sinatra.ui.widgets.FavouriteButton
-import cl.emilym.sinatra.ui.localization.LocalClock
 import cl.emilym.sinatra.ui.widgets.LocalMapControl
-import cl.emilym.sinatra.ui.localization.LocalScheduleTimeZone
 import cl.emilym.sinatra.ui.widgets.RouteLine
 import cl.emilym.sinatra.ui.widgets.RouteRandle
 import cl.emilym.sinatra.ui.widgets.SheetIosBackButton
+import cl.emilym.sinatra.ui.widgets.SinatraScreenModel
 import cl.emilym.sinatra.ui.widgets.SpecificRecomposeOnInstants
 import cl.emilym.sinatra.ui.widgets.StopCard
 import cl.emilym.sinatra.ui.widgets.Subheading
 import cl.emilym.sinatra.ui.widgets.WheelchairAccessibleIcon
+import cl.emilym.sinatra.ui.widgets.collectAsStateWithLifecycle
 import cl.emilym.sinatra.ui.widgets.createRequestStateFlowFlow
 import cl.emilym.sinatra.ui.widgets.currentLocation
 import cl.emilym.sinatra.ui.widgets.handleFlowProperly
 import cl.emilym.sinatra.ui.widgets.pick
-import cl.emilym.sinatra.ui.widgets.presentable
-import cl.emilym.sinatra.ui.widgets.toIntPx
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
@@ -128,20 +126,20 @@ class RouteDetailViewModel(
     private val recentVisitRepository: RecentVisitRepository,
     private val alertRepository: AlertRepository,
     private val clock: Clock
-): ScreenModel {
+): SinatraScreenModel {
 
     private var lastLocation = MutableStateFlow<MapLocation?>(null)
     private val _tripInformation = createRequestStateFlowFlow<CurrentTripInformation?>()
     val tripInformation = _tripInformation.presentable()
     val favourited = MutableStateFlow(false)
-    val nearestStop: Flow<StopWithDistance?> = tripInformation.combine(lastLocation) { tripInformation, lastLocation ->
+    val nearestStop = tripInformation.combine(lastLocation) { tripInformation, lastLocation ->
         if (tripInformation !is RequestState.Success || lastLocation == null) return@combine null
         val stops = tripInformation.value?.tripInformation?.stops?.mapNotNull { it.stop }?.nullIfEmpty() ?: return@combine null
         stops.map { StopWithDistance(it, distance(lastLocation, it.location)) }
             .filter { it.distance < NEAREST_STOP_RADIUS }
             .nullIfEmpty()
             ?.minBy { it.distance }
-    }
+    }.state(null)
 
     private val _alerts = createRequestStateFlowFlow<List<Alert>>()
     val alerts = _alerts.presentable()
@@ -209,7 +207,7 @@ class RouteDetailScreen(
 
     override val key: ScreenKey = "${this::class.qualifiedName!!}/$routeId/$serviceId/$tripId/$stopId/$_startOfDay"
 
-    @OptIn(ExperimentalMaterial3Api::class)
+    @OptIn(ExperimentalMaterial3Api::class, ExperimentalVoyagerApi::class)
     @Composable
     override fun BottomSheetContent() {
         val viewModel = koinScreenModel<RouteDetailViewModel>()
@@ -219,7 +217,7 @@ class RouteDetailScreen(
             bottomSheetState?.bottomSheetState?.halfExpand()
         }
 
-        LaunchedEffect(routeId, serviceId, tripId, startOfDay) {
+        LifecycleEffectOnce {
             viewModel.init(routeId, serviceId, tripId, startOfDay)
         }
 
@@ -230,7 +228,7 @@ class RouteDetailScreen(
             }
         }
 
-        val tripInformation by viewModel.tripInformation.collectAsState(RequestState.Initial())
+        val tripInformation by viewModel.tripInformation.collectAsStateWithLifecycle()
         Box(
             Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
@@ -266,8 +264,8 @@ class RouteDetailScreen(
         val timeZone = LocalScheduleTimeZone.current
         val mapControl = LocalMapControl.current
 
-        val nearestStop by viewModel.nearestStop.collectAsState(null)
-        val alerts by viewModel.alerts.collectAsState(RequestState.Initial())
+        val nearestStop by viewModel.nearestStop.collectAsStateWithLifecycle()
+        val alerts by viewModel.alerts.collectAsStateWithLifecycle()
 
         val current = if (trigger != null) {
             remember(trigger) {
@@ -321,7 +319,7 @@ class RouteDetailScreen(
                                 )
                             }
                         }
-                        val favourited by viewModel.favourited.collectAsState(false)
+                        val favourited by viewModel.favourited.collectAsStateWithLifecycle()
                         FavouriteButton(
                             favourited,
                             { viewModel.favourite(routeId, it) },
@@ -433,7 +431,7 @@ class RouteDetailScreen(
     override fun mapItems(): List<MapItem> {
         val viewModel = koinScreenModel<RouteDetailViewModel>()
         val navigator = LocalNavigator.currentOrThrow
-        val tripInformationRS by viewModel.tripInformation.collectAsState(RequestState.Initial())
+        val tripInformationRS by viewModel.tripInformation.collectAsStateWithLifecycle()
         val info = (tripInformationRS as? RequestState.Success)?.value ?: return listOf()
         val route = info.route
         val icon = routeStopMarkerIcon(route)

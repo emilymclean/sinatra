@@ -69,7 +69,5 @@ firebase apps:sdkconfig --non-interactive --project "$project_id" IOS "${app_ids
 firebase apps:sdkconfig --non-interactive --project "$project_id" IOS "${app_ids[$(index_of "cl.emilym.sinatra IOS" "${app_namespaces[@]}")]}" > iosApp/iosApp/Firebase/GoogleService-Info-Release.plist
 
 touch secrets.properties
-touch local.properties
 
 update_property secrets.properties "MAPS_API_KEY" "$maps_api_key"
-update_property local.properties "apiUrl" "$api_endpoint"

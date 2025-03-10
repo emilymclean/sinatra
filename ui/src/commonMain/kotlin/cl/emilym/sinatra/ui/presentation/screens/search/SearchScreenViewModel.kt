@@ -12,6 +12,7 @@ import cl.emilym.sinatra.ui.widgets.handleFlowProperly
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flatMapLatest
@@ -22,9 +23,9 @@ import kotlin.time.Duration.Companion.seconds
 
 interface SearchScreenViewModel {
     val query: MutableStateFlow<String?>
-    val results: Flow<RequestState<List<SearchResult>>>
-    val nearbyStops: Flow<List<StopWithDistance>?>
-    val recentVisits: Flow<RequestState<List<RecentVisit>>>
+    val results: StateFlow<RequestState<List<SearchResult>>>
+    val nearbyStops: StateFlow<List<StopWithDistance>?>
+    val recentVisits: StateFlow<RequestState<List<RecentVisit>>>
 
     fun retryRecentVisits()
 

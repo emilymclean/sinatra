@@ -19,7 +19,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
+import cl.emilym.sinatra.ui.widgets.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,6 +27,8 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
+import cafe.adriel.voyager.core.annotation.ExperimentalVoyagerApi
+import cafe.adriel.voyager.core.lifecycle.LifecycleEffectOnce
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import cafe.adriel.voyager.core.screen.ScreenKey
@@ -44,6 +46,7 @@ import cl.emilym.sinatra.FeatureFlags
 import cl.emilym.sinatra.data.models.Alert
 import cl.emilym.sinatra.data.models.IStopTimetableTime
 import cl.emilym.sinatra.data.models.ReferencedTime
+import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.data.models.StopId
 import cl.emilym.sinatra.data.models.StopWithChildren
 import cl.emilym.sinatra.data.repository.AlertRepository
@@ -51,6 +54,7 @@ import cl.emilym.sinatra.data.repository.FavouriteRepository
 import cl.emilym.sinatra.data.repository.RecentVisitRepository
 import cl.emilym.sinatra.data.repository.StopRepository
 import cl.emilym.sinatra.domain.UpcomingRoutesForStopUseCase
+import cl.emilym.sinatra.lib.naturalComparator
 import cl.emilym.sinatra.ui.maps.MapItem
 import cl.emilym.sinatra.ui.maps.MarkerItem
 import cl.emilym.sinatra.ui.maps.stopMarkerIcon
@@ -68,15 +72,16 @@ import cl.emilym.sinatra.ui.widgets.MapIcon
 import cl.emilym.sinatra.ui.widgets.NavigateIcon
 import cl.emilym.sinatra.ui.widgets.NoBusIcon
 import cl.emilym.sinatra.ui.widgets.SheetIosBackButton
+import cl.emilym.sinatra.ui.widgets.SinatraScreenModel
 import cl.emilym.sinatra.ui.widgets.StopCard
 import cl.emilym.sinatra.ui.widgets.Subheading
 import cl.emilym.sinatra.ui.widgets.UpcomingRouteCard
 import cl.emilym.sinatra.ui.widgets.WheelchairAccessibleIcon
+import cl.emilym.sinatra.ui.widgets.createRequestStateFlow
 import cl.emilym.sinatra.ui.widgets.createRequestStateFlowFlow
 import cl.emilym.sinatra.ui.widgets.handleFlowProperly
 import cl.emilym.sinatra.ui.widgets.openMaps
 import cl.emilym.sinatra.ui.widgets.pick
-import cl.emilym.sinatra.ui.widgets.presentable
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.map
@@ -99,15 +104,19 @@ class StopDetailViewModel(
     private val favouriteRepository: FavouriteRepository,
     private val recentVisitRepository: RecentVisitRepository,
     private val alertRepository: AlertRepository
-): ScreenModel {
+): SinatraScreenModel {
 
     private val _alerts = createRequestStateFlowFlow<List<Alert>>()
     val alerts = _alerts.presentable()
 
     val favourited = MutableStateFlow(false)
-    private val stopWithChildren = MutableStateFlow<RequestState<StopWithChildren?>>(RequestState.Initial())
-    val stop = stopWithChildren.child { it?.stop }
-    val children = stopWithChildren.child { it?.children }
+    private val stopWithChildren = createRequestStateFlow<StopWithChildren?>()
+    val stop = stopWithChildren.child { it?.stop }.state(RequestState.Initial())
+    val children = stopWithChildren
+        .child {
+            it?.children?.sortedWith(compareBy(naturalComparator()) { it.name })
+        }
+        .state(RequestState.Initial())
 
     val _upcoming = createRequestStateFlowFlow<List<IStopTimetableTime>>()
     val upcoming = _upcoming.presentable()
@@ -163,6 +172,7 @@ class StopDetailScreen(
 ): MapScreen {
     override val key: ScreenKey = "${this::class.qualifiedName!!}/$stopId"
 
+    @OptIn(ExperimentalVoyagerApi::class)
     @Composable
     override fun BottomSheetContent() {
         val viewModel = koinScreenModel<StopDetailViewModel>()
@@ -174,14 +184,14 @@ class StopDetailScreen(
             bottomSheetState?.bottomSheetState?.halfExpand()
         }
 
-        LaunchedEffect(stopId) {
+        LifecycleEffectOnce {
             viewModel.init(stopId)
         }
 
-        val stop by viewModel.stop.collectAsState(RequestState.Initial())
-        val children by viewModel.children.collectAsState(RequestState.Initial())
-        val upcoming by viewModel.upcoming.collectAsState(RequestState.Initial())
-        val alerts by viewModel.alerts.collectAsState(RequestState.Initial())
+        val stop by viewModel.stop.collectAsStateWithLifecycle()
+        val children by viewModel.children.collectAsStateWithLifecycle()
+        val upcoming by viewModel.upcoming.collectAsStateWithLifecycle()
+        val alerts by viewModel.alerts.collectAsStateWithLifecycle()
         Box(
             Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center,
@@ -215,7 +225,7 @@ class StopDetailScreen(
                                                 style = MaterialTheme.typography.titleLarge
                                             )
                                         }
-                                        val favourited by viewModel.favourited.collectAsState(false)
+                                        val favourited by viewModel.favourited.collectAsStateWithLifecycle()
                                         FavouriteButton(
                                             favourited,
                                             { viewModel.favourite(stopId, it) },
@@ -363,7 +373,7 @@ class StopDetailScreen(
     @Composable
     override fun mapItems(): List<MapItem> {
         val viewModel = koinScreenModel<StopDetailViewModel>()
-        val stopRS by viewModel.stop.collectAsState(RequestState.Initial())
+        val stopRS by viewModel.stop.collectAsStateWithLifecycle()
         val stop = (stopRS as? RequestState.Success)?.value ?: return listOf()
 
         return listOf(

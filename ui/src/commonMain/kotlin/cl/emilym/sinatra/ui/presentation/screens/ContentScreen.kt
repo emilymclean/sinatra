@@ -16,11 +16,13 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
+import cl.emilym.sinatra.ui.widgets.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import cafe.adriel.voyager.core.annotation.ExperimentalVoyagerApi
+import cafe.adriel.voyager.core.lifecycle.LifecycleEffectOnce
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import cafe.adriel.voyager.core.screen.Screen
@@ -74,12 +76,13 @@ open class ContentScreen(
 ): Screen {
     override val key: ScreenKey = "content-$id"
 
+    @OptIn(ExperimentalVoyagerApi::class)
     @Composable
     override fun Content() {
         val viewModel = koinScreenModel<ContentViewModel>()
-        val content by viewModel.content.collectAsState(RequestState.Initial())
+        val content by viewModel.content.collectAsStateWithLifecycle()
 
-        LaunchedEffect(id) {
+        LifecycleEffectOnce {
             viewModel.init(id)
         }
 
