@@ -96,7 +96,7 @@ fun JourneyLine(
                                 modifier = Modifier.size(1.rdp),
                             )
                             Text(
-                                "${leg.travelTime.inWholeMinutes}",
+                                "${leg.travelTime.inWholeMinutes.coerceAtLeast(1)}",
                                 style = MaterialTheme.typography.labelSmall
                             )
                         }
