@@ -8,6 +8,7 @@ import cl.emilym.sinatra.router.data.NetworkGraphNode
 data class NodeCost(
     val index: NodeIndex,
     val cost: Long,
+    val costP: Long,
     val edge: NetworkGraphEdge,
     val dayIndex: Int? = null
 )
