@@ -92,17 +92,8 @@ class Raptor(
                 }
                 if (neighbour.edge.type == EdgeType.TRAVEL) {
                     val tV = getNode(neighbour.edge.connectedNodeIndex.toInt()).stopIndex.toInt()
-                    var addedTime = 0L
-                    var addedPenalty = 0L
-                    when (prevEdge[tV]?.type) {
-                        EdgeType.TRAVEL -> when {
-                            getNode(prev[tV]!!).routeIndex != getNode(u).routeIndex -> {
-                                addedTime = config.changeOverTime
-                                addedPenalty = config.changeOverPenalty.toLong()
-                            }
-                        }
-                        else -> {}
-                    }
+                    val addedPenalty = config.changeOverPenalty
+                    val addedTime = config.changeOverTime
                     if ((altP + addedPenalty) < distP[tV]) {
                         prev[tV] = u
                         prevEdge[tV] = neighbour.edge
