@@ -1,4 +1,6 @@
+import com.codingfeline.buildkonfig.compiler.FieldSpec.Type.STRING
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -8,6 +10,7 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.ktorfit)
     alias(libs.plugins.room)
+    id("com.codingfeline.buildkonfig")
 }
 
 kotlin {
@@ -116,5 +119,16 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
+    }
+}
+
+buildkonfig {
+    packageName = "cl.emilym.sinatra"
+
+    defaultConfigs {
+        defaultConfigs {
+            val apiUrl: String by project
+            buildConfigField(STRING, "apiUrl", apiUrl, const = true)
+        }
     }
 }
