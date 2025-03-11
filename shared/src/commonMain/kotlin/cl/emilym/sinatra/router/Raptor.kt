@@ -58,6 +58,7 @@ class Raptor(
 
         // Dijkstra
         val Q = FibonacciHeap<Int,Long>()
+        val checked = mutableMapOf<Int, Unit>()
         val dist = Array(nodeCount) { Long.MAX_VALUE }
         val distP = Array(nodeCount) { Long.MAX_VALUE }
         val prev = Array<Int?>(nodeCount) { null }
@@ -72,6 +73,9 @@ class Raptor(
 
         while (!Q.isEmpty()) {
             val u = Q.pop()!!
+            if (checked[u] != null) continue
+            checked[u] = Unit
+
             val neighbours = getNeighbours(
                 u,
                 departureTime + dist[u],
@@ -89,6 +93,7 @@ class Raptor(
                     dist[v] = alt
                     dayIndex[v] = neighbour.dayIndex
                     Q.add(v, altP)
+                    checked.remove(v)
                 }
                 if (neighbour.edge.type == EdgeType.TRAVEL) {
                     val tV = getNode(neighbour.edge.connectedNodeIndex.toInt()).stopIndex.toInt()
@@ -101,6 +106,7 @@ class Raptor(
                         dist[tV] = alt + addedTime
                         dayIndex[v] = neighbour.dayIndex
                         Q.add(tV, altP)
+                        checked.remove(v)
                     }
                 }
             }
