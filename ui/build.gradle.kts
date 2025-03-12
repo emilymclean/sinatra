@@ -79,7 +79,7 @@ kotlin {
 
             // Location
             implementation(libs.moko.permissions)
-            implementation(libs.moko.permissions)
+            implementation(libs.moko.permissions.location)
 
             // Voyager
             implementation(libs.voyager.navigator)

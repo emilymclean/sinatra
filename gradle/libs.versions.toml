@@ -10,7 +10,7 @@ mapsCompose = "6.4.1"
 mockk = "1.13.16"
 aakira-napier = "2.7.1"
 ktorfit = "2.4.0"
-ktor = "3.0.1"
+ktor = "3.1.0"
 compose-adaptive = "1.0.0"
 compose-plugin = "1.7.0"
 secretsGradlePlugin = "2.0.1"
@@ -22,18 +22,18 @@ requeststate = "2.0.0"
 errorwidget = "2.0.2"
 koin = "4.0.0"
 koin-annotations = "1.4.0"
-kotlinx-serialization = "1.7.3"
+kotlinx-serialization = "1.8.0"
 pbandk = "0.16.0"
 voyager = "1.1.0-beta03"
 ksp = "2.1.10-1.0.31"
 room = "2.7.0-rc01"
 sqlite = "2.5.0-rc01"
-mokoPermissions = "0.18.1"
+mokoPermissions = "0.19.1"
 playServicesLocation = "21.3.0"
 markdown = "0.31.0"
 google-services = "4.4.2"
 firebase-crashlytics = "3.0.3"
-coroutines-test = "1.8.0"
+coroutines-test = "1.10.1"
 
 [libraries]
 
@@ -58,6 +58,7 @@ coil-network = { module = "io.coil-kt.coil3:coil-network-ktor2", version.ref = "
 # Moko
 maps-compose = { module = "com.google.maps.android:maps-compose", version.ref = "mapsCompose" }
 moko-permissions = { module = "dev.icerock.moko:permissions-compose", version.ref = "mokoPermissions" }
+moko-permissions-location = { module = "dev.icerock.moko:permissions-location", version.ref = "mokoPermissions" }
 
 # Koin
 koin-core = { group = "io.insert-koin", name = "koin-core", version.ref = "koin" }
