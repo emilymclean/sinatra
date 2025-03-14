@@ -21,9 +21,9 @@ class RaptorTest {
     }
 
     lateinit var graph: NetworkGraph
-    lateinit var raptor: Raptor
+    lateinit var raptor: Router
     lateinit var graphReverse: NetworkGraph
-    lateinit var raptorReverse: Raptor
+    lateinit var raptorReverse: Router
     lateinit var config: RaptorConfig
 
     @BeforeTest
@@ -42,7 +42,7 @@ class RaptorTest {
         graphReverse = NetworkGraph.byteFormatForByteArray(
             this::class.java.classLoader.getResource("network-graph-reverse.eng").readBytes()
         )
-        raptorReverse = Raptor(graphReverse, List(3) { graphReverse.mappings.serviceIds }, config)
+        raptorReverse = ArrivalBasedRouter(graphReverse, List(3) { graphReverse.mappings.serviceIds }, config)
     }
 
     @Test
@@ -77,25 +77,26 @@ class RaptorTest {
         )), result)
     }
 
-//    @Test
-//    fun testValidJourneyOnSingleRouteReverse() {
-//        val result = raptorReverse.calculate(
-//            Duration.parseIsoString("PT09H").inWholeSeconds,
-//            STOP_ID_SWINDEN_STREET_GGN,
-//            STOP_ID_MANNING_CLARK_GGN
-//        )
-//        assertEquals(RaptorJourney(listOf(
-//            RaptorJourneyConnection.Travel(
-//                listOf("8119", "8117", "8115", "8113", "8111", "8109", "8107", "8105"),
-//                "ACTO001",
-//                "Gungahlin Pl",
-//                startTime=32476,
-//                endTime=33307,
-//                travelTime=831,
-//                dayIndex = 0,
-//            )
-//        )), result)
-//    }
+    @Test
+    fun testValidJourneyOnSingleRouteReverse() {
+        val result = ArrivalBasedRouter(graphReverse, List(3) { listOf("WD") }, config)
+            .calculate(
+                Duration.parseIsoString("PT10H").inWholeSeconds,
+                STOP_ID_MANNING_CLARK_GGN,
+                STOP_ID_SWINDEN_STREET_GGN
+            )
+        assertEquals(RaptorJourney(listOf(
+            RaptorJourneyConnection.Travel(
+                listOf("8119", "8117", "8115", "8113", "8111", "8109", "8107", "8105"),
+                "ACTO001",
+                "Gungahlin Pl",
+                startTime=32476,
+                endTime=33307,
+                travelTime=831,
+                dayIndex = 0,
+            )
+        )), result)
+    }
 
     @Test
     fun testValidJourneyOnSingleRouteWithTransfer() {

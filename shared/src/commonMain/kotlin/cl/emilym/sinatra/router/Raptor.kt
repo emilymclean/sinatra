@@ -1,10 +1,7 @@
 package cl.emilym.sinatra.router
 
-import cl.emilym.sinatra.RouterException
 import cl.emilym.sinatra.data.models.ServiceId
 import cl.emilym.sinatra.data.models.StopId
-import cl.emilym.sinatra.nullIfEmpty
-import cl.emilym.sinatra.router.data.EdgeType
 import cl.emilym.sinatra.router.data.NetworkGraph
 import cl.emilym.sinatra.router.data.NetworkGraphEdge
 
@@ -25,31 +22,7 @@ class Raptor(
     override val graph: NetworkGraph,
     override val activeServiceIds: List<List<ServiceId>>,
     override val config: RaptorConfig
-): BaseRouter() {
-
-    fun calculate(
-        departureTime: DaySeconds,
-        departureStop: StopId,
-        arrivalStop: StopId
-    ): RaptorJourney {
-        return calculate(
-            departureTime,
-            listOf(RaptorStop(departureStop, 0L)),
-            listOf(RaptorStop(arrivalStop, 0L))
-        )
-    }
-
-    fun calculate(
-        departureTime: DaySeconds,
-        departureStops: List<RaptorStop>,
-        arrivalStops: List<RaptorStop>
-    ): RaptorJourney {
-        return doCalculation(
-            departureTime,
-            departureStops,
-            arrivalStops
-        )
-    }
+): Router() {
 
     override fun initializeDjikstra(
         Q: FibonacciHeap<Int, Long>,
@@ -65,13 +38,98 @@ class Raptor(
         }
     }
 
+    override fun calculateAnchorTime(anchorTime: DaySeconds, dist: Long): Long = anchorTime + dist
+
     override fun isValidTravelEdge(
         edge: NetworkGraphEdge,
         dayAdjustment: Seconds,
         anchorTime: DaySeconds
-    ): Boolean = (edge.departureTime.toLong() + dayAdjustment + 60) < anchorTime
+    ): Boolean = (edge.departureTime.toLong() + dayAdjustment + 60) > anchorTime
 
-    override fun getTravelAnchorTime(edge: NetworkGraphEdge, dayAdjustment: Seconds): Long =
-        (edge.departureTime.toLong() + dayAdjustment)
+    override fun getTravelAnchorTime(
+        edge: NetworkGraphEdge,
+        dayAdjustment: Seconds,
+        anchorTime: DaySeconds
+    ): Long = (edge.departureTime.toLong() + dayAdjustment) - anchorTime
+
+    override fun reconstruct(
+        arrivalStopIndices: List<Pair<Int, RaptorStop>>,
+        departureStopIndices: List<Pair<Int, RaptorStop>>,
+        prev: Array<Int?>,
+        prevEdge: Array<NetworkGraphEdge?>,
+        dist: Array<Long>,
+        dayIndex: Array<Int?>
+    ): RaptorJourney {
+        return RaptorJourney(
+            doReconstruction(
+                arrivalStopIndices,
+                departureStopIndices,
+                prev,
+                prevEdge,
+                dist,
+                dayIndex
+            )
+        )
+    }
+}
+
+class ArrivalBasedRouter(
+    reversedGraph: NetworkGraph,
+    override val activeServiceIds: List<List<ServiceId>>,
+    override val config: RaptorConfig
+): Router() {
+
+    override val graph: NetworkGraph = reversedGraph
+
+    override fun initializeDjikstra(
+        Q: FibonacciHeap<Int, Long>,
+        dist: Array<Long>,
+        distP: Array<Long>,
+        departureStopIndices: List<Pair<Int, RaptorStop>>,
+        arrivalStopIndices: List<Pair<Int, RaptorStop>>
+    ) {
+        for (arrivalStopIndex in arrivalStopIndices) {
+            dist[arrivalStopIndex.first] = arrivalStopIndex.second.addedTime
+            distP[arrivalStopIndex.first] = arrivalStopIndex.second.addedTime
+            Q.add(arrivalStopIndex.first, 0)
+        }
+    }
+
+    override fun calculateAnchorTime(anchorTime: DaySeconds, dist: Long): Long = anchorTime - dist
+
+    override fun isValidTravelEdge(
+        edge: NetworkGraphEdge,
+        dayAdjustment: Seconds,
+        anchorTime: DaySeconds
+    ): Boolean = (edge.departureTime.toLong() + dayAdjustment - 60) < anchorTime
+
+    override fun getTravelAnchorTime(
+        edge: NetworkGraphEdge,
+        dayAdjustment: Seconds,
+        anchorTime: DaySeconds
+    ): Long {
+        val t = anchorTime - (edge.departureTime.toLong() + dayAdjustment)
+        return t
+    }
+
+    override fun reconstruct(
+        arrivalStopIndices: List<Pair<Int, RaptorStop>>,
+        departureStopIndices: List<Pair<Int, RaptorStop>>,
+        prev: Array<Int?>,
+        prevEdge: Array<NetworkGraphEdge?>,
+        dist: Array<Long>,
+        dayIndex: Array<Int?>
+    ): RaptorJourney {
+        return RaptorJourney(
+            doReconstruction(
+                departureStopIndices,
+                arrivalStopIndices,
+                prev,
+                prevEdge,
+                dist,
+                dayIndex
+            )
+        )
+    }
 
 }

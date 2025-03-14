@@ -2,13 +2,14 @@ package cl.emilym.sinatra.router
 
 import cl.emilym.sinatra.RouterException
 import cl.emilym.sinatra.data.models.ServiceId
+import cl.emilym.sinatra.data.models.StopId
 import cl.emilym.sinatra.nullIfEmpty
 import cl.emilym.sinatra.router.data.EdgeType
 import cl.emilym.sinatra.router.data.NetworkGraph
 import cl.emilym.sinatra.router.data.NetworkGraphEdge
 
 
-abstract class BaseRouter {
+abstract class Router {
 
     protected abstract val graph: NetworkGraph
     protected abstract val activeServiceIds: List<List<ServiceId>>
@@ -20,6 +21,30 @@ abstract class BaseRouter {
         }
     }
 
+    fun calculate(
+        anchorTime: DaySeconds,
+        departureStop: StopId,
+        arrivalStop: StopId
+    ): RaptorJourney {
+        return calculate(
+            anchorTime,
+            listOf(RaptorStop(departureStop, 0L)),
+            listOf(RaptorStop(arrivalStop, 0L))
+        )
+    }
+
+    fun calculate(
+        anchorTime: DaySeconds,
+        departureStops: List<RaptorStop>,
+        arrivalStops: List<RaptorStop>
+    ): RaptorJourney {
+        return doCalculation(
+            anchorTime,
+            departureStops,
+            arrivalStops
+        )
+    }
+
     protected abstract fun initializeDjikstra(
         Q: FibonacciHeap<Int, Long>,
         dist: Array<Long>,
@@ -28,11 +53,12 @@ abstract class BaseRouter {
         arrivalStopIndices: List<Pair<Int, RaptorStop>>
     )
 
-    protected open fun modifyChain(
-        chain: List<RaptorJourneyConnection>
-    ): List<RaptorJourneyConnection> = chain
+    protected abstract fun calculateAnchorTime(
+        anchorTime: DaySeconds,
+        dist: Long
+    ): Long
 
-    protected fun doCalculation(
+    private fun doCalculation(
         anchorTime: DaySeconds,
         departureStops: List<RaptorStop>,
         arrivalStops: List<RaptorStop>
@@ -63,7 +89,7 @@ abstract class BaseRouter {
 
             val neighbours = getNeighbours(
                 u,
-                anchorTime + dist[u],
+                calculateAnchorTime(anchorTime, dist[u]),
                 prevEdge[u]?.type == EdgeType.TRANSFER
             )
 
@@ -97,19 +123,46 @@ abstract class BaseRouter {
             }
         }
 
-        if (arrivalStopIndices.all { prev[it.first] == null }) throw RouterException.noJourneyFound()
+        return reconstruct(
+            arrivalStopIndices,
+            departureStopIndices,
+            prev,
+            prevEdge,
+            dist,
+            dayIndex
+        )
+    }
 
-        val options = arrivalStopIndices
+    protected abstract fun reconstruct(
+        arrivalStopIndices: List<Pair<Int, RaptorStop>>,
+        departureStopIndices: List<Pair<Int, RaptorStop>>,
+        prev: Array<Int?>,
+        prevEdge: Array<NetworkGraphEdge?>,
+        dist: Array<Long>,
+        dayIndex: Array<Int?>
+    ): RaptorJourney
+
+    protected fun doReconstruction(
+        startStopIndicies: List<Pair<Int, RaptorStop>>,
+        endStopIndicies: List<Pair<Int, RaptorStop>>,
+        prev: Array<Int?>,
+        prevEdge: Array<NetworkGraphEdge?>,
+        dist: Array<Long>,
+        dayIndex: Array<Int?>
+    ): List<RaptorJourneyConnection> {
+        if (startStopIndicies.all { prev[it.first] == null }) throw RouterException.noJourneyFound()
+
+        val options = startStopIndicies
             .filterNot { prev[it.first] == null }
 
         // Reconstruct journey
         var cursor = (
-            options.filter {
-                prevEdge[it.first]?.type != EdgeType.TRANSFER ||
-                        (prevEdge[it.first]?.type == EdgeType.TRANSFER &&
-                                (dist[it.first] + it.second.addedTime) >= config.maximumWalkingTime)
-            }.nullIfEmpty()
-        )?.minBy { dist[it.first] + it.second.addedTime }?.first ?: throw RouterException.noJourneyFound()
+                options.filter {
+                    prevEdge[it.first]?.type != EdgeType.TRANSFER ||
+                            (prevEdge[it.first]?.type == EdgeType.TRANSFER &&
+                                    (dist[it.first] + it.second.addedTime) >= config.maximumWalkingTime)
+                }.nullIfEmpty()
+                )?.minBy { dist[it.first] + it.second.addedTime }?.first ?: throw RouterException.noJourneyFound()
 
         val chain = mutableListOf<RaptorJourneyConnection>()
         var connection: RaptorJourneyConnection? = null
@@ -127,7 +180,7 @@ abstract class BaseRouter {
             chain.add(0, c)
         }
 
-        while (cursor !in departureStopIndices.map { it.first }) {
+        while (cursor !in endStopIndicies.map { it.first }) {
             val edge = prevEdge[cursor]!!
             val node = getNode(edge.connectedNodeIndex.toInt())
 
@@ -181,7 +234,7 @@ abstract class BaseRouter {
 
         if (connection != null) addConnection(connection)
 
-        return RaptorJourney(modifyChain(chain.toList()))
+        return chain.toList()
     }
 
     private fun getNode(index: NodeIndex) = graph.node(index)
@@ -194,7 +247,8 @@ abstract class BaseRouter {
 
     abstract fun getTravelAnchorTime(
         edge: NetworkGraphEdge,
-        dayAdjustment: Seconds
+        dayAdjustment: Seconds,
+        anchorTime: DaySeconds
     ): Long
 
     private fun getNeighbours(index: NodeIndex, anchorTime: DaySeconds, ignoreTransfer: Boolean = false): List<NodeCost> {
@@ -222,8 +276,8 @@ abstract class BaseRouter {
                     if (daysActive.isEmpty()) return@flatMap emptyList()
                     daysActive.mapNotNull { d ->
                         val dayAdjustment = (86400 * d).toLong()
-                        if (isValidTravelEdge(it, dayAdjustment, anchorTime)) return@mapNotNull null
-                        val cost = (getTravelAnchorTime(it, dayAdjustment) - anchorTime) + it.cost.toLong()
+                        if (!isValidTravelEdge(it, dayAdjustment, anchorTime)) return@mapNotNull null
+                        val cost = getTravelAnchorTime(it, dayAdjustment, anchorTime) + it.cost.toLong()
                         NodeCost(it.connectedNodeIndex.toInt(), cost, cost, it, d)
                     }
                 }
