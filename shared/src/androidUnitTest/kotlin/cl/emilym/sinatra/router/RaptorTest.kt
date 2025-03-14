@@ -79,9 +79,9 @@ class RaptorTest {
 
     @Test
     fun testValidJourneyOnSingleRouteReverse() {
-        val result = ArrivalBasedRouter(graphReverse, List(3) { listOf("WD") }, config)
+        val result = raptorReverse
             .calculate(
-                Duration.parseIsoString("PT10H").inWholeSeconds,
+                Duration.parseIsoString("PT09H").inWholeSeconds,
                 STOP_ID_SWINDEN_STREET_GGN,
                 STOP_ID_MANNING_CLARK_GGN
             )
@@ -90,9 +90,9 @@ class RaptorTest {
                 listOf("8119", "8117", "8115", "8113", "8111", "8109", "8107", "8105"),
                 "ACTO001",
                 "Gungahlin Pl",
-                startTime=32476,
-                endTime=33307,
-                travelTime=831,
+                startTime=31830,
+                endTime=32458,
+                travelTime=628,
                 dayIndex = 0,
             )
         )), result)
@@ -119,6 +119,36 @@ class RaptorTest {
                 startTime=32476,
                 endTime=33307,
                 travelTime=831,
+                dayIndex = 0,
+            ),
+            RaptorJourneyConnection.Transfer(
+                listOf("8105", "MCK"),
+                travelTime = 9
+            ),
+        )), result)
+    }
+
+    @Test
+    fun testValidJourneyOnSingleRouteWithTransferReverse() {
+        val result = try {
+            raptorReverse.calculate(
+                Duration.parseIsoString("PT10H").inWholeSeconds,
+                STOP_ID_SWINDEN_STREET,
+                STOP_ID_MANNING_CLARK
+            )
+        } catch(e: RouterException) { null }
+        assertEquals(RaptorJourney(listOf(
+            RaptorJourneyConnection.Transfer(
+                listOf("SWN", "8119"),
+                travelTime = 16
+            ),
+            RaptorJourneyConnection.Travel(
+                listOf("8119", "8117", "8115", "8113", "8111", "8109", "8107", "8105"),
+                "ACTO001",
+                "Gungahlin Pl",
+                startTime=35280,
+                endTime=35908,
+                travelTime=628,
                 dayIndex = 0,
             ),
             RaptorJourneyConnection.Transfer(

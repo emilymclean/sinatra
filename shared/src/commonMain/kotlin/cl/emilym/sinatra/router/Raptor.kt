@@ -119,15 +119,33 @@ class ArrivalBasedRouter(
         dist: Array<Long>,
         dayIndex: Array<Int?>
     ): RaptorJourney {
+        val reconstructed = doReconstruction(
+            departureStopIndices,
+            arrivalStopIndices,
+            prev,
+            prevEdge,
+            dist,
+            dayIndex
+        )
+
         return RaptorJourney(
-            doReconstruction(
-                departureStopIndices,
-                arrivalStopIndices,
-                prev,
-                prevEdge,
-                dist,
-                dayIndex
-            )
+            reconstructed.reversed().map {
+                when (it) {
+                    is RaptorJourneyConnection.Transfer -> RaptorJourneyConnection.Transfer(
+                        it.stops.reversed(),
+                        it.travelTime
+                    )
+                    is RaptorJourneyConnection.Travel -> RaptorJourneyConnection.Travel(
+                        it.stops.reversed(),
+                        it.routeId,
+                        it.heading,
+                        it.endTime,
+                        it.startTime,
+                        it.dayIndex,
+                        -it.travelTime
+                    )
+                }
+            }
         )
     }
 
