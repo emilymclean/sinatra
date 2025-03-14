@@ -18,7 +18,9 @@ data class RaptorConfig(
     val changeOverPenalty: Int,
 )
 
-class Raptor(
+typealias Raptor = DepartureBasedRouter
+
+class DepartureBasedRouter(
     override val graph: NetworkGraph,
     override val activeServiceIds: List<List<ServiceId>>,
     override val config: RaptorConfig
@@ -107,10 +109,7 @@ class ArrivalBasedRouter(
         edge: NetworkGraphEdge,
         dayAdjustment: Seconds,
         anchorTime: DaySeconds
-    ): Long {
-        val t = anchorTime - (edge.departureTime.toLong() + dayAdjustment)
-        return t
-    }
+    ): Long = anchorTime - (edge.departureTime.toLong() + dayAdjustment)
 
     override fun reconstruct(
         arrivalStopIndices: List<Pair<Int, RaptorStop>>,

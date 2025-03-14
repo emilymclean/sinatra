@@ -82,8 +82,8 @@ class RaptorTest {
         val result = ArrivalBasedRouter(graphReverse, List(3) { listOf("WD") }, config)
             .calculate(
                 Duration.parseIsoString("PT10H").inWholeSeconds,
-                STOP_ID_MANNING_CLARK_GGN,
-                STOP_ID_SWINDEN_STREET_GGN
+                STOP_ID_SWINDEN_STREET_GGN,
+                STOP_ID_MANNING_CLARK_GGN
             )
         assertEquals(RaptorJourney(listOf(
             RaptorJourneyConnection.Travel(
