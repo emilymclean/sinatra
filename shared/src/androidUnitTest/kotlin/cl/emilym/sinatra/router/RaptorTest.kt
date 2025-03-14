@@ -22,11 +22,12 @@ class RaptorTest {
 
     lateinit var graph: NetworkGraph
     lateinit var raptor: Raptor
+    lateinit var graphReverse: NetworkGraph
+    lateinit var raptorReverse: Raptor
     lateinit var config: RaptorConfig
 
     @BeforeTest
     fun setup() {
-        graph = NetworkGraph.byteFormatForByteArray(this::class.java.classLoader.getResource("network_graph.eng").readBytes())
         config = RaptorConfig(
             maximumWalkingTime = 10 * 60L,
             transferTime = 0,
@@ -34,7 +35,14 @@ class RaptorTest {
             changeOverTime = 0,
             changeOverPenalty = 0
         )
+        graph = NetworkGraph.byteFormatForByteArray(
+            this::class.java.classLoader.getResource("network_graph.eng").readBytes()
+        )
         raptor = Raptor(graph, List(3) { graph.mappings.serviceIds }, config)
+        graphReverse = NetworkGraph.byteFormatForByteArray(
+            this::class.java.classLoader.getResource("network-graph-reverse.eng").readBytes()
+        )
+        raptorReverse = Raptor(graphReverse, List(3) { graphReverse.mappings.serviceIds }, config)
     }
 
     @Test
@@ -68,6 +76,26 @@ class RaptorTest {
             )
         )), result)
     }
+
+//    @Test
+//    fun testValidJourneyOnSingleRouteReverse() {
+//        val result = raptorReverse.calculate(
+//            Duration.parseIsoString("PT09H").inWholeSeconds,
+//            STOP_ID_SWINDEN_STREET_GGN,
+//            STOP_ID_MANNING_CLARK_GGN
+//        )
+//        assertEquals(RaptorJourney(listOf(
+//            RaptorJourneyConnection.Travel(
+//                listOf("8119", "8117", "8115", "8113", "8111", "8109", "8107", "8105"),
+//                "ACTO001",
+//                "Gungahlin Pl",
+//                startTime=32476,
+//                endTime=33307,
+//                travelTime=831,
+//                dayIndex = 0,
+//            )
+//        )), result)
+//    }
 
     @Test
     fun testValidJourneyOnSingleRouteWithTransfer() {
