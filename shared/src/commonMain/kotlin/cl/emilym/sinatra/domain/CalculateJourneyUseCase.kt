@@ -164,14 +164,26 @@ class CalculateJourneyUseCase(
             )
         }
 
-        val departureTimeSeconds: Seconds = (anchorTime.time - startOfDay).inWholeSeconds
+        val anchorTimeSeconds: Seconds = (anchorTime.time - startOfDay).inWholeSeconds
 
         return try {
-            raptor.calculate(
-                departureTimeSeconds,
+            val rJourney = raptor.calculate(
+                anchorTimeSeconds,
                 departureStops,
                 arrivalStops
-            ).toJourney(departureTimeSeconds)
+            )
+
+            val departureTimeSeconds = when (anchorTime) {
+                is JourneyCalculationTime.DepartureTime -> anchorTimeSeconds
+                is JourneyCalculationTime.ArrivalTime -> anchorTimeSeconds - rJourney.connections.sumOf {
+                    when (it) {
+                        is RaptorJourneyConnection.Transfer -> it.travelTime
+                        is RaptorJourneyConnection.Travel -> it.endTime - it.startTime
+                    }
+                }
+            }
+
+            rJourney.toJourney(departureTimeSeconds)
         } catch (e: RouterException) {
             Napier.e(e)
             null
