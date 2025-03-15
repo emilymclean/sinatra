@@ -70,8 +70,8 @@ class RaptorTest {
                 "ACTO001",
                 "Gungahlin Pl",
                 startTime=32476,
-                endTime=33307,
-                travelTime=831,
+                endTime=33208,
+                travelTime=732,
                 dayIndex = 0,
             )
         )), result)
@@ -90,9 +90,9 @@ class RaptorTest {
                 listOf("8119", "8117", "8115", "8113", "8111", "8109", "8107", "8105"),
                 "ACTO001",
                 "Gungahlin Pl",
-                startTime=31830,
+                startTime=31726,
                 endTime=32458,
-                travelTime=628,
+                travelTime=732,
                 dayIndex = 0,
             )
         )), result)
@@ -117,8 +117,8 @@ class RaptorTest {
                 "ACTO001",
                 "Gungahlin Pl",
                 startTime=32476,
-                endTime=33307,
-                travelTime=831,
+                endTime=33208,
+                travelTime=732,
                 dayIndex = 0,
             ),
             RaptorJourneyConnection.Transfer(
@@ -146,9 +146,9 @@ class RaptorTest {
                 listOf("8119", "8117", "8115", "8113", "8111", "8109", "8107", "8105"),
                 "ACTO001",
                 "Gungahlin Pl",
-                startTime=35280,
+                startTime=35176,
                 endTime=35908,
-                travelTime=628,
+                travelTime=732,
                 dayIndex = 0,
             ),
             RaptorJourneyConnection.Transfer(
@@ -175,8 +175,8 @@ class RaptorTest {
                 routeId = "2-10647",
                 heading = "Fraser",
                 startTime = 32700,
-                endTime = 33420,
-                travelTime = 720,
+                endTime = 33240,
+                travelTime = 540,
                 dayIndex = 0,
             ),
             RaptorJourneyConnection.Travel(
@@ -184,8 +184,8 @@ class RaptorTest {
                 routeId = "5-10647",
                 heading = "City ANU",
                 startTime = 33360,
-                endTime = 33540,
-                travelTime = 180,
+                endTime = 33480,
+                travelTime = 120,
                 dayIndex = 0,
             ),
             RaptorJourneyConnection.Transfer(
@@ -197,8 +197,8 @@ class RaptorTest {
                 routeId = "ACTO001",
                 heading = "Gungahlin Pl",
                 startTime=33600,
-                endTime=34957,
-                travelTime=1357,
+                endTime=34858,
+                travelTime=1258,
                 dayIndex = 0,
             ),
             RaptorJourneyConnection.Transfer(
@@ -276,8 +276,8 @@ class RaptorTest {
                 "ACTO001",
                 "Gungahlin Pl",
                 startTime=32626,
-                endTime=33457,
-                travelTime=831,
+                endTime=33358,
+                travelTime=732,
                 dayIndex = 0,
             ),
             RaptorJourneyConnection.Transfer(
@@ -333,9 +333,9 @@ class RaptorTest {
                 "X1",
                 "Sandford St",
                 startTime=86524,
-                endTime=86947,
-                travelTime=423,
-                dayIndex = 0,
+                endTime=86842,
+                travelTime=318,
+                dayIndex=0,
             ),
         )), result)
     }

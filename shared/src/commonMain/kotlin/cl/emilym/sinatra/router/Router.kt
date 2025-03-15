@@ -233,6 +233,7 @@ abstract class Router {
             cursor = prev[cursor]!!
         }
 
+        stops.add(graph.mappings.stopIds[getNode(cursor).stopIndex.toInt()])
         addConnection()
 
         return chain.toList()
