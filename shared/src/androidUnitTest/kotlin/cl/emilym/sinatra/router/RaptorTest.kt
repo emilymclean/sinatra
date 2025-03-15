@@ -209,6 +209,56 @@ class RaptorTest {
     }
 
     @Test
+    fun testValidJourneyAcrossMultipleRoutesReverse() {
+        val result = raptor.calculate(
+            Duration.parseIsoString("PT10H").inWholeSeconds,
+            STOP_ID_CANBERRA_RAILWAY_STATION,
+            STOP_ID_MANNING_CLARK
+        )
+        assertEquals(RaptorJourney(listOf(
+            RaptorJourneyConnection.Transfer(
+                listOf("3320", "3321"),
+                travelTime = 342
+            ),
+            RaptorJourneyConnection.Travel(
+                listOf("3321", "2235", "2373", "2376", "2258", "3261", "3259", "8889"),
+                routeId = "2-10647",
+                heading = "Fraser",
+                startTime = 36480,
+                endTime = 37200,
+                travelTime = 720,
+                dayIndex = 0,
+            ),
+            RaptorJourneyConnection.Travel(
+                listOf("8889", "3356", "3406"),
+                routeId = "5-10647",
+                heading = "City ANU",
+                startTime = 37140,
+                endTime = 37320,
+                travelTime = 180,
+                dayIndex = 0,
+            ),
+            RaptorJourneyConnection.Transfer(
+                listOf("3406", "8129"),
+                travelTime = 109
+            ),
+            RaptorJourneyConnection.Travel(
+                listOf("8129", "8127", "8125", "8123", "8121", "8119", "8117", "8115", "8113", "8111", "8109", "8107", "8105"),
+                routeId = "ACTO001",
+                heading = "Gungahlin Pl",
+                startTime=37800,
+                endTime=39157,
+                travelTime=1357,
+                dayIndex = 0,
+            ),
+            RaptorJourneyConnection.Transfer(
+                listOf("8105", "MCK"),
+                travelTime = 9
+            )
+        )), result)
+    }
+
+    @Test
     fun testValidJourneyWithFewerServices() {
         val raptor = Raptor(graph, List(3) { listOf("2023-COMBVAC-Weekday-05", "WD") }, config)
         val result = raptor.calculate(
