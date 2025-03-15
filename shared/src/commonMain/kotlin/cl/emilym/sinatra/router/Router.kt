@@ -172,7 +172,7 @@ abstract class Router {
         prevEdge: Array<NetworkGraphEdge?>,
         dist: Array<Long>,
         dayIndex: Array<Int?>
-    ): List<RaptorJourneyConnection> {
+    ): List<GroupedGraphEdges> {
         if (startStopIndicies.all { prev[it.first] == null }) throw RouterException.noJourneyFound()
 
         val options = startStopIndicies
@@ -185,82 +185,61 @@ abstract class Router {
                             (prevEdge[it.first]?.type == EdgeType.TRANSFER &&
                                     (dist[it.first] + it.second.addedTime) >= config.maximumWalkingTime)
                 }.nullIfEmpty()
-                )?.minBy { dist[it.first] + it.second.addedTime }?.first ?: throw RouterException.noJourneyFound()
+        )?.firstOrNull()?.first ?: throw RouterException.noJourneyFound()
 
-        val chain = mutableListOf<RaptorJourneyConnection>()
-        var connection: RaptorJourneyConnection? = null
+        val chain = mutableListOf<GroupedGraphEdges>()
+        val stops = mutableListOf<StopId>()
+        val edges = mutableListOf<NetworkGraphEdge>()
+        val dayIndicies = mutableListOf<Int?>()
         var edgeType: EdgeType? = null
 
-        fun addConnection(c: RaptorJourneyConnection) {
-            val c = when (c) {
-                is RaptorJourneyConnection.Travel -> c.copy(
-                    stops = listOf(graph.mappings.stopIds[getNode(cursor).stopIndex.toInt()]) + c.stops
+        fun addConnection() {
+            if (edges.isEmpty()) return
+            when (edgeType) {
+                EdgeType.TRAVEL -> GroupedGraphEdges.Travel(
+                    stops.toList(),
+                    edges.toList(),
+                    dayIndicies.toList()
                 )
-                is RaptorJourneyConnection.Transfer -> c.copy(
-                    stops = listOf(graph.mappings.stopIds[getNode(cursor).stopIndex.toInt()]) + c.stops
-                )
+                EdgeType.TRANSFER, EdgeType.TRANSFER_NON_ADJUSTABLE ->
+                    GroupedGraphEdges.Transfer(
+                        stops.toList(),
+                        edges.toList()
+                    )
+                else -> null
+            }?.let {
+                chain.add(it)
             }
-            chain.add(0, c)
         }
 
         while (cursor !in endStopIndicies.map { it.first }) {
             val edge = prevEdge[cursor]!!
-            val node = getNode(edge.connectedNodeIndex.toInt())
+            val stopId = graph.mappings.stopIds[getNode(edge.connectedNodeIndex).stopIndex.toInt()]
 
             if (edgeType != edge.type) {
-                if (connection != null) addConnection(connection)
+                stops.add(stopId)
+                addConnection()
+
                 edgeType = edge.type
-                connection = when (edge.type) {
-                    EdgeType.TRAVEL -> {
-                        RaptorJourneyConnection.Travel(
-                            listOf(),
-                            graph.mappings.routeIds[node.routeIndex.toInt()],
-                            graph.mappings.headings[node.headingIndex.toInt()],
-                            0,
-                            edge.departureTime.toLong() + edge.cost.toLong(),
-                            dayIndex[cursor] ?: 0,
-                            0
-                        )
-                    }
-                    EdgeType.TRANSFER, EdgeType.TRANSFER_NON_ADJUSTABLE -> {
-                        RaptorJourneyConnection.Transfer(
-                            listOf(),
-                            0
-                        )
-                    }
-                    else -> null
-                }
+                edges.clear()
+                stops.clear()
+                dayIndicies.clear()
             }
 
-            connection = when(edge.type) {
-                EdgeType.TRAVEL -> {
-                    val c = (connection as RaptorJourneyConnection.Travel)
-                    c.copy(
-                        stops = listOf(graph.mappings.stopIds[node.stopIndex.toInt()]) + c.stops,
-                        startTime = edge.departureTime.toLong(),
-                        travelTime = c.endTime - edge.departureTime.toLong(),
-                        dayIndex = dayIndex[cursor] ?: 0
-                    )
-                }
-                EdgeType.TRANSFER, EdgeType.TRANSFER_NON_ADJUSTABLE -> {
-                    val c = (connection as RaptorJourneyConnection.Transfer)
-                    c.copy(
-                        stops = listOf(graph.mappings.stopIds[node.stopIndex.toInt()]) + c.stops,
-                        travelTime = c.travelTime + edge.cost.toLong()
-                    )
-                }
-                else -> null
-            }
+            stops.add(stopId)
+            edges.add(edge)
+            dayIndicies.add(dayIndex[cursor])
 
             cursor = prev[cursor]!!
         }
 
-        if (connection != null) addConnection(connection)
+        addConnection()
 
         return chain.toList()
     }
 
     private fun getNode(index: NodeIndex) = graph.node(index)
+    private fun getNode(index: UInt) = graph.node(index.toInt())
 
     abstract fun isValidTravelEdge(
         edge: NetworkGraphEdge,
@@ -318,6 +297,34 @@ abstract class Router {
             if (activeServices[day + 1].containsKey(i.toInt())) return true
         }
         return false
+    }
+
+    protected fun GroupedGraphEdges.Transfer.toRaptorJourneyConnection(
+        stops: List<StopId>
+    ): RaptorJourneyConnection.Transfer {
+        return RaptorJourneyConnection.Transfer(
+            stops,
+            edges.sumOf { it.cost }.toLong()
+        )
+    }
+
+    protected fun GroupedGraphEdges.Travel.toRaptorJourneyConnection(
+        stops: List<StopId>,
+        arrivalEdgeIndex: Int,
+        departureEdgeIndex: Int
+    ): RaptorJourneyConnection.Travel {
+        val firstNode = getNode(edges.first().connectedNodeIndex)
+        val arrival = edges[arrivalEdgeIndex].departureTime.toLong()
+        val departure = edges[departureEdgeIndex].departureTime.toLong()
+        return RaptorJourneyConnection.Travel(
+            stops,
+            graph.mappings.routeIds[firstNode.routeIndex.toInt()],
+            graph.mappings.headings[firstNode.headingIndex.toInt()],
+            departure,
+            arrival,
+            dayIndicies[departureEdgeIndex] ?: 0,
+            arrival - departure
+        )
     }
 
 }

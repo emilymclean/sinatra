@@ -66,6 +66,22 @@ class StopInformation(
 
 }
 
+sealed interface GroupedGraphEdges {
+    val stops: List<StopId>
+    val edges: List<NetworkGraphEdge>
+
+    data class Transfer(
+        override val stops: List<StopId>,
+        override val edges: List<NetworkGraphEdge>
+    ): GroupedGraphEdges
+
+    data class Travel(
+        override val stops: List<StopId>,
+        override val edges: List<NetworkGraphEdge>,
+        val dayIndicies: List<Int?>
+    ): GroupedGraphEdges
+}
+
 sealed interface RaptorJourneyConnection {
     val stops: List<StopId>
     val travelTime: Seconds

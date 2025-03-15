@@ -50,15 +50,27 @@ class DepartureBasedRouter(
         dist: Array<Long>,
         dayIndex: Array<Int?>
     ): RaptorJourney {
+        val reconstructed = doReconstruction(
+            arrivalStopIndices,
+            departureStopIndices,
+            prev,
+            prevEdge,
+            dist,
+            dayIndex
+        )
+
         return RaptorJourney(
-            doReconstruction(
-                arrivalStopIndices,
-                departureStopIndices,
-                prev,
-                prevEdge,
-                dist,
-                dayIndex
-            )
+            reconstructed.reversed().map {
+                val stops = it.stops.reversed()
+                when (it) {
+                    is GroupedGraphEdges.Transfer -> it.toRaptorJourneyConnection(stops)
+                    is GroupedGraphEdges.Travel -> it.toRaptorJourneyConnection(
+                        stops,
+                        0,
+                        it.edges.lastIndex
+                    )
+                }
+            }
         )
     }
 }
@@ -92,7 +104,7 @@ class ArrivalBasedRouter(
         edge: NetworkGraphEdge,
         dayAdjustment: Seconds,
         anchorTime: DaySeconds
-    ): Boolean = (edge.departureTime.toLong() + dayAdjustment) < anchorTime
+    ): Boolean = (edge.departureTime.toLong() + dayAdjustment - 60) <= anchorTime
 
     override fun getTravelAnchorTime(
         edge: NetworkGraphEdge,
@@ -118,20 +130,14 @@ class ArrivalBasedRouter(
         )
 
         return RaptorJourney(
-            reconstructed.reversed().map {
+            reconstructed.map {
+                val stops = it.stops
                 when (it) {
-                    is RaptorJourneyConnection.Transfer -> RaptorJourneyConnection.Transfer(
-                        it.stops.reversed(),
-                        it.travelTime
-                    )
-                    is RaptorJourneyConnection.Travel -> RaptorJourneyConnection.Travel(
-                        it.stops.reversed(),
-                        it.routeId,
-                        it.heading,
-                        it.endTime,
-                        it.startTime,
-                        it.dayIndex,
-                        -it.travelTime
+                    is GroupedGraphEdges.Transfer -> it.toRaptorJourneyConnection(stops)
+                    is GroupedGraphEdges.Travel -> it.toRaptorJourneyConnection(
+                        stops,
+                        it.edges.lastIndex,
+                        0
                     )
                 }
             }
