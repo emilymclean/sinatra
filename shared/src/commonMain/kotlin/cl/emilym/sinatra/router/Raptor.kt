@@ -46,7 +46,7 @@ class DepartureBasedRouter(
         edge: NetworkGraphEdge,
         dayAdjustment: Seconds,
         anchorTime: DaySeconds
-    ): Boolean = (edge.departureTime.toLong() + dayAdjustment + 60) > anchorTime
+    ): Boolean = (edge.departureTime.toLong() + dayAdjustment + 60) >= anchorTime
 
     override fun getTravelAnchorTime(
         edge: NetworkGraphEdge,
@@ -103,7 +103,7 @@ class ArrivalBasedRouter(
         edge: NetworkGraphEdge,
         dayAdjustment: Seconds,
         anchorTime: DaySeconds
-    ): Boolean = (edge.departureTime.toLong() + dayAdjustment - 60) < anchorTime
+    ): Boolean = (edge.departureTime.toLong() + dayAdjustment - 60) <= anchorTime
 
     override fun getTravelAnchorTime(
         edge: NetworkGraphEdge,
