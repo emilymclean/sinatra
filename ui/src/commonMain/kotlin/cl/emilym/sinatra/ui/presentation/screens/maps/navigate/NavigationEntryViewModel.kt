@@ -40,6 +40,7 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 import org.koin.core.annotation.Factory
 
 private sealed interface State {
@@ -62,6 +63,16 @@ sealed interface NavigationEntryState {
     data class Search(
         val results: RequestState<List<SearchResult>>
     ): NavigationEntryState
+}
+
+sealed interface NavigationAnchorTime {
+    data object Now: NavigationAnchorTime
+    data class DepartureTime(
+        val time: Instant
+    ): NavigationAnchorTime
+    data class ArrivalTime(
+        val time: Instant
+    ): NavigationAnchorTime
 }
 
 @Factory
@@ -100,6 +111,8 @@ class NavigationEntryViewModel(
             originLocation.value = value
             if (value != null) calculate()
         }
+
+    val anchorTime = MutableStateFlow<NavigationAnchorTime>(NavigationAnchorTime.Now)
 
     val destination = MutableStateFlow<NavigationLocation?>(null)
     val origin = MutableStateFlow<NavigationLocation?>(null)
@@ -162,6 +175,8 @@ class NavigationEntryViewModel(
             try {
                 withContext(Dispatchers.IO) {
                     networkGraphRepository.networkGraph()
+                    // Todo load smarter
+                    networkGraphRepository.networkGraph(true)
                 }
                 navigationState.value = NavigationState.GraphReady
                 loadedGraph = true
@@ -291,6 +306,7 @@ class NavigationEntryViewModel(
         if (!loadedGraph) return
         val destination = _destination ?: return
         val origin = _origin ?: return
+        val anchorTime = anchorTime.value
 
         screenModelScope.launch {
             navigationState.value = NavigationState.JourneyCalculating
@@ -304,8 +320,14 @@ class NavigationEntryViewModel(
                         destination,
                         exact = this@NavigationEntryViewModel.destination.value is NavigationLocation.Stop
                     ),
-                    JourneyCalculationTime.DepartureTime(clock.now())
-
+                    when (anchorTime) {
+                        is NavigationAnchorTime.Now ->
+                            JourneyCalculationTime.DepartureTime(clock.now())
+                        is NavigationAnchorTime.DepartureTime ->
+                            JourneyCalculationTime.DepartureTime(anchorTime.time)
+                        is NavigationAnchorTime.ArrivalTime ->
+                            JourneyCalculationTime.ArrivalTime(anchorTime.time)
+                    }
                 )
                 navigationState.value = NavigationState.JourneysFound(
                     result
