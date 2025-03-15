@@ -210,7 +210,7 @@ class RaptorTest {
 
     @Test
     fun testValidJourneyAcrossMultipleRoutesReverse() {
-        val result = raptor.calculate(
+        val result = raptorReverse.calculate(
             Duration.parseIsoString("PT10H").inWholeSeconds,
             STOP_ID_CANBERRA_RAILWAY_STATION,
             STOP_ID_MANNING_CLARK
