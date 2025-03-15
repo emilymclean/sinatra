@@ -5,25 +5,13 @@ import cl.emilym.sinatra.data.models.StopId
 import cl.emilym.sinatra.router.data.NetworkGraph
 import cl.emilym.sinatra.router.data.NetworkGraphEdge
 
-data class RaptorStop(
-    val id: StopId,
-    val addedTime: Seconds
-)
-
-data class RaptorConfig(
-    val maximumWalkingTime: Seconds,
-    val transferTime: Seconds,
-    val transferPenalty: Int,
-    val changeOverTime: Seconds,
-    val changeOverPenalty: Int,
-)
-
 typealias Raptor = DepartureBasedRouter
 
 class DepartureBasedRouter(
     override val graph: NetworkGraph,
     override val activeServiceIds: List<List<ServiceId>>,
-    override val config: RaptorConfig
+    override val config: RaptorConfig,
+    override val prefs: RouterPrefs = DEFAULT_ROUTER_PREFS
 ): Router() {
 
     override fun initializeDjikstra(
@@ -78,7 +66,8 @@ class DepartureBasedRouter(
 class ArrivalBasedRouter(
     reversedGraph: NetworkGraph,
     override val activeServiceIds: List<List<ServiceId>>,
-    override val config: RaptorConfig
+    override val config: RaptorConfig,
+    override val prefs: RouterPrefs = DEFAULT_ROUTER_PREFS
 ): Router() {
 
     override val graph: NetworkGraph = reversedGraph

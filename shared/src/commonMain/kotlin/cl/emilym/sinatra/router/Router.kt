@@ -8,12 +8,35 @@ import cl.emilym.sinatra.router.data.EdgeType
 import cl.emilym.sinatra.router.data.NetworkGraph
 import cl.emilym.sinatra.router.data.NetworkGraphEdge
 
+data class RaptorStop(
+    val id: StopId,
+    val addedTime: Seconds
+)
+
+data class RaptorConfig(
+    val maximumWalkingTime: Seconds,
+    val transferTime: Seconds,
+    val transferPenalty: Int,
+    val changeOverTime: Seconds,
+    val changeOverPenalty: Int,
+)
+
+data class RouterPrefs(
+    val wheelchairAccessible: Boolean,
+    val bikesAllowed: Boolean
+)
+
+internal val DEFAULT_ROUTER_PREFS = RouterPrefs(
+    wheelchairAccessible = false,
+    bikesAllowed = false
+)
 
 abstract class Router {
 
     protected abstract val graph: NetworkGraph
     protected abstract val activeServiceIds: List<List<ServiceId>>
     protected abstract val config: RaptorConfig
+    protected abstract val prefs: RouterPrefs
 
     private val activeServices by lazy {
         activeServiceIds.map {
@@ -275,6 +298,8 @@ abstract class Router {
                     val daysActive = (-1..1).filter { d -> servicesAreActive(it.availableServices, d) }
                     if (daysActive.isEmpty()) return@flatMap emptyList()
                     daysActive.mapNotNull { d ->
+                        if (prefs.bikesAllowed && !it.bikesAllowed) return@mapNotNull null
+                        if (prefs.wheelchairAccessible && !it.wheelchairAccessible) return@mapNotNull null
                         val dayAdjustment = (86400 * d).toLong()
                         if (!isValidTravelEdge(it, dayAdjustment, anchorTime)) return@mapNotNull null
                         val cost = getTravelAnchorTime(it, dayAdjustment, anchorTime) + it.cost.toLong()
