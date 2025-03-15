@@ -5,7 +5,6 @@ import cl.emilym.sinatra.data.models.Cachable
 import cl.emilym.sinatra.data.models.Journey
 import cl.emilym.sinatra.data.models.JourneyLeg
 import cl.emilym.sinatra.data.models.MapLocation
-import cl.emilym.sinatra.data.models.Service
 import cl.emilym.sinatra.data.models.ServiceId
 import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.data.models.StopWithDistance
@@ -19,6 +18,8 @@ import cl.emilym.sinatra.data.repository.RoutingPreferencesRepository
 import cl.emilym.sinatra.data.repository.StopRepository
 import cl.emilym.sinatra.data.repository.TransportMetadataRepository
 import cl.emilym.sinatra.e
+import cl.emilym.sinatra.router.ArrivalBasedRouter
+import cl.emilym.sinatra.router.DepartureBasedRouter
 import cl.emilym.sinatra.router.Raptor
 import cl.emilym.sinatra.router.RaptorConfig
 import cl.emilym.sinatra.router.RaptorJourney
@@ -35,16 +36,25 @@ import kotlinx.coroutines.withContext
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import org.koin.core.annotation.Factory
-import kotlin.math.min
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.days
-import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
 data class JourneyLocation(
     val location: MapLocation,
     val exact: Boolean
 )
+
+sealed interface JourneyCalculationTime {
+    val time: Instant
+
+    data class DepartureTime(
+        override val time: Instant
+    ): JourneyCalculationTime
+    data class ArrivalTime(
+        override val time: Instant
+    ): JourneyCalculationTime
+}
 
 @Factory
 class CalculateJourneyUseCase(
@@ -58,28 +68,28 @@ class CalculateJourneyUseCase(
 ) {
 
     private val lock = Mutex()
-    private lateinit var graph: Cachable<NetworkGraph>
+    private var departureGraph: Cachable<NetworkGraph>? = null
+    private var arrivalGraph: Cachable<NetworkGraph>? = null
     private lateinit var stops: Cachable<List<Stop>>
     private lateinit var services: List<Cachable<List<ServiceId>>>
     private lateinit var startOfDay: Instant
 
-    private lateinit var departureTime: Instant
+    private lateinit var anchorTime: JourneyCalculationTime
     private lateinit var departureLocation: JourneyLocation
     private lateinit var arrivalLocation: JourneyLocation
 
     suspend operator fun invoke(
         departureLocation: JourneyLocation,
         arrivalLocation: JourneyLocation,
-        departureTime: Instant = clock.now()
+        anchorTime: JourneyCalculationTime
     ): List<Journey> {
         return withContext(Dispatchers.IO) {
             lock.withLock {
-                this@CalculateJourneyUseCase.departureTime = departureTime
+                this@CalculateJourneyUseCase.anchorTime = anchorTime
                 this@CalculateJourneyUseCase.departureLocation = departureLocation
                 this@CalculateJourneyUseCase.arrivalLocation = arrivalLocation
 
-                val now = departureTime
-                graph = networkGraphRepository.networkGraph()
+                val now = anchorTime.time
                 stops = stopRepository.stops()
                 services = (-1..1).map {
                     activeServicesUseCase(now + (1 * it).days).map { it.map { it.id } }
@@ -125,18 +135,36 @@ class CalculateJourneyUseCase(
         }
     }
 
+    private suspend fun getGraph(): Cachable<NetworkGraph> {
+        return when (anchorTime) {
+            is JourneyCalculationTime.ArrivalTime -> arrivalGraph ?: run {
+                networkGraphRepository.networkGraph(true).also { arrivalGraph = it }
+            }
+            is JourneyCalculationTime.DepartureTime -> departureGraph ?: run {
+                networkGraphRepository.networkGraph(false).also { departureGraph = it }
+            }
+        }
+    }
+
     private suspend fun calculateJourney(
         config: RaptorConfig,
         departureStops: List<RaptorStop>,
         arrivalStops: List<RaptorStop>
     ): Journey? {
-        val raptor = Raptor(
-            graph.item,
-            services.map { it.item },
-            config
-        )
+        val raptor = when (anchorTime) {
+            is JourneyCalculationTime.ArrivalTime -> ArrivalBasedRouter(
+                getGraph().item,
+                services.map { it.item },
+                config
+            )
+            is JourneyCalculationTime.DepartureTime -> DepartureBasedRouter(
+                getGraph().item,
+                services.map { it.item },
+                config
+            )
+        }
 
-        val departureTimeSeconds: Seconds = (departureTime - startOfDay).inWholeSeconds
+        val departureTimeSeconds: Seconds = (anchorTime.time - startOfDay).inWholeSeconds
 
         return try {
             raptor.calculate(
@@ -188,7 +216,7 @@ class CalculateJourneyUseCase(
                 legs = legs.dropWhile { it is JourneyLeg.Transfer }.toMutableList()
                 if (legs.isEmpty()) return@run
                 val attachedStop = (legs.first { it is JourneyLeg.RouteJourneyLeg } as JourneyLeg.RouteJourneyLeg).stops.first()
-                val time = distance(departureLocation.location, attachedStop.location) * graph.item.metadata.assumedWalkingSecondsPerKilometer.toLong()
+                val time = distance(departureLocation.location, attachedStop.location) * getGraph().item.metadata.assumedWalkingSecondsPerKilometer.toLong()
                 legs.add(0, JourneyLeg.TransferPoint(
                     time.seconds,
                     Time.create(departureTimeSeconds.seconds, startOfDay),
@@ -203,7 +231,7 @@ class CalculateJourneyUseCase(
                 if (legs.isEmpty()) return@run
                 val lastLeg = legs.last { it is JourneyLeg.RouteJourneyLeg } as JourneyLeg.RouteJourneyLeg
                 val attachedStop = lastLeg.stops.last()
-                val time = distance(arrivalLocation.location, attachedStop.location) * graph.item.metadata.assumedWalkingSecondsPerKilometer.toLong()
+                val time = distance(arrivalLocation.location, attachedStop.location) * getGraph().item.metadata.assumedWalkingSecondsPerKilometer.toLong()
                 legs.add(JourneyLeg.TransferPoint(
                     time.seconds,
                     lastLeg.arrivalTime,
@@ -215,16 +243,16 @@ class CalculateJourneyUseCase(
         return Journey(legs)
     }
 
-    private fun List<Stop>.nearbyStops(location: JourneyLocation, maximumWalkingTime: Duration): List<RaptorStop> {
+    private suspend fun List<Stop>.nearbyStops(location: JourneyLocation, maximumWalkingTime: Duration): List<RaptorStop> {
         if (location.exact) {
             return listOf(RaptorStop(minBy { distance(location.location, it.location) }.id, 0L))
         }
 
         return map { StopWithDistance(it, distance(location.location, it.location)) }
-                .filter { (it.distance * graph.item.metadata.assumedWalkingSecondsPerKilometer.toLong()) < maximumWalkingTime.inWholeSeconds}
+                .filter { (it.distance * getGraph().item.metadata.assumedWalkingSecondsPerKilometer.toLong()) < maximumWalkingTime.inWholeSeconds}
                 .map { RaptorStop(
                     it.stop.id,
-                    (it.distance * graph.item.metadata.assumedWalkingSecondsPerKilometer.toInt()).toLong()
+                    (it.distance * getGraph().item.metadata.assumedWalkingSecondsPerKilometer.toInt()).toLong()
                 ) }
     }
 

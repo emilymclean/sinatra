@@ -13,6 +13,7 @@ import cl.emilym.sinatra.data.repository.NetworkGraphRepository
 import cl.emilym.sinatra.data.repository.RecentVisitRepository
 import cl.emilym.sinatra.data.repository.StopRepository
 import cl.emilym.sinatra.domain.CalculateJourneyUseCase
+import cl.emilym.sinatra.domain.JourneyCalculationTime
 import cl.emilym.sinatra.domain.JourneyLocation
 import cl.emilym.sinatra.domain.search.RouteStopSearchUseCase
 import cl.emilym.sinatra.domain.search.SearchResult
@@ -38,6 +39,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.datetime.Clock
 import org.koin.core.annotation.Factory
 
 private sealed interface State {
@@ -68,7 +70,8 @@ class NavigationEntryViewModel(
     private val routeStopSearchUseCase: RouteStopSearchUseCase,
     private val networkGraphRepository: NetworkGraphRepository,
     private val recentVisitRepository: RecentVisitRepository,
-    private val stopRepository: StopRepository
+    private val stopRepository: StopRepository,
+    private val clock: Clock
 ): SinatraScreenModel, SearchScreenViewModel {
 
     override val query = MutableStateFlow<String?>(null)
@@ -300,7 +303,9 @@ class NavigationEntryViewModel(
                     JourneyLocation(
                         destination,
                         exact = this@NavigationEntryViewModel.destination.value is NavigationLocation.Stop
-                    )
+                    ),
+                    JourneyCalculationTime.DepartureTime(clock.now())
+
                 )
                 navigationState.value = NavigationState.JourneysFound(
                     result
