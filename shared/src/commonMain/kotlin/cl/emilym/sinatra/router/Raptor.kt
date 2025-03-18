@@ -40,7 +40,10 @@ class DepartureBasedRouter(
         edge: NetworkGraphEdge,
         dayAdjustment: Seconds,
         anchorTime: DaySeconds
-    ): Long = (edge.departureTime.toLong() + dayAdjustment) - anchorTime
+    ): Long {
+        val v = (edge.departureTime.toLong() + dayAdjustment) - anchorTime
+        return v
+    }
 
     override fun reconstruct(
         arrivalStopIndices: List<Pair<Int, RaptorStop>>,

@@ -216,19 +216,20 @@ abstract class Router {
             val edge = prevEdge[cursor]!!
             val stopId = graph.mappings.stopIds[getNode(edge.connectedNodeIndex).stopIndex.toInt()]
 
+            stops.add(stopId)
+            edges.add(edge)
+            dayIndicies.add(dayIndex[cursor])
+
             if (edgeType != edge.type) {
-                stops.add(stopId)
+                edges.removeLastOrNull()
                 addConnection()
 
                 edgeType = edge.type
                 edges.clear()
                 stops.clear()
                 dayIndicies.clear()
+                continue
             }
-
-            stops.add(stopId)
-            edges.add(edge)
-            dayIndicies.add(dayIndex[cursor])
 
             cursor = prev[cursor]!!
         }
@@ -322,9 +323,9 @@ abstract class Router {
             graph.mappings.routeIds[firstNode.routeIndex.toInt()],
             graph.mappings.headings[firstNode.headingIndex.toInt()],
             departure,
-            arrival,
+            arrival + edges[arrivalEdgeIndex].cost.toLong(),
             dayIndicies[departureEdgeIndex] ?: 0,
-            arrival - departure
+            (arrival - departure) + edges[arrivalEdgeIndex].cost.toLong()
         )
     }
 
