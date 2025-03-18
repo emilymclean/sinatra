@@ -195,14 +195,15 @@ class CalculateJourneyUseCase(
     private suspend fun RaptorJourney.toJourney(): Journey {
         val raptorJourney = this
         val connections = raptorJourney.connections
-            .dropWhile { it is RaptorJourneyConnection.Transfer }
-            .dropLastWhile { it is RaptorJourneyConnection.Transfer }
 
         val routes = routeRepository.routes(
             connections.filterIsInstance<RaptorJourneyConnection.Travel>().map { it.routeId }
         )
         var legs = mutableListOf<JourneyLeg>()
-        var lastEndTime: Duration? = null
+        var lastEndTime: Duration? = when (val connection = connections.first()) {
+            is RaptorJourneyConnection.Travel -> connection.endTime.seconds
+            is RaptorJourneyConnection.Transfer -> (connections[1] as? RaptorJourneyConnection.Travel)?.endTime?.seconds
+        }
 
         for (i in connections.indices) {
             val stops = connections[i].stops.mapNotNull { s -> stops.item.firstOrNull { it.id == s } }
@@ -224,12 +225,15 @@ class CalculateJourneyUseCase(
                     connection.travelTime.seconds,
                     Time.create(lastEndTime!!, startOfDay),
                     Time.create(lastEndTime + connection.travelTime.seconds, startOfDay)
-                )
+                ).also {
+                    lastEndTime += connection.travelTime.seconds
+                }
             }
         }
 
         if (!departureLocation.exact) {
             run {
+                legs = legs.dropWhile { it is JourneyLeg.Transfer }.toMutableList()
                 if (legs.isEmpty()) return@run
                 val attachedStop = (legs.first { it is JourneyLeg.RouteJourneyLeg } as JourneyLeg.RouteJourneyLeg).stops.first()
                 val time = distance(departureLocation.location, attachedStop.location) * getGraph().item.metadata.assumedWalkingSecondsPerKilometer.toLong()
@@ -243,6 +247,7 @@ class CalculateJourneyUseCase(
 
         if (!arrivalLocation.exact) {
             run {
+                legs = legs.dropLastWhile { it is JourneyLeg.Transfer }.toMutableList()
                 if (legs.isEmpty()) return@run
                 val lastLeg = legs.last { it is JourneyLeg.RouteJourneyLeg } as JourneyLeg.RouteJourneyLeg
                 val attachedStop = lastLeg.stops.last()
