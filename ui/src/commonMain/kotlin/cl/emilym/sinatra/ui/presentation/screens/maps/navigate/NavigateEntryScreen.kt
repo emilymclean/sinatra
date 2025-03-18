@@ -67,6 +67,7 @@ import cl.emilym.sinatra.ui.widgets.AccessibleIcon
 import cl.emilym.sinatra.ui.widgets.BackButton
 import cl.emilym.sinatra.ui.widgets.BikeIcon
 import cl.emilym.sinatra.ui.widgets.Chip
+import cl.emilym.sinatra.ui.widgets.ClockIcon
 import cl.emilym.sinatra.ui.widgets.CurrentLocationCard
 import cl.emilym.sinatra.ui.widgets.GenericMarkerIcon
 import cl.emilym.sinatra.ui.widgets.JourneyOptionCard
@@ -88,6 +89,9 @@ import org.jetbrains.compose.resources.stringResource
 import sinatra.ui.generated.resources.Res
 import sinatra.ui.generated.resources.navigate_calculating_journey
 import sinatra.ui.generated.resources.navigate_calculating_journey_failed
+import sinatra.ui.generated.resources.navigate_chip_anchor_arrive
+import sinatra.ui.generated.resources.navigate_chip_anchor_depart
+import sinatra.ui.generated.resources.navigate_chip_anchor_now
 import sinatra.ui.generated.resources.navigate_chip_bikes_allowed
 import sinatra.ui.generated.resources.navigate_chip_wheelchair_accessible
 import sinatra.ui.generated.resources.navigate_downloading_graph
@@ -336,6 +340,40 @@ class NavigateEntryScreen(
                         horizontalArrangement = Arrangement.spacedBy(0.5.rdp),
                         modifier = Modifier.padding(bottom = 0.5.rdp)
                     ) {
+                        item {
+                            val anchorTime by viewModel.anchorTime.collectAsStateWithLifecycle()
+                            Chip(
+                                selected = false,
+                                onToggle = {  },
+                                contentDescription = null
+                            ) {
+                                Row(
+                                    horizontalArrangement = Arrangement.spacedBy(0.25.rdp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    ClockIcon()
+                                    anchorTime.let { anchorTime ->
+                                        Text(
+                                            when (anchorTime) {
+                                                is NavigationAnchorTime.Now ->
+                                                    stringResource(Res.string.navigate_chip_anchor_now)
+                                                is NavigationAnchorTime.DepartureTime ->
+                                                    stringResource(
+                                                        Res.string.navigate_chip_anchor_depart,
+                                                        anchorTime.time.format()
+                                                    )
+                                                is NavigationAnchorTime.ArrivalTime ->
+                                                    stringResource(
+                                                        Res.string.navigate_chip_anchor_arrive,
+                                                        anchorTime.time.format()
+                                                    )
+                                            },
+                                            style = MaterialTheme.typography.labelSmall
+                                        )
+                                    }
+                                }
+                            }
+                        }
                         item {
                             val bikesAllowed by viewModel.bikesAllowed.collectAsStateWithLifecycle()
                             Chip(

@@ -61,6 +61,9 @@
     <string name="navigate_travel_journey_depart">**Depart** from %1$s</string>
     <string name="navigate_chip_wheelchair_accessible">Only show wheelchair accessible journeys</string>
     <string name="navigate_chip_bikes_allowed">Only show journeys that allow bikes</string>
+    <string name="navigate_chip_anchor_now">Depart now</string>
+    <string name="navigate_chip_anchor_depart">Depart at %1$s</string>
+    <string name="navigate_chip_anchor_arrive">Arrive by %1$s</string>
 
     <string name="journey_card_period">%1$s — %2$s</string>
 
