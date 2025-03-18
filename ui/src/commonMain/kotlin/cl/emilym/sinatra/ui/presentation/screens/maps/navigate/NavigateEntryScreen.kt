@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -15,6 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
@@ -30,6 +32,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.annotation.ExperimentalVoyagerApi
 import cafe.adriel.voyager.core.lifecycle.LifecycleEffectOnce
@@ -58,7 +63,10 @@ import cl.emilym.sinatra.ui.presentation.theme.Container
 import cl.emilym.sinatra.ui.presentation.theme.walkingColor
 import cl.emilym.sinatra.ui.text
 import cl.emilym.sinatra.ui.localization.format
+import cl.emilym.sinatra.ui.widgets.AccessibleIcon
 import cl.emilym.sinatra.ui.widgets.BackButton
+import cl.emilym.sinatra.ui.widgets.BikeIcon
+import cl.emilym.sinatra.ui.widgets.Chip
 import cl.emilym.sinatra.ui.widgets.CurrentLocationCard
 import cl.emilym.sinatra.ui.widgets.GenericMarkerIcon
 import cl.emilym.sinatra.ui.widgets.JourneyOptionCard
@@ -71,6 +79,7 @@ import cl.emilym.sinatra.ui.widgets.NavigatorBackButton
 import cl.emilym.sinatra.ui.widgets.RouteRandle
 import cl.emilym.sinatra.ui.widgets.SinatraBackHandler
 import cl.emilym.sinatra.ui.widgets.WalkIcon
+import cl.emilym.sinatra.ui.widgets.WheelchairAccessibleIcon
 import cl.emilym.sinatra.ui.widgets.currentLocation
 import cl.emilym.sinatra.ui.widgets.hasLocationPermission
 import cl.emilym.sinatra.ui.widgets.routeRandleSize
@@ -79,6 +88,8 @@ import org.jetbrains.compose.resources.stringResource
 import sinatra.ui.generated.resources.Res
 import sinatra.ui.generated.resources.navigate_calculating_journey
 import sinatra.ui.generated.resources.navigate_calculating_journey_failed
+import sinatra.ui.generated.resources.navigate_chip_bikes_allowed
+import sinatra.ui.generated.resources.navigate_chip_wheelchair_accessible
 import sinatra.ui.generated.resources.navigate_downloading_graph
 import sinatra.ui.generated.resources.navigate_entry_select_destination
 import sinatra.ui.generated.resources.navigate_entry_select_origin
@@ -314,6 +325,35 @@ class NavigateEntryScreen(
                                     true,
                                     modifier = Modifier.clickable { viewModel.onDestinationClick() }
                                 )
+                            }
+                        }
+                    }
+                }
+
+                item {
+                    LazyRow(
+                        contentPadding = PaddingValues(horizontal = 1.rdp),
+                        horizontalArrangement = Arrangement.spacedBy(0.5.rdp),
+                        modifier = Modifier.padding(bottom = 0.5.rdp)
+                    ) {
+                        item {
+                            val bikesAllowed by viewModel.bikesAllowed.collectAsStateWithLifecycle()
+                            Chip(
+                                selected = bikesAllowed,
+                                onToggle = { viewModel.bikesAllowed.value = it },
+                                contentDescription = stringResource(Res.string.navigate_chip_bikes_allowed)
+                            ) {
+                                BikeIcon()
+                            }
+                        }
+                        item {
+                            val wheelchairAccessibility by viewModel.wheelchairAccessible.collectAsStateWithLifecycle()
+                            Chip(
+                                selected = wheelchairAccessibility,
+                                onToggle = { viewModel.wheelchairAccessible.value = it },
+                                contentDescription = stringResource(Res.string.navigate_chip_wheelchair_accessible)
+                            ) {
+                                AccessibleIcon()
                             }
                         }
                     }

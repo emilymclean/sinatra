@@ -155,7 +155,9 @@ class NavigationEntryViewModel(
                                                     JourneyCalculationTime.DepartureTime(it.anchorTime.time)
                                                 is NavigationAnchorTime.ArrivalTime ->
                                                     JourneyCalculationTime.ArrivalTime(it.anchorTime.time)
-                                            }
+                                            },
+                                            it.wheelchairAccessible,
+                                            it.bikesAllowed
                                         )
                                     ))
                                 } catch(e: Exception) {

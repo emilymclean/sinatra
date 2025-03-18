@@ -25,6 +25,7 @@ import cl.emilym.sinatra.router.RaptorConfig
 import cl.emilym.sinatra.router.RaptorJourney
 import cl.emilym.sinatra.router.RaptorJourneyConnection
 import cl.emilym.sinatra.router.RaptorStop
+import cl.emilym.sinatra.router.RouterPrefs
 import cl.emilym.sinatra.router.Seconds
 import cl.emilym.sinatra.router.data.NetworkGraph
 import io.github.aakira.napier.Napier
@@ -77,17 +78,23 @@ class CalculateJourneyUseCase(
     private lateinit var anchorTime: JourneyCalculationTime
     private lateinit var departureLocation: JourneyLocation
     private lateinit var arrivalLocation: JourneyLocation
+    private var onlyWheelchair: Boolean = false
+    private var onlyBikes: Boolean = false
 
     suspend operator fun invoke(
         departureLocation: JourneyLocation,
         arrivalLocation: JourneyLocation,
-        anchorTime: JourneyCalculationTime
+        anchorTime: JourneyCalculationTime,
+        onlyWheelchair: Boolean = false,
+        onlyBikes: Boolean = false,
     ): List<Journey> {
         return withContext(Dispatchers.IO) {
             lock.withLock {
                 this@CalculateJourneyUseCase.anchorTime = anchorTime
                 this@CalculateJourneyUseCase.departureLocation = departureLocation
                 this@CalculateJourneyUseCase.arrivalLocation = arrivalLocation
+                this@CalculateJourneyUseCase.onlyBikes = onlyBikes
+                this@CalculateJourneyUseCase.onlyWheelchair = onlyWheelchair
 
                 val now = anchorTime.time
                 stops = stopRepository.stops()
@@ -151,16 +158,23 @@ class CalculateJourneyUseCase(
         departureStops: List<RaptorStop>,
         arrivalStops: List<RaptorStop>
     ): Journey? {
+        val prefs = RouterPrefs(
+            wheelchairAccessible = onlyWheelchair,
+            bikesAllowed = onlyBikes
+        )
+
         val raptor = when (anchorTime) {
             is JourneyCalculationTime.ArrivalTime -> ArrivalBasedRouter(
                 getGraph().item,
                 services.map { it.item },
-                config
+                config,
+                prefs
             )
             is JourneyCalculationTime.DepartureTime -> DepartureBasedRouter(
                 getGraph().item,
                 services.map { it.item },
-                config
+                config,
+                prefs
             )
         }
 
