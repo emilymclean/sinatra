@@ -181,44 +181,35 @@ class CalculateJourneyUseCase(
         val anchorTimeSeconds: Seconds = (anchorTime.time - startOfDay).inWholeSeconds
 
         return try {
-            val rJourney = raptor.calculate(
+            raptor.calculate(
                 anchorTimeSeconds,
                 departureStops,
                 arrivalStops
-            )
-
-            val departureTimeSeconds = when (anchorTime) {
-                is JourneyCalculationTime.DepartureTime -> anchorTimeSeconds
-                is JourneyCalculationTime.ArrivalTime -> anchorTimeSeconds - rJourney.connections.sumOf {
-                    when (it) {
-                        is RaptorJourneyConnection.Transfer -> it.travelTime
-                        is RaptorJourneyConnection.Travel -> it.endTime - it.startTime
-                    }
-                }
-            }
-
-            rJourney.toJourney(departureTimeSeconds)
-        } catch (e: RouterException) {
+            ).toJourney()
+        } catch (e: Exception) {
             Napier.e(e)
             null
         }
     }
 
-    private suspend fun RaptorJourney.toJourney(
-        departureTimeSeconds: Seconds
-    ): Journey {
+    private suspend fun RaptorJourney.toJourney(): Journey {
         val raptorJourney = this
+        val connections = raptorJourney.connections
+            .dropWhile { it is RaptorJourneyConnection.Transfer }
+            .dropLastWhile { it is RaptorJourneyConnection.Transfer }
 
         val routes = routeRepository.routes(
-            raptorJourney.connections.filterIsInstance<RaptorJourneyConnection.Travel>().map { it.routeId }
+            connections.filterIsInstance<RaptorJourneyConnection.Travel>().map { it.routeId }
         )
         var legs = mutableListOf<JourneyLeg>()
-        var lastEndTime = departureTimeSeconds.seconds
-        for (i in raptorJourney.connections.indices) {
-            val stops = raptorJourney.connections[i].stops.mapNotNull { s -> stops.item.firstOrNull { it.id == s } }
-            legs += when (val connection = raptorJourney.connections[i]) {
+        var lastEndTime: Duration? = null
+
+        for (i in connections.indices) {
+            val stops = connections[i].stops.mapNotNull { s -> stops.item.firstOrNull { it.id == s } }
+            legs += when (val connection = connections[i]) {
                 is RaptorJourneyConnection.Travel -> {
                     val startOfDayIndexed = startOfDay + connection.dayIndex.days
+                    lastEndTime = connection.endTime.seconds
                     JourneyLeg.Travel(
                         stops,
                         (connection.endTime - connection.startTime).seconds,
@@ -231,29 +222,27 @@ class CalculateJourneyUseCase(
                 is RaptorJourneyConnection.Transfer -> JourneyLeg.Transfer(
                     stops,
                     connection.travelTime.seconds,
-                    Time.create(lastEndTime, startOfDay),
+                    Time.create(lastEndTime!!, startOfDay),
                     Time.create(lastEndTime + connection.travelTime.seconds, startOfDay)
                 )
-            }.also { lastEndTime = it.arrivalTime.durationThroughDay }
+            }
         }
 
         if (!departureLocation.exact) {
             run {
-                legs = legs.dropWhile { it is JourneyLeg.Transfer }.toMutableList()
                 if (legs.isEmpty()) return@run
                 val attachedStop = (legs.first { it is JourneyLeg.RouteJourneyLeg } as JourneyLeg.RouteJourneyLeg).stops.first()
                 val time = distance(departureLocation.location, attachedStop.location) * getGraph().item.metadata.assumedWalkingSecondsPerKilometer.toLong()
                 legs.add(0, JourneyLeg.TransferPoint(
                     time.seconds,
-                    Time.create(departureTimeSeconds.seconds, startOfDay),
-                    Time.create((departureTimeSeconds + time).seconds, startOfDay)
+                    legs.first().departureTime - time.seconds,
+                    legs.first().departureTime
                 ))
             }
         }
 
         if (!arrivalLocation.exact) {
             run {
-                legs = legs.dropLastWhile { it is JourneyLeg.Transfer }.toMutableList()
                 if (legs.isEmpty()) return@run
                 val lastLeg = legs.last { it is JourneyLeg.RouteJourneyLeg } as JourneyLeg.RouteJourneyLeg
                 val attachedStop = lastLeg.stops.last()
