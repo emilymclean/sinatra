@@ -162,11 +162,11 @@ class NavigateEntryScreen(
                     when (i) {
                         0 -> originLocation?.let {
                             val next = (journey.legs.getOrNull(1) as? JourneyLeg.RouteJourneyLeg) ?: return@let
-                            addWalking(listOf(it, it, next.stops.first().location))
+                            addWalking(listOf(it.location, it.location, next.stops.first().location))
                         }
                         journey.legs.lastIndex -> destinationLocation?.let {
                             val next = (journey.legs.getOrNull(journey.legs.lastIndex - 1) as? JourneyLeg.RouteJourneyLeg) ?: return@let
-                            addWalking(listOf(next.stops.last().location, it, it))
+                            addWalking(listOf(next.stops.last().location, it.location, it.location))
                         }
                     }
                 }
@@ -229,8 +229,8 @@ class NavigateEntryScreen(
                         (state.journey.legs
                             .filterIsInstance<JourneyLeg.RouteJourneyLeg>()
                             .flatMap { it.stops.map { it.location } } +
-                                listOfNotNull(originLocation, destinationLocation)
-                                ).bounds(),
+                                listOfNotNull(originLocation?.location, destinationLocation?.location)
+                        ).bounds(),
                         zoomPadding
                     )
                 }
