@@ -18,6 +18,10 @@ class RaptorTest {
         const val STOP_ID_MANNING_CLARK = "MCK"
         const val STOP_ID_SANDFORD_STREET_ALG = "8112"
         const val STOP_ID_CANBERRA_RAILWAY_STATION = "3320"
+        const val STOP_ID_GUNGAHLIN_GGN = "8100"
+        const val STOP_ID_ALINGA_GGN = "8129"
+        const val STOP_ID_AIKMAN_DR_BEFORE_TOWNSEND_PL = "4144"
+        const val STOP_ID_HOLY_SPIRIT_PS_PLT_1 = "4830"
     }
 
     lateinit var graph: NetworkGraph
@@ -25,6 +29,7 @@ class RaptorTest {
     lateinit var graphReverse: NetworkGraph
     lateinit var raptorReverse: Router
     lateinit var config: RaptorConfig
+    lateinit var altConfig: RaptorConfig
 
     @BeforeTest
     fun setup() {
@@ -34,6 +39,13 @@ class RaptorTest {
             transferPenalty = 0,
             changeOverTime = 0,
             changeOverPenalty = 0
+        )
+        altConfig = RaptorConfig(
+            maximumWalkingTime = 10 * 60L,
+            transferTime = 5 * 60L,
+            transferPenalty = 50 * 60 * 100,
+            changeOverTime = 5 * 60L,
+            changeOverPenalty = 50 * 60 * 100
         )
         graph = NetworkGraph.byteFormatForByteArray(
             this::class.java.classLoader.getResource("network_graph.eng").readBytes()
@@ -78,6 +90,26 @@ class RaptorTest {
     }
 
     @Test
+    fun testValidJourneyOnSingleRouteEndToEnd() {
+        val result = raptor.calculate(
+            Duration.parseIsoString("PT09H").inWholeSeconds,
+            STOP_ID_GUNGAHLIN_GGN,
+            STOP_ID_ALINGA_GGN
+        )
+        assertEquals(RaptorJourney(listOf(
+            RaptorJourneyConnection.Travel(
+                listOf("8100", "8104", "8106", "8108", "8110", "8112", "8114", "8116", "8118", "8120", "8122", "8124", "8126", "8129"),
+                "ACTO001",
+                "Alinga St",
+                startTime=32400,
+                endTime=33875,
+                travelTime=1475,
+                dayIndex = 0,
+            )
+        )), result)
+    }
+
+    @Test
     fun testValidJourneyOnSingleRouteReverse() {
         val result = raptorReverse
             .calculate(
@@ -93,6 +125,26 @@ class RaptorTest {
                 startTime=31726,
                 endTime=32557,
                 travelTime=831,
+                dayIndex = 0,
+            )
+        )), result)
+    }
+
+    @Test
+    fun testValidJourneyOnSingleRouteEndToEndReverse() {
+        val result = raptorReverse.calculate(
+            33875,
+            STOP_ID_GUNGAHLIN_GGN,
+            STOP_ID_ALINGA_GGN
+        )
+        assertEquals(RaptorJourney(listOf(
+            RaptorJourneyConnection.Travel(
+                listOf("8100", "8104", "8106", "8108", "8110", "8112", "8114", "8116", "8118", "8120", "8122", "8124", "8126", "8129"),
+                "ACTO001",
+                "Alinga St",
+                startTime=32400,
+                endTime=33875,
+                travelTime=1475,
                 dayIndex = 0,
             )
         )), result)
@@ -155,6 +207,54 @@ class RaptorTest {
                 listOf("8105", "MCK"),
                 travelTime = 9
             ),
+        )), result)
+    }
+
+    @Test
+    fun testValidJourneyOnSingleRouteBus() {
+        val result = DepartureBasedRouter(
+            graph,
+            List(3) { graph.mappings.serviceIds },
+            altConfig
+        ).calculate(
+            Duration.parseIsoString("PT14H").inWholeSeconds,
+            STOP_ID_AIKMAN_DR_BEFORE_TOWNSEND_PL,
+            STOP_ID_HOLY_SPIRIT_PS_PLT_1
+        )
+        assertEquals(RaptorJourney(listOf(
+            RaptorJourneyConnection.Travel(
+                listOf("4144", "4938", "4182", "4180", "4128", "4126", "4124", "4122", "4120", "4106", "4793", "600", "4674", "4676", "4678", "4680", "5137", "5062", "5064", "5066", "5068", "5070", "5175", "5078", "5074", "5073", "2553", "4830"),
+                "24-10647",
+                "Gungahlin",
+                startTime=50760,
+                endTime=52320,
+                travelTime=1560,
+                dayIndex = 0,
+            )
+        )), result)
+    }
+
+    @Test
+    fun testValidJourneyOnSingleRouteBusReverse() {
+        val result = ArrivalBasedRouter(
+            graphReverse,
+            List(3) { graph.mappings.serviceIds },
+            altConfig
+        ).calculate(
+            Duration.parseIsoString("PT14H").inWholeSeconds,
+            STOP_ID_AIKMAN_DR_BEFORE_TOWNSEND_PL,
+            STOP_ID_HOLY_SPIRIT_PS_PLT_1
+        )
+        assertEquals(RaptorJourney(listOf(
+            RaptorJourneyConnection.Travel(
+                listOf("4144", "4938", "4182", "4180", "4128", "4126", "4124", "4122", "4120", "4106", "4793", "600", "4674", "4676", "4678", "4680", "5137", "5062", "5064", "5066", "5068", "5070", "5175", "5078", "5074", "5073", "2553", "4830"),
+                "24-10647",
+                "Gungahlin",
+                startTime=48300,
+                endTime=49860,
+                travelTime=1560,
+                dayIndex = 0,
+            )
         )), result)
     }
 
