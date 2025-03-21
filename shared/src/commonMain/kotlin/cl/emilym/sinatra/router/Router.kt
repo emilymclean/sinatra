@@ -318,14 +318,18 @@ abstract class Router {
         val firstNode = getNode(edges.first().connectedNodeIndex)
         val arrival = edges[arrivalEdgeIndex].departureTime.toLong()
         val departure = edges[departureEdgeIndex].departureTime.toLong()
+
+        val fencepostDepartureCost = if (departureEdgeIndex == 0) edges[departureEdgeIndex].cost.toLong() else 0
+        val fencepostArrivalCost = if (arrivalEdgeIndex == 0) edges[arrivalEdgeIndex].cost.toLong() else 0
+
         return RaptorJourneyConnection.Travel(
             stops,
             graph.mappings.routeIds[firstNode.routeIndex.toInt()],
             graph.mappings.headings[firstNode.headingIndex.toInt()],
-            departure,
-            arrival + edges[arrivalEdgeIndex].cost.toLong(),
+            departure - fencepostDepartureCost,
+            arrival + fencepostArrivalCost,
             dayIndicies[departureEdgeIndex] ?: 0,
-            (arrival - departure) + edges[arrivalEdgeIndex].cost.toLong()
+            (arrival - departure) + fencepostArrivalCost + fencepostDepartureCost
         )
     }
 
