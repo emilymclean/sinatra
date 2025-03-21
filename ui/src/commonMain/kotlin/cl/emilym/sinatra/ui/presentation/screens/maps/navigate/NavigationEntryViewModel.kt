@@ -175,9 +175,22 @@ class NavigationEntryViewModel(
         }
     }.stateIn(screenModelScope, SharingStarted.Lazily, NavigationState.GraphLoading)
 
+    val journeyCount = navigationState.map {
+        when (it) {
+            is NavigationState.JourneysFound -> it.journeys.size
+            else -> 0
+        }
+    }.state(0)
+
     val state = _state.flatMapLatest {
         when (it) {
-            is State.JourneySelection -> navigationState.map { NavigationEntryState.JourneySelection(it) }
+            is State.JourneySelection -> navigationState.map {
+                if (it is NavigationState.JourneysFound && it.journeys.size == 1) {
+                    NavigationEntryState.JourneySelected(it.journeys.first())
+                } else {
+                    NavigationEntryState.JourneySelection(it)
+                }
+            }
             is State.JourneySelected -> flowOf(NavigationEntryState.JourneySelected(it.journey))
             is State.Search -> searchHandler(routeStopSearchUseCase) { NavigationEntryState.Search(
                 when (it) {

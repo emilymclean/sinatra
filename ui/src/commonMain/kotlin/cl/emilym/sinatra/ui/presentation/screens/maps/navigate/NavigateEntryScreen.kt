@@ -289,6 +289,7 @@ class NavigateEntryScreen(
         viewModel: NavigationEntryViewModel,
         state: NavigationEntryState
     ) {
+        val journeyCount by viewModel.journeyCount.collectAsStateWithLifecycle()
         Scaffold { innerPadding ->
             LazyColumn(
                 Modifier
@@ -334,64 +335,66 @@ class NavigateEntryScreen(
                     }
                 }
 
-                item {
-                    LazyRow(
-                        contentPadding = PaddingValues(horizontal = 1.rdp),
-                        horizontalArrangement = Arrangement.spacedBy(0.5.rdp),
-                        modifier = Modifier.padding(bottom = 0.5.rdp)
-                    ) {
-                        item {
-                            val anchorTime by viewModel.anchorTime.collectAsStateWithLifecycle()
-                            Chip(
-                                selected = false,
-                                onToggle = {  },
-                                contentDescription = null
-                            ) {
-                                Row(
-                                    horizontalArrangement = Arrangement.spacedBy(0.25.rdp),
-                                    verticalAlignment = Alignment.CenterVertically
+                if (state !is NavigationEntryState.JourneySelected || journeyCount == 1) {
+                    item {
+                        LazyRow(
+                            contentPadding = PaddingValues(horizontal = 1.rdp),
+                            horizontalArrangement = Arrangement.spacedBy(0.5.rdp),
+                            modifier = Modifier.padding(bottom = 0.5.rdp)
+                        ) {
+                            item {
+                                val anchorTime by viewModel.anchorTime.collectAsStateWithLifecycle()
+                                Chip(
+                                    selected = false,
+                                    onToggle = {  },
+                                    contentDescription = null
                                 ) {
-                                    ClockIcon()
-                                    anchorTime.let { anchorTime ->
-                                        Text(
-                                            when (anchorTime) {
-                                                is NavigationAnchorTime.Now ->
-                                                    stringResource(Res.string.navigate_chip_anchor_now)
-                                                is NavigationAnchorTime.DepartureTime ->
-                                                    stringResource(
-                                                        Res.string.navigate_chip_anchor_depart,
-                                                        anchorTime.time.format()
-                                                    )
-                                                is NavigationAnchorTime.ArrivalTime ->
-                                                    stringResource(
-                                                        Res.string.navigate_chip_anchor_arrive,
-                                                        anchorTime.time.format()
-                                                    )
-                                            },
-                                            style = MaterialTheme.typography.labelSmall
-                                        )
+                                    Row(
+                                        horizontalArrangement = Arrangement.spacedBy(0.25.rdp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        ClockIcon()
+                                        anchorTime.let { anchorTime ->
+                                            Text(
+                                                when (anchorTime) {
+                                                    is NavigationAnchorTime.Now ->
+                                                        stringResource(Res.string.navigate_chip_anchor_now)
+                                                    is NavigationAnchorTime.DepartureTime ->
+                                                        stringResource(
+                                                            Res.string.navigate_chip_anchor_depart,
+                                                            anchorTime.time.format()
+                                                        )
+                                                    is NavigationAnchorTime.ArrivalTime ->
+                                                        stringResource(
+                                                            Res.string.navigate_chip_anchor_arrive,
+                                                            anchorTime.time.format()
+                                                        )
+                                                },
+                                                style = MaterialTheme.typography.labelSmall
+                                            )
+                                        }
                                     }
                                 }
                             }
-                        }
-                        item {
-                            val bikesAllowed by viewModel.bikesAllowed.collectAsStateWithLifecycle()
-                            Chip(
-                                selected = bikesAllowed,
-                                onToggle = { viewModel.bikesAllowed.value = it },
-                                contentDescription = stringResource(Res.string.navigate_chip_bikes_allowed)
-                            ) {
-                                BikeIcon()
+                            item {
+                                val bikesAllowed by viewModel.bikesAllowed.collectAsStateWithLifecycle()
+                                Chip(
+                                    selected = bikesAllowed,
+                                    onToggle = { viewModel.bikesAllowed.value = it },
+                                    contentDescription = stringResource(Res.string.navigate_chip_bikes_allowed)
+                                ) {
+                                    BikeIcon()
+                                }
                             }
-                        }
-                        item {
-                            val wheelchairAccessibility by viewModel.wheelchairAccessible.collectAsStateWithLifecycle()
-                            Chip(
-                                selected = wheelchairAccessibility,
-                                onToggle = { viewModel.wheelchairAccessible.value = it },
-                                contentDescription = stringResource(Res.string.navigate_chip_wheelchair_accessible)
-                            ) {
-                                AccessibleIcon()
+                            item {
+                                val wheelchairAccessibility by viewModel.wheelchairAccessible.collectAsStateWithLifecycle()
+                                Chip(
+                                    selected = wheelchairAccessibility,
+                                    onToggle = { viewModel.wheelchairAccessible.value = it },
+                                    contentDescription = stringResource(Res.string.navigate_chip_wheelchair_accessible)
+                                ) {
+                                    AccessibleIcon()
+                                }
                             }
                         }
                     }
