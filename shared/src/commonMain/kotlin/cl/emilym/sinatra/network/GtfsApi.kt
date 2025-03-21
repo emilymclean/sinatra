@@ -133,10 +133,10 @@ interface GtfsApi {
     @GET("v1/network-graph-reverse.eng.sha")
     suspend fun reverseNetworkGraphDigest(): String
 
-    @GET("journey-config.pb")
+    @GET("v1/journey-config.pb")
     suspend fun journeyConfig(): ByteArray
 
-    @GET("journey-config.pb.sha")
+    @GET("v1/journey-config.pb.sha")
     suspend fun journeyConfigDigest(): String
 
     @GET
