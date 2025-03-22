@@ -33,6 +33,7 @@ import sinatra.ui.generated.resources.walk
 import sinatra.ui.generated.resources.warning
 import sinatra.ui.generated.resources.clock
 import sinatra.ui.generated.resources.swap
+import sinatra.ui.generated.resources.journey
 
 @Composable
 fun AccessibleIcon(
@@ -372,6 +373,20 @@ fun SwapIcon(
 ) {
     Icon(
         painterResource(Res.drawable.swap),
+        contentDescription = contentDescription,
+        modifier = modifier,
+        tint = tint
+    )
+}
+
+@Composable
+fun JourneyIcon(
+    modifier: Modifier = Modifier,
+    tint: Color = LocalContentColor.current,
+    contentDescription: String? = null
+) {
+    Icon(
+        painterResource(Res.drawable.journey),
         contentDescription = contentDescription,
         modifier = modifier,
         tint = tint

@@ -66,6 +66,7 @@ import cl.emilym.sinatra.ui.widgets.Chip
 import cl.emilym.sinatra.ui.widgets.ClockIcon
 import cl.emilym.sinatra.ui.widgets.CurrentLocationCard
 import cl.emilym.sinatra.ui.widgets.GenericMarkerIcon
+import cl.emilym.sinatra.ui.widgets.JourneyIcon
 import cl.emilym.sinatra.ui.widgets.JourneyOptionCard
 import cl.emilym.sinatra.ui.widgets.JourneyStartIcon
 import cl.emilym.sinatra.ui.widgets.ListHint
@@ -443,7 +444,7 @@ class NavigateEntryScreen(
                                         else -> stringResource(Res.string.navigate_entry_no_destination)
                                     }
                                 ) {
-                                    GenericMarkerIcon(tint = MaterialTheme.colorScheme.primary)
+                                    JourneyIcon(tint = MaterialTheme.colorScheme.primary)
                                 }
                             }
                         }
