@@ -1,7 +1,6 @@
 package cl.emilym.sinatra.data.repository
 
 import cl.emilym.sinatra.data.client.PlaceClient
-import cl.emilym.sinatra.data.client.RemoteConfigClient
 import cl.emilym.sinatra.data.models.Place
 import cl.emilym.sinatra.data.persistence.PlacePersistence
 import org.koin.core.annotation.Factory

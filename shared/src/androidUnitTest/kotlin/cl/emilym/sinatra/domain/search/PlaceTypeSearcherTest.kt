@@ -2,7 +2,9 @@ package cl.emilym.sinatra.domain.search
 
 import cl.emilym.sinatra.data.models.Place
 import cl.emilym.sinatra.data.repository.PlaceRepository
-import io.mockk.*
+import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import kotlin.test.BeforeTest

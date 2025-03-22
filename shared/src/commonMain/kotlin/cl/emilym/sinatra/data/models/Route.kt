@@ -1,8 +1,5 @@
 package cl.emilym.sinatra.data.models
 
-import cl.emilym.sinatra.nullIfEmpty
-import kotlinx.datetime.Instant
-
 data class Route(
     val id: RouteId,
     val code: RouteCode,

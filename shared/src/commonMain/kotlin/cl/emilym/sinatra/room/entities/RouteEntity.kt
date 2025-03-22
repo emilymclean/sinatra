@@ -18,12 +18,10 @@ import cl.emilym.sinatra.data.models.RouteVisibility
 import cl.emilym.sinatra.data.models.ServiceBikesAllowed
 import cl.emilym.sinatra.data.models.ServiceWheelchairAccessible
 import cl.emilym.sinatra.data.models.StopId
-import cl.emilym.sinatra.data.models.StopVisibility
 import cl.emilym.sinatra.room.referenced
 import cl.emilym.sinatra.room.time
 import cl.emilym.sinatra.room.toLong
 import kotlinx.datetime.Instant
-import kotlin.time.Duration.Companion.milliseconds
 
 @Entity
 data class RouteEntity(

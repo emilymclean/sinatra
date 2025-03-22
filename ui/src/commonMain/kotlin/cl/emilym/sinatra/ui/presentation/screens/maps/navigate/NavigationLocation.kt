@@ -3,14 +3,12 @@ package cl.emilym.sinatra.ui.presentation.screens.maps.navigate
 import androidx.compose.runtime.Composable
 import cl.emilym.kmp.serializable.Serializable
 import cl.emilym.sinatra.data.models.MapLocation
-import cl.emilym.sinatra.data.models.Place
 import cl.emilym.sinatra.data.models.RecentVisit
-import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.ui.localization.format
 import org.jetbrains.compose.resources.stringResource
 import sinatra.ui.generated.resources.Res
-import sinatra.ui.generated.resources.navigate_lat_lng
 import sinatra.ui.generated.resources.navigate_current_location
+import sinatra.ui.generated.resources.navigate_lat_lng
 
 sealed interface NavigationLocation: Serializable {
     interface LocatableNavigationLocation: NavigationLocation {

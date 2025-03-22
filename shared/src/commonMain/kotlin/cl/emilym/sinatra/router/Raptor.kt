@@ -1,7 +1,6 @@
 package cl.emilym.sinatra.router
 
 import cl.emilym.sinatra.data.models.ServiceId
-import cl.emilym.sinatra.data.models.StopId
 import cl.emilym.sinatra.router.data.NetworkGraph
 import cl.emilym.sinatra.router.data.NetworkGraphEdge
 

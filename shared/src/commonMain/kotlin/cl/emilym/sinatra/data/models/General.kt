@@ -1,7 +1,5 @@
 package cl.emilym.sinatra.data.models
 
-import com.google.transit.realtime.TranslatedString
-
 enum class AlertSeverity {
     INFO, WARNING, SEVERE;
 

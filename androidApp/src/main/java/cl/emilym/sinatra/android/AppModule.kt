@@ -1,8 +1,8 @@
 package cl.emilym.sinatra.android
 
+import cl.emilym.sinatra.BuildInformation
 import cl.emilym.sinatra.SharedModule
 import cl.emilym.sinatra.ui.UIModule
-import cl.emilym.sinatra.BuildInformation
 import org.koin.core.annotation.ComponentScan
 import org.koin.core.annotation.Module
 import org.koin.dsl.module

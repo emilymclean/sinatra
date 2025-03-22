@@ -1,14 +1,11 @@
 package cl.emilym.sinatra.data.client
 
 import cl.emilym.sinatra.data.models.Alert
-import cl.emilym.sinatra.data.models.AlertSeverity
 import cl.emilym.sinatra.data.models.Content
 import cl.emilym.sinatra.data.models.Pages
-import cl.emilym.sinatra.data.repository.Platform
 import cl.emilym.sinatra.data.repository.isAndroid
 import cl.emilym.sinatra.data.repository.isIos
 import cl.emilym.sinatra.network.GtfsApi
-import io.github.aakira.napier.Napier
 import org.koin.core.annotation.Factory
 
 @Factory

@@ -1,9 +1,7 @@
 package cl.emilym.sinatra.data.repository
 
-import cl.emilym.sinatra.NoApiUrlException
 import cl.emilym.sinatra.data.client.RemoteConfigClient
 import org.koin.core.annotation.Factory
-import kotlin.coroutines.cancellation.CancellationException
 
 @Factory
 class RemoteConfigRepository(

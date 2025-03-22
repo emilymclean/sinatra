@@ -1,12 +1,9 @@
 package cl.emilym.sinatra
 
-import cl.emilym.sinatra.data.models.BCP47LanguageCode
 import cl.emilym.sinatra.data.models.Degree
-import cl.emilym.sinatra.data.models.LocalizableString
 import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.data.models.MapRegion
 import cl.emilym.sinatra.data.models.Radian
-import com.google.transit.realtime.TranslatedString
 import io.github.aakira.napier.Napier
 import kotlin.math.PI
 

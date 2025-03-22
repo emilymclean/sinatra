@@ -1,7 +1,6 @@
 package cl.emilym.sinatra.domain.search
 
 import cl.emilym.sinatra.data.models.Place
-import cl.emilym.sinatra.data.persistence.RecentVisitPersistence
 import cl.emilym.sinatra.data.repository.PlaceRepository
 import org.koin.core.annotation.Factory
 
