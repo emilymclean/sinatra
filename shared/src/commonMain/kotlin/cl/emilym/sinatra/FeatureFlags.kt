@@ -9,4 +9,5 @@ object FeatureFlags {
     const val MAP_SEARCH_SCREEN_NEARBY_STOPS_SEARCH = true
     const val IOS_APPLE_MAP_LOGO_FOLLOW_BOTTOM_SHEET = false
     const val RAPTOR_ARRIVAL_BASED_ROUTING = true
+    const val RAPTOR_SWAP_BUTTON = true
 }
