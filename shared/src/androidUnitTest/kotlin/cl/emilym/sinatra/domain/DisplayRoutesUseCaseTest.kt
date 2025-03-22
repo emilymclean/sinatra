@@ -33,7 +33,6 @@ class DisplayRoutesUseCaseTest {
             Route("4", "4", "4", null, "R4", null, RouteType.LIGHT_RAIL, null, RouteVisibility(false, null))
         )
 
-        coEvery { routeRepository.ignoredRoutes() } returns ignoredRoutes
         coEvery { routeRepository.routes() } returns Cachable.live(routes)
 
         // Act
@@ -41,14 +40,12 @@ class DisplayRoutesUseCaseTest {
 
         // Assert
         assertEquals(Cachable.live(expectedFilteredSortedRoutes), result)
-        coVerify(exactly = 1) { routeRepository.ignoredRoutes() }
         coVerify(exactly = 1) { routeRepository.routes() }
     }
 
     @Test
     fun `should return empty list when routes are empty`() = runBlocking {
         // Arrange
-        coEvery { routeRepository.ignoredRoutes() } returns listOf()
         coEvery { routeRepository.routes() } returns Cachable.live(emptyList())
 
         // Act
@@ -56,14 +53,12 @@ class DisplayRoutesUseCaseTest {
 
         // Assert
         assertEquals(Cachable.live(emptyList<Route>()), result)
-        coVerify(exactly = 1) { routeRepository.ignoredRoutes() }
         coVerify(exactly = 1) { routeRepository.routes() }
     }
 
     @Test
     fun `should handle failure from routes call`() = runBlocking {
         // Arrange
-        coEvery { routeRepository.ignoredRoutes() } returns listOf()
         coEvery { routeRepository.routes() } throws Exception("Failed to fetch routes")
 
         // Act
@@ -72,7 +67,6 @@ class DisplayRoutesUseCaseTest {
         }
 
         // Assert
-        coVerify(exactly = 1) { routeRepository.ignoredRoutes() }
         coVerify(exactly = 1) { routeRepository.routes() }
     }
 }
