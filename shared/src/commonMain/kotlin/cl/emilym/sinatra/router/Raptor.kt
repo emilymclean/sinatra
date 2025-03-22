@@ -45,6 +45,7 @@ class DepartureBasedRouter(
     }
 
     override fun reconstruct(
+        anchorTime: DaySeconds,
         arrivalStopIndices: List<Pair<Int, RaptorStop>>,
         departureStopIndices: List<Pair<Int, RaptorStop>>,
         prev: Array<Int?>,
@@ -53,6 +54,7 @@ class DepartureBasedRouter(
         dayIndex: Array<Int?>
     ): RaptorJourney {
         val reconstructed = doReconstruction(
+            anchorTime,
             arrivalStopIndices,
             departureStopIndices,
             prev,
@@ -115,6 +117,7 @@ class ArrivalBasedRouter(
     ): Long = anchorTime - (edge.departureTime.toLong() + dayAdjustment)
 
     override fun reconstruct(
+        anchorTime: DaySeconds,
         arrivalStopIndices: List<Pair<Int, RaptorStop>>,
         departureStopIndices: List<Pair<Int, RaptorStop>>,
         prev: Array<Int?>,
@@ -123,6 +126,7 @@ class ArrivalBasedRouter(
         dayIndex: Array<Int?>
     ): RaptorJourney {
         val reconstructed = doReconstruction(
+            anchorTime,
             departureStopIndices,
             arrivalStopIndices,
             prev,
