@@ -12,10 +12,12 @@ import cl.emilym.sinatra.data.models.distance
 import cl.emilym.sinatra.data.repository.AlertRepository
 import cl.emilym.sinatra.data.repository.RecentVisitRepository
 import cl.emilym.sinatra.data.repository.StopRepository
+import cl.emilym.sinatra.domain.NEARBY_STOPS_LIMIT
+import cl.emilym.sinatra.domain.NEAREST_STOP_RADIUS
+import cl.emilym.sinatra.domain.NearbyStopsUseCase
 import cl.emilym.sinatra.domain.search.RouteStopSearchUseCase
 import cl.emilym.sinatra.domain.search.SearchResult
 import cl.emilym.sinatra.nullIfEmpty
-import cl.emilym.sinatra.ui.NEAREST_STOP_RADIUS
 import cl.emilym.sinatra.ui.canberraRegion
 import cl.emilym.sinatra.ui.presentation.screens.search.SearchScreenViewModel
 import cl.emilym.sinatra.ui.presentation.screens.search.searchHandler
@@ -33,8 +35,6 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import org.koin.core.annotation.Factory
 
-const val NEARBY_STOPS_LIMIT = 5
-
 sealed interface MapSearchState {
     data object Browse: MapSearchState
     data class Search(
@@ -47,7 +47,8 @@ class MapSearchViewModel(
     private val stopRepository: StopRepository,
     private val routeStopSearchUseCase: RouteStopSearchUseCase,
     private val recentVisitRepository: RecentVisitRepository,
-    private val alertRepository: AlertRepository
+    private val alertRepository: AlertRepository,
+    private val nearbyStopsUseCase: NearbyStopsUseCase
 ): SinatraScreenModel, SearchScreenViewModel {
 
     private val _state = MutableStateFlow(State.BROWSE)
@@ -77,11 +78,7 @@ class MapSearchViewModel(
     override val nearbyStops = stops.combine(lastLocation) { stops, lastLocation ->
         if (stops !is RequestState.Success || lastLocation == null) return@combine null
         val stops = stops.value.nullIfEmpty() ?: return@combine null
-        stops.map { StopWithDistance(it, distance(lastLocation, it.location)) }
-            .filter { it.distance < NEAREST_STOP_RADIUS && it.stop.parentStation == null }
-            .nullIfEmpty()
-            ?.sortedBy { it.distance }
-            ?.take(NEARBY_STOPS_LIMIT)
+        with(nearbyStopsUseCase) { stops.filter(lastLocation).nullIfEmpty() }
     }.state(null)
 
     private val _recentVisits = createRequestStateFlowFlow<List<RecentVisit>>()

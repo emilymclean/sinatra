@@ -12,7 +12,7 @@ private class FeatureFlagDelegate(
     private val remoteConfigRepository by lazy { KoinPlatform.getKoin().get<RemoteConfigRepository>() }
 
     operator fun getValue(thisRef: Any?, property: KProperty<*>): Boolean {
-        return remoteConfigRepository.featureImmediate(name ?: property.name, default)
+        return remoteConfigRepository.featureImmediate(name ?: property.name.lowercase(), default)
     }
 
 }

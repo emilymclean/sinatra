@@ -327,7 +327,7 @@ class StopDetailScreen(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         ErrorWidget(
-                            upcoming.exception,
+                            (upcoming.exception as? Exception) ?: Exception(upcoming.exception),
                             retry = { viewModel.retryUpcoming(stopId) }
                         )
                     }

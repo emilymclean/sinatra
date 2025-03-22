@@ -56,8 +56,8 @@ import cl.emilym.sinatra.data.repository.FavouriteRepository
 import cl.emilym.sinatra.data.repository.RecentVisitRepository
 import cl.emilym.sinatra.domain.CurrentTripForRouteUseCase
 import cl.emilym.sinatra.domain.CurrentTripInformation
+import cl.emilym.sinatra.domain.NEAREST_STOP_RADIUS
 import cl.emilym.sinatra.nullIfEmpty
-import cl.emilym.sinatra.ui.NEAREST_STOP_RADIUS
 import cl.emilym.sinatra.ui.asInstants
 import cl.emilym.sinatra.ui.color
 import cl.emilym.sinatra.ui.current

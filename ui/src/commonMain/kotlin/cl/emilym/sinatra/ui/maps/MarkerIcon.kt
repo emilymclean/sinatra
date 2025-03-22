@@ -5,6 +5,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import cl.emilym.sinatra.data.models.Place
 import cl.emilym.sinatra.data.models.Route
 import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.ui.color
@@ -36,6 +37,11 @@ expect fun circularIcon(
 
 @Composable
 fun stopMarkerIcon(stop: Stop? = null): MarkerIcon? {
+    return spotMarkerIcon(MaterialTheme.colorScheme.primary)
+}
+
+@Composable
+fun placeMarkerIcon(place: Place? = null): MarkerIcon? {
     return spotMarkerIcon(MaterialTheme.colorScheme.primary)
 }
 
