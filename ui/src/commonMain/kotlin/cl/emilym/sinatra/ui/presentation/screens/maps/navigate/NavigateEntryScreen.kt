@@ -18,6 +18,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LocalContentColor
@@ -36,6 +37,7 @@ import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import cafe.adriel.voyager.core.annotation.ExperimentalVoyagerApi
 import cafe.adriel.voyager.core.lifecycle.LifecycleEffectOnce
 import cafe.adriel.voyager.core.screen.ScreenKey
@@ -192,6 +194,11 @@ class NavigateEntryScreen(
         return items
     }
 
+    @Composable
+    override fun Content() {
+        SelectTimeDialog()
+    }
+
     @OptIn(ExperimentalVoyagerApi::class)
     @Composable
     override fun BottomSheetContent() {
@@ -346,7 +353,9 @@ class NavigateEntryScreen(
                                 val anchorTime by viewModel.anchorTime.collectAsStateWithLifecycle()
                                 Chip(
                                     selected = false,
-                                    onToggle = {  },
+                                    onToggle = {
+                                        viewModel.timeDialogVisible.value = true
+                                    },
                                     contentDescription = null
                                 ) {
                                     Row(
@@ -544,6 +553,20 @@ class NavigateEntryScreen(
                 else -> {}
             }
         }
+    }
+
+    @Composable
+    fun SelectTimeDialog() {
+        val viewModel = koinScreenModel<NavigationEntryViewModel>()
+        val timeDialogVisible by viewModel.timeDialogVisible.collectAsStateWithLifecycle()
+        if (!timeDialogVisible) return
+
+        val anchorTime by viewModel.anchorTime.collectAsStateWithLifecycle()
+        TimeSelectionDialog(
+            anchorTime,
+            onTimeSelected = { viewModel.anchorTime.value = it },
+            onDismissRequest = { viewModel.timeDialogVisible.value = false }
+        )
     }
 
 }

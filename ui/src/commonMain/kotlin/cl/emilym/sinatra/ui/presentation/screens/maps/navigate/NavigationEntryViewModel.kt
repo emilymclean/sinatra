@@ -201,6 +201,8 @@ class NavigationEntryViewModel(
         }
     }.state(NavigationEntryState.JourneySelection(NavigationState.GraphLoading))
 
+    val timeDialogVisible = MutableStateFlow<Boolean>(false)
+
     // Search
     override val query = MutableStateFlow<String?>(null)
 

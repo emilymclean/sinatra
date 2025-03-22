@@ -65,6 +65,12 @@
     <string name="navigate_chip_anchor_depart">Depart at %1$s</string>
     <string name="navigate_chip_anchor_arrive">Arrive by %1$s</string>
 
+    <string name="time_select_tab_depart">Leave</string>
+    <string name="time_select_tab_arrive">Arrive</string>
+    <string name="time_select_button_now">Now</string>
+    <string name="time_select_button_ok">Confirm</string>
+    <string name="time_select_button_cancel">Cancel</string>
+
     <string name="journey_card_period">%1$s — %2$s</string>
 
     <string name="map_search_nearby_stops">Nearby Stops</string>
