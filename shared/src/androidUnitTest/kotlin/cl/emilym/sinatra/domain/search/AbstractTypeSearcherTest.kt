@@ -1,7 +1,5 @@
 package cl.emilym.sinatra.domain.search
 
-import io.mockk.every
-import io.mockk.mockk
 import kotlin.reflect.full.functions
 import kotlin.test.Test
 import kotlin.test.assertEquals

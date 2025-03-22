@@ -1,6 +1,5 @@
 package cl.emilym.sinatra.ui.widgets
 
-import androidx.compose.material.IconButton
 import androidx.compose.runtime.Composable
 
 @Composable

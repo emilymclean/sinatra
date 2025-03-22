@@ -20,7 +20,6 @@ import cl.emilym.sinatra.data.repository.TransportMetadataRepository
 import cl.emilym.sinatra.e
 import cl.emilym.sinatra.router.ArrivalBasedRouter
 import cl.emilym.sinatra.router.DepartureBasedRouter
-import cl.emilym.sinatra.router.Raptor
 import cl.emilym.sinatra.router.RaptorConfig
 import cl.emilym.sinatra.router.RaptorJourney
 import cl.emilym.sinatra.router.RaptorJourneyConnection

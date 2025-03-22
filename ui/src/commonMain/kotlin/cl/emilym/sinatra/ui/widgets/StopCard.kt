@@ -20,9 +20,9 @@ import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.data.models.StopAccessibility
 import cl.emilym.sinatra.data.models.StopWheelchairAccessibility
 import cl.emilym.sinatra.data.models.TimetableStationTime
-import cl.emilym.sinatra.ui.text
 import cl.emilym.sinatra.ui.localization.format
 import cl.emilym.sinatra.ui.localization.isInPast
+import cl.emilym.sinatra.ui.text
 import org.jetbrains.compose.resources.stringResource
 import sinatra.ui.generated.resources.Res
 import sinatra.ui.generated.resources.estimated_arrival

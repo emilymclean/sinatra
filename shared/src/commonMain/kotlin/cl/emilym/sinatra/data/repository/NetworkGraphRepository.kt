@@ -10,9 +10,7 @@ import cl.emilym.sinatra.data.models.map
 import cl.emilym.sinatra.data.persistence.JourneyConfigPersistence
 import cl.emilym.sinatra.data.persistence.NetworkGraphPersistence
 import cl.emilym.sinatra.router.data.NetworkGraph
-import io.ktor.client.plugins.ResponseException
 import kotlinx.datetime.Clock
-import kotlinx.io.IOException
 import org.koin.core.annotation.Factory
 import pbandk.decodeFromByteArray
 

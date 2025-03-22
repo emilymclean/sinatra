@@ -1,14 +1,8 @@
 package cl.emilym.sinatra.ui
 
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.dp
 import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.data.models.MapRegion
-import kotlinx.datetime.LocalDateTime
-import kotlinx.datetime.LocalTime
-import kotlinx.datetime.format.DayOfWeekNames
-import kotlinx.datetime.format.Padding
-import kotlinx.datetime.format.char
 
 val minimumTouchTarget = 48.dp
 

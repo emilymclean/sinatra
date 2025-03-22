@@ -1,15 +1,12 @@
 package cl.emilym.sinatra.domain.search
 
-import cl.emilym.sinatra.data.models.Cachable
 import cl.emilym.sinatra.data.models.ColorPair
 import cl.emilym.sinatra.data.models.OnColor
-import cl.emilym.sinatra.data.models.Place
 import cl.emilym.sinatra.data.models.Route
 import cl.emilym.sinatra.data.models.RouteType
 import cl.emilym.sinatra.data.models.RouteVisibility
 import cl.emilym.sinatra.data.repository.RouteRepository
-import io.mockk.*
-import kotlinx.coroutines.runBlocking
+import io.mockk.mockk
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals

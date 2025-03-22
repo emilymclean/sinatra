@@ -1,16 +1,11 @@
 package cl.emilym.sinatra.ui.maps
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import cl.emilym.sinatra.data.models.Route
 import cl.emilym.sinatra.ui.minimumTouchTarget
 import cl.emilym.sinatra.ui.widgets.toFloatPx
 import cl.emilym.sinatra.ui.widgets.toIntPx
@@ -23,7 +18,6 @@ import platform.MapKit.MKAnnotationProtocol
 import platform.MapKit.MKAnnotationView
 import platform.UIKit.UIImage
 import platform.UIKit.accessibilityLabel
-import platform.darwin.NSObject
 import sinatra.ui.generated.resources.Res
 
 actual interface MarkerIcon {

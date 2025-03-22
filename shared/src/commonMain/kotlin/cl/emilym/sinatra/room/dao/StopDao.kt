@@ -4,7 +4,6 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Transaction
-import cl.emilym.sinatra.data.models.StopWithChildren
 import cl.emilym.sinatra.room.entities.StopEntity
 import cl.emilym.sinatra.room.entities.StopEntityWithChildren
 import kotlinx.coroutines.flow.Flow

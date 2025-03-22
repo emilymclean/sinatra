@@ -2,7 +2,6 @@ package cl.emilym.sinatra.data.persistence
 
 import cl.emilym.sinatra.data.models.JourneySearchConfig
 import cl.emilym.sinatra.data.models.JourneySearchOption
-import cl.emilym.sinatra.data.persistence.NetworkGraphPersistence.Companion.NETWORK_GRAPH_CACHE_FILENAME
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.withContext

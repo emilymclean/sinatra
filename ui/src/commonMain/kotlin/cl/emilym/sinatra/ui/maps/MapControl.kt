@@ -1,7 +1,6 @@
 package cl.emilym.sinatra.ui.maps
 
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -11,7 +10,6 @@ import cl.emilym.sinatra.data.models.ScreenLocation
 import cl.emilym.sinatra.data.models.ScreenRegion
 import cl.emilym.sinatra.data.models.ScreenRegionSizePx
 import cl.emilym.sinatra.data.models.Zoom
-import cl.emilym.sinatra.data.repository.isIos
 import io.github.aakira.napier.Napier
 import kotlin.math.max
 

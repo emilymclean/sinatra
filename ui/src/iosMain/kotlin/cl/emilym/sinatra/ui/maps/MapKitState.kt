@@ -32,7 +32,6 @@ import platform.MapKit.MKPolyline
 import platform.MapKit.addOverlay
 import platform.MapKit.removeOverlay
 import platform.UIKit.UIColor
-import platform.UIKit.UIEdgeInsetsMake
 
 
 data class CameraDescription(

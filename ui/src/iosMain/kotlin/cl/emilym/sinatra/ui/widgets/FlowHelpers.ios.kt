@@ -3,7 +3,6 @@ package cl.emilym.sinatra.ui.widgets
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
-import cl.emilym.sinatra.ui.widgets.collectAsStateWithLifecycle
 import kotlinx.coroutines.flow.StateFlow
 import kotlin.coroutines.CoroutineContext
 

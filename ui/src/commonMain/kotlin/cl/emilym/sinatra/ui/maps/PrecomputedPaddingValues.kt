@@ -8,7 +8,6 @@ import cl.emilym.sinatra.data.models.Pixel
 import cl.emilym.sinatra.data.models.ScreenLocation
 import cl.emilym.sinatra.data.models.ScreenRegion
 import cl.emilym.sinatra.ui.widgets.toFloatPx
-import cl.emilym.sinatra.ui.widgets.toIntPx
 
 data class PrecomputedPaddingValuesDp(
     val top: DensityPixel,

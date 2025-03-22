@@ -2,13 +2,10 @@ package cl.emilym.sinatra.ui.widgets
 
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.staticCompositionLocalOf
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.Dp
-import cl.emilym.sinatra.data.models.ScreenRegionSizeDp
 import cl.emilym.sinatra.data.models.ScreenRegionSizePx
 
 val LocalViewportSize = staticCompositionLocalOf<ScreenRegionSizePx> { error("No local viewport height provided") }

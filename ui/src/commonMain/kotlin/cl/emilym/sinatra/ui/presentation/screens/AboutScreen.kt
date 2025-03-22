@@ -19,9 +19,9 @@ import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.ScreenKey
 import cl.emilym.compose.requeststate.RequestState
 import cl.emilym.compose.units.rdp
+import cl.emilym.sinatra.BuildInformation
 import cl.emilym.sinatra.data.models.Content
 import cl.emilym.sinatra.data.repository.ContentRepository
-import cl.emilym.sinatra.BuildInformation
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.getKoin
