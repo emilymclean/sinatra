@@ -15,6 +15,9 @@
 
     <string name="stop_detail_nearest_stop">Nearest Stop</string>
     <string name="stop_detail_distance">%1$s away</string>
+
+    <string name="place_detail_navigate">Navigate to Place</string>
+
     <plurals name="distance_kilometer">
         <item quantity="one">%1$d kilometer</item>
         <item quantity="other">%1$d kilometers</item>
@@ -83,6 +86,7 @@
 
     <string name="route_not_found">The requested route has no stops.</string>
     <string name="stop_not_found">The requested stop could not be found.</string>
+    <string name="place_not_found">The requested place could not be found.</string>
     <string name="trip_not_found">There are currently no trips for the requested route.</string>
 
     <string name="stops_title">Stops</string>

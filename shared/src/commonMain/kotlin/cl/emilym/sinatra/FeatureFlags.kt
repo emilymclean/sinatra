@@ -10,4 +10,5 @@ object FeatureFlags {
     const val IOS_APPLE_MAP_LOGO_FOLLOW_BOTTOM_SHEET = false
     const val RAPTOR_ARRIVAL_BASED_ROUTING = true
     const val RAPTOR_SWAP_BUTTON = true
+    const val PLACE_DETAIL_ENABLED = true
 }
