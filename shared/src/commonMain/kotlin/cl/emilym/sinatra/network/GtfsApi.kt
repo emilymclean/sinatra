@@ -121,16 +121,22 @@ interface GtfsApi {
     @GET("v1/content.ios.pb.sha")
     suspend fun contentIosDigest(): String
 
-    @GET("v1/network_graph.eng")
+    @GET("v1/network-graph.eng")
     suspend fun networkGraph(): ByteArray
 
-    @GET("v1/network_graph.eng.sha")
+    @GET("v1/network-graph.eng.sha")
     suspend fun networkGraphDigest(): String
 
-    @GET("journey-config.pb")
+    @GET("v1/network-graph-reverse.eng")
+    suspend fun reverseNetworkGraph(): ByteArray
+
+    @GET("v1/network-graph-reverse.eng.sha")
+    suspend fun reverseNetworkGraphDigest(): String
+
+    @GET("v1/journey-config.pb")
     suspend fun journeyConfig(): ByteArray
 
-    @GET("journey-config.pb.sha")
+    @GET("v1/journey-config.pb.sha")
     suspend fun journeyConfigDigest(): String
 
     @GET

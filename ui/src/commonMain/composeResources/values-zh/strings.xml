@@ -73,7 +73,27 @@
   <string name="navigate_travel_journey_arrive">于%2$s抵达 %1$s</string>
       
   <string name="navigate_travel_journey_depart">从 %1$s 出发</string>
-      
+
+  <string name="navigate_chip_wheelchair_accessible">仅显示无障碍行程</string>
+
+  <string name="navigate_chip_bikes_allowed">仅显示可携带自行车的行程</string>
+
+  <string name="navigate_chip_anchor_now">立即出发</string>
+
+  <string name="navigate_chip_anchor_depart">%1$s出发</string>
+
+  <string name="navigate_chip_anchor_arrive">%1$s前到达</string>
+
+  <string name="time_select_tab_depart">出发</string>
+
+  <string name="time_select_tab_arrive">到达</string>
+
+  <string name="time_select_button_now">现在</string>
+
+  <string name="time_select_button_ok">确定</string>
+
+  <string name="time_select_button_cancel">取消</string>
+
   <string name="map_search_nearby_stops">附近站点</string>
       
   <string name="search_recently_viewed">最近浏览</string>

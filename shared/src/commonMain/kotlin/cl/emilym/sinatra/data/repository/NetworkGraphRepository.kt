@@ -27,11 +27,33 @@ class NetworkGraphCacheWorker(
     override val cacheCategory = CacheCategory.NETWORK_GRAPH
 
     override suspend fun saveToPersistence(data: ByteArray, resource: ResourceKey) =
-        networkGraphPersistence.save(data)
-    override suspend fun getFromPersistence(resource: ResourceKey) = networkGraphPersistence.get()
+        networkGraphPersistence.save(data, reverse = false)
+    override suspend fun getFromPersistence(resource: ResourceKey) = networkGraphPersistence.get(reverse = false)
 
     suspend fun get(): Cachable<NetworkGraph> {
         return run(networkGraphClient.networkGraphEndpointDigestPair, "network-graph-byte").map {
+            NetworkGraph.byteFormatForByteArray(it)
+        }
+    }
+
+}
+
+@Factory
+class NetworkGraphReverseCacheWorker(
+    private val networkGraphPersistence: NetworkGraphPersistence,
+    private val networkGraphClient: NetworkGraphClient,
+    override val cacheWorkerDependencies: CacheWorkerDependencies,
+    override val clock: Clock,
+): CacheWorker<ByteArray>() {
+
+    override val cacheCategory = CacheCategory.NETWORK_GRAPH
+
+    override suspend fun saveToPersistence(data: ByteArray, resource: ResourceKey) =
+        networkGraphPersistence.save(data, reverse = true)
+    override suspend fun getFromPersistence(resource: ResourceKey) = networkGraphPersistence.get(reverse = true)
+
+    suspend fun get(): Cachable<NetworkGraph> {
+        return run(networkGraphClient.networkGraphReverseEndpointDigestPair, "network-graph-reverse-byte").map {
             NetworkGraph.byteFormatForByteArray(it)
         }
     }
@@ -65,11 +87,15 @@ class JourneyConfigCacheWorker(
 @Factory
 class NetworkGraphRepository(
     private val networkGraphCacheWorker: NetworkGraphCacheWorker,
+    private val networkGraphReverseCacheWorker: NetworkGraphReverseCacheWorker,
     private val journeyConfigCacheWorker: JourneyConfigCacheWorker,
 ) {
 
-    suspend fun networkGraph(): Cachable<NetworkGraph> {
-        return networkGraphCacheWorker.get()
+    suspend fun networkGraph(reverse: Boolean = false): Cachable<NetworkGraph> {
+        return when {
+            reverse -> networkGraphReverseCacheWorker.get()
+            else -> networkGraphCacheWorker.get()
+        }
     }
 
     suspend fun config(): Cachable<JourneySearchConfig> {

@@ -31,6 +31,7 @@ import sinatra.ui.generated.resources.star_outline
 import sinatra.ui.generated.resources.tram
 import sinatra.ui.generated.resources.walk
 import sinatra.ui.generated.resources.warning
+import sinatra.ui.generated.resources.clock
 
 @Composable
 fun AccessibleIcon(
@@ -343,6 +344,19 @@ fun JourneyStartIcon(
 ) {
     Icon(
         painterResource(Res.drawable.journey_start),
+        contentDescription = null,
+        modifier = modifier,
+        tint = tint
+    )
+}
+
+@Composable
+fun ClockIcon(
+    modifier: Modifier = Modifier,
+    tint: Color = LocalContentColor.current
+) {
+    Icon(
+        painterResource(Res.drawable.clock),
         contentDescription = null,
         modifier = modifier,
         tint = tint

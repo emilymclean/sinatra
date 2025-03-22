@@ -121,10 +121,14 @@ val Duration.text
     get() = text(false)
 
 @Composable
-fun Duration.text(short: Boolean) = when {
-    inWholeSeconds < 60 -> pluralStringResource(if (short) Res.plurals.time_second_short else Res.plurals.time_second, inWholeSeconds.toInt(), inWholeSeconds)
-    inWholeMinutes < 60 -> pluralStringResource(if (short) Res.plurals.time_minute_short else Res.plurals.time_minute, inWholeMinutes.toInt(), inWholeMinutes)
-    else -> pluralStringResource(Res.plurals.time_hour, inWholeHours.toInt(), inWholeHours)
+fun Duration.text(short: Boolean): String {
+    val duration = if (isNegative()) -this else this
+
+    return when {
+        duration.inWholeSeconds < 60 -> pluralStringResource(if (short) Res.plurals.time_second_short else Res.plurals.time_second, inWholeSeconds.toInt(), inWholeSeconds)
+        duration.inWholeMinutes < 60 -> pluralStringResource(if (short) Res.plurals.time_minute_short else Res.plurals.time_minute, inWholeMinutes.toInt(), inWholeMinutes)
+        else -> pluralStringResource(Res.plurals.time_hour, inWholeHours.toInt(), inWholeHours)
+    }
 }
 
 val LocalizableString.text: String

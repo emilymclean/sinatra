@@ -13,10 +13,10 @@ import cl.emilym.sinatra.data.repository.NetworkGraphRepository
 import cl.emilym.sinatra.data.repository.RecentVisitRepository
 import cl.emilym.sinatra.data.repository.StopRepository
 import cl.emilym.sinatra.domain.CalculateJourneyUseCase
+import cl.emilym.sinatra.domain.JourneyCalculationTime
 import cl.emilym.sinatra.domain.JourneyLocation
 import cl.emilym.sinatra.domain.search.RouteStopSearchUseCase
 import cl.emilym.sinatra.domain.search.SearchResult
-import cl.emilym.sinatra.e
 import cl.emilym.sinatra.nullIfEmpty
 import cl.emilym.sinatra.ui.NEAREST_STOP_RADIUS
 import cl.emilym.sinatra.ui.presentation.screens.maps.search.NEARBY_STOPS_LIMIT
@@ -25,19 +25,25 @@ import cl.emilym.sinatra.ui.presentation.screens.search.searchHandler
 import cl.emilym.sinatra.ui.widgets.SinatraScreenModel
 import cl.emilym.sinatra.ui.widgets.createRequestStateFlowFlow
 import cl.emilym.sinatra.ui.widgets.handleFlowProperly
-import io.github.aakira.napier.Napier
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.consumeAsFlow
+import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 import org.koin.core.annotation.Factory
 
 private sealed interface State {
@@ -62,46 +68,143 @@ sealed interface NavigationEntryState {
     ): NavigationEntryState
 }
 
+sealed interface NavigationAnchorTime {
+    data object Now: NavigationAnchorTime
+    data class DepartureTime(
+        val time: Instant
+    ): NavigationAnchorTime
+    data class ArrivalTime(
+        val time: Instant
+    ): NavigationAnchorTime
+}
+
+private data class NavigationParameters(
+    val destinationLocation: JourneyLocation?,
+    val originLocation: JourneyLocation?,
+    val anchorTime: NavigationAnchorTime,
+    val wheelchairAccessible: Boolean,
+    val bikesAllowed: Boolean
+)
+
 @Factory
 class NavigationEntryViewModel(
     private val calculateJourneyUseCase: CalculateJourneyUseCase,
     private val routeStopSearchUseCase: RouteStopSearchUseCase,
     private val networkGraphRepository: NetworkGraphRepository,
     private val recentVisitRepository: RecentVisitRepository,
-    private val stopRepository: StopRepository
+    private val stopRepository: StopRepository,
+    private val clock: Clock
 ): SinatraScreenModel, SearchScreenViewModel {
 
-    override val query = MutableStateFlow<String?>(null)
-
-    private var loadedGraph: Boolean = false
-        set(value) {
-            field = value
-            if (value) calculate()
-        }
-    private var calculationJob: Job? = null
-
-    private var currentLocation: MapLocation? = null
-    private val lastLocation = MutableStateFlow<MapLocation?>(null)
-
-    private var destinationCurrentLocation = false
-    private var _destination: MapLocation? = null
-        set(value) {
-            field = value
-            destinationLocation.value = value
-            if (value != null) calculate()
-        }
-    private var originCurrentLocation = false
-    private var _origin: MapLocation? = null
-        set(value) {
-            field = value
-            originLocation.value = value
-            if (value != null) calculate()
-        }
-
+    val currentLocation = MutableStateFlow<MapLocation?>(null)
     val destination = MutableStateFlow<NavigationLocation?>(null)
     val origin = MutableStateFlow<NavigationLocation?>(null)
-    val destinationLocation = MutableStateFlow<MapLocation?>(null)
-    val originLocation = MutableStateFlow<MapLocation?>(null)
+    val anchorTime = MutableStateFlow<NavigationAnchorTime>(NavigationAnchorTime.Now)
+    val wheelchairAccessible = MutableStateFlow(false)
+    val bikesAllowed = MutableStateFlow(false)
+
+    val destinationLocation = destination.flatMapLatest {
+        it.toJourneyLocation()
+    }.state(null)
+    val originLocation = origin.flatMapLatest {
+        it.toJourneyLocation()
+    }.state(null)
+    private val _state = MutableStateFlow<State>(State.JourneySelection)
+    private val retryGraphLoad = Channel<Unit>(Channel.CONFLATED)
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private val navigationState: StateFlow<NavigationState> = anchorTime.flatMapLatest {
+        merge(
+            flowOf(Unit),
+            retryGraphLoad.consumeAsFlow()
+        ).flatMapLatest { _ ->
+            flow {
+                emit(NavigationState.GraphLoading)
+                try {
+                    when (it) {
+                        is NavigationAnchorTime.ArrivalTime -> networkGraphRepository.networkGraph(true)
+                        else -> networkGraphRepository.networkGraph(false)
+                    }
+                    emit(NavigationState.GraphReady)
+                    emitAll(
+                        combine(
+                            destinationLocation,
+                            originLocation,
+                            anchorTime,
+                            wheelchairAccessible,
+                            bikesAllowed
+                        ) { destinationLocation, originLocation, anchorTime, wheelchairAccessible, bikesAllowed ->
+                            NavigationParameters(
+                                destinationLocation,
+                                originLocation,
+                                anchorTime,
+                                wheelchairAccessible,
+                                bikesAllowed
+                            )
+                        }.flatMapLatest {
+                            flow {
+                                if (it.destinationLocation == null || it.originLocation == null) return@flow
+                                emit(NavigationState.JourneyCalculating)
+                                try {
+                                    emit(NavigationState.JourneysFound(
+                                        calculateJourneyUseCase(
+                                            it.originLocation,
+                                            it.destinationLocation,
+                                            when (it.anchorTime) {
+                                                is NavigationAnchorTime.Now ->
+                                                    JourneyCalculationTime.DepartureTime(clock.now())
+                                                is NavigationAnchorTime.DepartureTime ->
+                                                    JourneyCalculationTime.DepartureTime(it.anchorTime.time)
+                                                is NavigationAnchorTime.ArrivalTime ->
+                                                    JourneyCalculationTime.ArrivalTime(it.anchorTime.time)
+                                            },
+                                            it.wheelchairAccessible,
+                                            it.bikesAllowed
+                                        )
+                                    ))
+                                } catch(e: Exception) {
+                                    emit(NavigationState.JourneyFailed(e))
+                                }
+                            }
+                        }
+                    )
+                } catch(e: Exception) {
+                    emit(NavigationState.GraphFailed(e))
+                }
+            }
+        }
+    }.stateIn(screenModelScope, SharingStarted.Lazily, NavigationState.GraphLoading)
+
+    val journeyCount = navigationState.map {
+        when (it) {
+            is NavigationState.JourneysFound -> it.journeys.size
+            else -> 0
+        }
+    }.state(0)
+
+    val state = _state.flatMapLatest {
+        when (it) {
+            is State.JourneySelection -> navigationState.map {
+                if (it is NavigationState.JourneysFound && it.journeys.size == 1) {
+                    NavigationEntryState.JourneySelected(it.journeys.first())
+                } else {
+                    NavigationEntryState.JourneySelection(it)
+                }
+            }
+            is State.JourneySelected -> flowOf(NavigationEntryState.JourneySelected(it.journey))
+            is State.Search -> searchHandler(routeStopSearchUseCase) { NavigationEntryState.Search(
+                when (it) {
+                    is RequestState.Success -> RequestState.Success(it.value.filter { it !is SearchResult.RouteResult })
+                    else -> it
+                }
+            ) }
+        }
+    }.state(NavigationEntryState.JourneySelection(NavigationState.GraphLoading))
+
+    val timeDialogVisible = MutableStateFlow<Boolean>(false)
+
+    // Search
+    override val query = MutableStateFlow<String?>(null)
 
     private val stops = MutableStateFlow<RequestState<List<Stop>>>(RequestState.Initial())
     private val _recentVisits = createRequestStateFlowFlow<List<RecentVisit>>()
@@ -112,10 +215,7 @@ class NavigationEntryViewModel(
         }
     }.state(RequestState.Initial())
 
-    private val navigationState = MutableStateFlow<NavigationState>(NavigationState.GraphLoading)
-    private val _state = MutableStateFlow<State>(State.JourneySelection)
-
-    override val nearbyStops: StateFlow<List<StopWithDistance>?> = stops.combine(lastLocation) { stops, lastLocation ->
+    override val nearbyStops: StateFlow<List<StopWithDistance>?> = stops.combine(currentLocation) { stops, lastLocation ->
         if (stops !is RequestState.Success || lastLocation == null) return@combine null
         val stops = stops.value.nullIfEmpty() ?: return@combine null
         stops.map { StopWithDistance(it, distance(lastLocation, it.location)) }
@@ -124,19 +224,6 @@ class NavigationEntryViewModel(
             ?.sortedBy { it.distance }
             ?.take(NEARBY_STOPS_LIMIT)
     }.state(null)
-
-    val state = _state.flatMapLatest {
-        when (it) {
-            is State.JourneySelection -> navigationState.map { NavigationEntryState.JourneySelection(it) }
-            is State.JourneySelected -> flowOf(NavigationEntryState.JourneySelected(it.journey))
-            is State.Search -> searchHandler(routeStopSearchUseCase) { NavigationEntryState.Search(
-                when (it) {
-                    is RequestState.Success -> RequestState.Success(it.value.filter { it !is SearchResult.RouteResult })
-                    else -> it
-                }
-            ) }
-        }
-    }.state(NavigationEntryState.JourneySelection(NavigationState.GraphLoading))
 
     override val results = state.mapLatest {
         when (it) {
@@ -153,18 +240,22 @@ class NavigationEntryViewModel(
         setOrigin(origin)
     }
 
+    private fun NavigationLocation?.toJourneyLocation(): Flow<JourneyLocation?> {
+        return when (this) {
+            is NavigationLocation.Stop -> flowOf(JourneyLocation(location, true))
+            is NavigationLocation.LocatableNavigationLocation -> flowOf(
+                JourneyLocation(location, false)
+            )
+            is NavigationLocation.CurrentLocation -> currentLocation.mapLatest {
+                it?.let { JourneyLocation(it, false) }
+            }
+            else -> flowOf(null)
+        }
+    }
+
     fun retryLoadingGraph() {
         screenModelScope.launch {
-            navigationState.value = NavigationState.GraphLoading
-            try {
-                withContext(Dispatchers.IO) {
-                    networkGraphRepository.networkGraph()
-                }
-                navigationState.value = NavigationState.GraphReady
-                loadedGraph = true
-            } catch (e: Exception) {
-                navigationState.value = NavigationState.GraphFailed(e)
-            }
+            retryGraphLoad.send(Unit)
         }
     }
 
@@ -186,21 +277,19 @@ class NavigationEntryViewModel(
 
     private fun setDestination(navigationLocation: NavigationLocation) {
         destination.value = navigationLocation
-        unpackLocation(
-            navigationLocation
-        ) { location, current ->
-            _destination = location
-            destinationCurrentLocation = current
+        navigationLocation.recentVisit?.let {
+            screenModelScope.launch {
+                recentVisitRepository.add(it)
+            }
         }
     }
 
     private fun setOrigin(navigationLocation: NavigationLocation) {
         origin.value = navigationLocation
-        unpackLocation(
-            navigationLocation
-        ) { location, current ->
-            _origin = location
-            originCurrentLocation = current
+        navigationLocation.recentVisit?.let {
+            screenModelScope.launch {
+                recentVisitRepository.add(it)
+            }
         }
     }
 
@@ -215,7 +304,6 @@ class NavigationEntryViewModel(
     }
 
     private fun onOpenSearch() {
-        calculationJob?.cancel()
         query.value = null
     }
 
@@ -230,7 +318,6 @@ class NavigationEntryViewModel(
 
     fun openJourneyCalculation() {
         _state.value = State.JourneySelection
-        calculate()
     }
 
     fun back(): Boolean {
@@ -253,66 +340,8 @@ class NavigationEntryViewModel(
     }
 
     fun updateCurrentLocation(location: MapLocation) {
-        lastLocation.value = location
-        val currentLocation = currentLocation
-//        if (currentLocation != null && distance(location, currentLocation) < 1.0) return
-        this.currentLocation = location
-        if (originCurrentLocation && _origin == null) _origin = location
-        if (destinationCurrentLocation && _destination == null) _destination = location
-    }
-
-    private fun unpackLocation(
-        navigationLocation: NavigationLocation,
-        save: (MapLocation?, Boolean) -> Unit
-    ) {
-        when (navigationLocation) {
-            is NavigationLocation.LocatableNavigationLocation -> {
-                save(navigationLocation.location, false)
-            }
-            is NavigationLocation.CurrentLocation -> {
-                save(currentLocation, true)
-            }
-            is NavigationLocation.None -> {
-                save(null, false)
-            }
-        }
-        navigationLocation.recentVisit?.let {
-            screenModelScope.launch {
-                recentVisitRepository.add(it)
-            }
-        }
-    }
-
-    private fun calculate() {
-        calculationJob?.cancel()
-        if (!loadedGraph) return
-        val destination = _destination ?: return
-        val origin = _origin ?: return
-
-        screenModelScope.launch {
-            navigationState.value = NavigationState.JourneyCalculating
-            try {
-                val result = calculateJourneyUseCase(
-                    JourneyLocation(
-                        origin,
-                        exact = this@NavigationEntryViewModel.origin.value is NavigationLocation.Stop
-                    ),
-                    JourneyLocation(
-                        destination,
-                        exact = this@NavigationEntryViewModel.destination.value is NavigationLocation.Stop
-                    )
-                )
-                navigationState.value = NavigationState.JourneysFound(
-                    result
-                )
-                if (result.size == 1) {
-                    _state.value = State.JourneySelected(result.first())
-                }
-            } catch (e: Exception) {
-                Napier.e(e)
-                navigationState.value = NavigationState.JourneyFailed(e)
-            }
-        }
+        if (currentLocation.value != null) return
+        this.currentLocation.value = location
     }
 
 }
