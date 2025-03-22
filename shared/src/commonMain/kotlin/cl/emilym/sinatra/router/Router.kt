@@ -218,7 +218,7 @@ abstract class Router {
         while (cursor !in endStopIndicies.map { it.first }) {
             val edge = prevEdge[cursor]!!
             val stopId = graph.mappings.stopIds[getNode(edge.connectedNodeIndex).stopIndex.toInt()]
-            val time = calculateAnchorTime(anchorTime, dist[cursor])
+            val time = calculateAnchorTime(anchorTime, dist[cursor]) - if (edge.departureTime >= 86400u) 86400 else 0
 
             stops.add(stopId)
             edges.add(edge)
