@@ -20,6 +20,7 @@ import cl.emilym.compose.units.px
 import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.data.models.Alert
 import cl.emilym.sinatra.data.models.AlertSeverity
+import cl.emilym.sinatra.lib.capitalize
 import cl.emilym.sinatra.ui.text
 import org.jetbrains.compose.resources.stringResource
 import sinatra.ui.generated.resources.Res

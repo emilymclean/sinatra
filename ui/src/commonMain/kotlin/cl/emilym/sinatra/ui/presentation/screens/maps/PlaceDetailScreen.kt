@@ -62,6 +62,7 @@ import cl.emilym.sinatra.ui.widgets.SinatraScreenModel
 import cl.emilym.sinatra.ui.widgets.StopCard
 import cl.emilym.sinatra.ui.widgets.Subheading
 import cl.emilym.sinatra.ui.widgets.collectAsStateWithLifecycle
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
@@ -85,6 +86,8 @@ class PlaceDetailViewModel(
 ): SinatraScreenModel {
 
     private val placeId = MutableStateFlow<PlaceId?>(null)
+
+    @OptIn(ExperimentalCoroutinesApi::class)
     val favourited = placeId.flatMapLatest {
         it?.let { favouriteRepository.placeIsFavourited(it) } ?: flowOf(false)
     }.state(false)

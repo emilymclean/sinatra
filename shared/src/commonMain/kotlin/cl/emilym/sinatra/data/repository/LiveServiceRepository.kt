@@ -5,6 +5,7 @@ import cl.emilym.sinatra.data.persistence.LiveServicePersistence
 import com.google.transit.realtime.FeedMessage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
@@ -22,6 +23,7 @@ class LiveServiceRepository(
 
     val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     suspend fun getRealtimeUpdates(url: String): Flow<FeedMessage> {
         return liveServicePersistence.get(url) { trigger ->
             trigger
@@ -37,7 +39,7 @@ class LiveServiceRepository(
     }
 
     suspend fun getMultipleRealtimeUpdates(vararg url: String): Flow<List<FeedMessage>> {
-        return return combine(
+        return combine(
             *url.map { url ->
                 getRealtimeUpdates(url)
             }.toTypedArray()

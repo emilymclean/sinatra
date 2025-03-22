@@ -3,6 +3,7 @@ package cl.emilym.sinatra.ui.widgets
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import cl.emilym.compose.requeststate.RequestState
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -15,6 +16,7 @@ interface SinatraScreenModel: ScreenModel {
     fun <T> Flow<T>.state(initial: T): StateFlow<T> =
         stateIn(screenModelScope, SharingStarted.WhileSubscribed(5000), initial)
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     fun <T> MutableStateFlow<Flow<RequestState<T>>>.presentable(): StateFlow<RequestState<T>> {
         return flatMapLatest { it.map { it } }.state(
             RequestState.Initial()

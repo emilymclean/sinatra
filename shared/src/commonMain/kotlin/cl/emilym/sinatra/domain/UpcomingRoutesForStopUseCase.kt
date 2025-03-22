@@ -11,6 +11,7 @@ import cl.emilym.sinatra.data.repository.ServiceRepository
 import cl.emilym.sinatra.data.repository.StopRepository
 import cl.emilym.sinatra.data.repository.TransportMetadataRepository
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -33,6 +34,7 @@ class UpcomingRoutesForStopUseCase(
     private val metadataRepository: TransportMetadataRepository
 ) {
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     operator fun invoke(
         stopId: StopId,
         number: Int = 10

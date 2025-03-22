@@ -106,9 +106,11 @@ class NavigationEntryViewModel(
     val wheelchairAccessible = MutableStateFlow(false)
     val bikesAllowed = MutableStateFlow(false)
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     val destinationLocation = destination.flatMapLatest {
         it.toJourneyLocation()
     }.state(null)
+    @OptIn(ExperimentalCoroutinesApi::class)
     val originLocation = origin.flatMapLatest {
         it.toJourneyLocation()
     }.state(null)
@@ -178,6 +180,7 @@ class NavigationEntryViewModel(
         }
     }.stateIn(screenModelScope, SharingStarted.Lazily, NavigationState.GraphLoading)
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     val state = _state.flatMapLatest {
         when (it) {
             is State.JourneySelection -> combine(origin, destination) { origin, destination ->
@@ -237,6 +240,7 @@ class NavigationEntryViewModel(
 
     private val stops = MutableStateFlow<RequestState<List<Stop>>>(RequestState.Initial())
     private val _recentVisits = createRequestStateFlowFlow<List<RecentVisit>>()
+    @OptIn(ExperimentalCoroutinesApi::class)
     override val recentVisits = _recentVisits.presentable().mapLatest {
         when (it) {
             is RequestState.Success -> RequestState.Success(it.value.filter { it !is RecentVisit.Route })
@@ -250,6 +254,7 @@ class NavigationEntryViewModel(
         with(nearbyStopsUseCase) { stops.filter(lastLocation).nullIfEmpty() }
     }.state(null)
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     override val results = state.mapLatest {
         when (it) {
             is NavigationEntryState.Search -> it.results
@@ -265,6 +270,7 @@ class NavigationEntryViewModel(
         setOrigin(origin)
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     private fun NavigationLocation?.toJourneyLocation(): Flow<JourneyLocation?> {
         return when (this) {
             is NavigationLocation.Stop -> flowOf(JourneyLocation(location, true))

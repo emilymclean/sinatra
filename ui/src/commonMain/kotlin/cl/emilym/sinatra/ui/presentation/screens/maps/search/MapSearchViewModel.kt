@@ -62,6 +62,7 @@ class MapSearchViewModel(
         }
     }.state(MapSearchState.Browse)
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     override val results = state.mapLatest {
         when (it) {
             is MapSearchState.Search -> it.results
