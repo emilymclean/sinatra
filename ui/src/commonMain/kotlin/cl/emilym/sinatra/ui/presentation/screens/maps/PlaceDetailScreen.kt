@@ -33,6 +33,7 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import cl.emilym.compose.requeststate.RequestState
 import cl.emilym.compose.requeststate.RequestStateWidget
+import cl.emilym.compose.requeststate.requestStateFlow
 import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.data.models.PlaceId
 import cl.emilym.sinatra.data.repository.FavouriteRepository
@@ -88,15 +89,17 @@ class PlaceDetailViewModel(
         it?.let { favouriteRepository.placeIsFavourited(it) } ?: flowOf(false)
     }.state(false)
 
-    val place = placeId.map {
-        it?.let { RequestState.Success(placeRepository.get(it).item) } ?: RequestState.Initial()
-    }.state(RequestState.Initial())
+    private val _place = placeId.requestStateFlow {
+        it?.let { placeRepository.get(it).item }
+    }
+    val place = _place.state(RequestState.Initial())
 
-    val nearbyStops = place.map {
+    private val _nearbyStops = place.requestStateFlow {
         (it as? RequestState.Success)?.value?.let {
-            RequestState.Success(nearbyStopsUseCase(it.location, limit = 25).nullIfEmpty())
-        } ?: RequestState.Initial()
-    }.state(RequestState.Initial())
+            nearbyStopsUseCase(it.location, limit = 25).nullIfEmpty()
+        }
+    }
+    val nearbyStops = _nearbyStops.state(RequestState.Initial())
 
     fun init(placeId: PlaceId) {
         this.placeId.value = placeId
@@ -113,7 +116,15 @@ class PlaceDetailViewModel(
     }
 
     fun retryPlace() {
+        screenModelScope.launch {
+            _place.retry()
+        }
+    }
 
+    fun retryNearby() {
+        screenModelScope.launch {
+            _nearbyStops.retry()
+        }
     }
 }
 
@@ -205,7 +216,10 @@ class PlaceDetailScreen(
                                 item { Subheading(stringResource(Res.string.map_search_nearby_stops)) }
                                 item {
                                     Box(Modifier.padding(horizontal = 1.rdp)) {
-                                        RequestStateWidget(nearbyStops) {}
+                                        RequestStateWidget(
+                                            nearbyStops,
+                                            retry = { viewModel.retryNearby() }
+                                        ) {}
                                     }
                                 }
                                 items((nearbyStops as? RequestState.Success)?.value ?: listOf()) {
