@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -65,6 +66,7 @@ import cl.emilym.sinatra.ui.widgets.Chip
 import cl.emilym.sinatra.ui.widgets.ClockIcon
 import cl.emilym.sinatra.ui.widgets.CurrentLocationCard
 import cl.emilym.sinatra.ui.widgets.GenericMarkerIcon
+import cl.emilym.sinatra.ui.widgets.JourneyIcon
 import cl.emilym.sinatra.ui.widgets.JourneyOptionCard
 import cl.emilym.sinatra.ui.widgets.JourneyStartIcon
 import cl.emilym.sinatra.ui.widgets.ListHint
@@ -72,6 +74,7 @@ import cl.emilym.sinatra.ui.widgets.LocalMapControl
 import cl.emilym.sinatra.ui.widgets.MapIcon
 import cl.emilym.sinatra.ui.widgets.RouteRandle
 import cl.emilym.sinatra.ui.widgets.SinatraBackHandler
+import cl.emilym.sinatra.ui.widgets.StarOutlineIcon
 import cl.emilym.sinatra.ui.widgets.SwapIcon
 import cl.emilym.sinatra.ui.widgets.WalkIcon
 import cl.emilym.sinatra.ui.widgets.collectAsStateWithLifecycle
@@ -81,6 +84,7 @@ import cl.emilym.sinatra.ui.widgets.routeRandleSize
 import com.mikepenz.markdown.m3.Markdown
 import org.jetbrains.compose.resources.stringResource
 import sinatra.ui.generated.resources.Res
+import sinatra.ui.generated.resources.favourites_nothing_favourited
 import sinatra.ui.generated.resources.navigate_calculating_journey
 import sinatra.ui.generated.resources.navigate_calculating_journey_failed
 import sinatra.ui.generated.resources.navigate_chip_anchor_arrive
@@ -89,6 +93,9 @@ import sinatra.ui.generated.resources.navigate_chip_anchor_now
 import sinatra.ui.generated.resources.navigate_chip_bikes_allowed
 import sinatra.ui.generated.resources.navigate_chip_wheelchair_accessible
 import sinatra.ui.generated.resources.navigate_downloading_graph
+import sinatra.ui.generated.resources.navigate_entry_no_destination
+import sinatra.ui.generated.resources.navigate_entry_no_starting_point
+import sinatra.ui.generated.resources.navigate_entry_no_starting_point_destination
 import sinatra.ui.generated.resources.navigate_entry_select_destination
 import sinatra.ui.generated.resources.navigate_entry_select_origin
 import sinatra.ui.generated.resources.navigate_entry_swap_origin_destination
@@ -222,7 +229,9 @@ class NavigateEntryScreen(
         }
 
         when (val state = state) {
-            is NavigationEntryState.JourneySelected, is NavigationEntryState.JourneySelection ->
+            is NavigationEntryState.JourneySelected,
+            is NavigationEntryState.JourneySelection,
+            is NavigationEntryState.MissingWaypoints ->
                 JourneyState(viewModel, state)
             is NavigationEntryState.Search -> SearchState(viewModel)
             null -> {}
@@ -254,7 +263,8 @@ class NavigateEntryScreen(
                     )
                 }
                 is NavigationEntryState.Search,
-                is NavigationEntryState.JourneySelection -> bottomSheet?.bottomSheetState?.expand()
+                is NavigationEntryState.JourneySelection,
+                is NavigationEntryState.MissingWaypoints -> bottomSheet?.bottomSheetState?.expand()
             }
         }
     }
@@ -423,6 +433,22 @@ class NavigateEntryScreen(
                 }
 
                 when (state) {
+                    is NavigationEntryState.MissingWaypoints -> {
+                        item {
+                            Column {
+                                Spacer(Modifier.height(2.rdp))
+                                ListHint(
+                                    when {
+                                        state.origin && state.destination -> stringResource(Res.string.navigate_entry_no_starting_point_destination)
+                                        state.origin -> stringResource(Res.string.navigate_entry_no_starting_point)
+                                        else -> stringResource(Res.string.navigate_entry_no_destination)
+                                    }
+                                ) {
+                                    JourneyIcon(tint = MaterialTheme.colorScheme.primary)
+                                }
+                            }
+                        }
+                    }
                     is NavigationEntryState.JourneySelection -> JourneySelection(
                         viewModel,
                         state.state

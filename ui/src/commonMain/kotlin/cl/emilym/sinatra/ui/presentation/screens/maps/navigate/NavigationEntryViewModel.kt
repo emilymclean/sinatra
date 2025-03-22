@@ -57,6 +57,10 @@ private sealed interface State {
 }
 
 sealed interface NavigationEntryState {
+    data class MissingWaypoints(
+        val origin: Boolean,
+        val destination: Boolean
+    ): NavigationEntryState
     data class JourneySelection(
         val state: NavigationState
     ): NavigationEntryState
@@ -97,8 +101,8 @@ class NavigationEntryViewModel(
 ): SinatraScreenModel, SearchScreenViewModel {
 
     val currentLocation = MutableStateFlow<MapLocation?>(null)
-    val destination = MutableStateFlow<NavigationLocation?>(null)
-    val origin = MutableStateFlow<NavigationLocation?>(null)
+    val destination = MutableStateFlow<NavigationLocation>(NavigationLocation.None)
+    val origin = MutableStateFlow<NavigationLocation>(NavigationLocation.None)
     val anchorTime = MutableStateFlow<NavigationAnchorTime>(NavigationAnchorTime.Now)
     val wheelchairAccessible = MutableStateFlow(false)
     val bikesAllowed = MutableStateFlow(false)
@@ -177,11 +181,23 @@ class NavigationEntryViewModel(
 
     val state = _state.flatMapLatest {
         when (it) {
-            is State.JourneySelection -> navigationState.map {
-                if (it is NavigationState.JourneysFound && it.journeys.size == 1) {
-                    NavigationEntryState.JourneySelected(it.journeys.first())
-                } else {
-                    NavigationEntryState.JourneySelection(it)
+            is State.JourneySelection -> combine(origin, destination) { origin, destination ->
+                origin to destination
+            }.flatMapLatest {
+                when {
+                    it.first is NavigationLocation.None || it.second is NavigationLocation.None -> flowOf(
+                        NavigationEntryState.MissingWaypoints(
+                            it.first is NavigationLocation.None,
+                            it.second is NavigationLocation.None
+                        )
+                    )
+                    else -> navigationState.map {
+                        if (it is NavigationState.JourneysFound && it.journeys.size == 1) {
+                            NavigationEntryState.JourneySelected(it.journeys.first())
+                        } else {
+                            NavigationEntryState.JourneySelection(it)
+                        }
+                    }
                 }
             }
             is State.JourneySelected -> flowOf(NavigationEntryState.JourneySelected(it.journey))

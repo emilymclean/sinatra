@@ -62,6 +62,7 @@ import cl.emilym.sinatra.ui.presentation.screens.maps.navigate.NavigateEntryScre
 import cl.emilym.sinatra.ui.presentation.screens.maps.search.MapSearchScreen
 import cl.emilym.sinatra.ui.widgets.GenericMarkerIcon
 import cl.emilym.sinatra.ui.widgets.InfoIcon
+import cl.emilym.sinatra.ui.widgets.JourneyIcon
 import cl.emilym.sinatra.ui.widgets.LocalMapControl
 import cl.emilym.sinatra.ui.widgets.MapIcon
 import cl.emilym.sinatra.ui.widgets.NavigationItem
@@ -177,7 +178,7 @@ class RootMapScreen: Screen {
                         {
                             navigator.replaceAll(NavigateEntryScreen(null, null))
                         },
-                        { GenericMarkerIcon() },
+                        { JourneyIcon() },
                         { Text(stringResource(Res.string.navigation_bar_navigate)) }
                     ),
                     NavigationItem(

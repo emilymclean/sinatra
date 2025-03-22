@@ -182,6 +182,12 @@
       
   <string name="navigate_entry_select_destination">選擇目的地</string>
 
+  <string name="navigate_entry_no_starting_point">选择一个起点来规划旅程。</string>
+
+  <string name="navigate_entry_no_destination">选择目的地来计划旅程。</string>
+
+  <string name="navigate_entry_no_starting_point_destination">选择起点和目的地来规划旅程。</string>
+
   <string name="time_am">上午</string>
 
   <string name="time_pm">下午</string>
