@@ -84,6 +84,7 @@
     <string name="no_search_results">We couldn't find anything for "%1$s".</string>
     <string name="no_content_page">The requested page could not be found.</string>
 
+    <string name="no_nearby_stops">There are no stops nearby.</string>
     <string name="route_not_found">The requested route has no stops.</string>
     <string name="stop_not_found">The requested stop could not be found.</string>
     <string name="place_not_found">The requested place could not be found.</string>

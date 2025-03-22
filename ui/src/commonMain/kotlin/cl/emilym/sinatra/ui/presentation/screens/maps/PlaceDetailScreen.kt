@@ -10,12 +10,14 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -36,6 +38,8 @@ import cl.emilym.sinatra.data.models.PlaceId
 import cl.emilym.sinatra.data.repository.FavouriteRepository
 import cl.emilym.sinatra.data.repository.PlaceRepository
 import cl.emilym.sinatra.data.repository.RecentVisitRepository
+import cl.emilym.sinatra.domain.NearbyStopsUseCase
+import cl.emilym.sinatra.nullIfEmpty
 import cl.emilym.sinatra.ui.maps.MapItem
 import cl.emilym.sinatra.ui.maps.MarkerItem
 import cl.emilym.sinatra.ui.maps.placeMarkerIcon
@@ -44,11 +48,17 @@ import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
 import cl.emilym.sinatra.ui.navigation.MapScreen
 import cl.emilym.sinatra.ui.placeJourneyNavigation
 import cl.emilym.sinatra.ui.presentation.screens.maps.search.zoomThreshold
+import cl.emilym.sinatra.ui.stopJourneyNavigation
+import cl.emilym.sinatra.ui.text
 import cl.emilym.sinatra.ui.widgets.FavouriteButton
+import cl.emilym.sinatra.ui.widgets.ListHint
 import cl.emilym.sinatra.ui.widgets.LocalMapControl
 import cl.emilym.sinatra.ui.widgets.NavigateIcon
+import cl.emilym.sinatra.ui.widgets.NoBusIcon
 import cl.emilym.sinatra.ui.widgets.SheetIosBackButton
 import cl.emilym.sinatra.ui.widgets.SinatraScreenModel
+import cl.emilym.sinatra.ui.widgets.StopCard
+import cl.emilym.sinatra.ui.widgets.Subheading
 import cl.emilym.sinatra.ui.widgets.collectAsStateWithLifecycle
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
@@ -58,15 +68,18 @@ import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.koin.core.annotation.Factory
 import sinatra.ui.generated.resources.Res
+import sinatra.ui.generated.resources.map_search_nearby_stops
+import sinatra.ui.generated.resources.no_nearby_stops
 import sinatra.ui.generated.resources.place_detail_navigate
 import sinatra.ui.generated.resources.place_not_found
-import sinatra.ui.generated.resources.stop_detail_navigate
+import sinatra.ui.generated.resources.stop_detail_distance
 
 @Factory
 class PlaceDetailViewModel(
     private val placeRepository: PlaceRepository,
     private val favouriteRepository: FavouriteRepository,
     private val recentVisitRepository: RecentVisitRepository,
+    private val nearbyStopsUseCase: NearbyStopsUseCase
 ): SinatraScreenModel {
 
     private val placeId = MutableStateFlow<PlaceId?>(null)
@@ -76,6 +89,12 @@ class PlaceDetailViewModel(
 
     val place = placeId.map {
         it?.let { RequestState.Success(placeRepository.get(it).item) } ?: RequestState.Initial()
+    }.state(RequestState.Initial())
+
+    val nearbyStops = place.map {
+        (it as? RequestState.Success)?.value?.let {
+            RequestState.Success(nearbyStopsUseCase(it.location, limit = 25).nullIfEmpty())
+        } ?: RequestState.Initial()
     }.state(RequestState.Initial())
 
     fun init(placeId: PlaceId) {
@@ -120,6 +139,8 @@ class PlaceDetailScreen(
         }
 
         val place by viewModel.place.collectAsStateWithLifecycle()
+        val nearbyStops by viewModel.nearbyStops.collectAsStateWithLifecycle()
+
         Box(
             Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center,
@@ -180,6 +201,34 @@ class PlaceDetailScreen(
                                     }
                                 }
                                 item { Box(Modifier.height(1.rdp)) }
+                                item { Subheading(stringResource(Res.string.map_search_nearby_stops)) }
+                                item {
+                                    Box(Modifier.padding(horizontal = 1.rdp)) {
+                                        RequestStateWidget(nearbyStops) {}
+                                    }
+                                }
+                                items((nearbyStops as? RequestState.Success)?.value ?: listOf()) {
+                                    StopCard(
+                                        it.stop,
+                                        modifier = Modifier.fillMaxWidth(),
+                                        onClick = { navigator.stopJourneyNavigation(it.stop) },
+                                        subtitle = stringResource(Res.string.stop_detail_distance, it.distance.text),
+                                        showStopIcon = true
+                                    )
+                                }
+                                if ((nearbyStops as? RequestState.Success)?.value?.size == 0) {
+                                    item {
+                                        Box(Modifier.padding(horizontal = 1.rdp)) {
+                                            ListHint(
+                                                stringResource(Res.string.no_nearby_stops)
+                                            ) {
+                                                NoBusIcon(
+                                                    tint = MaterialTheme.colorScheme.primary
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
                             }
                         }
                     }

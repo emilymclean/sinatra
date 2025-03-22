@@ -8,18 +8,16 @@ import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.data.models.RecentVisit
 import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.data.models.StopWithDistance
-import cl.emilym.sinatra.data.models.distance
 import cl.emilym.sinatra.data.repository.NetworkGraphRepository
 import cl.emilym.sinatra.data.repository.RecentVisitRepository
 import cl.emilym.sinatra.data.repository.StopRepository
 import cl.emilym.sinatra.domain.CalculateJourneyUseCase
 import cl.emilym.sinatra.domain.JourneyCalculationTime
 import cl.emilym.sinatra.domain.JourneyLocation
+import cl.emilym.sinatra.domain.NearbyStopsUseCase
 import cl.emilym.sinatra.domain.search.RouteStopSearchUseCase
 import cl.emilym.sinatra.domain.search.SearchResult
 import cl.emilym.sinatra.nullIfEmpty
-import cl.emilym.sinatra.ui.NEAREST_STOP_RADIUS
-import cl.emilym.sinatra.ui.presentation.screens.maps.search.NEARBY_STOPS_LIMIT
 import cl.emilym.sinatra.ui.presentation.screens.search.SearchScreenViewModel
 import cl.emilym.sinatra.ui.presentation.screens.search.searchHandler
 import cl.emilym.sinatra.ui.widgets.SinatraScreenModel
@@ -96,6 +94,7 @@ class NavigationEntryViewModel(
     private val routeStopSearchUseCase: RouteStopSearchUseCase,
     private val networkGraphRepository: NetworkGraphRepository,
     private val recentVisitRepository: RecentVisitRepository,
+    private val nearbyStopsUseCase: NearbyStopsUseCase,
     private val stopRepository: StopRepository,
     private val clock: Clock
 ): SinatraScreenModel, SearchScreenViewModel {
@@ -248,11 +247,7 @@ class NavigationEntryViewModel(
     override val nearbyStops: StateFlow<List<StopWithDistance>?> = stops.combine(currentLocation) { stops, lastLocation ->
         if (stops !is RequestState.Success || lastLocation == null) return@combine null
         val stops = stops.value.nullIfEmpty() ?: return@combine null
-        stops.map { StopWithDistance(it, distance(lastLocation, it.location)) }
-            .filter { it.distance < NEAREST_STOP_RADIUS && it.stop.parentStation == null }
-            .nullIfEmpty()
-            ?.sortedBy { it.distance }
-            ?.take(NEARBY_STOPS_LIMIT)
+        with(nearbyStopsUseCase) { stops.filter(lastLocation).nullIfEmpty() }
     }.state(null)
 
     override val results = state.mapLatest {
