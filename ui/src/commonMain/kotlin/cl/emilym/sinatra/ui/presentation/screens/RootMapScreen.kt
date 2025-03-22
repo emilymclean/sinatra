@@ -49,6 +49,8 @@ import cafe.adriel.voyager.navigator.CurrentScreen
 import cafe.adriel.voyager.navigator.Navigator
 import cl.emilym.compose.units.px
 import cl.emilym.sinatra.ui.maps.MapControl
+import cl.emilym.sinatra.ui.maps.MarkerIcon
+import cl.emilym.sinatra.ui.maps.MarkerItem
 import cl.emilym.sinatra.ui.maps.rememberMapControl
 import cl.emilym.sinatra.ui.navigation.CurrentBottomSheetContent
 import cl.emilym.sinatra.ui.navigation.CurrentMapOverlayContent
@@ -56,7 +58,9 @@ import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
 import cl.emilym.sinatra.ui.navigation.bottomSheetHalfHeight
 import cl.emilym.sinatra.ui.navigation.isCurrentMapScreen
 import cl.emilym.sinatra.ui.plus
+import cl.emilym.sinatra.ui.presentation.screens.maps.navigate.NavigateEntryScreen
 import cl.emilym.sinatra.ui.presentation.screens.maps.search.MapSearchScreen
+import cl.emilym.sinatra.ui.widgets.GenericMarkerIcon
 import cl.emilym.sinatra.ui.widgets.InfoIcon
 import cl.emilym.sinatra.ui.widgets.LocalMapControl
 import cl.emilym.sinatra.ui.widgets.MapIcon
@@ -76,6 +80,7 @@ import sinatra.ui.generated.resources.Res
 import sinatra.ui.generated.resources.navigation_bar_about
 import sinatra.ui.generated.resources.navigation_bar_favourites
 import sinatra.ui.generated.resources.navigation_bar_map
+import sinatra.ui.generated.resources.navigation_bar_navigate
 
 @Composable
 expect fun Map(mapControl: MapControl)
@@ -170,13 +175,21 @@ class RootMapScreen: Screen {
                     NavigationItem(
                         1,
                         {
+                            navigator.replaceAll(NavigateEntryScreen(null, null))
+                        },
+                        { GenericMarkerIcon() },
+                        { Text(stringResource(Res.string.navigation_bar_navigate)) }
+                    ),
+                    NavigationItem(
+                        2,
+                        {
                             navigator.replaceAll(FavouriteScreen())
                         },
                         { StarOutlineIcon() },
                         { Text(stringResource(Res.string.navigation_bar_favourites)) }
                     ),
                     NavigationItem(
-                        2,
+                        3,
                         {
                             navigator.replaceAll(AboutScreen())
                         },

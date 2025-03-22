@@ -1,11 +1,13 @@
 <resources  xmlns:tools="http://schemas.android.com/tools" tools:locale="zh-Hans-CH">
       
   <string name="navigation_bar_map">地图</string>
+
+  <string name="navigation_bar_navigate">导航</string>
       
   <string name="navigation_bar_favourites">收藏夹</string>
       
   <string name="navigation_bar_about">关于</string>
-      
+
   <string name="favourites_nothing_favourited">您收藏的任何路线或站点都可以在这里找到。</string>
       
   <string name="about_app_version">版本 %1$s (%2$s)</string>

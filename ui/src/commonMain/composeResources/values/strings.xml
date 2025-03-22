@@ -1,5 +1,6 @@
 <resources xmlns:tools="http://schemas.android.com/tools" tools:locale="en-AU">
     <string name="navigation_bar_map">Map</string>
+    <string name="navigation_bar_navigate">Navigate</string>
     <string name="navigation_bar_favourites">Favourites</string>
     <string name="navigation_bar_about">About</string>
 
