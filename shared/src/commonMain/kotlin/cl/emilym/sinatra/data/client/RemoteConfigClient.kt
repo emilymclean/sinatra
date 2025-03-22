@@ -10,7 +10,7 @@ class RemoteConfigClient(
     private val wrapper: RemoteConfigWrapper
 ) {
 
-    private suspend fun load(): Boolean {
+    suspend fun load(): Boolean {
         return try {
             wrapper.load()
             true

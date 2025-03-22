@@ -27,5 +27,6 @@ object FeatureFlags {
     val IOS_APPLE_MAP_LOGO_FOLLOW_BOTTOM_SHEET by FeatureFlagDelegate(false)
     val RAPTOR_ARRIVAL_BASED_ROUTING by FeatureFlagDelegate(true)
     val RAPTOR_SWAP_BUTTON by FeatureFlagDelegate(true)
+    val NAVIGATE_BUTTON_TAB_BAR by FeatureFlagDelegate(true)
     val PLACE_DETAIL_ENABLED by FeatureFlagDelegate(true)
 }

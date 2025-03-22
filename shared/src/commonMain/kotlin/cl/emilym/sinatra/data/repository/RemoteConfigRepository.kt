@@ -19,6 +19,10 @@ class RemoteConfigRepository(
         const val FEATURE_FLAG_PREFIX = "feature_"
     }
 
+    suspend fun load() {
+        remoteConfigClient.load()
+    }
+
     suspend fun nominatimUrl(): String? {
         return remoteConfigClient.string(NOMINATIM_API_URL_KEY)
     }
