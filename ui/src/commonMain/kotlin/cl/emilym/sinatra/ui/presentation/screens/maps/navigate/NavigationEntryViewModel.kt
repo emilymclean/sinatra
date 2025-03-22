@@ -277,10 +277,20 @@ class NavigationEntryViewModel(
 
     private fun setDestination(navigationLocation: NavigationLocation) {
         destination.value = navigationLocation
+        navigationLocation.recentVisit?.let {
+            screenModelScope.launch {
+                recentVisitRepository.add(it)
+            }
+        }
     }
 
     private fun setOrigin(navigationLocation: NavigationLocation) {
         origin.value = navigationLocation
+        navigationLocation.recentVisit?.let {
+            screenModelScope.launch {
+                recentVisitRepository.add(it)
+            }
+        }
     }
 
     fun onOriginClick() {
