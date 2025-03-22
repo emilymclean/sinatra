@@ -6,6 +6,7 @@ import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFails
+import kotlin.test.assertIs
 import kotlin.time.Duration
 
 class RaptorTest {
@@ -447,6 +448,38 @@ class RaptorTest {
                 dayIndex=0,
             ),
         )), result)
+    }
+
+    @Test
+    fun testNegativeValueOutcomeJourney2() {
+        val result = Raptor(
+            graph,
+            listOf(
+                listOf("WD", "2023-COMBNXT-Weekday-10"),
+                listOf("SA", "2023-COMBNXT-Saturday-05"),
+                listOf("SU", "2023-COMBNXT-Sunday-04"),
+            ),
+            RaptorConfig(
+                maximumWalkingTime = 25 * 60L,
+                transferTime = 5 * 60L,
+                transferPenalty = 5 * 60 * 100,
+                changeOverTime = 5 * 60L,
+                changeOverPenalty = 5 * 60 * 100
+            )
+        ).calculate(
+            Duration.parseIsoString("PT21H").inWholeSeconds,
+            "8104",
+            "1825"
+        )
+
+        println(result)
+
+        assertIs<RaptorJourneyConnection.Travel>(result.connections.first())
+        assertIs<RaptorJourneyConnection.Travel>(result.connections.last())
+
+        val start = (result.connections.first() as RaptorJourneyConnection.Travel)
+        val end = (result.connections.last() as RaptorJourneyConnection.Travel)
+        assert(start.startTime + (start.dayIndex * 86400) < end.endTime + (end.dayIndex * 86400))
     }
 
 }

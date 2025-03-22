@@ -147,6 +147,7 @@ abstract class Router {
         }
 
         return reconstruct(
+            anchorTime,
             arrivalStopIndices,
             departureStopIndices,
             prev,
@@ -157,6 +158,7 @@ abstract class Router {
     }
 
     protected abstract fun reconstruct(
+        anchorTime: DaySeconds,
         arrivalStopIndices: List<Pair<Int, RaptorStop>>,
         departureStopIndices: List<Pair<Int, RaptorStop>>,
         prev: Array<Int?>,
@@ -166,6 +168,7 @@ abstract class Router {
     ): RaptorJourney
 
     protected fun doReconstruction(
+        anchorTime: DaySeconds,
         startStopIndicies: List<Pair<Int, RaptorStop>>,
         endStopIndicies: List<Pair<Int, RaptorStop>>,
         prev: Array<Int?>,
@@ -215,10 +218,17 @@ abstract class Router {
         while (cursor !in endStopIndicies.map { it.first }) {
             val edge = prevEdge[cursor]!!
             val stopId = graph.mappings.stopIds[getNode(edge.connectedNodeIndex).stopIndex.toInt()]
+            val time = calculateAnchorTime(anchorTime, dist[cursor]) - if (edge.departureTime >= 86400u) 86400 else 0
 
             stops.add(stopId)
             edges.add(edge)
-            dayIndicies.add(dayIndex[cursor])
+            dayIndicies.add(
+                dayIndex[cursor] ?: when {
+                    time > 86400 -> 1
+                    time < 0 -> -1
+                    else -> 0
+                }
+            )
 
             if (edgeType != edge.type) {
                 edges.removeLastOrNull()
