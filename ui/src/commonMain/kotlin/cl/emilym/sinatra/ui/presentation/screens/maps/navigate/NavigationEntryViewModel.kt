@@ -293,6 +293,12 @@ class NavigationEntryViewModel(
         }
     }
 
+    fun swapOriginAndDestination() {
+        val currentOrigin = origin.value
+        origin.value = destination.value
+        destination.value = currentOrigin
+    }
+
     fun onOriginClick() {
         onOpenSearch()
         _state.value = State.Search(true)

@@ -21,6 +21,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -46,6 +47,7 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import cl.emilym.compose.errorwidget.ErrorWidget
 import cl.emilym.compose.units.rdp
+import cl.emilym.sinatra.FeatureFlags
 import cl.emilym.sinatra.bounds
 import cl.emilym.sinatra.data.models.Journey
 import cl.emilym.sinatra.data.models.JourneyLeg
@@ -81,6 +83,7 @@ import cl.emilym.sinatra.ui.widgets.MapIcon
 import cl.emilym.sinatra.ui.widgets.NavigatorBackButton
 import cl.emilym.sinatra.ui.widgets.RouteRandle
 import cl.emilym.sinatra.ui.widgets.SinatraBackHandler
+import cl.emilym.sinatra.ui.widgets.SwapIcon
 import cl.emilym.sinatra.ui.widgets.WalkIcon
 import cl.emilym.sinatra.ui.widgets.WheelchairAccessibleIcon
 import cl.emilym.sinatra.ui.widgets.currentLocation
@@ -99,6 +102,7 @@ import sinatra.ui.generated.resources.navigate_chip_wheelchair_accessible
 import sinatra.ui.generated.resources.navigate_downloading_graph
 import sinatra.ui.generated.resources.navigate_entry_select_destination
 import sinatra.ui.generated.resources.navigate_entry_select_origin
+import sinatra.ui.generated.resources.navigate_entry_swap_origin_destination
 import sinatra.ui.generated.resources.navigate_travel
 import sinatra.ui.generated.resources.navigate_travel_arrive
 import sinatra.ui.generated.resources.navigate_travel_depart
@@ -314,29 +318,43 @@ class NavigateEntryScreen(
                                 navigator.pop()
                             }
                         }
-                        Column(
+                        Row(
                             Modifier
                                 .fillMaxWidth()
                                 .shadow(2.dp, shape = MaterialTheme.shapes.large)
                                 .clip(MaterialTheme.shapes.large)
-                                .background(Container)
+                                .background(Container),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            val origin by viewModel.origin.collectAsStateWithLifecycle()
-                            val destination by viewModel.destination.collectAsStateWithLifecycle()
-                            origin?.let { origin ->
-                                NavigationLocationDisplay(
-                                    origin,
-                                    false,
-                                    modifier = Modifier.clickable { viewModel.onOriginClick() }
-                                )
+                            Column(
+                                Modifier.weight(1f)
+                            ) {
+                                val origin by viewModel.origin.collectAsStateWithLifecycle()
+                                val destination by viewModel.destination.collectAsStateWithLifecycle()
+                                origin?.let { origin ->
+                                    NavigationLocationDisplay(
+                                        origin,
+                                        false,
+                                        modifier = Modifier.clickable { viewModel.onOriginClick() }
+                                    )
+                                }
+                                HorizontalDivider(Modifier.padding(start = iconInset))
+                                destination?.let { destination ->
+                                    NavigationLocationDisplay(
+                                        destination,
+                                        true,
+                                        modifier = Modifier.clickable { viewModel.onDestinationClick() }
+                                    )
+                                }
                             }
-                            HorizontalDivider(Modifier.padding(start = iconInset))
-                            destination?.let { destination ->
-                                NavigationLocationDisplay(
-                                    destination,
-                                    true,
-                                    modifier = Modifier.clickable { viewModel.onDestinationClick() }
-                                )
+                            if (FeatureFlags.RAPTOR_SWAP_BUTTON) {
+                                IconButton(
+                                    onClick = { viewModel.swapOriginAndDestination() }
+                                ) {
+                                    SwapIcon(contentDescription = stringResource(
+                                        Res.string.navigate_entry_swap_origin_destination
+                                    ))
+                                }
                             }
                         }
                     }
