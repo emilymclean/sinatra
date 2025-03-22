@@ -31,6 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import cl.emilym.compose.units.rdp
+import cl.emilym.sinatra.FeatureFlags
 import cl.emilym.sinatra.ui.localization.LocalClock
 import cl.emilym.sinatra.ui.localization.LocalLocalTimeZone
 import cl.emilym.sinatra.ui.open_maps
@@ -96,12 +97,14 @@ fun TimeSelectionDialog(
                     ) {
                         Text(stringResource(Res.string.time_select_tab_depart))
                     }
-                    Tab(
-                        selectedTabIndex == 1,
-                        onClick = { selectedTabIndex = 1 },
-                        modifier = Modifier.padding(0.5.rdp)
-                    ) {
-                        Text(stringResource(Res.string.time_select_tab_arrive))
+                    if (FeatureFlags.RAPTOR_ARRIVAL_BASED_ROUTING) {
+                        Tab(
+                            selectedTabIndex == 1,
+                            onClick = { selectedTabIndex = 1 },
+                            modifier = Modifier.padding(0.5.rdp)
+                        ) {
+                            Text(stringResource(Res.string.time_select_tab_arrive))
+                        }
                     }
                 }
                 Spacer(Modifier.height(1.rdp))
@@ -159,7 +162,6 @@ fun TimeSelectionDialog(
                         }
                     }
                 }
-                Spacer(Modifier.height(1.rdp))
             }
         }
     }
