@@ -48,6 +48,7 @@ import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
 import cl.emilym.sinatra.ui.navigation.MapScreen
 import cl.emilym.sinatra.ui.placeJourneyNavigation
 import cl.emilym.sinatra.ui.presentation.screens.maps.search.zoomThreshold
+import cl.emilym.sinatra.ui.stopCardDefaultNavigation
 import cl.emilym.sinatra.ui.stopJourneyNavigation
 import cl.emilym.sinatra.ui.text
 import cl.emilym.sinatra.ui.widgets.FavouriteButton
@@ -211,7 +212,7 @@ class PlaceDetailScreen(
                                     StopCard(
                                         it.stop,
                                         modifier = Modifier.fillMaxWidth(),
-                                        onClick = { navigator.stopJourneyNavigation(it.stop) },
+                                        onClick = { navigator.stopCardDefaultNavigation(it.stop) },
                                         subtitle = stringResource(Res.string.stop_detail_distance, it.distance.text),
                                         showStopIcon = true
                                     )
