@@ -13,15 +13,6 @@ data class NodeCost(
     val dayIndex: Int? = null
 )
 
-data class NodeAndIndex<T: NetworkGraphNode, I: NodeIndex>(
-    val node: T,
-    val index: I
-)
-
-data class RouteAndHeading(
-    val routeIndex: RouteIndex,
-    val headingIndex: HeadingIndex
-)
 
 data class TravelTime<T: NetworkGraphNode>(
     val node: T,

@@ -6,6 +6,8 @@ import cl.emilym.sinatra.data.models.StopWithDistance
 import cl.emilym.sinatra.domain.search.RouteStopSearchUseCase
 import cl.emilym.sinatra.domain.search.SearchResult
 import cl.emilym.sinatra.ui.widgets.handleFlow
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -30,6 +32,7 @@ interface SearchScreenViewModel {
     }
 }
 
+@OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
 fun <T> SearchScreenViewModel.searchHandler(
     routeStopSearchUseCase: RouteStopSearchUseCase,
     toState: (RequestState<List<SearchResult>>) -> T

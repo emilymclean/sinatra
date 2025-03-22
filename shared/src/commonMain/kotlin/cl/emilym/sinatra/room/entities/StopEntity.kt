@@ -7,7 +7,6 @@ import androidx.room.PrimaryKey
 import androidx.room.Relation
 import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.data.models.Stop
-import cl.emilym.sinatra.data.models.Stop.Companion.importantStops
 import cl.emilym.sinatra.data.models.StopAccessibility
 import cl.emilym.sinatra.data.models.StopVisibility
 import cl.emilym.sinatra.data.models.StopWheelchairAccessibility
@@ -42,8 +41,8 @@ class StopEntity(
                 StopWheelchairAccessibility.valueOf(wheelchairAccessible)
             ),
             StopVisibility(
-                visibleZoomedOut ?: (id in importantStops),
-                visibleZoomedIn ?: ((id in importantStops) || parentStation == null),
+                visibleZoomedOut ?: false,
+                visibleZoomedIn ?: (parentStation == null),
                 showChildren,
                 searchWeight,
             )

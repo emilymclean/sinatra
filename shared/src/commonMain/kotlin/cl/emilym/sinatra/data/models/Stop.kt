@@ -18,9 +18,6 @@ data class Stop(
 ): Serializable {
 
     companion object {
-        @Deprecated("Replaced by visibility.visibleZoomedOut & visibility.visibleZoomedIn")
-        val importantStops =
-            listOf("GGN", "MCK", "MPN", "NLR", "WSN", "SFD", "EPC", "PLP", "SWN", "DKN", "MCR", "IPA", "ELA", "ALG")
 
         fun fromPB(pb: cl.emilym.gtfs.Stop): Stop {
             return Stop(
@@ -59,8 +56,8 @@ data class StopVisibility(
 
         fun fromPB(stopPb: cl.emilym.gtfs.Stop, pb: cl.emilym.gtfs.StopVisibility?): StopVisibility {
             return StopVisibility(
-                pb?.visibleZoomedOut ?: (stopPb.id in Stop.importantStops),
-                pb?.visibleZoomedIn ?: ((stopPb.id in Stop.importantStops) || stopPb.parentStation == null),
+                pb?.visibleZoomedOut ?: false,
+                pb?.visibleZoomedIn ?: (stopPb.parentStation == null),
                 pb?.showChildren ?: SHOW_CHILDREN_DEFAULT,
                 pb?.searchWeight ?: SEARCH_WEIGHT_DEFAULT
             )

@@ -232,7 +232,6 @@ class NavigateEntryScreen(
             is NavigationEntryState.MissingWaypoints ->
                 JourneyState(viewModel, state)
             is NavigationEntryState.Search -> SearchState(viewModel)
-            null -> {}
         }
 
         SinatraBackHandler(true) {
@@ -495,8 +494,7 @@ class NavigateEntryScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         ErrorWidget(
-                            if (state is NavigationState.GraphFailed) state.exception else
-                                (state as? NavigationState.JourneyFailed)?.exception,
+                            state.exception,
                             retry = { viewModel.retryLoadingGraph() }
                         )
                     }
