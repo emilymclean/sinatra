@@ -1,13 +1,31 @@
 package cl.emilym.sinatra
 
+import cl.emilym.sinatra.data.repository.RemoteConfigRepository
+import org.koin.mp.KoinPlatform
+import kotlin.reflect.KProperty
+
+private class FeatureFlagDelegate(
+    val default: Boolean = true,
+    val name: String? = null
+) {
+
+    private val remoteConfigRepository by lazy { KoinPlatform.getKoin().get<RemoteConfigRepository>() }
+
+    operator fun getValue(thisRef: Any?, property: KProperty<*>): Boolean {
+        return remoteConfigRepository.featureImmediate(name ?: property.name, default)
+    }
+
+}
+
 object FeatureFlags {
-    const val ROUTE_DETAIL_CLICKABLE_STOPS = true
-    const val ROUTE_DETAIL_HIGHLIGHT_SOURCE_STOP = true
-    const val ROUTE_DETAIL_PREVENT_ZOOM_WHEN_HAVE_SOURCE_STOP = false
-    const val ROUTE_DETAIL_NEAREST_STOP = true
-    const val STOP_DETAIL_SHOW_IN_MAPS_BUTTON = false
-    const val MAP_SEARCH_SCREEN_NEARBY_STOPS_SEARCH = true
-    const val IOS_APPLE_MAP_LOGO_FOLLOW_BOTTOM_SHEET = false
-    const val RAPTOR_ARRIVAL_BASED_ROUTING = true
-    const val RAPTOR_SWAP_BUTTON = true
+    val ROUTE_DETAIL_CLICKABLE_STOPS by FeatureFlagDelegate(true)
+    val ROUTE_DETAIL_HIGHLIGHT_SOURCE_STOP by FeatureFlagDelegate(false)
+    val ROUTE_DETAIL_PREVENT_ZOOM_WHEN_HAVE_SOURCE_STOP by FeatureFlagDelegate(false)
+    val ROUTE_DETAIL_NEAREST_STOP by FeatureFlagDelegate(true)
+    val STOP_DETAIL_SHOW_IN_MAPS_BUTTON by FeatureFlagDelegate(false)
+    val MAP_SEARCH_SCREEN_NEARBY_STOPS_SEARCH by FeatureFlagDelegate(true)
+    val IOS_APPLE_MAP_LOGO_FOLLOW_BOTTOM_SHEET by FeatureFlagDelegate(false)
+    val RAPTOR_ARRIVAL_BASED_ROUTING by FeatureFlagDelegate(true)
+    val RAPTOR_SWAP_BUTTON by FeatureFlagDelegate(true)
+    val PLACE_DETAIL_ENABLED by FeatureFlagDelegate(true)
 }

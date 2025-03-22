@@ -24,7 +24,8 @@ class AppleRemoteConfigWrapper(
 ): RemoteConfigWrapper {
 
     private val lock = Mutex()
-    private var loaded = false
+    private var _loaded = false
+    override val loaded get() = _loaded
 
     private suspend fun fetchAndActivate() {
         return suspendCoroutine { token ->
@@ -39,23 +40,25 @@ class AppleRemoteConfigWrapper(
 
 
     override suspend fun load() {
-        if (loaded) return
+        if (_loaded) return
         lock.withLock {
-            if (loaded) return
+            if (_loaded) return
             fetchAndActivate()
-            loaded = true
+            _loaded = true
         }
     }
 
-    override suspend fun string(key: String): String {
+    override fun exists(key: String) = config.exists(key)
+
+    override fun string(key: String): String {
         return config.string(key) ?: throw DarwinException()
     }
-    override suspend fun exists(key: String) = config.exists(key)
-    override suspend fun number(key: String): Double {
+
+    override fun number(key: String): Double {
         return config.number(key)?.doubleValue ?: throw DarwinException()
     }
 
-    override suspend fun boolean(key: String): Boolean {
+    override fun boolean(key: String): Boolean {
         return config.boolean(key) ?: throw DarwinException()
     }
 }

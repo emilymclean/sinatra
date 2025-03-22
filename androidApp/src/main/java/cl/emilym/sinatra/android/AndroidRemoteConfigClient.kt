@@ -19,30 +19,32 @@ class AndroidRemoteConfigWrapper(
 ): RemoteConfigWrapper {
 
     private val lock = Mutex()
-    private var loaded = false
+    private var _loaded = false
+    override val loaded: Boolean
+        get() = _loaded
 
     override suspend fun load() {
-        if (loaded) return
+        if (_loaded) return
         lock.withLock {
-            if (loaded) return
+            if (_loaded) return
             config.fetchAndActivate().await()
-            loaded = true
+            _loaded = true
         }
     }
 
-    override suspend fun exists(key: String): Boolean {
+    override fun exists(key: String): Boolean {
         return config.getKeysByPrefix("").contains(key)
     }
 
-    override suspend fun string(key: String): String {
+    override fun string(key: String): String {
         return config.getString(key)
     }
 
-    override suspend fun number(key: String): Double {
+    override fun number(key: String): Double {
         return config.getDouble(key)
     }
 
-    override suspend fun boolean(key: String): Boolean {
+    override fun boolean(key: String): Boolean {
         return config.getBoolean(key)
     }
 
