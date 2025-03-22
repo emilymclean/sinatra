@@ -506,16 +506,28 @@ class NavigateEntryScreen(
         val viewModel = koinScreenModel<NavigationEntryViewModel>()
         val destination by viewModel.destination.collectAsStateWithLifecycle()
         val origin by viewModel.origin.collectAsStateWithLifecycle()
+        val anchorTime by viewModel.anchorTime.collectAsStateWithLifecycle()
+
+        val departureTime = when(anchorTime) {
+            !is NavigationAnchorTime.Now -> firstLeg.departureTime
+            else -> null
+        }
 
         Column(Modifier.fillMaxWidth()) {
             when (firstLeg) {
                 is JourneyLeg.Transfer -> {
-                    DepartureLeg(firstLeg.stops.first().name)
+                    DepartureLeg(
+                        firstLeg.stops.first().name,
+                        departureTime
+                    )
                     HorizontalDivider(Modifier.padding(start = journeyIconInset, end = 1.rdp))
                 }
                 is JourneyLeg.TransferPoint -> {
                     origin?.name?.let {
-                        DepartureLeg(it)
+                        DepartureLeg(
+                            it,
+                            departureTime
+                        )
                         HorizontalDivider(Modifier.padding(start = journeyIconInset, end = 1.rdp))
                     }
                 }
@@ -611,13 +623,21 @@ fun TravelLeg(leg: JourneyLeg.Travel) {
 }
 
 @Composable
-fun DepartureLeg(pointName: String) {
+fun DepartureLeg(
+    pointName: String,
+    departureTime: Time?
+) {
     LegScaffold({ GenericMarkerIcon() }) {
         Column(
             Modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(0.75.rdp)
         ) {
-            Markdown(stringResource(Res.string.navigate_travel_journey_depart, pointName))
+            Markdown(
+                when (departureTime) {
+                    null -> stringResource(Res.string.navigate_travel_journey_depart, pointName)
+                    else -> stringResource(Res.string.navigate_travel_depart, pointName, departureTime.format())
+                }
+            )
         }
     }
 }
