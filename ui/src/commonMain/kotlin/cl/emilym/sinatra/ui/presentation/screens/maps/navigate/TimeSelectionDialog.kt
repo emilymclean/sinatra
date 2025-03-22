@@ -142,19 +142,28 @@ fun TimeSelectionDialog(
                         Spacer(Modifier.height(0.5.rdp))
                         Button(
                             onClick = {
-                                val instant = LocalDateTime(
-                                    initialInstant.year,
-                                    initialInstant.monthNumber,
-                                    initialInstant.dayOfMonth,
-                                    timePickerState.hour,
-                                    timePickerState.minute,
-                                    0
-                                ).toInstant(timeZone)
+                                val currentInstant = clock.now().toLocalDateTime(timeZone)
+                                if (
+                                    selectedTabIndex == 0 &&
+                                    timePickerState.hour == currentInstant.hour &&
+                                    timePickerState.minute == currentInstant.minute
+                                ) {
+                                    onTimeSelected(NavigationAnchorTime.Now)
+                                } else {
+                                    val instant = LocalDateTime(
+                                        initialInstant.year,
+                                        initialInstant.monthNumber,
+                                        initialInstant.dayOfMonth,
+                                        timePickerState.hour,
+                                        timePickerState.minute,
+                                        0
+                                    ).toInstant(timeZone)
 
-                                onTimeSelected(when(selectedTabIndex) {
-                                    0 -> NavigationAnchorTime.DepartureTime(instant)
-                                    else -> NavigationAnchorTime.ArrivalTime(instant)
-                                })
+                                    onTimeSelected(when(selectedTabIndex) {
+                                        0 -> NavigationAnchorTime.DepartureTime(instant)
+                                        else -> NavigationAnchorTime.ArrivalTime(instant)
+                                    })
+                                }
                                 onDismissRequest()
                             },
                         ) {
