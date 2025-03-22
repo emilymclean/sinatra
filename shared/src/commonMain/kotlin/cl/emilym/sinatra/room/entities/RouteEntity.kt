@@ -140,6 +140,7 @@ data class RouteTripInformationEntity(
 )
 data class RouteTripStopEntity(
     @PrimaryKey(autoGenerate = true) val id: Long,
+    @ColumnInfo(index = true)
     val routeTripInformationEntityId: Long,
     val resource: ResourceKey,
     val stopId: StopId,
