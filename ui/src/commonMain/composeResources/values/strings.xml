@@ -127,6 +127,10 @@
     <string name="navigate_entry_select_destination">Pick a destination</string>
     <string name="navigate_entry_swap_origin_destination">Swap starting point and destination</string>
 
+    <string name="navigate_entry_no_starting_point">Pick a starting point to plan a journey.</string>
+    <string name="navigate_entry_no_destination">Pick a destination to plan a journey.</string>
+    <string name="navigate_entry_no_starting_point_destination">Pick a starting point and destination to plan a journey.</string>
+
     <string name="time_am">am</string>
     <string name="time_pm">pm</string>
     <string name="day_of_week_monday">Monday</string>
