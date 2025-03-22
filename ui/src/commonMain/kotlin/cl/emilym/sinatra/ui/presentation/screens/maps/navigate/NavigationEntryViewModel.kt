@@ -175,13 +175,6 @@ class NavigationEntryViewModel(
         }
     }.stateIn(screenModelScope, SharingStarted.Lazily, NavigationState.GraphLoading)
 
-    val journeyCount = navigationState.map {
-        when (it) {
-            is NavigationState.JourneysFound -> it.journeys.size
-            else -> 0
-        }
-    }.state(0)
-
     val state = _state.flatMapLatest {
         when (it) {
             is State.JourneySelection -> navigationState.map {
@@ -200,6 +193,27 @@ class NavigationEntryViewModel(
             ) }
         }
     }.state(NavigationEntryState.JourneySelection(NavigationState.GraphLoading))
+
+    val journeyCount = navigationState.map {
+        when (it) {
+            is NavigationState.JourneysFound -> it.journeys.size
+            else -> 0
+        }
+    }.state(0)
+
+    val backStackSize = MutableStateFlow(0)
+    val showBackButton = combine(
+        state,
+        navigationState,
+        backStackSize
+    ) { state, navigationState, backStackSize ->
+        when {
+            backStackSize > 1 -> true
+            navigationState is NavigationState.JourneysFound && state is NavigationEntryState.JourneySelected ->
+                navigationState.journeys.size > 1
+            else -> false
+        }
+    }.state(true)
 
     val timeDialogVisible = MutableStateFlow<Boolean>(false)
 

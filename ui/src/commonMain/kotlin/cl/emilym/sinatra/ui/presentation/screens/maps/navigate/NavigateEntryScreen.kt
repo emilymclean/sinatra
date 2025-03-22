@@ -5,8 +5,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,8 +15,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.IconButton
@@ -28,17 +24,12 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import cl.emilym.sinatra.ui.widgets.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.semantics.role
-import androidx.compose.ui.semantics.selected
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
 import cafe.adriel.voyager.core.annotation.ExperimentalVoyagerApi
 import cafe.adriel.voyager.core.lifecycle.LifecycleEffectOnce
 import cafe.adriel.voyager.core.screen.ScreenKey
@@ -54,6 +45,7 @@ import cl.emilym.sinatra.data.models.JourneyLeg
 import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.data.models.Time
 import cl.emilym.sinatra.ui.color
+import cl.emilym.sinatra.ui.localization.format
 import cl.emilym.sinatra.ui.maps.LineItem
 import cl.emilym.sinatra.ui.maps.MapItem
 import cl.emilym.sinatra.ui.maps.MarkerItem
@@ -66,7 +58,6 @@ import cl.emilym.sinatra.ui.presentation.screens.search.SearchScreen
 import cl.emilym.sinatra.ui.presentation.theme.Container
 import cl.emilym.sinatra.ui.presentation.theme.walkingColor
 import cl.emilym.sinatra.ui.text
-import cl.emilym.sinatra.ui.localization.format
 import cl.emilym.sinatra.ui.widgets.AccessibleIcon
 import cl.emilym.sinatra.ui.widgets.BackButton
 import cl.emilym.sinatra.ui.widgets.BikeIcon
@@ -76,16 +67,14 @@ import cl.emilym.sinatra.ui.widgets.CurrentLocationCard
 import cl.emilym.sinatra.ui.widgets.GenericMarkerIcon
 import cl.emilym.sinatra.ui.widgets.JourneyOptionCard
 import cl.emilym.sinatra.ui.widgets.JourneyStartIcon
-import cl.emilym.sinatra.ui.widgets.ListCard
 import cl.emilym.sinatra.ui.widgets.ListHint
 import cl.emilym.sinatra.ui.widgets.LocalMapControl
 import cl.emilym.sinatra.ui.widgets.MapIcon
-import cl.emilym.sinatra.ui.widgets.NavigatorBackButton
 import cl.emilym.sinatra.ui.widgets.RouteRandle
 import cl.emilym.sinatra.ui.widgets.SinatraBackHandler
 import cl.emilym.sinatra.ui.widgets.SwapIcon
 import cl.emilym.sinatra.ui.widgets.WalkIcon
-import cl.emilym.sinatra.ui.widgets.WheelchairAccessibleIcon
+import cl.emilym.sinatra.ui.widgets.collectAsStateWithLifecycle
 import cl.emilym.sinatra.ui.widgets.currentLocation
 import cl.emilym.sinatra.ui.widgets.hasLocationPermission
 import cl.emilym.sinatra.ui.widgets.routeRandleSize
@@ -112,7 +101,7 @@ import sinatra.ui.generated.resources.navigate_walk
 
 
 class NavigateEntryScreen(
-    val destination: NavigationLocation,
+    val destination: NavigationLocation? = null,
     val origin: NavigationLocation? = null
 ): MapScreen {
 
@@ -124,7 +113,7 @@ class NavigateEntryScreen(
         @Composable
         get() = 2.rdp + 24.dp
 
-    override val key: ScreenKey = "navigateEntryScreen-${destination.screenKey}-${origin?.screenKey}"
+    override val key: ScreenKey = "navigateEntryScreen-${destination?.screenKey}-${origin?.screenKey}"
 
     @Composable
     override fun mapItems(): List<MapItem> {
@@ -214,7 +203,7 @@ class NavigateEntryScreen(
         val hasLocationPermission = hasLocationPermission()
         LifecycleEffectOnce {
             viewModel.init(
-                destination,
+                destination ?: NavigationLocation.None,
                 origin ?: (
                         if (hasLocationPermission)
                             NavigationLocation.CurrentLocation
@@ -226,6 +215,10 @@ class NavigateEntryScreen(
         LaunchedEffect(currentLocation) {
             if (currentLocation == null) return@LaunchedEffect
             viewModel.updateCurrentLocation(currentLocation)
+        }
+
+        LaunchedEffect(navigator.size) {
+            viewModel.backStackSize.value = navigator.size
         }
 
         when (val state = state) {
@@ -262,7 +255,6 @@ class NavigateEntryScreen(
                 }
                 is NavigationEntryState.Search,
                 is NavigationEntryState.JourneySelection -> bottomSheet?.bottomSheetState?.expand()
-                null -> {}
             }
         }
     }
@@ -313,9 +305,12 @@ class NavigateEntryScreen(
                         Modifier.padding(1.rdp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        BackButton {
-                            if (viewModel.back()) {
-                                navigator.pop()
+                        val showBackButton by viewModel.showBackButton.collectAsStateWithLifecycle()
+                        if (showBackButton) {
+                            BackButton {
+                                if (viewModel.back()) {
+                                    navigator.pop()
+                                }
                             }
                         }
                         Row(
