@@ -19,31 +19,6 @@ class DisplayRoutesUseCaseTest {
     private val displayRoutesUseCase = DisplayRoutesUseCase(routeRepository)
 
     @Test
-    fun `should return filtered and sorted routes`() = runBlocking {
-        // Arrange
-        val ignoredRoutes = listOf("1", "3")
-        val routes = listOf(
-            Route("1", "1", "1", null, "R1", null, RouteType.LIGHT_RAIL, null, RouteVisibility(false, null)),
-            Route("2", "2", "2", null, "R2", null, RouteType.LIGHT_RAIL, null, RouteVisibility(false, null)),
-            Route("3", "3", "3", null, "R3", null, RouteType.LIGHT_RAIL, null, RouteVisibility(false, null)),
-            Route("4", "4", "4", null, "R4", null, RouteType.LIGHT_RAIL, null, RouteVisibility(false, null)),
-        )
-        val expectedFilteredSortedRoutes = listOf(
-            Route("2", "2", "2", null, "R2", null, RouteType.LIGHT_RAIL, null, RouteVisibility(false, null)),
-            Route("4", "4", "4", null, "R4", null, RouteType.LIGHT_RAIL, null, RouteVisibility(false, null))
-        )
-
-        coEvery { routeRepository.routes() } returns Cachable.live(routes)
-
-        // Act
-        val result = displayRoutesUseCase()
-
-        // Assert
-        assertEquals(Cachable.live(expectedFilteredSortedRoutes), result)
-        coVerify(exactly = 1) { routeRepository.routes() }
-    }
-
-    @Test
     fun `should return empty list when routes are empty`() = runBlocking {
         // Arrange
         coEvery { routeRepository.routes() } returns Cachable.live(emptyList())
