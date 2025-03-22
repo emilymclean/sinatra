@@ -53,7 +53,7 @@ class NetworkGraphReverseCacheWorker(
     override suspend fun getFromPersistence(resource: ResourceKey) = networkGraphPersistence.get(reverse = true)
 
     suspend fun get(): Cachable<NetworkGraph> {
-        return run(networkGraphClient.networkGraphEndpointDigestPair, "network-graph-reverse-byte").map {
+        return run(networkGraphClient.networkGraphReverseEndpointDigestPair, "network-graph-reverse-byte").map {
             NetworkGraph.byteFormatForByteArray(it)
         }
     }
