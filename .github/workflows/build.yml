@@ -256,12 +256,33 @@ jobs:
     - uses: actions/checkout@v4
       with:
         fetch-depth: 0
-    - id: changelog
-      uses: mikepenz/release-changelog-builder-action@v5
     - name: Create tag for release
       uses: rickstaa/action-create-tag@v1
       with:
         tag: v${{ needs.version.outputs.version }}
+    - id: changelog
+      uses: mikepenz/release-changelog-builder-action@v5
+      with:
+        configurationJson: |2-
+            "template": "#{{CHANGELOG}}",
+            "categories": [
+              {
+                "title": "## Feature",
+                "labels": ["feat", "feature"]
+              },
+              {
+                "title": "## Fix",
+                "labels": ["fix", "bug"]
+              },
+              {
+                "title": "## Chore",
+                "labels": ["chore"]
+              },
+              {
+                "title": "## Other",
+                "labels": []
+              }
+            ]
     - id: create_release
       name: Create Release
       uses: softprops/action-gh-release@v2
