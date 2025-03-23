@@ -234,7 +234,8 @@ class NavigateEntryScreen(
             is NavigationEntryState.Search -> SearchState(viewModel)
         }
 
-        SinatraBackHandler(true) {
+        val showBackButton by viewModel.showBackButton.collectAsStateWithLifecycle()
+        SinatraBackHandler(showBackButton) {
             if (viewModel.back()) {
                 navigator.pop()
             }
