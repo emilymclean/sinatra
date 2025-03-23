@@ -380,29 +380,6 @@ jobs = new Mapping {
       new ActionStep {
         id = "changelog"
         uses = "mikepenz/release-changelog-builder-action@v5"
-        with = new Mapping {
-          ["configurationJson"] = """
-            "template": "#{{CHANGELOG}}",
-            "categories": [
-              {
-                "title": "## Feature",
-                "labels": ["feat", "feature"]
-              },
-              {
-                "title": "## Fix",
-                "labels": ["fix", "bug"]
-              },
-              {
-                "title": "## Chore",
-                "labels": ["chore"]
-              },
-              {
-                "title": "## Other",
-                "labels": []
-              }
-            ]
-          """
-        }
       }
       new ActionStep {
         id = "create_release"
