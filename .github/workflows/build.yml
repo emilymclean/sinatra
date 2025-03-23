@@ -262,6 +262,28 @@ jobs:
         tag: v${{ needs.version.outputs.version }}
     - id: changelog
       uses: mikepenz/release-changelog-builder-action@v5
+      with:
+        configurationJson: |2-
+            {
+              "categories": [
+                {
+                    "title": "## ⭐ Feature",
+                    "labels": ["enhancement", "feature"]
+                },
+                {
+                    "title": "## 🐛 Fix",
+                    "labels": ["fix", "bug"]
+                },
+                {
+                    "title": "## 🧹 Chore",
+                    "labels": ["chore"]
+                },
+                {
+                    "title": "## 📦 Other",
+                    "labels": []
+                }
+              ]
+            }
     - id: create_release
       name: Create Release
       uses: softprops/action-gh-release@v2
