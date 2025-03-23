@@ -21,6 +21,9 @@ import de.jensklingenberg.ktorfit.http.Url
 
 interface GtfsApi {
 
+    @GET("v1/cache-invalidation-key")
+    suspend fun cacheInvalidationKey(): String
+
     @GET("v1/stops.pb")
     suspend fun stops(): StopEndpoint
 
