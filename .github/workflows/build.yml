@@ -256,6 +256,8 @@ jobs:
     - uses: actions/checkout@v4
       with:
         fetch-depth: 0
+    - id: changelog
+      uses: mikepenz/release-changelog-builder-action@v5
     - name: Create tag for release
       uses: rickstaa/action-create-tag@v1
       with:
@@ -269,6 +271,7 @@ jobs:
         name: Release ${{ needs.version.outputs.version }}
         draft: false
         prerelease: ${{ github.ref != 'refs/heads/main' }}
+        body: ${{steps.changelog.outputs.changelog}}
   build-ipa:
     needs:
     - version
