@@ -60,6 +60,8 @@ android {
 dependencies {
     implementation(project(":ui"))
     implementation(project(":shared"))
+    implementation(project(":feature:base"))
+    implementation(project(":feature:widget"))
 
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.3")
 

@@ -18,3 +18,5 @@ rootProject.name = "Sinatra"
 include(":androidApp")
 include(":shared")
 include(":ui")
+include(":feature:widget")
+include(":feature:base")

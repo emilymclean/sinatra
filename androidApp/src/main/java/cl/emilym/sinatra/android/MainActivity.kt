@@ -4,11 +4,13 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.runtime.Composable
 import cafe.adriel.voyager.core.registry.ScreenRegistry
+import cl.emilym.sinatra.android.base.ComposeActivity
 import cl.emilym.sinatra.ui.App
 import cl.emilym.sinatra.ui.presentation.sharedScreenModule
 
-class MainActivity : ComponentActivity() {
+class MainActivity : ComposeActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -16,10 +18,10 @@ class MainActivity : ComponentActivity() {
         ScreenRegistry {
             sharedScreenModule()
         }
+    }
 
-        enableEdgeToEdge()
-        setContent {
-            App()
-        }
+    @Composable
+    override fun Content() {
+        App()
     }
 }
