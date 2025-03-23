@@ -1,4 +1,5 @@
 amends "package://github.com/emilymclean/pkl-github-actions/releases/download/v1.0.0/pkl-github-actions@1.0.0#/actions.pkl"
+import "package://components.emilym.cl/actions/actions@0.1.12#/common/common.pkl" as common
 
 name = "Label Pull Requests"
 
@@ -19,6 +20,9 @@ jobs = new Mapping {
             ["pull-requests"] = "write"
         }
         steps = new Listing {
+            new ActionStep {
+                uses = "actions/checkout@v4"
+            }
             new ActionStep {
                 uses = "actions/labeler@v5"
             }
