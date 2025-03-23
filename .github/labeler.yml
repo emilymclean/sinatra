@@ -1,16 +1,14 @@
 "feature":
   - head-branch:
-    - "feature\/.*"
-    - ".*\/feature\/.*"
+    - "feature\\/.*"
+    - ".*\\/feature\\/.*"
 
-"bug":
+"fix":
   - head-branch:
-    - "fix\/.*"
-    - ".*\/fix\/.*"
-    - "bug\/.*"
-    - "\.*/bug\/.*"
+    - "fix\\/.*"
+    - ".*\\/fix\\/.*"
 
 "chore":
   - head-branch:
-    - "chore\/.*"
-    - ".*\/chore\/.*"
+    - "chore\\/.*"
+    - ".*\\/chore\\/.*"
