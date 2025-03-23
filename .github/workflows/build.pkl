@@ -371,14 +371,37 @@ jobs = new Mapping {
     steps = new Listing {
       common.checkout
       new ActionStep {
-        id = "changelog"
-        uses = "mikepenz/release-changelog-builder-action@v5"
-      }
-      new ActionStep {
         name = "Create tag for release"
         uses = "rickstaa/action-create-tag@v1"
         with = new Mapping {
           ["tag"] = "v${{ needs.version.outputs.version }}"
+        }
+      }
+      new ActionStep {
+        id = "changelog"
+        uses = "mikepenz/release-changelog-builder-action@v5"
+        with = new Mapping {
+          ["configurationJson"] = """
+            "template": "#{{CHANGELOG}}",
+            "categories": [
+              {
+                "title": "## Feature",
+                "labels": ["feat", "feature"]
+              },
+              {
+                "title": "## Fix",
+                "labels": ["fix", "bug"]
+              },
+              {
+                "title": "## Chore",
+                "labels": ["chore"]
+              },
+              {
+                "title": "## Other",
+                "labels": []
+              }
+            ]
+          """
         }
       }
       new ActionStep {
