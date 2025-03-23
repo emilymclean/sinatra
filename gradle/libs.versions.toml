@@ -73,6 +73,7 @@ koin-ksp-compiler = { group = "io.insert-koin", name = "koin-ksp-compiler", vers
 koin-android = { group = "io.insert-koin", name = "koin-android", version.ref = "koin" }
 koin-compose = { group = "io.insert-koin", name = "koin-compose", version.ref = "koin" }
 koin-compose-viewmodel = { group = "io.insert-koin", name = "koin-compose-viewmodel", version.ref = "koin" }
+koin-viewmodel = { group = "io.insert-koin", name = "koin-viewmodel", version.ref = "koin" }
 
 # Ktor
 ktor-ktorfit-lib = { module = "de.jensklingenberg.ktorfit:ktorfit-lib", version.ref = "ktorfit" }

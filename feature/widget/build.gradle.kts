@@ -50,8 +50,9 @@ dependencies {
 
     // Koin
     implementation(libs.koin.core)
+    implementation(libs.koin.android)
     implementation(libs.koin.compose)
-    implementation(libs.koin.compose.viewmodel)
+    implementation(libs.koin.viewmodel)
     implementation(libs.koin.annotations)
 
     // Room
