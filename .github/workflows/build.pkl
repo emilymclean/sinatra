@@ -370,7 +370,30 @@ jobs = new Mapping {
     }
     steps = new Listing {
       common.checkout
-      ...common.create_release
+      new ActionStep {
+        id = "changelog"
+        uses = "mikepenz/release-changelog-builder-action@v5"
+      }
+      new ActionStep {
+        name = "Create tag for release"
+        uses = "rickstaa/action-create-tag@v1"
+        with = new Mapping {
+          ["tag"] = "v${{ needs.version.outputs.version }}"
+        }
+      }
+      new ActionStep {
+        id = "create_release"
+        name = "Create Release"
+        uses = "softprops/action-gh-release@v2"
+        with = new Mapping {
+          ["token"] = "${{ secrets.GITHUB_TOKEN }}"
+          ["tag_name"] = "v${{ needs.version.outputs.version }}"
+          ["name"] = "Release ${{ needs.version.outputs.version }}"
+          ["draft"] = false
+          ["prerelease"] = "${{ github.ref != 'refs/heads/main' }}"
+          ["body"] = "${{steps.changelog.outputs.changelog}}"
+        }
+      }
     }
   }
   ["build-ipa"] = new Job {
