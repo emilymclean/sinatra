@@ -71,4 +71,8 @@ class ShaRepository(
         shaDao.deleteByTypeAndResource(category.db, resource)
     }
 
+    suspend fun invalidateAll() {
+        shaDao.deleteAll()
+    }
+
 }
