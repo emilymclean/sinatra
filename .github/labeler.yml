@@ -3,12 +3,10 @@
     - "feature\/.*"
     - ".*\/feature\/.*"
 
-"bug":
+"fix":
   - head-branch:
     - "fix\/.*"
     - ".*\/fix\/.*"
-    - "bug\/.*"
-    - "\.*/bug\/.*"
 
 "chore":
   - head-branch:
