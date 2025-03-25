@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import cl.emilym.compose.units.rdp
+import cl.emilym.sinatra.FeatureFlags
 import cl.emilym.sinatra.data.models.ServiceAccessibility
 import cl.emilym.sinatra.data.models.ServiceBikesAllowed
 import cl.emilym.sinatra.data.models.ServiceWheelchairAccessible
@@ -92,12 +93,14 @@ fun StopCard(
                 modifier = Modifier.weight(1f, fill = false),
             )
             // Every stop is marked as not wheelchair accessible, so there isn't any point having this :/, thanks Transport Canberra
-//            Row(
-//                verticalAlignment = Alignment.CenterVertically,
-//                horizontalArrangement = Arrangement.spacedBy(0.25.rdp)
-//            ) {
-//                stop.accessibility.icons()
-//            }
+            if (FeatureFlags.STOP_CARD_SHOW_ACCESSIBILITY) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(0.25.rdp)
+                ) {
+                    stop.accessibility.icons()
+                }
+            }
         }
 
         stopStationTime?.let {
