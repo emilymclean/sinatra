@@ -1,11 +1,13 @@
 <resources  xmlns:tools="http://schemas.android.com/tools" tools:locale="zh-Hans-CH">
       
   <string name="navigation_bar_map">地图</string>
+
+  <string name="navigation_bar_navigate">导航</string>
       
   <string name="navigation_bar_favourites">收藏夹</string>
       
   <string name="navigation_bar_about">关于</string>
-      
+
   <string name="favourites_nothing_favourited">您收藏的任何路线或站点都可以在这里找到。</string>
       
   <string name="about_app_version">版本 %1$s (%2$s)</string>
@@ -73,7 +75,27 @@
   <string name="navigate_travel_journey_arrive">于%2$s抵达 %1$s</string>
       
   <string name="navigate_travel_journey_depart">从 %1$s 出发</string>
-      
+
+  <string name="navigate_chip_wheelchair_accessible">仅显示无障碍行程</string>
+
+  <string name="navigate_chip_bikes_allowed">仅显示可携带自行车的行程</string>
+
+  <string name="navigate_chip_anchor_now">立即出发</string>
+
+  <string name="navigate_chip_anchor_depart">%1$s出发</string>
+
+  <string name="navigate_chip_anchor_arrive">%1$s前到达</string>
+
+  <string name="time_select_tab_depart">出发</string>
+
+  <string name="time_select_tab_arrive">到达</string>
+
+  <string name="time_select_button_now">现在</string>
+
+  <string name="time_select_button_ok">确定</string>
+
+  <string name="time_select_button_cancel">取消</string>
+
   <string name="map_search_nearby_stops">附近站点</string>
       
   <string name="search_recently_viewed">最近浏览</string>
@@ -159,6 +181,12 @@
   <string name="navigate_entry_select_origin">选择一个起点</string>
       
   <string name="navigate_entry_select_destination">選擇目的地</string>
+
+  <string name="navigate_entry_no_starting_point">选择一个起点来规划旅程。</string>
+
+  <string name="navigate_entry_no_destination">选择目的地来计划旅程。</string>
+
+  <string name="navigate_entry_no_starting_point_destination">选择起点和目的地来规划旅程。</string>
 
   <string name="time_am">上午</string>
 

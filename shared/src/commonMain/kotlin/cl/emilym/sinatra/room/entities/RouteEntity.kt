@@ -4,6 +4,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import androidx.room.Relation
 import cl.emilym.sinatra.data.models.ColorPair
@@ -18,12 +19,10 @@ import cl.emilym.sinatra.data.models.RouteVisibility
 import cl.emilym.sinatra.data.models.ServiceBikesAllowed
 import cl.emilym.sinatra.data.models.ServiceWheelchairAccessible
 import cl.emilym.sinatra.data.models.StopId
-import cl.emilym.sinatra.data.models.StopVisibility
 import cl.emilym.sinatra.room.referenced
 import cl.emilym.sinatra.room.time
 import cl.emilym.sinatra.room.toLong
 import kotlinx.datetime.Instant
-import kotlin.time.Duration.Companion.milliseconds
 
 @Entity
 data class RouteEntity(
@@ -141,6 +140,7 @@ data class RouteTripInformationEntity(
 )
 data class RouteTripStopEntity(
     @PrimaryKey(autoGenerate = true) val id: Long,
+    @ColumnInfo(index = true)
     val routeTripInformationEntityId: Long,
     val resource: ResourceKey,
     val stopId: StopId,

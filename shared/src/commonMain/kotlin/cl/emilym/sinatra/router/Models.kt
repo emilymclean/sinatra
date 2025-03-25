@@ -13,15 +13,6 @@ data class NodeCost(
     val dayIndex: Int? = null
 )
 
-data class NodeAndIndex<T: NetworkGraphNode, I: NodeIndex>(
-    val node: T,
-    val index: I
-)
-
-data class RouteAndHeading(
-    val routeIndex: RouteIndex,
-    val headingIndex: HeadingIndex
-)
 
 data class TravelTime<T: NetworkGraphNode>(
     val node: T,
@@ -64,6 +55,22 @@ class StopInformation(
         return "StopInformation(boardedFrom=$boardedFrom, earliestArrivalTimeForTrip=${earliestArrivalTimeForTrip.contentToString()}, earliestArrivalTime=$earliestArrivalTime)"
     }
 
+}
+
+sealed interface GroupedGraphEdges {
+    val stops: List<StopId>
+    val edges: List<NetworkGraphEdge>
+
+    data class Transfer(
+        override val stops: List<StopId>,
+        override val edges: List<NetworkGraphEdge>
+    ): GroupedGraphEdges
+
+    data class Travel(
+        override val stops: List<StopId>,
+        override val edges: List<NetworkGraphEdge>,
+        val dayIndicies: List<Int?>
+    ): GroupedGraphEdges
 }
 
 sealed interface RaptorJourneyConnection {

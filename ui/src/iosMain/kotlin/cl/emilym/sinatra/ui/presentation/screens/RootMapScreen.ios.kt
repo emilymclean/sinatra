@@ -1,7 +1,6 @@
 package cl.emilym.sinatra.ui.presentation.screens
 
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -15,7 +14,6 @@ import androidx.compose.ui.viewinterop.UIKitInteropInteractionMode
 import androidx.compose.ui.viewinterop.UIKitInteropProperties
 import androidx.compose.ui.viewinterop.UIKitView
 import cl.emilym.sinatra.FeatureFlags
-import cl.emilym.sinatra.ui.asPaddingValues
 import cl.emilym.sinatra.ui.maps.AppleMapControl
 import cl.emilym.sinatra.ui.maps.MapControl
 import cl.emilym.sinatra.ui.maps.MarkerItem
@@ -35,7 +33,6 @@ import kotlinx.coroutines.launch
 import platform.MapKit.MKMapView
 import platform.MapKit.MKPointOfInterestCategoryPublicTransport
 import platform.MapKit.MKPointOfInterestFilter
-import platform.UIKit.UIEdgeInsetsMake
 
 val globalPointOfInterestFilter = MKPointOfInterestFilter(excludingCategories = listOf(
     MKPointOfInterestCategoryPublicTransport

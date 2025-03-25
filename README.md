@@ -43,12 +43,9 @@ Note that release builds built on the develop branch may not be functional, whil
 may quickly become out of date.
 
 ### From Source
-To build from source, the app requires a Google Maps API key on Android, as well
-as a Firebase project with Firebase Crashlytics and Remote Config enabled. The values gathered from
-Remote Config can be found in `RemoteConfigRepository.kt` and most are optional, however `api_url`
-**must** be set to a valid [GTFS api endpoint](https://github.com/emilymclean/gtfs-api). Likewise, 
-to enable address resolution, `nominatim_api_url` must also be provided. The Firebase project should 
-have four targets configured:
+To build from source, the app requires a Google Maps API key on Android, as well 
+as a Firebase project with Firebase Crashlytics and Remote Config enabled. The values the project 
+uses can be found in `RemoteConfigRepository.kt`. The Firebase project should have four targets configured:
 * `cl.emilym.sinatra` for Android and iOS
 * `cl.emilym.sinatra.develop` for Android and iOS
 

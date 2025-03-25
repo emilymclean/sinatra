@@ -2,7 +2,6 @@ package cl.emilym.sinatra.data.persistence
 
 import cl.emilym.sinatra.data.models.JourneySearchConfig
 import cl.emilym.sinatra.data.models.JourneySearchOption
-import cl.emilym.sinatra.data.persistence.NetworkGraphPersistence.Companion.NETWORK_GRAPH_CACHE_FILENAME
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.withContext
@@ -17,23 +16,31 @@ class NetworkGraphPersistence(
 
     companion object {
         const val NETWORK_GRAPH_CACHE_FILENAME = "network-graph.pb"
+        const val NETWORK_GRAPH_REVERSE_CACHE_FILENAME = "network-graph-reverse.pb"
     }
 
-    suspend fun save(graph: ByteArray) {
+    suspend fun save(graph: ByteArray, reverse: Boolean) {
         withContext(Dispatchers.IO) {
-            cacheFileWriter.save(NETWORK_GRAPH_CACHE_FILENAME, graph)
+            cacheFileWriter.save(fileName(reverse), graph)
         }
     }
 
-    suspend fun get(): ByteArray? {
+    suspend fun get(reverse: Boolean): ByteArray? {
         return withContext(Dispatchers.IO) {
-            cacheFileWriter.retrieve(NETWORK_GRAPH_CACHE_FILENAME)
+            cacheFileWriter.retrieve(fileName(reverse))
         }
     }
 
-    suspend fun exists(): Boolean {
+    suspend fun exists(reverse: Boolean): Boolean {
         return withContext(Dispatchers.IO) {
-            cacheFileWriter.exists(NETWORK_GRAPH_CACHE_FILENAME)
+            cacheFileWriter.exists(fileName(reverse))
+        }
+    }
+
+    private fun fileName(reverse: Boolean): String {
+        return when {
+            reverse -> NETWORK_GRAPH_REVERSE_CACHE_FILENAME
+            else -> NETWORK_GRAPH_CACHE_FILENAME
         }
     }
 

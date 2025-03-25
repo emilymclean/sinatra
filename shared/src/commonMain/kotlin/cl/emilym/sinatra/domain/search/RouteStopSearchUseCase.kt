@@ -3,9 +3,6 @@ package cl.emilym.sinatra.domain.search
 import cl.emilym.sinatra.data.models.Place
 import cl.emilym.sinatra.data.models.Route
 import cl.emilym.sinatra.data.models.Stop
-import cl.emilym.sinatra.data.models.map
-import cl.emilym.sinatra.data.repository.RouteRepository
-import cl.emilym.sinatra.data.repository.StopRepository
 import cl.emilym.sinatra.e
 import cl.emilym.sinatra.lib.Tokenizer
 import io.github.aakira.napier.Napier

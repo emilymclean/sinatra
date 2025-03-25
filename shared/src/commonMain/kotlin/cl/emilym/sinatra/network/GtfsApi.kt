@@ -21,80 +21,83 @@ import de.jensklingenberg.ktorfit.http.Url
 
 interface GtfsApi {
 
-    @GET("stops.pb")
+    @GET("v1/cache-invalidation-key")
+    suspend fun cacheInvalidationKey(): String
+
+    @GET("v1/stops.pb")
     suspend fun stops(): StopEndpoint
 
-    @GET("stops.pb.sha")
+    @GET("v1/stops.pb.sha")
     suspend fun stopsDigest(): String
 
-    @GET("stop/{stopId}/timetable.pb")
+    @GET("v1/stop/{stopId}/timetable.pb")
     suspend fun stopTimetable(
         @Path("stopId") stopId: StopId
     ): StopTimetable
 
-    @GET("stop/{stopId}/timetable.pb.sha")
+    @GET("v1/stop/{stopId}/timetable.pb.sha")
     suspend fun stopTimetableDigest(
         @Path("stopId") stopId: StopId
     ): String
 
-    @GET("routes.pb")
+    @GET("v1/routes.pb")
     suspend fun routes(): RouteEndpoint
 
-    @GET("routes.pb.sha")
+    @GET("v1/routes.pb.sha")
     suspend fun routesDigest(): String
 
-    @GET("route/{routeId}/services.pb")
+    @GET("v1/route/{routeId}/services.pb")
     suspend fun routeServices(
         @Path("routeId") routeId: RouteId
     ): RouteServicesEndpoint
 
-    @GET("route/{routeId}/services.pb.sha")
+    @GET("v1/route/{routeId}/services.pb.sha")
     suspend fun routeServicesDigest(
         @Path("routeId") routeId: RouteId
     ): String
 
-    @GET("route/{routeId}/service/{serviceId}/timetable.pb")
+    @GET("v1/route/{routeId}/service/{serviceId}/timetable.pb")
     suspend fun routeServiceTimetable(
         @Path("routeId") routeId: RouteId,
         @Path("serviceId") serviceId: ServiceId
     ): RouteTimetableEndpoint
 
-    @GET("route/{routeId}/service/{serviceId}/timetable.pb.sha")
+    @GET("v1/route/{routeId}/service/{serviceId}/timetable.pb.sha")
     suspend fun routeServiceTimetableDigest(
         @Path("routeId") routeId: RouteId,
         @Path("serviceId") serviceId: ServiceId
     ): String
 
-    @GET("route/{routeId}/service/{serviceId}/canonical.pb")
+    @GET("v1/route/{routeId}/service/{serviceId}/canonical.pb")
     suspend fun routeServiceCanonicalTimetable(
         @Path("routeId") routeId: RouteId,
         @Path("serviceId") serviceId: ServiceId
     ): RouteCanonicalTimetableEndpoint
 
-    @GET("route/{routeId}/service/{serviceId}/canonical.pb.sha")
+    @GET("v1/route/{routeId}/service/{serviceId}/canonical.pb.sha")
     suspend fun routeServiceCanonicalTimetableDigest(
         @Path("routeId") routeId: RouteId,
         @Path("serviceId") serviceId: ServiceId
     ): String
 
-    @GET("route/{routeId}/service/{serviceId}/trip/{tripId}/timetable.pb")
+    @GET("v1/route/{routeId}/service/{serviceId}/trip/{tripId}/timetable.pb")
     suspend fun routeTripTimetable(
         @Path("routeId") routeId: RouteId,
         @Path("serviceId") serviceId: ServiceId,
         @Path("tripId") tripId: TripId
     ): RouteTripTimetableEndpoint
 
-    @GET("route/{routeId}/service/{serviceId}/trip/{tripId}/timetable.pb.sha")
+    @GET("v1/route/{routeId}/service/{serviceId}/trip/{tripId}/timetable.pb.sha")
     suspend fun routeTripTimetableDigest(
         @Path("routeId") routeId: RouteId,
         @Path("serviceId") serviceId: ServiceId,
         @Path("tripId") tripId: TripId
     ): String
 
-    @GET("services.pb")
+    @GET("v1/services.pb")
     suspend fun services(): ServiceEndpoint
 
-    @GET("services.pb.sha")
+    @GET("v1/services.pb.sha")
     suspend fun servicesDigest(): String
 
     @GET
@@ -103,34 +106,40 @@ interface GtfsApi {
     @GET
     suspend fun contentDynamic(@Url url: String): Pages
 
-    @GET("content.pb")
+    @GET("v1/content.pb")
     suspend fun content(): Pages
 
-    @GET("content.pb.sha")
+    @GET("v1/content.pb.sha")
     suspend fun contentDigest(): String
 
-    @GET("content.android.pb")
+    @GET("v1/content.android.pb")
     suspend fun contentAndroid(): Pages
 
-    @GET("content.android.pb.sha")
+    @GET("v1/content.android.pb.sha")
     suspend fun contentAndroidDigest(): String
 
-    @GET("content.ios.pb")
+    @GET("v1/content.ios.pb")
     suspend fun contentIos(): Pages
 
-    @GET("content.ios.pb.sha")
+    @GET("v1/content.ios.pb.sha")
     suspend fun contentIosDigest(): String
 
-    @GET("network_graph.eng")
+    @GET("v1/network-graph.eng")
     suspend fun networkGraph(): ByteArray
 
-    @GET("network_graph.eng.sha")
+    @GET("v1/network-graph.eng.sha")
     suspend fun networkGraphDigest(): String
 
-    @GET("journey-config.pb")
+    @GET("v1/network-graph-reverse.eng")
+    suspend fun reverseNetworkGraph(): ByteArray
+
+    @GET("v1/network-graph-reverse.eng.sha")
+    suspend fun reverseNetworkGraphDigest(): String
+
+    @GET("v1/journey-config.pb")
     suspend fun journeyConfig(): ByteArray
 
-    @GET("journey-config.pb.sha")
+    @GET("v1/journey-config.pb.sha")
     suspend fun journeyConfigDigest(): String
 
     @GET

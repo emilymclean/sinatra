@@ -4,12 +4,6 @@
 <dict>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
-	<key>NSContactsUsageDescription</key>
-	<string>Contacts are used for sharing information</string>
-	<key>NSMotionUsageDescription</key>
-	<string>Motion is used to provide accurate navigation</string>
-	<key>NSBluetoothAlwaysUsageDescription</key>
-	<string>Bluetooth is used to provide accurate navigation</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Your location is used to provide accurate navigation</string>
 	<key>CADisableMinimumFrameDurationOnPhone</key>

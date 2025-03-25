@@ -1,10 +1,27 @@
-import cl.emilym.sinatra.domain.search.*
-import cl.emilym.sinatra.data.models.*
+import cl.emilym.sinatra.data.models.MapLocation
+import cl.emilym.sinatra.data.models.Place
+import cl.emilym.sinatra.data.models.Route
+import cl.emilym.sinatra.data.models.RouteType
+import cl.emilym.sinatra.data.models.RouteVisibility
+import cl.emilym.sinatra.data.models.Stop
+import cl.emilym.sinatra.data.models.StopAccessibility
+import cl.emilym.sinatra.data.models.StopVisibility
+import cl.emilym.sinatra.data.models.StopWheelchairAccessibility
+import cl.emilym.sinatra.domain.search.LocalTypeSearcher
+import cl.emilym.sinatra.domain.search.PlaceTypeSearcher
+import cl.emilym.sinatra.domain.search.RankableResult
+import cl.emilym.sinatra.domain.search.RouteStopSearchUseCase
+import cl.emilym.sinatra.domain.search.RouteTypeSearcher
+import cl.emilym.sinatra.domain.search.SearchResult
+import cl.emilym.sinatra.domain.search.StopTypeSearcher
 import cl.emilym.sinatra.lib.Tokenizer
-import io.github.aakira.napier.Napier
-import io.mockk.*
+import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class RouteStopSearchUseCaseTest {
 

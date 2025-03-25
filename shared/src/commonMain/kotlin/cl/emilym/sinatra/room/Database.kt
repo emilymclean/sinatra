@@ -63,8 +63,10 @@ expect object AppDatabaseConstructor : RoomDatabaseConstructor<AppDatabase> {
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3),
+        AutoMigration(from = 3, to = 4),
     ],
-    version = 3
+    exportSchema = true,
+    version = 4
 )
 @ConstructedBy(AppDatabaseConstructor::class)
 abstract class AppDatabase: RoomDatabase() {

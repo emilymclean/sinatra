@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.exclude
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.onConsumedWindowInsetsChanged
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
@@ -48,6 +47,7 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.CurrentScreen
 import cafe.adriel.voyager.navigator.Navigator
 import cl.emilym.compose.units.px
+import cl.emilym.sinatra.FeatureFlags
 import cl.emilym.sinatra.ui.maps.MapControl
 import cl.emilym.sinatra.ui.maps.rememberMapControl
 import cl.emilym.sinatra.ui.navigation.CurrentBottomSheetContent
@@ -56,8 +56,10 @@ import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
 import cl.emilym.sinatra.ui.navigation.bottomSheetHalfHeight
 import cl.emilym.sinatra.ui.navigation.isCurrentMapScreen
 import cl.emilym.sinatra.ui.plus
+import cl.emilym.sinatra.ui.presentation.screens.maps.navigate.NavigateEntryScreen
 import cl.emilym.sinatra.ui.presentation.screens.maps.search.MapSearchScreen
 import cl.emilym.sinatra.ui.widgets.InfoIcon
+import cl.emilym.sinatra.ui.widgets.JourneyIcon
 import cl.emilym.sinatra.ui.widgets.LocalMapControl
 import cl.emilym.sinatra.ui.widgets.MapIcon
 import cl.emilym.sinatra.ui.widgets.NavigationItem
@@ -76,6 +78,7 @@ import sinatra.ui.generated.resources.Res
 import sinatra.ui.generated.resources.navigation_bar_about
 import sinatra.ui.generated.resources.navigation_bar_favourites
 import sinatra.ui.generated.resources.navigation_bar_map
+import sinatra.ui.generated.resources.navigation_bar_navigate
 
 @Composable
 expect fun Map(mapControl: MapControl)
@@ -158,17 +161,28 @@ class RootMapScreen: Screen {
             val selectedCallback: (Int) -> Unit = remember { { selected = it } }
 
             val items = remember(navigator) {
-                listOf(
+                var index = 0
+                listOfNotNull(
                     NavigationItem(
-                        0,
+                        index++,
                         {
                             navigator.replaceAll(MapSearchScreen())
                         },
                         { MapIcon() },
                         { Text(stringResource(Res.string.navigation_bar_map)) }
                     ),
+                    if (FeatureFlags.NAVIGATE_BUTTON_TAB_BAR) {
+                        NavigationItem(
+                            index++,
+                            {
+                                navigator.replaceAll(NavigateEntryScreen(null, null))
+                            },
+                            { JourneyIcon() },
+                            { Text(stringResource(Res.string.navigation_bar_navigate)) }
+                        )
+                    } else null,
                     NavigationItem(
-                        1,
+                        index++,
                         {
                             navigator.replaceAll(FavouriteScreen())
                         },
@@ -176,7 +190,7 @@ class RootMapScreen: Screen {
                         { Text(stringResource(Res.string.navigation_bar_favourites)) }
                     ),
                     NavigationItem(
-                        2,
+                        index++,
                         {
                             navigator.replaceAll(AboutScreen())
                         },

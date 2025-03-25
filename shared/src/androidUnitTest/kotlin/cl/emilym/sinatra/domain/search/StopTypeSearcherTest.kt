@@ -3,7 +3,10 @@ package cl.emilym.sinatra.domain.search
 import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.data.models.StopVisibility
 import cl.emilym.sinatra.data.repository.StopRepository
-import io.mockk.*
+import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.every
+import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import kotlin.test.BeforeTest
 import kotlin.test.Test

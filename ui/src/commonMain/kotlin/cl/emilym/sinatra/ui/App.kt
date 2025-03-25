@@ -3,7 +3,6 @@ package cl.emilym.sinatra.ui
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
-import cl.emilym.sinatra.ui.widgets.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.text.intl.Locale
@@ -14,13 +13,16 @@ import cafe.adriel.voyager.core.screen.ScreenKey
 import cafe.adriel.voyager.koin.koinScreenModel
 import cafe.adriel.voyager.navigator.Navigator
 import cl.emilym.sinatra.data.repository.LocaleRepository
+import cl.emilym.sinatra.data.repository.RemoteConfigRepository
 import cl.emilym.sinatra.data.repository.TransportMetadataRepository
+import cl.emilym.sinatra.domain.CacheInvalidationUseCase
+import cl.emilym.sinatra.ui.localization.LocalScheduleTimeZone
 import cl.emilym.sinatra.ui.presentation.screens.RootMapScreen
 import cl.emilym.sinatra.ui.presentation.theme.SinatraTheme
-import cl.emilym.sinatra.ui.localization.LocalScheduleTimeZone
 import cl.emilym.sinatra.ui.widgets.LocalPermissionRequestQueue
 import cl.emilym.sinatra.ui.widgets.PermissionRequestQueue
 import cl.emilym.sinatra.ui.widgets.PermissionRequestQueueHandler
+import cl.emilym.sinatra.ui.widgets.collectAsStateWithLifecycle
 import coil3.ImageLoader
 import coil3.compose.setSingletonImageLoaderFactory
 import coil3.request.crossfade
@@ -33,7 +35,9 @@ import org.koin.core.annotation.Factory
 @Factory
 class AppViewModel(
     private val transportMetadataRepository: TransportMetadataRepository,
-    private val localeRepository: LocaleRepository
+    private val localeRepository: LocaleRepository,
+    private val remoteConfigRepository: RemoteConfigRepository,
+    private val cacheInvalidationUseCase: CacheInvalidationUseCase
 ): ScreenModel {
 
     val scheduleTimeZone = MutableStateFlow(TimeZone.currentSystemDefault())
@@ -41,6 +45,12 @@ class AppViewModel(
     init {
         screenModelScope.launch {
             scheduleTimeZone.value = transportMetadataRepository.timeZone()
+        }
+        screenModelScope.launch {
+            remoteConfigRepository.load()
+        }
+        screenModelScope.launch {
+            cacheInvalidationUseCase()
         }
     }
 

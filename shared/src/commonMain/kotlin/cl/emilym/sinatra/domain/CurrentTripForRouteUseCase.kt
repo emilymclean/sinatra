@@ -17,11 +17,9 @@ import cl.emilym.sinatra.e
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.fold
 import kotlinx.coroutines.flow.map
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
-import kotlinx.datetime.toLocalDateTime
 import org.koin.core.annotation.Factory
 
 data class CurrentTripInformation(

@@ -5,9 +5,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -15,16 +15,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import cl.emilym.sinatra.ui.widgets.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -39,12 +39,14 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import cl.emilym.compose.errorwidget.ErrorWidget
 import cl.emilym.compose.units.rdp
+import cl.emilym.sinatra.FeatureFlags
 import cl.emilym.sinatra.bounds
 import cl.emilym.sinatra.data.models.Journey
 import cl.emilym.sinatra.data.models.JourneyLeg
 import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.data.models.Time
 import cl.emilym.sinatra.ui.color
+import cl.emilym.sinatra.ui.localization.format
 import cl.emilym.sinatra.ui.maps.LineItem
 import cl.emilym.sinatra.ui.maps.MapItem
 import cl.emilym.sinatra.ui.maps.MarkerItem
@@ -57,20 +59,24 @@ import cl.emilym.sinatra.ui.presentation.screens.search.SearchScreen
 import cl.emilym.sinatra.ui.presentation.theme.Container
 import cl.emilym.sinatra.ui.presentation.theme.walkingColor
 import cl.emilym.sinatra.ui.text
-import cl.emilym.sinatra.ui.localization.format
+import cl.emilym.sinatra.ui.widgets.AccessibleIcon
 import cl.emilym.sinatra.ui.widgets.BackButton
+import cl.emilym.sinatra.ui.widgets.BikeIcon
+import cl.emilym.sinatra.ui.widgets.Chip
+import cl.emilym.sinatra.ui.widgets.ClockIcon
 import cl.emilym.sinatra.ui.widgets.CurrentLocationCard
 import cl.emilym.sinatra.ui.widgets.GenericMarkerIcon
+import cl.emilym.sinatra.ui.widgets.JourneyIcon
 import cl.emilym.sinatra.ui.widgets.JourneyOptionCard
 import cl.emilym.sinatra.ui.widgets.JourneyStartIcon
-import cl.emilym.sinatra.ui.widgets.ListCard
 import cl.emilym.sinatra.ui.widgets.ListHint
 import cl.emilym.sinatra.ui.widgets.LocalMapControl
 import cl.emilym.sinatra.ui.widgets.MapIcon
-import cl.emilym.sinatra.ui.widgets.NavigatorBackButton
 import cl.emilym.sinatra.ui.widgets.RouteRandle
 import cl.emilym.sinatra.ui.widgets.SinatraBackHandler
+import cl.emilym.sinatra.ui.widgets.SwapIcon
 import cl.emilym.sinatra.ui.widgets.WalkIcon
+import cl.emilym.sinatra.ui.widgets.collectAsStateWithLifecycle
 import cl.emilym.sinatra.ui.widgets.currentLocation
 import cl.emilym.sinatra.ui.widgets.hasLocationPermission
 import cl.emilym.sinatra.ui.widgets.routeRandleSize
@@ -79,9 +85,18 @@ import org.jetbrains.compose.resources.stringResource
 import sinatra.ui.generated.resources.Res
 import sinatra.ui.generated.resources.navigate_calculating_journey
 import sinatra.ui.generated.resources.navigate_calculating_journey_failed
+import sinatra.ui.generated.resources.navigate_chip_anchor_arrive
+import sinatra.ui.generated.resources.navigate_chip_anchor_depart
+import sinatra.ui.generated.resources.navigate_chip_anchor_now
+import sinatra.ui.generated.resources.navigate_chip_bikes_allowed
+import sinatra.ui.generated.resources.navigate_chip_wheelchair_accessible
 import sinatra.ui.generated.resources.navigate_downloading_graph
+import sinatra.ui.generated.resources.navigate_entry_no_destination
+import sinatra.ui.generated.resources.navigate_entry_no_starting_point
+import sinatra.ui.generated.resources.navigate_entry_no_starting_point_destination
 import sinatra.ui.generated.resources.navigate_entry_select_destination
 import sinatra.ui.generated.resources.navigate_entry_select_origin
+import sinatra.ui.generated.resources.navigate_entry_swap_origin_destination
 import sinatra.ui.generated.resources.navigate_travel
 import sinatra.ui.generated.resources.navigate_travel_arrive
 import sinatra.ui.generated.resources.navigate_travel_depart
@@ -91,7 +106,7 @@ import sinatra.ui.generated.resources.navigate_walk
 
 
 class NavigateEntryScreen(
-    val destination: NavigationLocation,
+    val destination: NavigationLocation? = null,
     val origin: NavigationLocation? = null
 ): MapScreen {
 
@@ -103,7 +118,7 @@ class NavigateEntryScreen(
         @Composable
         get() = 2.rdp + 24.dp
 
-    override val key: ScreenKey = "navigateEntryScreen-${destination.screenKey}-${origin?.screenKey}"
+    override val key: ScreenKey = "navigateEntryScreen-${destination?.screenKey}-${origin?.screenKey}"
 
     @Composable
     override fun mapItems(): List<MapItem> {
@@ -162,11 +177,11 @@ class NavigateEntryScreen(
                     when (i) {
                         0 -> originLocation?.let {
                             val next = (journey.legs.getOrNull(1) as? JourneyLeg.RouteJourneyLeg) ?: return@let
-                            addWalking(listOf(it, it, next.stops.first().location))
+                            addWalking(listOf(it.location, it.location, next.stops.first().location))
                         }
                         journey.legs.lastIndex -> destinationLocation?.let {
                             val next = (journey.legs.getOrNull(journey.legs.lastIndex - 1) as? JourneyLeg.RouteJourneyLeg) ?: return@let
-                            addWalking(listOf(next.stops.last().location, it, it))
+                            addWalking(listOf(next.stops.last().location, it.location, it.location))
                         }
                     }
                 }
@@ -175,6 +190,11 @@ class NavigateEntryScreen(
         }
 
         return items
+    }
+
+    @Composable
+    override fun Content() {
+        SelectTimeDialog()
     }
 
     @OptIn(ExperimentalVoyagerApi::class)
@@ -188,7 +208,7 @@ class NavigateEntryScreen(
         val hasLocationPermission = hasLocationPermission()
         LifecycleEffectOnce {
             viewModel.init(
-                destination,
+                destination ?: NavigationLocation.None,
                 origin ?: (
                         if (hasLocationPermission)
                             NavigationLocation.CurrentLocation
@@ -202,14 +222,20 @@ class NavigateEntryScreen(
             viewModel.updateCurrentLocation(currentLocation)
         }
 
-        when (val state = state) {
-            is NavigationEntryState.JourneySelected, is NavigationEntryState.JourneySelection ->
-                JourneyState(viewModel, state)
-            is NavigationEntryState.Search -> SearchState(viewModel)
-            null -> {}
+        LaunchedEffect(navigator.size) {
+            viewModel.backStackSize.value = navigator.size
         }
 
-        SinatraBackHandler(true) {
+        when (val state = state) {
+            is NavigationEntryState.JourneySelected,
+            is NavigationEntryState.JourneySelection,
+            is NavigationEntryState.MissingWaypoints ->
+                JourneyState(viewModel, state)
+            is NavigationEntryState.Search -> SearchState(viewModel)
+        }
+
+        val showBackButton by viewModel.showBackButton.collectAsStateWithLifecycle()
+        SinatraBackHandler(showBackButton) {
             if (viewModel.back()) {
                 navigator.pop()
             }
@@ -229,14 +255,14 @@ class NavigateEntryScreen(
                         (state.journey.legs
                             .filterIsInstance<JourneyLeg.RouteJourneyLeg>()
                             .flatMap { it.stops.map { it.location } } +
-                                listOfNotNull(originLocation, destinationLocation)
-                                ).bounds(),
+                                listOfNotNull(originLocation?.location, destinationLocation?.location)
+                        ).bounds(),
                         zoomPadding
                     )
                 }
                 is NavigationEntryState.Search,
-                is NavigationEntryState.JourneySelection -> bottomSheet?.bottomSheetState?.expand()
-                null -> {}
+                is NavigationEntryState.JourneySelection,
+                is NavigationEntryState.MissingWaypoints -> bottomSheet?.bottomSheetState?.expand()
             }
         }
     }
@@ -274,6 +300,7 @@ class NavigateEntryScreen(
         viewModel: NavigationEntryViewModel,
         state: NavigationEntryState
     ) {
+        val journeyCount by viewModel.journeyCount.collectAsStateWithLifecycle()
         Scaffold { innerPadding ->
             LazyColumn(
                 Modifier
@@ -286,40 +313,140 @@ class NavigateEntryScreen(
                         Modifier.padding(1.rdp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        BackButton {
-                            if (viewModel.back()) {
-                                navigator.pop()
+                        val showBackButton by viewModel.showBackButton.collectAsStateWithLifecycle()
+                        if (showBackButton) {
+                            BackButton {
+                                if (viewModel.back()) {
+                                    navigator.pop()
+                                }
                             }
                         }
-                        Column(
+                        Row(
                             Modifier
                                 .fillMaxWidth()
                                 .shadow(2.dp, shape = MaterialTheme.shapes.large)
                                 .clip(MaterialTheme.shapes.large)
-                                .background(Container)
+                                .background(Container),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            val origin by viewModel.origin.collectAsStateWithLifecycle()
-                            val destination by viewModel.destination.collectAsStateWithLifecycle()
-                            origin?.let { origin ->
-                                NavigationLocationDisplay(
-                                    origin,
-                                    false,
-                                    modifier = Modifier.clickable { viewModel.onOriginClick() }
-                                )
+                            Column(
+                                Modifier.weight(1f)
+                            ) {
+                                val origin by viewModel.origin.collectAsStateWithLifecycle()
+                                val destination by viewModel.destination.collectAsStateWithLifecycle()
+                                origin?.let { origin ->
+                                    NavigationLocationDisplay(
+                                        origin,
+                                        false,
+                                        modifier = Modifier.clickable { viewModel.onOriginClick() }
+                                    )
+                                }
+                                HorizontalDivider(Modifier.padding(start = iconInset))
+                                destination?.let { destination ->
+                                    NavigationLocationDisplay(
+                                        destination,
+                                        true,
+                                        modifier = Modifier.clickable { viewModel.onDestinationClick() }
+                                    )
+                                }
                             }
-                            HorizontalDivider(Modifier.padding(start = iconInset))
-                            destination?.let { destination ->
-                                NavigationLocationDisplay(
-                                    destination,
-                                    true,
-                                    modifier = Modifier.clickable { viewModel.onDestinationClick() }
-                                )
+                            if (FeatureFlags.RAPTOR_SWAP_BUTTON) {
+                                IconButton(
+                                    onClick = { viewModel.swapOriginAndDestination() }
+                                ) {
+                                    SwapIcon(contentDescription = stringResource(
+                                        Res.string.navigate_entry_swap_origin_destination
+                                    ))
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (state !is NavigationEntryState.JourneySelected || journeyCount == 1) {
+                    item {
+                        LazyRow(
+                            contentPadding = PaddingValues(horizontal = 1.rdp),
+                            horizontalArrangement = Arrangement.spacedBy(0.5.rdp),
+                            modifier = Modifier.padding(bottom = 0.5.rdp)
+                        ) {
+                            item {
+                                val anchorTime by viewModel.anchorTime.collectAsStateWithLifecycle()
+                                Chip(
+                                    selected = false,
+                                    onToggle = {
+                                        viewModel.timeDialogVisible.value = true
+                                    },
+                                    contentDescription = null
+                                ) {
+                                    Row(
+                                        horizontalArrangement = Arrangement.spacedBy(0.25.rdp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        ClockIcon()
+                                        anchorTime.let { anchorTime ->
+                                            Text(
+                                                when (anchorTime) {
+                                                    is NavigationAnchorTime.Now ->
+                                                        stringResource(Res.string.navigate_chip_anchor_now)
+                                                    is NavigationAnchorTime.DepartureTime ->
+                                                        stringResource(
+                                                            Res.string.navigate_chip_anchor_depart,
+                                                            anchorTime.time.format()
+                                                        )
+                                                    is NavigationAnchorTime.ArrivalTime ->
+                                                        stringResource(
+                                                            Res.string.navigate_chip_anchor_arrive,
+                                                            anchorTime.time.format()
+                                                        )
+                                                },
+                                                style = MaterialTheme.typography.labelSmall
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                            item {
+                                val bikesAllowed by viewModel.bikesAllowed.collectAsStateWithLifecycle()
+                                Chip(
+                                    selected = bikesAllowed,
+                                    onToggle = { viewModel.bikesAllowed.value = it },
+                                    contentDescription = stringResource(Res.string.navigate_chip_bikes_allowed)
+                                ) {
+                                    BikeIcon()
+                                }
+                            }
+                            item {
+                                val wheelchairAccessibility by viewModel.wheelchairAccessible.collectAsStateWithLifecycle()
+                                Chip(
+                                    selected = wheelchairAccessibility,
+                                    onToggle = { viewModel.wheelchairAccessible.value = it },
+                                    contentDescription = stringResource(Res.string.navigate_chip_wheelchair_accessible)
+                                ) {
+                                    AccessibleIcon()
+                                }
                             }
                         }
                     }
                 }
 
                 when (state) {
+                    is NavigationEntryState.MissingWaypoints -> {
+                        item {
+                            Column {
+                                Spacer(Modifier.height(2.rdp))
+                                ListHint(
+                                    when {
+                                        state.origin && state.destination -> stringResource(Res.string.navigate_entry_no_starting_point_destination)
+                                        state.origin -> stringResource(Res.string.navigate_entry_no_starting_point)
+                                        else -> stringResource(Res.string.navigate_entry_no_destination)
+                                    }
+                                ) {
+                                    JourneyIcon(tint = MaterialTheme.colorScheme.primary)
+                                }
+                            }
+                        }
+                    }
                     is NavigationEntryState.JourneySelection -> JourneySelection(
                         viewModel,
                         state.state
@@ -368,8 +495,7 @@ class NavigateEntryScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         ErrorWidget(
-                            if (state is NavigationState.GraphFailed) state.exception else
-                                (state as? NavigationState.JourneyFailed)?.exception,
+                            state.exception,
                             retry = { viewModel.retryLoadingGraph() }
                         )
                     }
@@ -416,16 +542,28 @@ class NavigateEntryScreen(
         val viewModel = koinScreenModel<NavigationEntryViewModel>()
         val destination by viewModel.destination.collectAsStateWithLifecycle()
         val origin by viewModel.origin.collectAsStateWithLifecycle()
+        val anchorTime by viewModel.anchorTime.collectAsStateWithLifecycle()
+
+        val departureTime = when(anchorTime) {
+            !is NavigationAnchorTime.Now -> firstLeg.departureTime
+            else -> null
+        }
 
         Column(Modifier.fillMaxWidth()) {
             when (firstLeg) {
                 is JourneyLeg.Transfer -> {
-                    DepartureLeg(firstLeg.stops.first().name)
+                    DepartureLeg(
+                        firstLeg.stops.first().name,
+                        departureTime
+                    )
                     HorizontalDivider(Modifier.padding(start = journeyIconInset, end = 1.rdp))
                 }
                 is JourneyLeg.TransferPoint -> {
                     origin?.name?.let {
-                        DepartureLeg(it)
+                        DepartureLeg(
+                            it,
+                            departureTime
+                        )
                         HorizontalDivider(Modifier.padding(start = journeyIconInset, end = 1.rdp))
                     }
                 }
@@ -463,6 +601,20 @@ class NavigateEntryScreen(
                 else -> {}
             }
         }
+    }
+
+    @Composable
+    fun SelectTimeDialog() {
+        val viewModel = koinScreenModel<NavigationEntryViewModel>()
+        val timeDialogVisible by viewModel.timeDialogVisible.collectAsStateWithLifecycle()
+        if (!timeDialogVisible) return
+
+        val anchorTime by viewModel.anchorTime.collectAsStateWithLifecycle()
+        TimeSelectionDialog(
+            anchorTime,
+            onTimeSelected = { viewModel.anchorTime.value = it },
+            onDismissRequest = { viewModel.timeDialogVisible.value = false }
+        )
     }
 
 }
@@ -507,13 +659,21 @@ fun TravelLeg(leg: JourneyLeg.Travel) {
 }
 
 @Composable
-fun DepartureLeg(pointName: String) {
+fun DepartureLeg(
+    pointName: String,
+    departureTime: Time?
+) {
     LegScaffold({ GenericMarkerIcon() }) {
         Column(
             Modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(0.75.rdp)
         ) {
-            Markdown(stringResource(Res.string.navigate_travel_journey_depart, pointName))
+            Markdown(
+                when (departureTime) {
+                    null -> stringResource(Res.string.navigate_travel_journey_depart, pointName)
+                    else -> stringResource(Res.string.navigate_travel_depart, pointName, departureTime.format())
+                }
+            )
         }
     }
 }

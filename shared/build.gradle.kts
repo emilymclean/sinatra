@@ -1,3 +1,4 @@
+import com.codingfeline.buildkonfig.compiler.FieldSpec.Type.STRING
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -8,6 +9,7 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.ktorfit)
     alias(libs.plugins.room)
+    id("com.codingfeline.buildkonfig")
 }
 
 kotlin {
@@ -23,6 +25,16 @@ kotlin {
     iosX64()
     iosArm64()
     iosSimulatorArm64()
+
+    targets.configureEach {
+        compilations.configureEach {
+            compileTaskProvider.configure {
+                compilerOptions {
+                    freeCompilerArgs.add("-Xexpect-actual-classes")
+                }
+            }
+        }
+    }
 
     cocoapods {
         summary = "Some description for the Shared Module"
@@ -116,5 +128,16 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
+    }
+}
+
+buildkonfig {
+    packageName = "cl.emilym.sinatra"
+
+    defaultConfigs {
+        defaultConfigs {
+            val apiUrl: String by project
+            buildConfigField(STRING, "apiUrl", apiUrl, const = true)
+        }
     }
 }

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Change this if you're making your own fork with a different namespace
 app_id="cl.emilym.sinatra"
@@ -10,8 +10,13 @@ update_property() {
 
   if grep -q "^$property=" "$file"; then
     awk -F= -v prop="$property" -v val="$value" '
-      $1 == prop { $2 = val }
-      { print $1 "=" $2 }
+      BEGIN { OFS = "=" }
+      $1 == prop {
+        $0 = prop "=" val
+        updated = 1
+      }
+      { print }
+      END { if (!updated) print prop, val }
     ' "$file" > "$file.tmp" && mv "$file.tmp" "$file"
   else
     echo "$property=$value" >> "$file"
@@ -48,9 +53,20 @@ read -p "Enter a Firebase project ID: " project_id
 
 read -p "Enter a Google Maps API Key: " maps_api_key
 
+read -p "Enter a server url [https://develop-api.sinatra-transport.com/canberra/]: " api_endpoint
+api_endpoint="${api_endpoint:-https://develop-api.sinatra-transport.com/canberra/}"
+
 app_list="$(firebase apps:list --non-interactive --project "$project_id" --json)"
-readarray -t app_namespaces < <(jq -r '.result[] | "\(.namespace) \(.platform)"' <<< "$app_list")
-readarray -t app_ids < <(jq -r '.result[].appId' <<< "$app_list")
+
+app_namespaces=()
+while IFS= read -r line; do
+    app_namespaces+=("$line")
+done < <(jq -r '.result[] | "\(.namespace) \(.platform)"' <<< "$app_list")
+
+app_ids=()
+while IFS= read -r line; do
+    app_ids+=("$line")
+done < <(jq -r '.result[].appId' <<< "$app_list")
 
 if ! $(contains "$app_id.develop ANDROID" "${app_namespaces[@]}") || ! $(contains "$app_id ANDROID" "${app_namespaces[@]}") || ! $(contains "$app_id.develop IOS" "${app_namespaces[@]}") || ! $(contains "$app_id IOS" "${app_namespaces[@]}") ; then
   echo "Firebase project is missing $app_id.develop or $app_id namespaces for either Android or iOS"
@@ -68,3 +84,4 @@ firebase apps:sdkconfig --non-interactive --project "$project_id" IOS "${app_ids
 touch secrets.properties
 
 update_property secrets.properties "MAPS_API_KEY" "$maps_api_key"
+update_property gradle.properties "apiUrl" "$api_endpoint"

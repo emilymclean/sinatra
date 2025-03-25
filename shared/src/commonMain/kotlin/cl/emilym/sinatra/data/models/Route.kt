@@ -1,8 +1,5 @@
 package cl.emilym.sinatra.data.models
 
-import cl.emilym.sinatra.nullIfEmpty
-import kotlinx.datetime.Instant
-
 data class Route(
     val id: RouteId,
     val code: RouteCode,
@@ -134,8 +131,8 @@ data class RouteTripInformation(
     companion object {
         fun fromPB(pb: cl.emilym.gtfs.RouteTripInformation): RouteTripInformation {
             return RouteTripInformation(
-                pb.startTime?.let { parseTime(it) },
-                pb.endTime?.let { parseTime(it) },
+                pb.startTime?.let { Time.parse(it) },
+                pb.endTime?.let { Time.parse(it) },
                 RouteServiceAccessibility.fromPB(pb.accessibility),
                 pb.heading,
                 pb.stops.map { RouteTripStop.fromPB(it) }
@@ -157,8 +154,8 @@ data class RouteTripStop(
         fun fromPB(pb: cl.emilym.gtfs.RouteTripStop): RouteTripStop {
             return RouteTripStop(
                 pb.stopId,
-                pb.arrivalTime?.let { parseTime(it) },
-                pb.departureTime?.let { parseTime(it) },
+                pb.arrivalTime?.let { Time.parse(it) },
+                pb.departureTime?.let { Time.parse(it) },
                 pb.sequence,
                 null
             )

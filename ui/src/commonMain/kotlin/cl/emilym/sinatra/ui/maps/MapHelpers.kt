@@ -1,6 +1,5 @@
 package cl.emilym.sinatra.ui.maps
 
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.unit.Density
 import cl.emilym.sinatra.asDegrees
 import cl.emilym.sinatra.asRadians

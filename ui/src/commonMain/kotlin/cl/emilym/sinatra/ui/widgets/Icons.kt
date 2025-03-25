@@ -13,9 +13,11 @@ import sinatra.ui.generated.resources.accessible
 import sinatra.ui.generated.resources.back
 import sinatra.ui.generated.resources.bike
 import sinatra.ui.generated.resources.bus
+import sinatra.ui.generated.resources.clock
 import sinatra.ui.generated.resources.external_link
 import sinatra.ui.generated.resources.forward
 import sinatra.ui.generated.resources.info
+import sinatra.ui.generated.resources.journey
 import sinatra.ui.generated.resources.journey_start
 import sinatra.ui.generated.resources.map
 import sinatra.ui.generated.resources.marker_icon
@@ -28,6 +30,7 @@ import sinatra.ui.generated.resources.search
 import sinatra.ui.generated.resources.severe_warning
 import sinatra.ui.generated.resources.star
 import sinatra.ui.generated.resources.star_outline
+import sinatra.ui.generated.resources.swap
 import sinatra.ui.generated.resources.tram
 import sinatra.ui.generated.resources.walk
 import sinatra.ui.generated.resources.warning
@@ -344,6 +347,47 @@ fun JourneyStartIcon(
     Icon(
         painterResource(Res.drawable.journey_start),
         contentDescription = null,
+        modifier = modifier,
+        tint = tint
+    )
+}
+
+@Composable
+fun ClockIcon(
+    modifier: Modifier = Modifier,
+    tint: Color = LocalContentColor.current
+) {
+    Icon(
+        painterResource(Res.drawable.clock),
+        contentDescription = null,
+        modifier = modifier,
+        tint = tint
+    )
+}
+
+@Composable
+fun SwapIcon(
+    modifier: Modifier = Modifier,
+    tint: Color = LocalContentColor.current,
+    contentDescription: String? = null
+) {
+    Icon(
+        painterResource(Res.drawable.swap),
+        contentDescription = contentDescription,
+        modifier = modifier,
+        tint = tint
+    )
+}
+
+@Composable
+fun JourneyIcon(
+    modifier: Modifier = Modifier,
+    tint: Color = LocalContentColor.current,
+    contentDescription: String? = null
+) {
+    Icon(
+        painterResource(Res.drawable.journey),
+        contentDescription = contentDescription,
         modifier = modifier,
         tint = tint
     )

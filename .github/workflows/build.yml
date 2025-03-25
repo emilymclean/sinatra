@@ -90,6 +90,7 @@ jobs:
     - name: Build with Gradle
       env:
         ORG_GRADLE_PROJECT_appVersionName: ${{ needs.version.outputs.version }}
+        ORG_GRADLE_PROJECT_apiUrl: ${{ matrix.build.release && vars.PRODUCTION_API_URL || vars.DEVELOP_API_URL }}
         ORG_GRADLE_PROJECT_appVersionCode: ${{ needs.version.outputs.versionCode }}
       run: ./gradlew ${{ matrix.build.module }}:package${{ matrix.build.command }}UniversalApk
     - id: sign
@@ -213,6 +214,7 @@ jobs:
     - name: Build with Gradle
       env:
         ORG_GRADLE_PROJECT_appVersionName: ${{ needs.version.outputs.version }}
+        ORG_GRADLE_PROJECT_apiUrl: ${{ matrix.build.release && vars.PRODUCTION_API_URL || vars.DEVELOP_API_URL }}
         ORG_GRADLE_PROJECT_appVersionCode: ${{ needs.version.outputs.versionCode }}
       run: ./gradlew ${{ matrix.build.module }}:bundle${{ matrix.build.command }}
     - id: sign
@@ -258,6 +260,30 @@ jobs:
       uses: rickstaa/action-create-tag@v1
       with:
         tag: v${{ needs.version.outputs.version }}
+    - id: changelog
+      uses: mikepenz/release-changelog-builder-action@v5
+      with:
+        configurationJson: |2-
+            {
+              "categories": [
+                {
+                    "title": "## ⭐ Feature",
+                    "labels": ["enhancement", "feature"]
+                },
+                {
+                    "title": "## 🐛 Fix",
+                    "labels": ["fix", "bug"]
+                },
+                {
+                    "title": "## 🧹 Chore",
+                    "labels": ["chore"]
+                },
+                {
+                    "title": "## 📦 Other",
+                    "labels": []
+                }
+              ]
+            }
     - id: create_release
       name: Create Release
       uses: softprops/action-gh-release@v2
@@ -267,6 +293,7 @@ jobs:
         name: Release ${{ needs.version.outputs.version }}
         draft: false
         prerelease: ${{ github.ref != 'refs/heads/main' }}
+        body: ${{steps.changelog.outputs.changelog}}
   build-ipa:
     needs:
     - version
