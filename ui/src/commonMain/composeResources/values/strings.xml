@@ -165,4 +165,16 @@
     <string name="alert_police_activity">police activity</string>
     <string name="alert_technical_issues">technical issues</string>
     <string name="alert_weather">weather</string>
+
+    <string name="semantics_place_listing">Place listing for %1$s</string>
+    <string name="semantics_route_listing">Route listing for %1$s</string>
+    <string name="semantics_stop_listing">Stop listing for %1$s</string>
+    <string name="semantics_back_button">Back</string>
+    <string name="semantics_favourite_stop">Favourite stop</string>
+    <string name="semantics_favourite_route">Favourite route</string>
+    <string name="semantics_favourite_place">Favourite place</string>
+    <string name="semantics_stop">Stop %1$s</string>
+    <string name="semantics_app_icon">The app icon; an image of a bus</string>
+    <string name="semantics_zoom_current_location">Zoom to current location</string>
+    <string name="semantics_open_search_screen">Open search screen</string>
 </resources>

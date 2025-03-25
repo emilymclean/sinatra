@@ -29,6 +29,7 @@ import sinatra.ui.generated.resources.Res
 import sinatra.ui.generated.resources.about_app_version
 import sinatra.ui.generated.resources.in_app_icon
 import sinatra.ui.generated.resources.navigation_bar_about
+import sinatra.ui.generated.resources.semantics_app_icon
 
 
 class AboutScreen: ContentScreen(ContentRepository.ABOUT_ID) {
@@ -51,7 +52,7 @@ class AboutScreen: ContentScreen(ContentRepository.ABOUT_ID) {
         ) {
             Image(
                 painterResource(Res.drawable.in_app_icon),
-                contentDescription = "The app icon; an image of a bus",
+                contentDescription = stringResource(Res.string.semantics_app_icon),
                 modifier = Modifier.padding(horizontal = 1.rdp).widthIn(max = 150.dp)
             )
         }

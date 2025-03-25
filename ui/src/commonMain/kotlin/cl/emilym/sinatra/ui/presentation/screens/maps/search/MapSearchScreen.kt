@@ -37,6 +37,10 @@ import cl.emilym.sinatra.ui.widgets.SearchIcon
 import cl.emilym.sinatra.ui.widgets.collectAsStateWithLifecycle
 import cl.emilym.sinatra.ui.widgets.currentLocation
 import cl.emilym.sinatra.ui.widgets.viewportHeight
+import org.jetbrains.compose.resources.stringResource
+import sinatra.ui.generated.resources.Res
+import sinatra.ui.generated.resources.semantics_open_search_screen
+import sinatra.ui.generated.resources.semantics_zoom_current_location
 
 const val zoomThreshold = 14f
 const val currentLocationZoom = zoomThreshold + 1f
@@ -78,23 +82,25 @@ class MapSearchScreen: MapScreen, NativeMapScreen {
                 val showCurrentLocationButton by viewModel.showCurrentLocation.collectAsStateWithLifecycle()
                 if (showCurrentLocationButton) {
                     currentLocation?.let {
+                        val zoomContentDescription = stringResource(Res.string.semantics_zoom_current_location)
                         FloatingActionButton(
                             onClick = {
                                 mapControl.moveToPoint(it, currentLocationZoom)
                             },
                             Modifier.semantics {
-                                contentDescription = "Zoom to current location"
+                                contentDescription = zoomContentDescription
                             }
                         ) { MyLocationIcon() }
                     }
                 }
                 if (state !is MapSearchState.Search) {
+                    val openContentDescription = stringResource(Res.string.semantics_open_search_screen)
                     FloatingActionButton(
                         onClick = {
                             viewModel.openSearch()
                         },
                         Modifier.semantics {
-                            contentDescription = "Open search screen"
+                            contentDescription = openContentDescription
                         }
                     ) { SearchIcon() }
                 }

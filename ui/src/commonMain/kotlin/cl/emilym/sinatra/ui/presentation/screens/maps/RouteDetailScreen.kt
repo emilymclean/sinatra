@@ -109,6 +109,7 @@ import sinatra.ui.generated.resources.route_accessibility_not_wheelchair_accessi
 import sinatra.ui.generated.resources.route_accessibility_wheelchair_accessible
 import sinatra.ui.generated.resources.route_heading
 import sinatra.ui.generated.resources.route_not_found
+import sinatra.ui.generated.resources.semantics_favourite_route
 import sinatra.ui.generated.resources.stop_detail_distance
 import sinatra.ui.generated.resources.stop_detail_nearest_stop
 import sinatra.ui.generated.resources.stops_title
@@ -319,11 +320,12 @@ class RouteDetailScreen(
                             }
                         }
                         val favourited by viewModel.favourited.collectAsStateWithLifecycle()
+                        val favouriteContentDescription = stringResource(Res.string.semantics_favourite_route)
                         FavouriteButton(
                             favourited,
                             { viewModel.favourite(routeId, it) },
                             Modifier.semantics {
-                                contentDescription = "Favourite route"
+                                contentDescription = favouriteContentDescription
                                 selected = favourited
                             }
                         )
