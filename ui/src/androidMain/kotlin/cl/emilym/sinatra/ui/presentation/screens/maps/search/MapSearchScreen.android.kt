@@ -2,9 +2,11 @@ package cl.emilym.sinatra.ui.presentation.screens.maps.search
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.res.stringResource
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import cl.emilym.sinatra.data.models.Stop
+import cl.emilym.sinatra.ui.R
 import cl.emilym.sinatra.ui.maps.MarkerItem
 import cl.emilym.sinatra.ui.maps.NativeMapScope
 import cl.emilym.sinatra.ui.maps.stopMarkerIcon
@@ -14,6 +16,8 @@ import cl.emilym.sinatra.ui.toNative
 import com.google.maps.android.compose.GoogleMapComposable
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberMarkerState
+import sinatra.ui.generated.resources.Res
+import sinatra.ui.generated.resources.semantics_stop
 
 @Composable
 @GoogleMapComposable
@@ -36,7 +40,7 @@ actual fun NativeMapScope.DrawMapSearchScreenMapNative(stops: List<Stop>) {
                 true
             },
             visible = (visible && stop.visibility.visibleZoomedIn) || (!visible && stop.visibility.visibleZoomedOut),
-            contentDescription = "Stop ${stop.name}"
+            contentDescription = stringResource(R.string.semantics_stop, stop.name)
         )
     }
 }

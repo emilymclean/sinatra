@@ -36,6 +36,7 @@ import sinatra.ui.generated.resources.past_departure
 import sinatra.ui.generated.resources.past_departure_early
 import sinatra.ui.generated.resources.past_departure_late
 import sinatra.ui.generated.resources.scheduled_arrival
+import sinatra.ui.generated.resources.semantics_stop_listing
 
 sealed interface StopStationTime {
     val stationTime: StationTime
@@ -66,6 +67,7 @@ fun StopCard(
     subtitle: String? = null,
     showStopIcon: Boolean = false,
 ) {
+    val stopListingSemantics = stringResource(Res.string.semantics_stop_listing, stop.name)
     ListCard(
         if (showStopIcon) {
             {
@@ -76,7 +78,7 @@ fun StopCard(
         } else null,
         Modifier
             .semantics {
-                contentDescription = "Stop listing"
+                contentDescription = stopListingSemantics
             }
             .then(modifier),
         onClick,

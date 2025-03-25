@@ -90,6 +90,7 @@ import sinatra.ui.generated.resources.Res
 import sinatra.ui.generated.resources.accessibility_not_wheelchair_accessible
 import sinatra.ui.generated.resources.accessibility_wheelchair_accessible
 import sinatra.ui.generated.resources.no_upcoming_vehicles
+import sinatra.ui.generated.resources.semantics_favourite_stop
 import sinatra.ui.generated.resources.stop_detail_child_stations
 import sinatra.ui.generated.resources.stop_detail_navigate
 import sinatra.ui.generated.resources.stop_not_found
@@ -224,11 +225,12 @@ class StopDetailScreen(
                                             )
                                         }
                                         val favourited by viewModel.favourited.collectAsStateWithLifecycle()
+                                        val favouriteContentDescription = stringResource(Res.string.semantics_favourite_stop)
                                         FavouriteButton(
                                             favourited,
                                             { viewModel.favourite(stopId, it) },
                                             Modifier.semantics {
-                                                contentDescription = "Favourite stop"
+                                                contentDescription = favouriteContentDescription
                                                 selected = favourited
                                             }
                                         )

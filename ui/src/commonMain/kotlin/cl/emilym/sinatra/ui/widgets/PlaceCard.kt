@@ -10,6 +10,9 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.data.models.Place
+import org.jetbrains.compose.resources.stringResource
+import sinatra.ui.generated.resources.Res
+import sinatra.ui.generated.resources.semantics_place_listing
 
 @Composable
 fun PlaceCard(
@@ -18,6 +21,7 @@ fun PlaceCard(
     onClick: (() -> Unit)? = null,
     showPlaceIcon: Boolean = false,
 ) {
+    val placeListingSemantics = stringResource(Res.string.semantics_place_listing, place.displayName)
     ListCard(
         if (showPlaceIcon) {
             {
@@ -28,7 +32,7 @@ fun PlaceCard(
         } else null,
         Modifier
             .semantics {
-                contentDescription = "Place listing"
+                contentDescription = placeListingSemantics
             }
             .then(modifier),
         onClick,
