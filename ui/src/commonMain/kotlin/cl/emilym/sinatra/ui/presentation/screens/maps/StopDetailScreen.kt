@@ -238,21 +238,25 @@ class StopDetailScreen(
                                     AlertScaffold((alerts as? RequestState.Success)?.value)
                                 }
                                 item { Box(Modifier.height(1.rdp)) }
-                                item {
-                                    Column(Modifier.padding(horizontal = 1.rdp)) {
-                                        AccessibilityIconLockup(
-                                            {
-                                                WheelchairAccessibleIcon(stop.accessibility.wheelchair.isAccessible)
+                                if (FeatureFlags.STOP_DETAIL_SHOW_ACCESSIBILITY) {
+                                    item {
+                                        Column(Modifier.padding(horizontal = 1.rdp)) {
+                                            AccessibilityIconLockup(
+                                                {
+                                                    WheelchairAccessibleIcon(stop.accessibility.wheelchair.isAccessible)
+                                                }
+                                            ) {
+                                                Text(
+                                                    when (stop.accessibility.wheelchair.isAccessible) {
+                                                        true -> stringResource(Res.string.accessibility_wheelchair_accessible)
+                                                        false -> stringResource(Res.string.accessibility_not_wheelchair_accessible)
+                                                    }
+                                                )
                                             }
-                                        ) {
-                                            Text(when(stop.accessibility.wheelchair.isAccessible) {
-                                                true -> stringResource(Res.string.accessibility_wheelchair_accessible)
-                                                false -> stringResource(Res.string.accessibility_not_wheelchair_accessible)
-                                            })
                                         }
                                     }
+                                    item { Box(Modifier.height(1.rdp)) }
                                 }
-                                item { Box(Modifier.height(1.rdp)) }
                                 if (FeatureFlags.STOP_DETAIL_SHOW_IN_MAPS_BUTTON) {
                                     item {
                                         val uriHandler = LocalUriHandler.current
