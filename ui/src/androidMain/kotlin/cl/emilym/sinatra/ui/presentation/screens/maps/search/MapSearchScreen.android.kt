@@ -40,7 +40,7 @@ actual fun NativeMapScope.DrawMapSearchScreenMapNative(stops: List<Stop>) {
                 true
             },
             visible = (visible && stop.visibility.visibleZoomedIn) || (!visible && stop.visibility.visibleZoomedOut),
-            contentDescription = stringResource(R.string.semantics_stop, stop.name)
+            contentDescription = "Stop ${stop.name}"
         )
     }
 }
