@@ -29,4 +29,5 @@ object FeatureFlags {
     val RAPTOR_SWAP_BUTTON by FeatureFlagDelegate(true)
     val NAVIGATE_BUTTON_TAB_BAR by FeatureFlagDelegate(true)
     val PLACE_DETAIL_ENABLED by FeatureFlagDelegate(true)
+    val SPECIFY_TIMEZONE_WHEN_DIFFERENT by FeatureFlagDelegate(true)
 }
