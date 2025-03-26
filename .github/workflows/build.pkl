@@ -379,7 +379,7 @@ jobs = new Mapping {
       }
       new CommandStep {
         run = """
-        if [[ $(git rev-parse --abbrev-ref HEAD) == "main" ]]
+        if [[ $(git rev-parse --abbrev-ref HEAD) == "main" && $(git merge-base develop HEAD) == $(git rev-parse HEAD^2) ]]
         then
           echo "to_tag=$(git describe --exact-match --abbrev=0)" >> $GITHUB_ENV
         else
