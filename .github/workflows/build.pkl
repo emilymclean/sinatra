@@ -377,10 +377,21 @@ jobs = new Mapping {
           ["tag"] = "v${{ needs.version.outputs.version }}"
         }
       }
+      new CommandStep {
+        run = """
+        if [[ $(git rev-parse --abbrev-ref HEAD) == "main" ]]
+        then
+          echo "to_tag=$(git describe --exact-match --abbrev=0)" >> $GITHUB_ENV
+        else
+          echo "to_tag=$(git describe --abbrev=0 --tags $(git rev-list --tags --skip=1 --max-count=1))" >> $GITHUB_ENV
+        fi
+        """
+      }
       new ActionStep {
         id = "changelog"
         uses = "mikepenz/release-changelog-builder-action@v5"
         with = new Mapping {
+          ["toTag"] = "${{ env.to_tag }}"
           ["configurationJson"] = """
             {
               "categories": [
