@@ -256,21 +256,21 @@ jobs:
     - uses: actions/checkout@v4
       with:
         fetch-depth: 0
+    - run: |-
+        if [[ $(git rev-parse --abbrev-ref HEAD) == "main" && $(git merge-base develop HEAD) == $(git rev-parse HEAD^2) ]]
+        then
+          echo "from_tag=$(git describe --exact-match --abbrev=0)" >> $GITHUB_ENV
+        else
+          echo "from_tag=$(git describe --abbrev=0 --tags $(git rev-list --tags --max-count=1))" >> $GITHUB_ENV
+        fi
     - name: Create tag for release
       uses: rickstaa/action-create-tag@v1
       with:
         tag: v${{ needs.version.outputs.version }}
-    - run: |-
-        if [[ $(git rev-parse --abbrev-ref HEAD) == "main" && $(git merge-base develop HEAD) == $(git rev-parse HEAD^2) ]]
-        then
-          echo "to_tag=$(git describe --exact-match --abbrev=0)" >> $GITHUB_ENV
-        else
-          echo "to_tag=$(git describe --abbrev=0 --tags $(git rev-list --tags --skip=1 --max-count=1))" >> $GITHUB_ENV
-        fi
     - id: changelog
       uses: mikepenz/release-changelog-builder-action@v5
       with:
-        toTag: ${{ env.to_tag }}
+        fromTag: ${{ env.from_tag }}
         configurationJson: |2-
             {
               "categories": [
