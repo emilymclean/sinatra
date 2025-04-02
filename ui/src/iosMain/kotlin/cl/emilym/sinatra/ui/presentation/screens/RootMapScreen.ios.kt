@@ -1,5 +1,6 @@
 package cl.emilym.sinatra.ui.presentation.screens
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -40,7 +41,10 @@ val globalPointOfInterestFilter = MKPointOfInterestFilter(excludingCategories = 
 
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalForeignApi::class)
 @Composable
-actual fun Map(mapControl: MapControl) {
+actual fun Map(
+    mapControl: MapControl,
+    modifier: Modifier
+) {
 
     val state = rememberMapKitState {}
 
@@ -101,23 +105,25 @@ actual fun Map(mapControl: MapControl) {
 
     val coroutineScope = rememberCoroutineScope()
 
-    UIKitView(
-        modifier = Modifier.fillMaxSize(),
-        factory = {
-            MKMapView().apply {
-                setZoomEnabled(true)
-                setScrollEnabled(true)
-                setRotateEnabled(false)
-                setPointOfInterestFilter(globalPointOfInterestFilter)
-            }.also {
-                coroutineScope.launch { state.setMap(it) }
-            }
-        },
-        onRelease = {
-            coroutineScope.launch { state.setMap(null) }
-        },
-        properties = UIKitInteropProperties(
-            interactionMode = UIKitInteropInteractionMode.NonCooperative
+    Box(Modifier.then(modifier)) {
+        UIKitView(
+            modifier = Modifier.fillMaxSize(),
+            factory = {
+                MKMapView().apply {
+                    setZoomEnabled(true)
+                    setScrollEnabled(true)
+                    setRotateEnabled(false)
+                    setPointOfInterestFilter(globalPointOfInterestFilter)
+                }.also {
+                    coroutineScope.launch { state.setMap(it) }
+                }
+            },
+            onRelease = {
+                coroutineScope.launch { state.setMap(null) }
+            },
+            properties = UIKitInteropProperties(
+                interactionMode = UIKitInteropInteractionMode.NonCooperative
+            )
         )
-    )
+    }
 }
