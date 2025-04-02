@@ -12,8 +12,11 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.invisibleToUser
 import androidx.compose.ui.semantics.semantics
 import cafe.adriel.voyager.core.screen.ScreenKey
 import cafe.adriel.voyager.koin.koinScreenModel
@@ -21,6 +24,7 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import cl.emilym.compose.requeststate.RequestState
 import cl.emilym.compose.units.rdp
+import cl.emilym.sinatra.FeatureFlags
 import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.ui.maps.MapItem
 import cl.emilym.sinatra.ui.maps.MarkerItem
@@ -51,6 +55,7 @@ class MapSearchScreen: MapScreen, NativeMapScreen {
     override val bottomSheetHalfHeight: Float
         get() = 0.25f
 
+    @OptIn(ExperimentalComposeUiApi::class)
     @Composable
     override fun Content() {
         val viewModel = koinScreenModel<MapSearchViewModel>()
@@ -87,9 +92,14 @@ class MapSearchScreen: MapScreen, NativeMapScreen {
                             onClick = {
                                 mapControl.moveToPoint(it, currentLocationZoom)
                             },
-                            Modifier.semantics {
-                                contentDescription = zoomContentDescription
-                            }
+                            Modifier.then(
+                                if (FeatureFlags.HIDE_MAPS_FROM_ACCESSIBILITY)
+                                    Modifier.clearAndSetSemantics { invisibleToUser() }
+                                else
+                                    Modifier.semantics {
+                                        contentDescription = zoomContentDescription
+                                    }
+                            )
                         ) { MyLocationIcon() }
                     }
                 }
