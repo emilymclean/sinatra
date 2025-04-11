@@ -14,6 +14,7 @@ typealias Latitude = Double
 typealias Longitude = Double
 typealias Zoom = Float
 typealias Kilometer = Double
+typealias VersionName = String
 
 typealias Pixel = Float
 typealias DensityPixel = Float
