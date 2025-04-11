@@ -13,7 +13,7 @@ class IsAboveMinimumVersionUseCase(
     private val buildInformation: BuildInformation
 ) {
 
-    suspend fun invoke(): Boolean {
+    suspend operator fun invoke(): Boolean {
         val minimumVersion = try {
             remoteConfigRepository.minimumVersion()?.parse ?: return true
         } catch(e: Exception) {
