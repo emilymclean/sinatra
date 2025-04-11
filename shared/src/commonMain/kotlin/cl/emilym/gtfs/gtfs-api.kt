@@ -113,6 +113,26 @@ public sealed class TimetableServiceExceptionType(override val value: Int, overr
 }
 
 @pbandk.Export
+public sealed class ServiceAlertRegion(override val value: Int, override val name: String? = null) : pbandk.Message.Enum {
+    override fun equals(other: kotlin.Any?): Boolean = other is cl.emilym.gtfs.ServiceAlertRegion && other.value == value
+    override fun hashCode(): Int = value.hashCode()
+    override fun toString(): String = "ServiceAlertRegion.${name ?: "UNRECOGNIZED"}(value=$value)"
+
+    public object BELCONNEN : ServiceAlertRegion(1, "SERVICE_ALERT_REGION_BELCONNEN")
+    public object CENTRAL_CANBERRA : ServiceAlertRegion(2, "SERVICE_ALERT_REGION_CENTRAL_CANBERRA")
+    public object GUNGAHLIN : ServiceAlertRegion(3, "SERVICE_ALERT_REGION_GUNGAHLIN")
+    public object TUGGERANONG : ServiceAlertRegion(4, "SERVICE_ALERT_REGION_TUGGERANONG")
+    public object WODEN_WESTON_CREEK_MOLONGLO : ServiceAlertRegion(5, "SERVICE_ALERT_REGION_WODEN_WESTON_CREEK_MOLONGLO")
+    public class UNRECOGNIZED(value: Int) : ServiceAlertRegion(value)
+
+    public companion object : pbandk.Message.Enum.Companion<cl.emilym.gtfs.ServiceAlertRegion> {
+        public val values: List<cl.emilym.gtfs.ServiceAlertRegion> by lazy { listOf(BELCONNEN, CENTRAL_CANBERRA, GUNGAHLIN, TUGGERANONG, WODEN_WESTON_CREEK_MOLONGLO) }
+        override fun fromValue(value: Int): cl.emilym.gtfs.ServiceAlertRegion = values.firstOrNull { it.value == value } ?: UNRECOGNIZED(value)
+        override fun fromName(name: String): cl.emilym.gtfs.ServiceAlertRegion = values.firstOrNull { it.name == name } ?: throw IllegalArgumentException("No ServiceAlertRegion with name: $name")
+    }
+}
+
+@pbandk.Export
 public data class StopEndpoint(
     val stop: List<cl.emilym.gtfs.Stop> = emptyList(),
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
@@ -518,6 +538,38 @@ public data class JourneySearchConfigEndpoint(
                         type = pbandk.FieldDescriptor.Type.Repeated<cl.emilym.gtfs.JourneySearchOption>(valueType = pbandk.FieldDescriptor.Type.Message(messageCompanion = cl.emilym.gtfs.JourneySearchOption.Companion)),
                         jsonName = "options",
                         value = cl.emilym.gtfs.JourneySearchConfigEndpoint::options
+                    )
+                )
+            }
+        )
+    }
+}
+
+@pbandk.Export
+public data class ServiceAlertEndpoint(
+    val alerts: List<cl.emilym.gtfs.ServiceAlert> = emptyList(),
+    override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
+) : pbandk.Message {
+    override operator fun plus(other: pbandk.Message?): cl.emilym.gtfs.ServiceAlertEndpoint = protoMergeImpl(other)
+    override val descriptor: pbandk.MessageDescriptor<cl.emilym.gtfs.ServiceAlertEndpoint> get() = Companion.descriptor
+    override val protoSize: Int by lazy { super.protoSize }
+    public companion object : pbandk.Message.Companion<cl.emilym.gtfs.ServiceAlertEndpoint> {
+        public val defaultInstance: cl.emilym.gtfs.ServiceAlertEndpoint by lazy { cl.emilym.gtfs.ServiceAlertEndpoint() }
+        override fun decodeWith(u: pbandk.MessageDecoder): cl.emilym.gtfs.ServiceAlertEndpoint = cl.emilym.gtfs.ServiceAlertEndpoint.decodeWithImpl(u)
+
+        override val descriptor: pbandk.MessageDescriptor<cl.emilym.gtfs.ServiceAlertEndpoint> = pbandk.MessageDescriptor(
+            fullName = "proto.ServiceAlertEndpoint",
+            messageClass = cl.emilym.gtfs.ServiceAlertEndpoint::class,
+            messageCompanion = this,
+            fields = buildList(1) {
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "alerts",
+                        number = 1,
+                        type = pbandk.FieldDescriptor.Type.Repeated<cl.emilym.gtfs.ServiceAlert>(valueType = pbandk.FieldDescriptor.Type.Message(messageCompanion = cl.emilym.gtfs.ServiceAlert.Companion)),
+                        jsonName = "alerts",
+                        value = cl.emilym.gtfs.ServiceAlertEndpoint::alerts
                     )
                 )
             }
@@ -1642,6 +1694,81 @@ public data class Location(
 }
 
 @pbandk.Export
+public data class ServiceAlert(
+    val id: String,
+    val title: String,
+    val date: String? = null,
+    val url: String? = null,
+    val regions: List<cl.emilym.gtfs.ServiceAlertRegion> = emptyList(),
+    override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
+) : pbandk.Message {
+    override operator fun plus(other: pbandk.Message?): cl.emilym.gtfs.ServiceAlert = protoMergeImpl(other)
+    override val descriptor: pbandk.MessageDescriptor<cl.emilym.gtfs.ServiceAlert> get() = Companion.descriptor
+    override val protoSize: Int by lazy { super.protoSize }
+    public companion object : pbandk.Message.Companion<cl.emilym.gtfs.ServiceAlert> {
+        override fun decodeWith(u: pbandk.MessageDecoder): cl.emilym.gtfs.ServiceAlert = cl.emilym.gtfs.ServiceAlert.decodeWithImpl(u)
+
+        override val descriptor: pbandk.MessageDescriptor<cl.emilym.gtfs.ServiceAlert> = pbandk.MessageDescriptor(
+            fullName = "proto.ServiceAlert",
+            messageClass = cl.emilym.gtfs.ServiceAlert::class,
+            messageCompanion = this,
+            fields = buildList(5) {
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "id",
+                        number = 1,
+                        type = pbandk.FieldDescriptor.Type.Primitive.String(hasPresence = true),
+                        jsonName = "id",
+                        value = cl.emilym.gtfs.ServiceAlert::id
+                    )
+                )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "title",
+                        number = 2,
+                        type = pbandk.FieldDescriptor.Type.Primitive.String(hasPresence = true),
+                        jsonName = "title",
+                        value = cl.emilym.gtfs.ServiceAlert::title
+                    )
+                )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "date",
+                        number = 3,
+                        type = pbandk.FieldDescriptor.Type.Primitive.String(hasPresence = true),
+                        jsonName = "date",
+                        value = cl.emilym.gtfs.ServiceAlert::date
+                    )
+                )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "url",
+                        number = 4,
+                        type = pbandk.FieldDescriptor.Type.Primitive.String(hasPresence = true),
+                        jsonName = "url",
+                        value = cl.emilym.gtfs.ServiceAlert::url
+                    )
+                )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "regions",
+                        number = 5,
+                        type = pbandk.FieldDescriptor.Type.Repeated<cl.emilym.gtfs.ServiceAlertRegion>(valueType = pbandk.FieldDescriptor.Type.Enum(enumCompanion = cl.emilym.gtfs.ServiceAlertRegion.Companion)),
+                        jsonName = "regions",
+                        value = cl.emilym.gtfs.ServiceAlert::regions
+                    )
+                )
+            }
+        )
+    }
+}
+
+@pbandk.Export
 @pbandk.JsName("orDefaultForStopEndpoint")
 public fun StopEndpoint?.orDefault(): cl.emilym.gtfs.StopEndpoint = this ?: StopEndpoint.defaultInstance
 
@@ -1910,6 +2037,30 @@ private fun JourneySearchConfigEndpoint.Companion.decodeWithImpl(u: pbandk.Messa
         throw pbandk.InvalidProtocolBufferException.missingRequiredField("maximumComputationTime")
     }
     return JourneySearchConfigEndpoint(maximumComputationTime!!, pbandk.ListWithSize.Builder.fixed(options), unknownFields)
+}
+
+@pbandk.Export
+@pbandk.JsName("orDefaultForServiceAlertEndpoint")
+public fun ServiceAlertEndpoint?.orDefault(): cl.emilym.gtfs.ServiceAlertEndpoint = this ?: ServiceAlertEndpoint.defaultInstance
+
+private fun ServiceAlertEndpoint.protoMergeImpl(plus: pbandk.Message?): ServiceAlertEndpoint = (plus as? ServiceAlertEndpoint)?.let {
+    it.copy(
+        alerts = alerts + plus.alerts,
+        unknownFields = unknownFields + plus.unknownFields
+    )
+} ?: this
+
+@Suppress("UNCHECKED_CAST")
+private fun ServiceAlertEndpoint.Companion.decodeWithImpl(u: pbandk.MessageDecoder): ServiceAlertEndpoint {
+    var alerts: pbandk.ListWithSize.Builder<cl.emilym.gtfs.ServiceAlert>? = null
+
+    val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
+        when (_fieldNumber) {
+            1 -> alerts = (alerts ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as kotlin.sequences.Sequence<cl.emilym.gtfs.ServiceAlert> }
+        }
+    }
+
+    return ServiceAlertEndpoint(pbandk.ListWithSize.Builder.fixed(alerts), unknownFields)
 }
 
 @pbandk.Export
@@ -2505,4 +2656,41 @@ private fun Location.Companion.decodeWithImpl(u: pbandk.MessageDecoder): Locatio
         throw pbandk.InvalidProtocolBufferException.missingRequiredField("lng")
     }
     return Location(lat!!, lng!!, unknownFields)
+}
+
+private fun ServiceAlert.protoMergeImpl(plus: pbandk.Message?): ServiceAlert = (plus as? ServiceAlert)?.let {
+    it.copy(
+        date = plus.date ?: date,
+        url = plus.url ?: url,
+        regions = regions + plus.regions,
+        unknownFields = unknownFields + plus.unknownFields
+    )
+} ?: this
+
+@Suppress("UNCHECKED_CAST")
+private fun ServiceAlert.Companion.decodeWithImpl(u: pbandk.MessageDecoder): ServiceAlert {
+    var id: String? = null
+    var title: String? = null
+    var date: String? = null
+    var url: String? = null
+    var regions: pbandk.ListWithSize.Builder<cl.emilym.gtfs.ServiceAlertRegion>? = null
+
+    val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
+        when (_fieldNumber) {
+            1 -> id = _fieldValue as String
+            2 -> title = _fieldValue as String
+            3 -> date = _fieldValue as String
+            4 -> url = _fieldValue as String
+            5 -> regions = (regions ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as kotlin.sequences.Sequence<cl.emilym.gtfs.ServiceAlertRegion> }
+        }
+    }
+
+    if (id == null) {
+        throw pbandk.InvalidProtocolBufferException.missingRequiredField("id")
+    }
+    if (title == null) {
+        throw pbandk.InvalidProtocolBufferException.missingRequiredField("title")
+    }
+    return ServiceAlert(id!!, title!!, date, url,
+        pbandk.ListWithSize.Builder.fixed(regions), unknownFields)
 }

@@ -5,6 +5,7 @@ import cl.emilym.gtfs.RouteEndpoint
 import cl.emilym.gtfs.RouteServicesEndpoint
 import cl.emilym.gtfs.RouteTimetableEndpoint
 import cl.emilym.gtfs.RouteTripTimetableEndpoint
+import cl.emilym.gtfs.ServiceAlertEndpoint
 import cl.emilym.gtfs.ServiceEndpoint
 import cl.emilym.gtfs.StopEndpoint
 import cl.emilym.gtfs.StopTimetable
@@ -145,5 +146,11 @@ interface GtfsApi {
     @GET
     @Headers("Accept: */*")
     suspend fun getLiveUpdates(@Url url: String): FeedMessage
+
+    @GET("v1/service-alert.pb")
+    suspend fun serviceAlerts(): ServiceAlertEndpoint
+
+    @GET("v1/service-alert.pb.sha")
+    suspend fun serviceAlertsDigest(): String
 
 }
