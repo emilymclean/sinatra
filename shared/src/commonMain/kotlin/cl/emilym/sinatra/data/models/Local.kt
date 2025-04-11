@@ -12,6 +12,7 @@ enum class CacheCategory(
     ROUTE_SERVICE_TIMETABLE("route_service_timetable"),
     ROUTE_SERVICE_CANONICAL_TIMETABLE("route_service_CANONICAL_timetable"),
     ROUTE_TRIP_TIMETABLE("route_trip_timetable"),
-    NETWORK_GRAPH("network_graph")
+    NETWORK_GRAPH("network_graph"),
+    SERVICE_ALERT("network_graph"),
 
 }

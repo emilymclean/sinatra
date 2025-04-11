@@ -9,6 +9,7 @@ typealias RouteId = String
 typealias RouteCode = String
 typealias ServiceId = String
 typealias TripId = String
+typealias ServiceAlertId = String
 
 typealias Latitude = Double
 typealias Longitude = Double
@@ -22,5 +23,6 @@ typealias Degree = Double
 
 typealias MarkdownString = String
 typealias ContentId = String
+typealias NativePageReference = String
 
 typealias BCP47LanguageCode = String

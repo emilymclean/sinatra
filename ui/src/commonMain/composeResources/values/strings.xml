@@ -27,6 +27,20 @@
         <item quantity="one">%1$d meter</item>
         <item quantity="other">%1$d meters</item>
     </plurals>
+
+    <string name="time_ago">%1$s ago</string>
+    <plurals name="time_year">
+        <item quantity="one">%1$d year</item>
+        <item quantity="other">%1$d years</item>
+    </plurals>
+    <plurals name="time_month">
+        <item quantity="one">%1$d month</item>
+        <item quantity="other">%1$d months</item>
+    </plurals>
+    <plurals name="time_day">
+        <item quantity="one">%1$d day</item>
+        <item quantity="other">%1$d days</item>
+    </plurals>
     <plurals name="time_minute">
         <item quantity="one">%1$d minute</item>
         <item quantity="other">%1$d minutes</item>
@@ -135,6 +149,16 @@
     <string name="navigate_entry_no_starting_point">Pick a starting point to plan a journey.</string>
     <string name="navigate_entry_no_destination">Pick a destination to plan a journey.</string>
     <string name="navigate_entry_no_starting_point_destination">Pick a starting point and destination to plan a journey.</string>
+
+    <string name="service_alert_title">Service Alerts</string>
+    <string name="service_alert_no_alerts">There are currently no service alerts.</string>
+    <string name="service_alert_region_and_date">%1$s · %2$s</string>
+    <string name="service_alert_region_belconnen">Belconnen</string>
+    <string name="service_alert_region_central_canberra">Central Canberra</string>
+    <string name="service_alert_region_gungahlin">Gungahlin</string>
+    <string name="service_alert_region_tuggeranong">Tuggeranong</string>
+    <string name="service_alert_region_woden">Woden, Weston Creek, and Molonglo</string>
+    <string name="service_alert_region_other">Other</string>
 
     <string name="time_am">am</string>
     <string name="time_pm">pm</string>

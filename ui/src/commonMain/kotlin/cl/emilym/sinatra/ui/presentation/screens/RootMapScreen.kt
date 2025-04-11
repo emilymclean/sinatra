@@ -70,6 +70,7 @@ import cl.emilym.sinatra.ui.widgets.NavigationItem
 import cl.emilym.sinatra.ui.widgets.SinatraBackHandler
 import cl.emilym.sinatra.ui.widgets.StarOutlineIcon
 import cl.emilym.sinatra.ui.widgets.ViewportSizeWidget
+import cl.emilym.sinatra.ui.widgets.WarningIcon
 import cl.emilym.sinatra.ui.widgets.bottomsheet.SinatraBottomSheetScaffold
 import cl.emilym.sinatra.ui.widgets.bottomsheet.SinatraBottomSheetScaffoldState
 import cl.emilym.sinatra.ui.widgets.bottomsheet.SinatraSheetValue
@@ -83,6 +84,7 @@ import sinatra.ui.generated.resources.navigation_bar_about
 import sinatra.ui.generated.resources.navigation_bar_favourites
 import sinatra.ui.generated.resources.navigation_bar_map
 import sinatra.ui.generated.resources.navigation_bar_navigate
+import sinatra.ui.generated.resources.service_alert_title
 
 @Composable
 expect fun Map(
@@ -213,6 +215,16 @@ class RootMapScreen: Screen {
                         { StarOutlineIcon() },
                         { Text(stringResource(Res.string.navigation_bar_favourites)) }
                     ),
+                    if (FeatureFlags.SERVICE_ALERT_BUTTON_TAB_BAR) {
+                        NavigationItem(
+                            index++,
+                            {
+                                navigator.replaceAll(ServiceAlertScreen())
+                            },
+                            { WarningIcon() },
+                            { Text(stringResource(Res.string.service_alert_title)) }
+                        )
+                    } else null,
                     NavigationItem(
                         index++,
                         {

@@ -30,6 +30,7 @@ object FeatureFlags {
     val RAPTOR_ARRIVAL_BASED_ROUTING by FeatureFlagDelegate(true)
     val RAPTOR_SWAP_BUTTON by FeatureFlagDelegate(true)
     val NAVIGATE_BUTTON_TAB_BAR by FeatureFlagDelegate(true)
+    val SERVICE_ALERT_BUTTON_TAB_BAR by FeatureFlagDelegate(false)
     val PLACE_DETAIL_ENABLED by FeatureFlagDelegate(true)
     val SPECIFY_TIMEZONE_WHEN_DIFFERENT by FeatureFlagDelegate(true)
     val HIDE_MAPS_FROM_ACCESSIBILITY by FeatureFlagDelegate(false)

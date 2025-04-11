@@ -23,16 +23,25 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.data.models.ContentId
 import cl.emilym.sinatra.data.models.ContentLink
+import cl.emilym.sinatra.data.models.NativePageReference
 import cl.emilym.sinatra.data.repository.ContentRepository
 import cl.emilym.sinatra.ui.minimumTouchTarget
 import cl.emilym.sinatra.ui.presentation.screens.AboutScreen
 import cl.emilym.sinatra.ui.presentation.screens.ContentScreen
+import cl.emilym.sinatra.ui.presentation.screens.ServiceAlertScreen
 import cl.emilym.sinatra.ui.presentation.theme.Container
 
 fun contentRoute(id: ContentId): Screen {
     return when (id) {
         ContentRepository.ABOUT_ID -> AboutScreen()
+        ContentRepository.SERVICE_ALERT_ID -> ServiceAlertScreen()
         else -> ContentScreen(id)
+    }
+}
+
+fun nativeRoute(reference: NativePageReference): Screen? {
+    return when (reference) {
+        else -> null
     }
 }
 
@@ -58,6 +67,11 @@ fun ContentLinkWidget(
                     }
                     is ContentLink.Content -> {
                         navigator.push(contentRoute(link.id))
+                    }
+                    is ContentLink.Native -> {
+                        nativeRoute(link.nativeReference)?.let {
+                            navigator.push(it)
+                        }
                     }
                     else -> {}
                 }
