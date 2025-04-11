@@ -44,7 +44,9 @@ class ServiceAlertCacheWorker(
         serviceAlertPersistence.get()
 
     suspend fun get(): Cachable<List<ServiceAlert>> {
-        return run(serviceAlertClient.serviceAlertsPair, "alerts")
+        return run(serviceAlertClient.serviceAlertsPair, "alerts").map {
+            it.sortedByDescending { it.date }
+        }
     }
 
 }
