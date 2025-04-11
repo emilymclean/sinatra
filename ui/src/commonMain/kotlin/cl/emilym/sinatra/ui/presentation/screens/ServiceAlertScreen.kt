@@ -146,7 +146,7 @@ class ServiceAlertScreen: ContentScreen(ContentRepository.SERVICE_ALERT_ID) {
                                         Column(Modifier.weight(1f)) {
                                             Text(
                                                 it.title,
-                                                maxLines = 2,
+                                                maxLines = 3,
                                                 overflow = TextOverflow.Ellipsis
                                             )
                                             if (it.regions.isNotEmpty() || it.date != null) {
