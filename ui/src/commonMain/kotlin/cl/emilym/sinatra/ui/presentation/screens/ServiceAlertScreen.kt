@@ -32,11 +32,14 @@ import cafe.adriel.voyager.core.screen.ScreenKey
 import cafe.adriel.voyager.koin.koinScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import cl.emilym.compose.requeststate.RequestState
 import cl.emilym.compose.requeststate.RequestStateWidget
 import cl.emilym.compose.requeststate.handle
 import cl.emilym.compose.units.rdp
+import cl.emilym.sinatra.data.models.Content
 import cl.emilym.sinatra.data.models.ServiceAlert
 import cl.emilym.sinatra.data.models.ServiceAlertRegion
+import cl.emilym.sinatra.data.repository.ContentRepository
 import cl.emilym.sinatra.data.repository.ServiceAlertRepository
 import cl.emilym.sinatra.ui.asDurationFromNow
 import cl.emilym.sinatra.ui.widgets.ExternalLinkIcon
@@ -93,12 +96,12 @@ class ServiceAlertViewModel(
 
 }
 
-class ServiceAlertScreen: Screen {
-    override val key: ScreenKey = "service-alert"
+class ServiceAlertScreen: ContentScreen(ContentRepository.SERVICE_ALERT_ID) {
+    override val key: ScreenKey = "service-alerts"
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
-    override fun Content() {
+    override fun Content(content: RequestState<Content?>) {
         val viewModel = koinScreenModel<ServiceAlertViewModel>()
 
         Scaffold(
@@ -172,6 +175,14 @@ class ServiceAlertScreen: Screen {
                                     }
                                 }
                                 Spacer(Modifier.height(0.5.rdp))
+                            }
+                            (content as? RequestState.Success)?.value?.let {
+                                item {
+                                    Column {
+                                        Spacer(Modifier.height(0.5.rdp))
+                                        RenderLinks(it)
+                                    }
+                                }
                             }
                         }
                     } else {

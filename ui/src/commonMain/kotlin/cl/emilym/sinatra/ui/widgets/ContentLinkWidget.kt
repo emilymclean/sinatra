@@ -34,13 +34,13 @@ import cl.emilym.sinatra.ui.presentation.theme.Container
 fun contentRoute(id: ContentId): Screen {
     return when (id) {
         ContentRepository.ABOUT_ID -> AboutScreen()
+        ContentRepository.SERVICE_ALERT_ID -> ServiceAlertScreen()
         else -> ContentScreen(id)
     }
 }
 
 fun nativeRoute(reference: NativePageReference): Screen? {
     return when (reference) {
-        "service-updates" -> ServiceAlertScreen()
         else -> null
     }
 }

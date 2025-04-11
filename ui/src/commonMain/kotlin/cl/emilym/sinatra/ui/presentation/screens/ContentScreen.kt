@@ -34,6 +34,7 @@ import cl.emilym.compose.requeststate.handle
 import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.data.models.Content
 import cl.emilym.sinatra.data.models.ContentId
+import cl.emilym.sinatra.data.models.ContentLink
 import cl.emilym.sinatra.data.repository.ContentRepository
 import cl.emilym.sinatra.ui.widgets.BackIcon
 import cl.emilym.sinatra.ui.widgets.ContentLinkWidget
@@ -85,6 +86,12 @@ open class ContentScreen(
             viewModel.init(id)
         }
 
+        Content(content)
+    }
+
+    @Composable
+    protected open fun Content(content: RequestState<Content?>) {
+        val viewModel = koinScreenModel<ContentViewModel>()
         Scaffold(
             topBar = {
                 RenderTopBar(content)
@@ -161,11 +168,21 @@ open class ContentScreen(
 
     @Composable
     protected fun ColumnScope.RenderDynamicContent(content: Content) {
+        RenderBodyContent(content)
+        Box(Modifier.height(1.rdp))
+        RenderLinks(content)
+    }
+
+    @Composable
+    protected open fun RenderBodyContent(content: Content) {
         Markdown(
             content.content,
             modifier = Modifier.padding(horizontal = 1.rdp)
         )
-        Box(Modifier.height(1.rdp))
+    }
+
+    @Composable
+    protected open fun RenderLinks(content: Content) {
         Column(
             Modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(2.dp)
