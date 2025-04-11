@@ -202,6 +202,8 @@
 
   <string name="navigate_entry_no_starting_point_destination">选择起点和目的地来规划旅程。</string>
 
+  <string name="service_alert_title">服务警报</string>
+
   <string name="time_am">上午</string>
 
   <string name="time_pm">下午</string>
