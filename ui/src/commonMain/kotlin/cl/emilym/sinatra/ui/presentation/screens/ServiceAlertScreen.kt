@@ -41,6 +41,7 @@ import cl.emilym.sinatra.data.repository.ServiceAlertRepository
 import cl.emilym.sinatra.ui.asDurationFromNow
 import cl.emilym.sinatra.ui.widgets.ExternalLinkIcon
 import cl.emilym.sinatra.ui.widgets.ListHint
+import cl.emilym.sinatra.ui.widgets.NavigatorBackButton
 import cl.emilym.sinatra.ui.widgets.SinatraScreenModel
 import cl.emilym.sinatra.ui.widgets.WarningIcon
 import cl.emilym.sinatra.ui.widgets.collectAsStateWithLifecycle
@@ -99,12 +100,12 @@ class ServiceAlertScreen: Screen {
     @Composable
     override fun Content() {
         val viewModel = koinScreenModel<ServiceAlertViewModel>()
-        val navigator = LocalNavigator.currentOrThrow
 
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text(stringResource(Res.string.service_alert_title)) }
+                    title = { Text(stringResource(Res.string.service_alert_title)) },
+                    navigationIcon = { NavigatorBackButton() }
                 )
             }
         ) { internalPadding ->
