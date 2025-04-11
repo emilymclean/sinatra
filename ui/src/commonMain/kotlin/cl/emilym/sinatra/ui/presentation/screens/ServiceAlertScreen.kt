@@ -4,6 +4,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -37,7 +38,7 @@ import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.data.models.ServiceAlert
 import cl.emilym.sinatra.data.models.ServiceAlertRegion
 import cl.emilym.sinatra.data.repository.ServiceAlertRepository
-import cl.emilym.sinatra.ui.asDurationBeforeNow
+import cl.emilym.sinatra.ui.asDurationFromNow
 import cl.emilym.sinatra.ui.widgets.ExternalLinkIcon
 import cl.emilym.sinatra.ui.widgets.ListHint
 import cl.emilym.sinatra.ui.widgets.SinatraScreenModel
@@ -118,7 +119,10 @@ class ServiceAlertScreen: Screen {
                     retry = { viewModel.retryServiceAlerts() }
                 ) { alerts ->
                     if (alerts.isNotEmpty()) {
-                        LazyColumn(Modifier.fillMaxSize()) {
+                        LazyColumn(
+                            Modifier.fillMaxSize(),
+                            contentPadding = PaddingValues(bottom = 1.rdp)
+                        ) {
                             items(alerts) {
                                 Card(
                                     Modifier
@@ -148,9 +152,9 @@ class ServiceAlertScreen: Screen {
                                                             stringResource(
                                                                 Res.string.service_alert_region_and_date,
                                                                 it.regions.first().text,
-                                                                it.date!!.asDurationBeforeNow()
+                                                                it.date!!.asDurationFromNow()
                                                             )
-                                                        it.date != null -> it.date!!.asDurationBeforeNow()
+                                                        it.date != null -> it.date!!.asDurationFromNow()
                                                         else -> it.regions.first().text
                                                     },
                                                     style = MaterialTheme.typography.bodySmall

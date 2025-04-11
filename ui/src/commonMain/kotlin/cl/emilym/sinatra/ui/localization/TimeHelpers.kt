@@ -54,11 +54,11 @@ fun Instant.format(): String {
 @Composable
 private fun Instant.format(timeZone: TimeZone): String {
     val inTz = toLocalDateTime(timeZone)
-    val startInTz = startOfDay(timeZone).toLocalDateTime(timeZone)
+    val todayInTz = LocalClock.current.now().toLocalDateTime(timeZone)
     val timeFormat = timeFormat
 
     return when {
-        inTz.isSameDay(startInTz) -> inTz.format(LocalDateTime.Format {
+        inTz.isSameDay(todayInTz) -> inTz.format(LocalDateTime.Format {
             time(timeFormat)
         })
         else -> inTz.format(dayOfWeekDateTimeFormat)
