@@ -23,5 +23,6 @@ typealias Degree = Double
 
 typealias MarkdownString = String
 typealias ContentId = String
+typealias NativePageReference = String
 
 typealias BCP47LanguageCode = String
