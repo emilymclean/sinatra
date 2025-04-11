@@ -20,7 +20,12 @@ class IsAboveMinimumVersionUseCase(
             Napier.e(e)
             return true
         }
-        val currentVersion = buildInformation.versionName.parse
+        val currentVersion = try {
+            buildInformation.versionName.parse
+        } catch(e: Exception) {
+            Napier.e(e)
+            return true
+        }
 
         for (i in 0..2) {
             if (currentVersion[i] < minimumVersion[i]) return false
