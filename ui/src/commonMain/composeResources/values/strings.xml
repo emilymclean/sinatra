@@ -160,6 +160,15 @@
     <string name="service_alert_region_woden">Woden, Weston Creek, and Molonglo</string>
     <string name="service_alert_region_other">Other</string>
 
+    <string name="app_out_of_date_title">Sinatra needs to be updated</string>
+    <string name="app_out_of_date_content">Sinatra is currently out of date and requires an update to function properly. Please update it to the latest version to restore compatibility and ensure reliable performance.</string>
+    <string name="app_out_of_date_android_title">Sinatra on Google Play</string>
+    <string name="app_out_of_date_android_link">https://play.google.com/store/apps/details?id=cl.emilym.sinatra</string>
+    <string name="app_out_of_date_ios_title">Sinatra on the App Store</string>
+    <string name="app_out_of_date_ios_link">https://apps.apple.com/us/app/sinatra-for-canberra/id6739419456</string>
+    <string name="app_out_of_date_homepage_title">Visit our website</string>
+    <string name="app_out_of_date_homepage_link">https://sinatra-transport.com</string>
+
     <string name="time_am">am</string>
     <string name="time_pm">pm</string>
     <string name="day_of_week_monday">Monday</string>
