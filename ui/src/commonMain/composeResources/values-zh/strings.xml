@@ -29,6 +29,20 @@
   <plurals name="distance_meter">
     <item quantity="other">%1$d米</item>
   </plurals>
+
+  <string name="time_ago">%1$s前</string>
+
+  <plurals name="time_year">
+    <item quantity="other">%1$d年</item>
+  </plurals>
+
+  <plurals name="time_month">
+    <item quantity="other">%1$d月</item>
+  </plurals>
+
+  <plurals name="time_day">
+    <item quantity="other">%1$d天</item>
+  </plurals>
       
   <plurals name="time_minute">
     <item quantity="other">%1$d分钟</item>
