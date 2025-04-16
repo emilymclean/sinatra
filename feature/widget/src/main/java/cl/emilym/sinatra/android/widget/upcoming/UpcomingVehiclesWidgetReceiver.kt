@@ -9,22 +9,16 @@ import android.os.Build
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.glance.appwidget.state.updateAppWidgetState
-import androidx.glance.state.PreferencesGlanceStateDefinition
 import cl.emilym.sinatra.android.widget.base.KoinGlanceAppWidgetReceiver
 import cl.emilym.sinatra.android.widget.base.KoinGlanceAppWidgetReceiverComponent
 import cl.emilym.sinatra.android.widget.data.proto.UpcomingType
 import cl.emilym.sinatra.android.widget.data.proto.UpcomingVehicleData
 import cl.emilym.sinatra.android.widget.data.toProto
-import cl.emilym.sinatra.data.repository.TransportMetadataRepository
 import cl.emilym.sinatra.domain.UpcomingRoutesForStopUseCase
-import io.github.aakira.napier.Napier
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toLocalDateTime
 import org.koin.core.component.inject
 
 class UpcomingVehiclesWidgetReceiver: KoinGlanceAppWidgetReceiver() {
@@ -77,7 +71,7 @@ class KoinUpcomingVehiclesWidgetReceiverHelper: KoinGlanceAppWidgetReceiverCompo
                 val intent = PendingIntent.getBroadcast(
                     context,
                     UPDATE_REQUEST_CODE,
-                    Intent(context, KoinGlanceAppWidgetReceiver::class.java).apply {
+                    Intent(context, UpcomingVehiclesWidgetReceiver::class.java).apply {
                         action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
                         putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, intArrayOf(appWidgetId))
                     },
