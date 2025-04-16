@@ -9,6 +9,7 @@ plugins {
     alias(libs.plugins.jetbrainsCompose).apply(false)
     alias(libs.plugins.googleServices).apply(false)
     alias(libs.plugins.firebaseCrashlytics).apply(false)
+    alias(libs.plugins.protobuf).apply(false)
 }
 
 buildscript {

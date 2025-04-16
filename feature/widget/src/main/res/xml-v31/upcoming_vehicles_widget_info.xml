@@ -7,7 +7,7 @@
 
     android:minResizeHeight="128dp"
     android:minResizeWidth="128dp"
-    android:configure="cl.emilym.sinatra.android.widget.presentation.upcoming.UpcomingVehiclesConfigurationActivity"
+    android:configure="cl.emilym.sinatra.android.widget.upcoming.UpcomingVehiclesConfigurationActivity"
     android:widgetFeatures="configuration_optional|reconfigurable"
     android:maxResizeHeight="512dp"
     android:maxResizeWidth="512dp"

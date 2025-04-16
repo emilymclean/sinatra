@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlinAndroid)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.protobuf)
 }
 
 android {
@@ -49,6 +50,11 @@ dependencies {
     implementation(libs.compose.glance)
     implementation(libs.compose.glance.appwidget)
 
+    // Misc
+    implementation(libs.emily.units)
+    implementation(libs.datastore)
+    implementation(libs.protobuf.javalite)
+
     // Koin
     implementation(libs.koin.core)
     implementation(libs.koin.android)
@@ -61,4 +67,20 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
     implementation(libs.androidx.activity)
+}
+
+protobuf {
+    protoc {
+        artifact = "com.google.protobuf:protoc:${libs.versions.protobuf.protoc.get()}"
+    }
+
+    generateProtoTasks {
+        all().forEach { task ->
+            task.builtins {
+                maybeCreate("java").apply {
+                    option("lite")
+                }
+            }
+        }
+    }
 }
