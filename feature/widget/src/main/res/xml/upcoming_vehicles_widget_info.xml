@@ -7,6 +7,6 @@
 
     android:minResizeHeight="128dp"
     android:minResizeWidth="128dp"
-    android:configure="cl.emilym.sinatra.android.widget.upcoming.UpcomingVehiclesConfigurationActivity"
+    android:configure="cl.emilym.sinatra.android.widget.presentation.upcoming.UpcomingVehiclesConfigurationActivity"
     android:initialLayout="@layout/glance_default_loading_layout">
 </appwidget-provider>

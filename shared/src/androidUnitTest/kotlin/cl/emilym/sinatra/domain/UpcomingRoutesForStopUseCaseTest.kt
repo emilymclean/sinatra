@@ -1,6 +1,7 @@
 package cl.emilym.sinatra.domain
 
 import cl.emilym.sinatra.data.models.Cachable
+import cl.emilym.sinatra.data.models.IStopTimetableTime
 import cl.emilym.sinatra.data.models.Service
 import cl.emilym.sinatra.data.models.StopTimetable
 import cl.emilym.sinatra.data.models.StopTimetableTime
@@ -96,6 +97,139 @@ class UpcomingRoutesForStopUseCaseTest {
 
         assertEquals(1, result.item.size)
         assertEquals("R1", result.item.first().routeCode)
+
+        coVerify { stopRepository.timetable(stopId) }
+        coVerify { serviceRepository.services(listOf("service-1")) }
+        coVerify { metadataRepository.timeZone() }
+        verify { clock.now() }
+    }
+
+    @Test
+    fun `should return active stop timetable times filtered by route`() = runTest {
+        val stopId = "stop-123"
+        val timeZone = TimeZone.UTC
+        val currentTime = Instant.parse("2024-01-01T01:00:00Z")
+
+        val timetable = StopTimetable(
+            times = listOf(
+                StopTimetableTime(
+                    childStopId = null,
+                    routeId = "route-1",
+                    routeCode = "R1",
+                    serviceId = "service-1",
+                    tripId = "trip-1",
+                    arrivalTime = Time.parse("PT13H"),
+                    departureTime = Time.parse("PT13H5M"),
+                    heading = "North",
+                    sequence = 1,
+                    route = null
+                ),
+                StopTimetableTime(
+                    childStopId = null,
+                    routeId = "route-2",
+                    routeCode = "R2",
+                    serviceId = "service-1",
+                    tripId = "trip-1",
+                    arrivalTime = Time.parse("PT13H"),
+                    departureTime = Time.parse("PT13H5M"),
+                    heading = "North",
+                    sequence = 1,
+                    route = null
+                )
+            )
+        )
+
+
+        val services = Cachable.live(
+            listOf(
+                service
+            )
+        )
+
+        every { service.active(any(), any(), any()) } returns true
+        coEvery { metadataRepository.timeZone() } returns timeZone
+        coEvery { stopRepository.timetable(stopId) } returns Cachable.live(timetable)
+        coEvery { serviceRepository.services(listOf("service-1")) } returns services
+        coEvery { clock.now() } returns currentTime
+        coEvery { liveStopTimetableUseCase.invoke(stopId, any()) } answers { flowOf(it.invocation.args[1] as List<IStopTimetableTime>) }
+
+        val result = useCase(stopId, "route-2", number = 1).take(1).first()
+
+        assertEquals(1, result.item.size)
+        assertEquals("R2", result.item.first().routeCode)
+
+        coVerify { stopRepository.timetable(stopId) }
+        coVerify { serviceRepository.services(listOf("service-1")) }
+        coVerify { metadataRepository.timeZone() }
+        verify { clock.now() }
+    }
+
+    @Test
+    fun `should return active stop timetable times filtered by route and heading`() = runTest {
+        val stopId = "stop-123"
+        val timeZone = TimeZone.UTC
+        val currentTime = Instant.parse("2024-01-01T01:00:00Z")
+
+        val timetable = StopTimetable(
+            times = listOf(
+                StopTimetableTime(
+                    childStopId = null,
+                    routeId = "route-1",
+                    routeCode = "R1",
+                    serviceId = "service-1",
+                    tripId = "trip-1",
+                    arrivalTime = Time.parse("PT13H"),
+                    departureTime = Time.parse("PT13H5M"),
+                    heading = "North",
+                    sequence = 1,
+                    route = null
+                ),
+                StopTimetableTime(
+                    childStopId = null,
+                    routeId = "route-2",
+                    routeCode = "R2",
+                    serviceId = "service-1",
+                    tripId = "trip-1",
+                    arrivalTime = Time.parse("PT13H"),
+                    departureTime = Time.parse("PT13H5M"),
+                    heading = "North",
+                    sequence = 1,
+                    route = null
+                ),
+                StopTimetableTime(
+                    childStopId = null,
+                    routeId = "route-2",
+                    routeCode = "R2",
+                    serviceId = "service-1",
+                    tripId = "trip-1",
+                    arrivalTime = Time.parse("PT13H"),
+                    departureTime = Time.parse("PT13H5M"),
+                    heading = "South",
+                    sequence = 1,
+                    route = null
+                )
+            )
+        )
+
+
+        val services = Cachable.live(
+            listOf(
+                service
+            )
+        )
+
+        every { service.active(any(), any(), any()) } returns true
+        coEvery { metadataRepository.timeZone() } returns timeZone
+        coEvery { stopRepository.timetable(stopId) } returns Cachable.live(timetable)
+        coEvery { serviceRepository.services(listOf("service-1")) } returns services
+        coEvery { clock.now() } returns currentTime
+        coEvery { liveStopTimetableUseCase.invoke(stopId, any()) } answers { flowOf(it.invocation.args[1] as List<IStopTimetableTime>) }
+
+        val result = useCase(stopId, "route-2", "South", number = 1).take(1).first()
+
+        assertEquals(1, result.item.size)
+        assertEquals("R2", result.item.first().routeCode)
+        assertEquals("South", result.item.first().heading)
 
         coVerify { stopRepository.timetable(stopId) }
         coVerify { serviceRepository.services(listOf("service-1")) }

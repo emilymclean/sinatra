@@ -3,11 +3,11 @@
 
     <application>
         <activity
-            android:name=".upcoming.UpcomingVehiclesConfigurationActivity"
+            android:name=".presentation.upcoming.UpcomingVehiclesConfigurationActivity"
             android:exported="true" />
 
         <receiver
-            android:name=".upcoming.UpcomingVehiclesWidgetReceiver"
+            android:name=".presentation.upcoming.UpcomingVehiclesWidgetReceiver"
             android:exported="true"
             android:label="@string/upcoming_vehicle_widget_label">
             <intent-filter>

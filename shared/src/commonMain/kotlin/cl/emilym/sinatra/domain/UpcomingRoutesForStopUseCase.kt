@@ -1,7 +1,9 @@
 package cl.emilym.sinatra.domain
 
 import cl.emilym.sinatra.data.models.Cachable
+import cl.emilym.sinatra.data.models.Heading
 import cl.emilym.sinatra.data.models.IStopTimetableTime
+import cl.emilym.sinatra.data.models.RouteId
 import cl.emilym.sinatra.data.models.StopId
 import cl.emilym.sinatra.data.models.StopTimetableTime
 import cl.emilym.sinatra.data.models.flatMap
@@ -37,6 +39,8 @@ class UpcomingRoutesForStopUseCase(
     @OptIn(ExperimentalCoroutinesApi::class)
     operator fun invoke(
         stopId: StopId,
+        routeId: RouteId? = null,
+        heading: Heading? = null,
         number: Int = 10
     ): Flow<Cachable<List<IStopTimetableTime>>> {
         return flow {
@@ -58,6 +62,10 @@ class UpcomingRoutesForStopUseCase(
                         val service = services.item.firstOrNull { it.id == time.serviceId } ?: continue
                         if (!service.active(checkTime, scheduleTimeZone)) continue
                         if (time.arrivalTime < now) continue
+
+                        if (routeId != null && time.routeId != routeId) continue
+                        if (heading != null && time.heading != heading) continue
+
                         active.add(time)
                         if (active.size == number) break
                     }

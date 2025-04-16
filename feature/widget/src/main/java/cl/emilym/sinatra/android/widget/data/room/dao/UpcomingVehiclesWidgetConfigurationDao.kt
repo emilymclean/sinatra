@@ -1,9 +1,9 @@
-package cl.emilym.sinatra.android.widget.room.dao
+package cl.emilym.sinatra.android.widget.data.room.dao
 
 import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
-import cl.emilym.sinatra.android.widget.room.entities.UpcomingVehiclesWidgetConfiguration
+import cl.emilym.sinatra.android.widget.data.room.entities.UpcomingVehiclesWidgetConfiguration
 
 interface UpcomingVehiclesWidgetConfigurationDao {
 

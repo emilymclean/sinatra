@@ -1,4 +1,4 @@
-package cl.emilym.sinatra.android.widget.upcoming
+package cl.emilym.sinatra.android.widget.presentation.upcoming
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize

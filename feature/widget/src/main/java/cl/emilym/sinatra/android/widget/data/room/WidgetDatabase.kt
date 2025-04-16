@@ -1,11 +1,11 @@
-package cl.emilym.sinatra.android.widget.room
+package cl.emilym.sinatra.android.widget.data.room
 
 import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import cl.emilym.sinatra.android.widget.room.dao.UpcomingVehiclesWidgetConfigurationDao
-import cl.emilym.sinatra.android.widget.room.entities.UpcomingVehiclesWidgetConfiguration
+import cl.emilym.sinatra.android.widget.data.room.dao.UpcomingVehiclesWidgetConfigurationDao
+import cl.emilym.sinatra.android.widget.data.room.entities.UpcomingVehiclesWidgetConfiguration
 import kotlinx.coroutines.Dispatchers
 import org.koin.core.annotation.Factory
 import org.koin.core.annotation.Single

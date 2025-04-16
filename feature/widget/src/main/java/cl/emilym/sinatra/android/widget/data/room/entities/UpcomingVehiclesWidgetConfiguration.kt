@@ -1,4 +1,4 @@
-package cl.emilym.sinatra.android.widget.room.entities
+package cl.emilym.sinatra.android.widget.data.room.entities
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

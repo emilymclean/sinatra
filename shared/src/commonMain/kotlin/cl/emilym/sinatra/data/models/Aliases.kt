@@ -6,6 +6,7 @@ typealias ResourceKey = String
 typealias PlaceId = String
 typealias StopId = String
 typealias RouteId = String
+typealias Heading = String
 typealias RouteCode = String
 typealias ServiceId = String
 typealias TripId = String
