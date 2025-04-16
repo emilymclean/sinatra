@@ -51,8 +51,10 @@ class UpcomingVehiclesWidget: SinatraGlanceAppWidget() {
                                 R.string.upcoming_vehicle_widget_no_upcoming,
                             ),
                             style = TextStyle(
-                                color = GlanceTheme.colors.onSurface
-                            )
+                                color = GlanceTheme.colors.onSurface,
+                                textAlign = TextAlign.Center
+                            ),
+                            modifier = GlanceModifier.fillMaxWidth()
                         )
                     }
                     else -> state.timesList.firstOrNull()?.let {
@@ -88,8 +90,10 @@ fun UpcomingStopWidget(
                 )
             },
             style = TextStyle(
-                color = GlanceTheme.colors.onSurface
-            )
+                color = GlanceTheme.colors.onSurface,
+                textAlign = TextAlign.Center
+            ),
+            modifier = GlanceModifier.fillMaxWidth()
         )
         val time = Instant.fromEpochMilliseconds(upcoming.departureTime).widgetFormat()
         Text(
