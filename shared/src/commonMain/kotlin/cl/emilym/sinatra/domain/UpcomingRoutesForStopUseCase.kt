@@ -41,7 +41,8 @@ class UpcomingRoutesForStopUseCase(
         stopId: StopId,
         routeId: RouteId? = null,
         heading: Heading? = null,
-        number: Int = 10
+        number: Int = 10,
+        forceNotLive: Boolean = false
     ): Flow<Cachable<List<IStopTimetableTime>>> {
         return flow {
             val scheduleTimeZone = metadataRepository.timeZone()
@@ -78,9 +79,9 @@ class UpcomingRoutesForStopUseCase(
         }
         .flowOn(Dispatchers.IO)
         .flatMapLatest { original ->
-            when (original.item.isEmpty()) {
-                true -> flowOf(original.map { it })
-                false -> liveStopTimetableUseCase(
+            when {
+                original.item.isEmpty() || forceNotLive -> flowOf(original.map { it })
+                else -> liveStopTimetableUseCase(
                     stopId,
                     original.item
                 ).map { live -> original.map { live } }
