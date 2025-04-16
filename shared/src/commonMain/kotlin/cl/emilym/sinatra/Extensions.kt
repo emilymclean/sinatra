@@ -38,6 +38,20 @@ fun <T> T?.nullIf(condition: (T) -> Boolean): T? {
     }
 }
 
+fun String?.nullIfEmpty(): String? {
+    return when {
+        this.isNullOrEmpty() -> null
+        else -> this
+    }
+}
+
+fun String?.nullIfBlank(): String? {
+    return when {
+        this.isNullOrBlank() -> null
+        else -> this
+    }
+}
+
 fun <T> List<T>?.nullIfEmpty(): List<T>? {
     return when {
         this.isNullOrEmpty() -> null

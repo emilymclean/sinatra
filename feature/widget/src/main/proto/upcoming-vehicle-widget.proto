@@ -9,13 +9,9 @@ message UpcomingVehicleData {
 }
 
 message UpcomingVehicleStopTime {
-  string childStopId = 9;
-  string routeId = 1;
   string routeCode = 2;
-  string serviceId = 3;
-  string tripId = 10;
+  string routeName = 11;
   uint64 arrivalTime = 4;
   uint64 departureTime = 5;
   string heading = 6;
-  uint32 sequence = 7;
 }

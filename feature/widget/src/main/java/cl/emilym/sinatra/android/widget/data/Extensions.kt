@@ -5,14 +5,10 @@ import cl.emilym.sinatra.data.models.IStopTimetableTime
 
 fun IStopTimetableTime.toProto(): UpcomingVehicleStopTime {
     return UpcomingVehicleStopTime.newBuilder()
-        .setChildStopId(childStopId)
-        .setRouteId(routeId)
-        .setRouteCode(routeCode)
-        .setServiceId(serviceId)
-        .setTripId(tripId)
+        .setRouteCode(route?.displayCode ?: routeCode)
+        .setRouteName(route?.name)
         .setArrivalTime(arrivalTime.instant.toEpochMilliseconds())
         .setDepartureTime(departureTime.instant.toEpochMilliseconds())
         .setHeading(heading)
-        .setSequence(sequence)
         .build()
 }

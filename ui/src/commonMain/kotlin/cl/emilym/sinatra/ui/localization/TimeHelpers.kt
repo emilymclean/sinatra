@@ -67,3 +67,4 @@ private fun Instant.format(timeZone: TimeZone): String {
 fun Time.format(): String {
     return toTodayInstant().format()
 }
+
