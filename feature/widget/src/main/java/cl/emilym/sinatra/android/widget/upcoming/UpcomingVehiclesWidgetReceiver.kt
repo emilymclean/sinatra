@@ -8,6 +8,7 @@ import androidx.glance.appwidget.state.updateAppWidgetState
 import androidx.glance.state.PreferencesGlanceStateDefinition
 import cl.emilym.sinatra.android.widget.base.KoinGlanceAppWidgetReceiver
 import cl.emilym.sinatra.android.widget.base.KoinGlanceAppWidgetReceiverComponent
+import cl.emilym.sinatra.android.widget.data.proto.UpcomingType
 import cl.emilym.sinatra.android.widget.data.proto.UpcomingVehicleData
 import cl.emilym.sinatra.android.widget.data.toProto
 import cl.emilym.sinatra.domain.UpcomingRoutesForStopUseCase
@@ -48,6 +49,7 @@ class KoinUpcomingVehiclesWidgetReceiverHelper: KoinGlanceAppWidgetReceiverCompo
             updateAppWidgetState(context, UpcomingVehicleWidgetState, id) { pref ->
                 UpcomingVehicleData.newBuilder()
                     .setHasUpcoming(upcoming.item.isNotEmpty())
+                    .setType(UpcomingType.UPCOMING_TYPE_STOP_ROUTE_HEADING)
                     .addAllTimes(upcoming.item.map { it.toProto() })
                     .build()
             }

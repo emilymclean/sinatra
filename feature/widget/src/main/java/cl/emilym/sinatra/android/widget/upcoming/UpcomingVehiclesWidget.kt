@@ -23,6 +23,7 @@ import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.android.widget.R
 import cl.emilym.sinatra.android.widget.base.SinatraGlanceAppWidget
 import cl.emilym.sinatra.android.widget.base.widgetFormat
+import cl.emilym.sinatra.android.widget.data.proto.UpcomingType
 import cl.emilym.sinatra.android.widget.data.proto.UpcomingVehicleData
 import cl.emilym.sinatra.android.widget.data.proto.UpcomingVehicleStopTime
 import cl.emilym.sinatra.nullIfBlank
@@ -43,10 +44,23 @@ class UpcomingVehiclesWidget: SinatraGlanceAppWidget() {
                 GlanceModifier.padding(1.rdp).fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
-                state.timesList.firstOrNull()?.let {
-                    UpcomingStopWidget(
-                        it
-                    )
+                when {
+                    !state.hasUpcoming -> {
+                        Text(
+                            LocalContext.current.getString(
+                                R.string.upcoming_vehicle_widget_no_upcoming,
+                            ),
+                            style = TextStyle(
+                                color = GlanceTheme.colors.onSurface
+                            )
+                        )
+                    }
+                    else -> state.timesList.firstOrNull()?.let {
+                        UpcomingStopWidget(
+                            it,
+                            state.type
+                        )
+                    }
                 }
             }
         }
@@ -57,15 +71,22 @@ class UpcomingVehiclesWidget: SinatraGlanceAppWidget() {
 @GlanceComposable
 fun UpcomingStopWidget(
     upcoming: UpcomingVehicleStopTime,
+    type: UpcomingType,
     modifier: GlanceModifier = GlanceModifier
 ) {
     Column(modifier) {
         Text(
-            LocalContext.current.getString(
-                R.string.upcoming_vehicle_widget_heading,
-//                upcoming.routeName.nullIfBlank() ?: upcoming.routeCode,
-                upcoming.heading
-            ),
+            when(type) {
+                UpcomingType.UPCOMING_TYPE_STOP_ROUTE_HEADING -> LocalContext.current.getString(
+                    R.string.upcoming_vehicle_widget_heading,
+                    upcoming.heading
+                )
+                else -> LocalContext.current.getString(
+                    R.string.upcoming_vehicle_widget_route_and_heading,
+                    upcoming.routeCode,
+                    upcoming.heading
+                )
+            },
             style = TextStyle(
                 color = GlanceTheme.colors.onSurface
             )

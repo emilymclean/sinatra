@@ -5,7 +5,14 @@ option java_multiple_files = true;
 
 message UpcomingVehicleData {
   bool hasUpcoming = 1;
+  UpcomingType type = 3;
   repeated UpcomingVehicleStopTime times = 2;
+}
+
+enum UpcomingType {
+  UPCOMING_TYPE_STOP = 0;
+  UPCOMING_TYPE_STOP_ROUTE = 1;
+  UPCOMING_TYPE_STOP_ROUTE_HEADING = 2;
 }
 
 message UpcomingVehicleStopTime {
