@@ -328,6 +328,7 @@ class NavigationEntryViewModel(
         val currentOrigin = origin.value
         origin.value = destination.value
         destination.value = currentOrigin
+        _state.value = State.JourneySelection
     }
 
     fun onOriginClick() {
