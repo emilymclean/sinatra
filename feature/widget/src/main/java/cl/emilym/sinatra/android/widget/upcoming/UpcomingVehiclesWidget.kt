@@ -24,7 +24,7 @@ import cl.emilym.sinatra.android.widget.R
 import cl.emilym.sinatra.android.widget.base.SinatraGlanceAppWidget
 import cl.emilym.sinatra.android.widget.base.widgetFormat
 import cl.emilym.sinatra.android.widget.data.proto.UpcomingType
-import cl.emilym.sinatra.android.widget.data.proto.UpcomingVehicleData
+import cl.emilym.sinatra.android.widget.data.proto.UpcomingVehicleState
 import cl.emilym.sinatra.android.widget.data.proto.UpcomingVehicleStopTime
 import cl.emilym.sinatra.nullIfBlank
 import kotlinx.datetime.Instant
@@ -35,7 +35,7 @@ class UpcomingVehiclesWidget: SinatraGlanceAppWidget() {
 
     @Composable
     override fun Content() {
-        val state = currentState<UpcomingVehicleData>()
+        val state = currentState<UpcomingVehicleState>()
 
         Scaffold(
             horizontalPadding = 0.dp

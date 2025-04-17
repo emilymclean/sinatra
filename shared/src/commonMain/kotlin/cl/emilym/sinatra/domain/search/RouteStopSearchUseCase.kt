@@ -22,15 +22,24 @@ sealed interface SearchResult {
 
 @Factory
 class RouteStopSearchUseCase(
-    routeTypeSearcher: RouteTypeSearcher,
-    stopTypeSearcher: StopTypeSearcher,
-    placeTypeSearcher: PlaceTypeSearcher,
+    private val routeTypeSearcher: RouteTypeSearcher,
+    private val stopTypeSearcher: StopTypeSearcher,
+    private val placeTypeSearcher: PlaceTypeSearcher,
     private val tokenizer: Tokenizer
 ) {
 
-    private val searchers = listOf(routeTypeSearcher, stopTypeSearcher, placeTypeSearcher)
+    suspend operator fun invoke(
+        query: String,
+        routeEnabled: Boolean = true,
+        stopEnabled: Boolean = true,
+        placeEnabled: Boolean = true,
+    ): List<SearchResult> {
+        val searchers = listOfNotNull(
+            if (routeEnabled) routeTypeSearcher else null,
+            if (stopEnabled) stopTypeSearcher else null,
+            if (placeEnabled) placeTypeSearcher else null
+        )
 
-    suspend operator fun invoke(query: String): List<SearchResult> {
         val tokens = tokenizer.tokenize(query)
         val results = withContext(Dispatchers.IO) {
             val out = mutableListOf<RankableResult<*>>()

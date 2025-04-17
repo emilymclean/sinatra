@@ -2,8 +2,8 @@ plugins {
     alias(libs.plugins.androidLibrary)
     alias(libs.plugins.kotlinAndroid)
     alias(libs.plugins.compose.compiler)
-    alias(libs.plugins.ksp)
     alias(libs.plugins.protobuf)
+    alias(libs.plugins.ksp)
 }
 
 android {
@@ -57,9 +57,9 @@ dependencies {
 
     // Koin
     implementation(libs.koin.core)
-    implementation(libs.koin.android)
     implementation(libs.koin.compose)
     implementation(libs.koin.annotations)
+    implementation(libs.koin.android)
     ksp(libs.koin.ksp.compiler)
 
     // Room
@@ -67,6 +67,10 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
     implementation(libs.androidx.activity)
+}
+
+ksp {
+    arg("KOIN_CONFIG_CHECK","true")
 }
 
 protobuf {

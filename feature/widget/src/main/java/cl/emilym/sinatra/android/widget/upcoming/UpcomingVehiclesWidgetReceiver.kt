@@ -12,13 +12,14 @@ import androidx.glance.appwidget.state.updateAppWidgetState
 import cl.emilym.sinatra.android.widget.base.KoinGlanceAppWidgetReceiver
 import cl.emilym.sinatra.android.widget.base.KoinGlanceAppWidgetReceiverComponent
 import cl.emilym.sinatra.android.widget.data.proto.UpcomingType
-import cl.emilym.sinatra.android.widget.data.proto.UpcomingVehicleData
+import cl.emilym.sinatra.android.widget.data.proto.UpcomingVehicleState
 import cl.emilym.sinatra.android.widget.data.toProto
 import cl.emilym.sinatra.domain.UpcomingRoutesForStopUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.datetime.Instant
 import org.koin.core.component.inject
 
 class UpcomingVehiclesWidgetReceiver: KoinGlanceAppWidgetReceiver() {
@@ -45,28 +46,41 @@ class KoinUpcomingVehiclesWidgetReceiverHelper: KoinGlanceAppWidgetReceiverCompo
         }
     }
 
+    private suspend fun upcoming(): UpcomingVehicleState {
+        val upcoming = withContext(Dispatchers.IO) {
+            upcomingRoutesForStopUseCase(
+                "8126",
+                "ACTO001",
+                "Alinga St",
+                number = 2,
+                forceNotLive = true
+            ).first()
+        }
+
+        return UpcomingVehicleState.newBuilder()
+            .setHasUpcoming(upcoming.item.isNotEmpty())
+            .setType(UpcomingType.UPCOMING_TYPE_STOP_ROUTE_HEADING)
+            .addAllTimes(upcoming.item.map { it.toProto() })
+            .build()
+    }
+
     private fun update(context: Context, appWidgetId: Int) {
         coroutineScope.launch {
             val id = GlanceAppWidgetManager(context).getGlanceIdBy(appWidgetId)
-            val upcoming = withContext(Dispatchers.IO) {
-                upcomingRoutesForStopUseCase(
-                    "8126",
-                    "ACTO001",
-                    "Alinga St",
-                    forceNotLive = true
-                ).first()
+            val upcoming = try {
+                upcoming()
+            } catch (e: Exception) {
+                UpcomingVehicleState.newBuilder()
+                    .setErrorMessage(e.message)
+                    .build()
             }
 
-            updateAppWidgetState(context, UpcomingVehicleWidgetState, id) { pref ->
-                UpcomingVehicleData.newBuilder()
-                    .setHasUpcoming(upcoming.item.isNotEmpty())
-                    .setType(UpcomingType.UPCOMING_TYPE_STOP_ROUTE_HEADING)
-                    .addAllTimes(upcoming.item.map { it.toProto() })
-                    .build()
+            updateAppWidgetState(context, UpcomingVehicleWidgetState, id) { prefs ->
+                upcoming
             }
             glanceAppWidget.update(context, id)
 
-            if (upcoming.item.isNotEmpty()) {
+            if (upcoming.timesList.isNotEmpty()) {
                 val alarmManager = (context.getSystemService(Context.ALARM_SERVICE) as AlarmManager)
                 val intent = PendingIntent.getBroadcast(
                     context,
@@ -77,9 +91,7 @@ class KoinUpcomingVehiclesWidgetReceiverHelper: KoinGlanceAppWidgetReceiverCompo
                     },
                     PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
                 )
-                val time = upcoming.item.first().departureTime
-                    .instant
-                    .toEpochMilliseconds()
+                val time = upcoming.timesList.first().departureTime
 
                 if (Build.VERSION.SDK_INT < 31) {
                     alarmManager.setExact(

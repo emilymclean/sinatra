@@ -88,8 +88,8 @@ data class StopRouteEntity(
 data class StopRouteEntityWithRoute(
     @Embedded val stopRoute: StopRouteEntity,
     @Relation(
-        parentColumn = "id",
-        entityColumn = "routeId"
+        parentColumn = "routeId",
+        entityColumn = "id"
     )
     val route: RouteEntity,
 )
