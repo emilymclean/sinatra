@@ -48,9 +48,17 @@ message RouteServicesEndpoint {
   repeated string serviceIds = 1;
 }
 
+message RouteHeadingsEndpoint {
+  repeated string headings = 1;
+}
+
 message JourneySearchConfigEndpoint {
   required int32 maximumComputationTime = 1;
   repeated JourneySearchOption options = 2;
+}
+
+message ServiceAlertEndpoint {
+  repeated ServiceAlert alerts = 1;
 }
 
 message JourneySearchOption {
@@ -209,4 +217,20 @@ message RouteTripStop {
 message Location {
   required double lat = 1;
   required double lng = 2;
+}
+
+enum ServiceAlertRegion {
+  SERVICE_ALERT_REGION_BELCONNEN = 1;
+  SERVICE_ALERT_REGION_CENTRAL_CANBERRA = 2;
+  SERVICE_ALERT_REGION_GUNGAHLIN = 3;
+  SERVICE_ALERT_REGION_TUGGERANONG = 4;
+  SERVICE_ALERT_REGION_WODEN_WESTON_CREEK_MOLONGLO = 5;
+}
+
+message ServiceAlert {
+  required string id = 1;
+  required string title = 2;
+  optional string date = 3;
+  optional string url = 4;
+  repeated ServiceAlertRegion regions = 5;
 }

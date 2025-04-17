@@ -3,6 +3,7 @@ package cl.emilym.sinatra.data.repository
 import cl.emilym.sinatra.data.client.RouteClient
 import cl.emilym.sinatra.data.models.Cachable
 import cl.emilym.sinatra.data.models.CacheCategory
+import cl.emilym.sinatra.data.models.Heading
 import cl.emilym.sinatra.data.models.ResourceKey
 import cl.emilym.sinatra.data.models.Route
 import cl.emilym.sinatra.data.models.RouteId
@@ -13,6 +14,7 @@ import cl.emilym.sinatra.data.models.ServiceId
 import cl.emilym.sinatra.data.models.TripId
 import cl.emilym.sinatra.data.models.flatMap
 import cl.emilym.sinatra.data.models.map
+import cl.emilym.sinatra.data.persistence.RouteHeadingPersistence
 import cl.emilym.sinatra.data.persistence.RoutePersistence
 import cl.emilym.sinatra.data.persistence.RouteServiceCanonicalTimetablePersistence
 import cl.emilym.sinatra.data.persistence.RouteServicePersistence
@@ -57,6 +59,26 @@ class RouteServicesCacheWorker(
 
     suspend fun get(routeId: RouteId): Cachable<List<ServiceId>> {
         return run(routeClient.routeServicesEndpointPair(routeId), "route/${routeId}/services")
+    }
+
+}
+
+@Factory
+class RouteHeadingsCacheWorker(
+    private val routeClient: RouteClient,
+    private val routeHeadingPersistence: RouteHeadingPersistence,
+    override val cacheWorkerDependencies: CacheWorkerDependencies,
+    override val clock: Clock,
+): CacheWorker<List<Heading>>() {
+
+    override val cacheCategory = CacheCategory.ROUTE_HEADING
+
+    override suspend fun saveToPersistence(data: List<Heading>, resource: ResourceKey) =
+        routeHeadingPersistence.save(data, resource)
+    override suspend fun getFromPersistence(resource: ResourceKey) = routeHeadingPersistence.get(resource)
+
+    suspend fun get(routeId: RouteId): Cachable<List<Heading>> {
+        return run(routeClient.routeServicesEndpointPair(routeId), "route/${routeId}/headings")
     }
 
 }
@@ -160,6 +182,18 @@ class RouteServicesCleanupWorker(
 }
 
 @Factory
+class RouteHeadingsCleanupWorker(
+    private val routeHeadingPersistence: RouteHeadingPersistence,
+    override val shaRepository: ShaRepository,
+    override val clock: Clock
+): CleanupWorker() {
+
+    override val cacheCategory: CacheCategory = CacheCategory.ROUTE_HEADING
+    override suspend fun delete(resource: ResourceKey) = routeHeadingPersistence.clear(resource)
+
+}
+
+@Factory
 class RouteServiceTimetableCleanupWorker(
     private val routeServiceTimetablePersistence: RouteServiceTimetablePersistence,
     override val shaRepository: ShaRepository,
@@ -202,12 +236,14 @@ class RouteTripTimetableCleanupWorker(
 class RouteRepository(
     private val routeCacheWorker: RoutesCacheWorker,
     private val routeServicesCacheWorker: RouteServicesCacheWorker,
+    private val routeHeadingsCacheWorker: RouteHeadingsCacheWorker,
     private val stopsCacheWorker: StopsCacheWorker,
     private val routeServiceTimetableCacheWorker: RouteServiceTimetableCacheWorker,
     private val routeServiceCanonicalTimetableCacheWorker: RouteServiceCanonicalTimetableCacheWorker,
     private val routeTripTimetableCacheWorker: RouteTripTimetableCacheWorker,
     private val routeCleanupWorker: RouteCleanupWorker,
     private val routeServicesCleanupWorker: RouteServicesCleanupWorker,
+    private val routeHeadingsCleanupWorker: RouteHeadingsCleanupWorker,
     private val routeServiceTimetableCleanupWorker: RouteServiceTimetableCleanupWorker,
     private val routeServiceCanonicalTimetableCleanupWorker: RouteServiceCanonicalTimetableCleanupWorker,
     private val routeTripTimetableCleanupWorker: RouteTripTimetableCleanupWorker,
@@ -226,6 +262,8 @@ class RouteRepository(
     }
 
     suspend fun servicesForRoute(routeId: RouteId) = routeServicesCacheWorker.get(routeId)
+
+    suspend fun headingsForRoute(routeId: RouteId) = routeHeadingsCacheWorker.get(routeId)
 
     @Deprecated("Use tripTimetable")
     suspend fun serviceTimetable(routeId: RouteId, serviceId: ServiceId): Cachable<RouteServiceTimetable> {
@@ -260,6 +298,7 @@ class RouteRepository(
     suspend fun cleanup() {
         routeCleanupWorker()
         routeServicesCleanupWorker()
+        routeHeadingsCleanupWorker()
         routeServiceTimetableCleanupWorker()
         routeServiceCanonicalTimetableCleanupWorker()
         routeTripTimetableCleanupWorker()

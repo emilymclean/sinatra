@@ -2,6 +2,7 @@ package cl.emilym.sinatra.network
 
 import cl.emilym.gtfs.RouteCanonicalTimetableEndpoint
 import cl.emilym.gtfs.RouteEndpoint
+import cl.emilym.gtfs.RouteHeadingsEndpoint
 import cl.emilym.gtfs.RouteServicesEndpoint
 import cl.emilym.gtfs.RouteTimetableEndpoint
 import cl.emilym.gtfs.RouteTripTimetableEndpoint
@@ -50,6 +51,16 @@ interface GtfsApi {
 
     @GET("v1/route/{routeId}/services.pb.sha")
     suspend fun routeServicesDigest(
+        @Path("routeId") routeId: RouteId
+    ): String
+
+    @GET("v1/route/{routeId}/headings.pb")
+    suspend fun routeHeadings(
+        @Path("routeId") routeId: RouteId
+    ): RouteHeadingsEndpoint
+
+    @GET("v1/route/{routeId}/headings.pb.sha")
+    suspend fun routeHeadingsDigest(
         @Path("routeId") routeId: RouteId
     ): String
 

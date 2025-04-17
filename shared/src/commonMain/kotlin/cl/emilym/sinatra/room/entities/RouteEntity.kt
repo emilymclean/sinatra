@@ -88,6 +88,13 @@ data class RouteServiceEntity(
 )
 
 @Entity
+data class RouteHeadingEntity(
+    @PrimaryKey(autoGenerate = true) val id: Long,
+    val resource: String,
+    val heading: String
+)
+
+@Entity
 data class RouteTripInformationEntity(
     @PrimaryKey(autoGenerate = true) val id: Long,
     val resource: String,

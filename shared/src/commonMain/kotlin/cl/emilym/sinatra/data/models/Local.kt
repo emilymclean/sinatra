@@ -9,6 +9,7 @@ enum class CacheCategory(
     ROUTE("route"),
     SERVICE("service"),
     ROUTE_SERVICE("route_service"),
+    ROUTE_HEADING("route_heading"),
     ROUTE_SERVICE_TIMETABLE("route_service_timetable"),
     ROUTE_SERVICE_CANONICAL_TIMETABLE("route_service_CANONICAL_timetable"),
     ROUTE_TRIP_TIMETABLE("route_trip_timetable"),

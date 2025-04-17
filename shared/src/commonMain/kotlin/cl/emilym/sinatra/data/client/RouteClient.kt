@@ -1,5 +1,6 @@
 package cl.emilym.sinatra.data.client
 
+import cl.emilym.sinatra.data.models.Heading
 import cl.emilym.sinatra.data.models.Route
 import cl.emilym.sinatra.data.models.RouteId
 import cl.emilym.sinatra.data.models.RouteServiceCanonicalTimetable
@@ -27,6 +28,11 @@ class RouteClient(
     fun routeServicesEndpointPair(routeId: RouteId) = object : EndpointDigestPair<List<ServiceId>>() {
         override val endpoint = suspend { routeServices(routeId) }
         override val digest = suspend { routeServicesDigest(routeId) }
+    }
+
+    fun routeHeadingsEndpointPair(routeId: RouteId) = object : EndpointDigestPair<List<Heading>>() {
+        override val endpoint = suspend { routeHeadings(routeId) }
+        override val digest = suspend { routeHeadingsDigest(routeId) }
     }
 
     fun routeServiceTimetableEndpointPair(routeId: RouteId, serviceId: ServiceId) =
@@ -64,6 +70,14 @@ class RouteClient(
 
     suspend fun routeServicesDigest(routeId: RouteId): ShaDigest {
         return gtfsApi.routeServicesDigest(routeId)
+    }
+
+    suspend fun routeHeadings(routeId: RouteId): List<Heading> {
+        return gtfsApi.routeHeadings(routeId).headings
+    }
+
+    suspend fun routeHeadingsDigest(routeId: RouteId): ShaDigest {
+        return gtfsApi.routeHeadingsDigest(routeId)
     }
 
     suspend fun routeServiceTimetable(routeId: RouteId, serviceId: ServiceId): RouteServiceTimetable {

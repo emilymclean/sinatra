@@ -10,6 +10,7 @@ import cl.emilym.sinatra.room.dao.FavouriteDao
 import cl.emilym.sinatra.room.dao.PlaceDao
 import cl.emilym.sinatra.room.dao.RecentVisitDao
 import cl.emilym.sinatra.room.dao.RouteDao
+import cl.emilym.sinatra.room.dao.RouteHeadingEntityDao
 import cl.emilym.sinatra.room.dao.RouteServiceEntityDao
 import cl.emilym.sinatra.room.dao.RouteTripInformationEntityDao
 import cl.emilym.sinatra.room.dao.RouteTripStopEntityDao
@@ -22,6 +23,7 @@ import cl.emilym.sinatra.room.entities.FavouriteEntity
 import cl.emilym.sinatra.room.entities.PlaceEntity
 import cl.emilym.sinatra.room.entities.RecentVisitEntity
 import cl.emilym.sinatra.room.entities.RouteEntity
+import cl.emilym.sinatra.room.entities.RouteHeadingEntity
 import cl.emilym.sinatra.room.entities.RouteServiceEntity
 import cl.emilym.sinatra.room.entities.RouteTripInformationEntity
 import cl.emilym.sinatra.room.entities.RouteTripStopEntity
@@ -52,6 +54,7 @@ expect object AppDatabaseConstructor : RoomDatabaseConstructor<AppDatabase> {
         StopTimetableTimeEntity::class,
         RouteEntity::class,
         RouteServiceEntity::class,
+        RouteHeadingEntity::class,
         RouteTripInformationEntity::class,
         RouteTripStopEntity::class,
         TimetableServiceRegularEntity::class,
@@ -64,8 +67,9 @@ expect object AppDatabaseConstructor : RoomDatabaseConstructor<AppDatabase> {
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3),
         AutoMigration(from = 3, to = 4),
+        AutoMigration(from = 4, to = 5),
     ],
-    version = 4
+    version = 5
 )
 @ConstructedBy(AppDatabaseConstructor::class)
 abstract class AppDatabase: RoomDatabase() {
@@ -74,6 +78,7 @@ abstract class AppDatabase: RoomDatabase() {
     abstract fun stopTimetableTime(): StopTimetableTimeEntityDao
     abstract fun route(): RouteDao
     abstract fun routeService(): RouteServiceEntityDao
+    abstract fun routeHeading(): RouteHeadingEntityDao
     abstract fun timetableServiceRegularDao(): TimetableServiceRegularEntityDao
     abstract fun timetableServiceExceptionDao(): TimetableServiceExceptionEntityDao
     abstract fun routeTripInformationDao(): RouteTripInformationEntityDao
@@ -115,6 +120,11 @@ fun routeDao(db: AppDatabase): RouteDao {
 @Factory
 fun routeServiceDao(db: AppDatabase): RouteServiceEntityDao {
     return db.routeService()
+}
+
+@Factory
+fun routeHeadingDao(db: AppDatabase): RouteHeadingEntityDao {
+    return db.routeHeading()
 }
 
 @Factory
