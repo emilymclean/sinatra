@@ -6,6 +6,7 @@ import cl.emilym.gtfs.RouteHeadingsEndpoint
 import cl.emilym.gtfs.RouteServicesEndpoint
 import cl.emilym.gtfs.RouteTimetableEndpoint
 import cl.emilym.gtfs.RouteTripTimetableEndpoint
+import cl.emilym.gtfs.ServiceAlertEndpoint
 import cl.emilym.gtfs.ServiceEndpoint
 import cl.emilym.gtfs.StopEndpoint
 import cl.emilym.gtfs.StopTimetable
@@ -21,6 +22,9 @@ import de.jensklingenberg.ktorfit.http.Path
 import de.jensklingenberg.ktorfit.http.Url
 
 interface GtfsApi {
+
+    @GET("v1/cache-invalidation-key")
+    suspend fun cacheInvalidationKey(): String
 
     @GET("v1/stops.pb")
     suspend fun stops(): StopEndpoint
@@ -153,5 +157,11 @@ interface GtfsApi {
     @GET
     @Headers("Accept: */*")
     suspend fun getLiveUpdates(@Url url: String): FeedMessage
+
+    @GET("v1/service-alert.pb")
+    suspend fun serviceAlerts(): ServiceAlertEndpoint
+
+    @GET("v1/service-alert.pb.sha")
+    suspend fun serviceAlertsDigest(): String
 
 }

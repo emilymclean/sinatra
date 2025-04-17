@@ -15,6 +15,9 @@ interface ShaDao {
     @Delete
     suspend fun delete(shaEntity: ShaEntity)
 
+    @Query("DELETE FROM shaEntity")
+    suspend fun deleteAll()
+
     @Query("DELETE FROM shaEntity WHERE type = :type AND resource = :resource")
     suspend fun deleteByTypeAndResource(type: String, resource: String)
 

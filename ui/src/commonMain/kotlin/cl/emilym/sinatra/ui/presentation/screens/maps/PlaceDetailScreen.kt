@@ -17,7 +17,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,13 +43,11 @@ import cl.emilym.sinatra.nullIfEmpty
 import cl.emilym.sinatra.ui.maps.MapItem
 import cl.emilym.sinatra.ui.maps.MarkerItem
 import cl.emilym.sinatra.ui.maps.placeMarkerIcon
-import cl.emilym.sinatra.ui.maps.stopMarkerIcon
 import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
 import cl.emilym.sinatra.ui.navigation.MapScreen
 import cl.emilym.sinatra.ui.placeJourneyNavigation
 import cl.emilym.sinatra.ui.presentation.screens.maps.search.zoomThreshold
 import cl.emilym.sinatra.ui.stopCardDefaultNavigation
-import cl.emilym.sinatra.ui.stopJourneyNavigation
 import cl.emilym.sinatra.ui.text
 import cl.emilym.sinatra.ui.widgets.FavouriteButton
 import cl.emilym.sinatra.ui.widgets.ListHint
@@ -66,7 +63,6 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.koin.core.annotation.Factory
@@ -75,6 +71,7 @@ import sinatra.ui.generated.resources.map_search_nearby_stops
 import sinatra.ui.generated.resources.no_nearby_stops
 import sinatra.ui.generated.resources.place_detail_navigate
 import sinatra.ui.generated.resources.place_not_found
+import sinatra.ui.generated.resources.semantics_favourite_place
 import sinatra.ui.generated.resources.stop_detail_distance
 
 @Factory
@@ -194,11 +191,12 @@ class PlaceDetailScreen(
                                             )
                                         }
                                         val favourited by viewModel.favourited.collectAsStateWithLifecycle()
+                                        val favouriteContentDescription = stringResource(Res.string.semantics_favourite_place)
                                         FavouriteButton(
                                             favourited,
                                             { viewModel.favourite(it) },
                                             Modifier.semantics {
-                                                contentDescription = "Favourite place"
+                                                contentDescription = favouriteContentDescription
                                                 selected = favourited
                                             }
                                         )

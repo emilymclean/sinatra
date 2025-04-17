@@ -10,13 +10,17 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
 import cl.emilym.sinatra.ui.widgets.bottomsheet.SinatraSheetValue
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.stringResource
+import sinatra.ui.generated.resources.Res
+import sinatra.ui.generated.resources.semantics_back_button
 
 @Composable
 fun BackButton(onBack: () -> Unit) {
+    val backButtonContentDescription = stringResource(Res.string.semantics_back_button)
     SinatraIconButton(
         onClick = { onBack() },
         modifier = Modifier.semantics {
-            contentDescription = "Back"
+            contentDescription = backButtonContentDescription
         }
     ) {
         BackIcon()

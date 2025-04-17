@@ -38,7 +38,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.invisibleToUser
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
@@ -66,6 +70,7 @@ import cl.emilym.sinatra.ui.widgets.NavigationItem
 import cl.emilym.sinatra.ui.widgets.SinatraBackHandler
 import cl.emilym.sinatra.ui.widgets.StarOutlineIcon
 import cl.emilym.sinatra.ui.widgets.ViewportSizeWidget
+import cl.emilym.sinatra.ui.widgets.WarningIcon
 import cl.emilym.sinatra.ui.widgets.bottomsheet.SinatraBottomSheetScaffold
 import cl.emilym.sinatra.ui.widgets.bottomsheet.SinatraBottomSheetScaffoldState
 import cl.emilym.sinatra.ui.widgets.bottomsheet.SinatraSheetValue
@@ -79,9 +84,24 @@ import sinatra.ui.generated.resources.navigation_bar_about
 import sinatra.ui.generated.resources.navigation_bar_favourites
 import sinatra.ui.generated.resources.navigation_bar_map
 import sinatra.ui.generated.resources.navigation_bar_navigate
+import sinatra.ui.generated.resources.service_alert_title
 
 @Composable
-expect fun Map(mapControl: MapControl)
+expect fun Map(
+    mapControl: MapControl,
+    modifier: Modifier = Modifier
+)
+
+@OptIn(ExperimentalComposeUiApi::class)
+val mapModifier get() = Modifier
+    .fillMaxSize()
+    .then(
+        if (FeatureFlags.HIDE_MAPS_FROM_ACCESSIBILITY)
+            Modifier.clearAndSetSemantics {
+                invisibleToUser()
+            }
+        else Modifier
+    )
 
 class RootMapScreen: Screen {
 
@@ -110,7 +130,10 @@ class RootMapScreen: Screen {
                                 WindowWidthSizeClass.COMPACT -> {
                                     BottomSheet(scaffoldState) {
                                         ViewportSizeWidget {
-                                            Map(mapControl)
+                                            Map(
+                                                mapControl,
+                                                mapModifier
+                                            )
                                             MapOverlay()
                                         }
                                     }
@@ -134,7 +157,10 @@ class RootMapScreen: Screen {
                                             }
                                         }
                                         ViewportSizeWidget {
-                                            Map(mapControl)
+                                            Map(
+                                                mapControl,
+                                                mapModifier
+                                            )
                                             MapOverlay()
                                         }
                                     }
@@ -189,6 +215,16 @@ class RootMapScreen: Screen {
                         { StarOutlineIcon() },
                         { Text(stringResource(Res.string.navigation_bar_favourites)) }
                     ),
+                    if (FeatureFlags.SERVICE_ALERT_BUTTON_TAB_BAR) {
+                        NavigationItem(
+                            index++,
+                            {
+                                navigator.replaceAll(ServiceAlertScreen())
+                            },
+                            { WarningIcon() },
+                            { Text(stringResource(Res.string.service_alert_title)) }
+                        )
+                    } else null,
                     NavigationItem(
                         index++,
                         {

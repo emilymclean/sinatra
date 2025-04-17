@@ -90,6 +90,7 @@ import sinatra.ui.generated.resources.Res
 import sinatra.ui.generated.resources.accessibility_not_wheelchair_accessible
 import sinatra.ui.generated.resources.accessibility_wheelchair_accessible
 import sinatra.ui.generated.resources.no_upcoming_vehicles
+import sinatra.ui.generated.resources.semantics_favourite_stop
 import sinatra.ui.generated.resources.stop_detail_child_stations
 import sinatra.ui.generated.resources.stop_detail_navigate
 import sinatra.ui.generated.resources.stop_not_found
@@ -224,11 +225,12 @@ class StopDetailScreen(
                                             )
                                         }
                                         val favourited by viewModel.favourited.collectAsStateWithLifecycle()
+                                        val favouriteContentDescription = stringResource(Res.string.semantics_favourite_stop)
                                         FavouriteButton(
                                             favourited,
                                             { viewModel.favourite(stopId, it) },
                                             Modifier.semantics {
-                                                contentDescription = "Favourite stop"
+                                                contentDescription = favouriteContentDescription
                                                 selected = favourited
                                             }
                                         )
@@ -238,21 +240,25 @@ class StopDetailScreen(
                                     AlertScaffold((alerts as? RequestState.Success)?.value)
                                 }
                                 item { Box(Modifier.height(1.rdp)) }
-                                item {
-                                    Column(Modifier.padding(horizontal = 1.rdp)) {
-                                        AccessibilityIconLockup(
-                                            {
-                                                WheelchairAccessibleIcon(stop.accessibility.wheelchair.isAccessible)
+                                if (FeatureFlags.STOP_DETAIL_SHOW_ACCESSIBILITY) {
+                                    item {
+                                        Column(Modifier.padding(horizontal = 1.rdp)) {
+                                            AccessibilityIconLockup(
+                                                {
+                                                    WheelchairAccessibleIcon(stop.accessibility.wheelchair.isAccessible)
+                                                }
+                                            ) {
+                                                Text(
+                                                    when (stop.accessibility.wheelchair.isAccessible) {
+                                                        true -> stringResource(Res.string.accessibility_wheelchair_accessible)
+                                                        false -> stringResource(Res.string.accessibility_not_wheelchair_accessible)
+                                                    }
+                                                )
                                             }
-                                        ) {
-                                            Text(when(stop.accessibility.wheelchair.isAccessible) {
-                                                true -> stringResource(Res.string.accessibility_wheelchair_accessible)
-                                                false -> stringResource(Res.string.accessibility_not_wheelchair_accessible)
-                                            })
                                         }
                                     }
+                                    item { Box(Modifier.height(1.rdp)) }
                                 }
-                                item { Box(Modifier.height(1.rdp)) }
                                 if (FeatureFlags.STOP_DETAIL_SHOW_IN_MAPS_BUTTON) {
                                     item {
                                         val uriHandler = LocalUriHandler.current

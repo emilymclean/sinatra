@@ -48,7 +48,7 @@ data class StopVisibility(
     val visibleZoomedIn: Boolean,
     val showChildren: Boolean,
     val searchWeight: Double?
-) {
+): Serializable {
 
     companion object {
         const val SHOW_CHILDREN_DEFAULT = false

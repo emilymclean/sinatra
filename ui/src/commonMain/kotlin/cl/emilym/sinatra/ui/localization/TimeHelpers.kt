@@ -2,6 +2,7 @@ package cl.emilym.sinatra.ui.localization
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.staticCompositionLocalOf
+import cl.emilym.sinatra.FeatureFlags
 import cl.emilym.sinatra.data.models.Time
 import cl.emilym.sinatra.data.models.isSameDay
 import cl.emilym.sinatra.data.models.startOfDay
@@ -44,7 +45,8 @@ fun Instant.format(): String {
 
     val scheduleTime = format(scheduleTimeZone)
     return when {
-        localTimeZone.id != scheduleTimeZone.id -> "$scheduleTime (${scheduleTimeZone.id})"
+        localTimeZone.id != scheduleTimeZone.id && FeatureFlags.SPECIFY_TIMEZONE_WHEN_DIFFERENT ->
+            "$scheduleTime (${scheduleTimeZone.id})"
         else -> scheduleTime
     }
 }
@@ -52,11 +54,11 @@ fun Instant.format(): String {
 @Composable
 private fun Instant.format(timeZone: TimeZone): String {
     val inTz = toLocalDateTime(timeZone)
-    val startInTz = startOfDay(timeZone).toLocalDateTime(timeZone)
+    val todayInTz = LocalClock.current.now().toLocalDateTime(timeZone)
     val timeFormat = timeFormat
 
     return when {
-        inTz.isSameDay(startInTz) -> inTz.format(LocalDateTime.Format {
+        inTz.isSameDay(todayInTz) -> inTz.format(LocalDateTime.Format {
             time(timeFormat)
         })
         else -> inTz.format(dayOfWeekDateTimeFormat)

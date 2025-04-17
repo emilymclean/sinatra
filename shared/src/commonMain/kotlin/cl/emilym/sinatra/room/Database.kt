@@ -14,6 +14,7 @@ import cl.emilym.sinatra.room.dao.RouteHeadingEntityDao
 import cl.emilym.sinatra.room.dao.RouteServiceEntityDao
 import cl.emilym.sinatra.room.dao.RouteTripInformationEntityDao
 import cl.emilym.sinatra.room.dao.RouteTripStopEntityDao
+import cl.emilym.sinatra.room.dao.ServiceAlertDao
 import cl.emilym.sinatra.room.dao.ShaDao
 import cl.emilym.sinatra.room.dao.StopDao
 import cl.emilym.sinatra.room.dao.StopTimetableTimeEntityDao
@@ -27,6 +28,7 @@ import cl.emilym.sinatra.room.entities.RouteHeadingEntity
 import cl.emilym.sinatra.room.entities.RouteServiceEntity
 import cl.emilym.sinatra.room.entities.RouteTripInformationEntity
 import cl.emilym.sinatra.room.entities.RouteTripStopEntity
+import cl.emilym.sinatra.room.entities.ServiceAlertEntity
 import cl.emilym.sinatra.room.entities.ShaEntity
 import cl.emilym.sinatra.room.entities.StopEntity
 import cl.emilym.sinatra.room.entities.StopTimetableTimeEntity
@@ -61,7 +63,8 @@ expect object AppDatabaseConstructor : RoomDatabaseConstructor<AppDatabase> {
         TimetableServiceExceptionEntity::class,
         FavouriteEntity::class,
         RecentVisitEntity::class,
-        PlaceEntity::class
+        PlaceEntity::class,
+        ServiceAlertEntity::class
     ],
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
@@ -69,6 +72,7 @@ expect object AppDatabaseConstructor : RoomDatabaseConstructor<AppDatabase> {
         AutoMigration(from = 3, to = 4),
         AutoMigration(from = 4, to = 5),
     ],
+    exportSchema = true,
     version = 5
 )
 @ConstructedBy(AppDatabaseConstructor::class)
@@ -86,6 +90,7 @@ abstract class AppDatabase: RoomDatabase() {
     abstract fun favouriteDao(): FavouriteDao
     abstract fun recentVisitDao(): RecentVisitDao
     abstract fun placeDao(): PlaceDao
+    abstract fun serviceAlertDao(): ServiceAlertDao
 }
 
 @Single
@@ -160,4 +165,9 @@ fun recentVisitDao(db: AppDatabase): RecentVisitDao {
 @Factory
 fun placeDao(db: AppDatabase): PlaceDao {
     return db.placeDao()
+}
+
+@Factory
+fun serviceAlertDao(db: AppDatabase): ServiceAlertDao {
+    return db.serviceAlertDao()
 }

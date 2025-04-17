@@ -12,8 +12,11 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.invisibleToUser
 import androidx.compose.ui.semantics.semantics
 import cafe.adriel.voyager.core.screen.ScreenKey
 import cafe.adriel.voyager.koin.koinScreenModel
@@ -21,6 +24,7 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import cl.emilym.compose.requeststate.RequestState
 import cl.emilym.compose.units.rdp
+import cl.emilym.sinatra.FeatureFlags
 import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.ui.maps.MapItem
 import cl.emilym.sinatra.ui.maps.MarkerItem
@@ -37,6 +41,10 @@ import cl.emilym.sinatra.ui.widgets.SearchIcon
 import cl.emilym.sinatra.ui.widgets.collectAsStateWithLifecycle
 import cl.emilym.sinatra.ui.widgets.currentLocation
 import cl.emilym.sinatra.ui.widgets.viewportHeight
+import org.jetbrains.compose.resources.stringResource
+import sinatra.ui.generated.resources.Res
+import sinatra.ui.generated.resources.semantics_open_search_screen
+import sinatra.ui.generated.resources.semantics_zoom_current_location
 
 const val zoomThreshold = 14f
 const val currentLocationZoom = zoomThreshold + 1f
@@ -47,6 +55,7 @@ class MapSearchScreen: MapScreen, NativeMapScreen {
     override val bottomSheetHalfHeight: Float
         get() = 0.25f
 
+    @OptIn(ExperimentalComposeUiApi::class)
     @Composable
     override fun Content() {
         val viewModel = koinScreenModel<MapSearchViewModel>()
@@ -78,23 +87,30 @@ class MapSearchScreen: MapScreen, NativeMapScreen {
                 val showCurrentLocationButton by viewModel.showCurrentLocation.collectAsStateWithLifecycle()
                 if (showCurrentLocationButton) {
                     currentLocation?.let {
+                        val zoomContentDescription = stringResource(Res.string.semantics_zoom_current_location)
                         FloatingActionButton(
                             onClick = {
                                 mapControl.moveToPoint(it, currentLocationZoom)
                             },
-                            Modifier.semantics {
-                                contentDescription = "Zoom to current location"
-                            }
+                            Modifier.then(
+                                if (FeatureFlags.HIDE_MAPS_FROM_ACCESSIBILITY)
+                                    Modifier.clearAndSetSemantics { invisibleToUser() }
+                                else
+                                    Modifier.semantics {
+                                        contentDescription = zoomContentDescription
+                                    }
+                            )
                         ) { MyLocationIcon() }
                     }
                 }
                 if (state !is MapSearchState.Search) {
+                    val openContentDescription = stringResource(Res.string.semantics_open_search_screen)
                     FloatingActionButton(
                         onClick = {
                             viewModel.openSearch()
                         },
                         Modifier.semantics {
-                            contentDescription = "Open search screen"
+                            contentDescription = openContentDescription
                         }
                     ) { SearchIcon() }
                 }
