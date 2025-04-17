@@ -3,6 +3,7 @@ package cl.emilym.sinatra.network
 import cl.emilym.gtfs.RouteCanonicalTimetableEndpoint
 import cl.emilym.gtfs.RouteDetailEndpoint
 import cl.emilym.gtfs.RouteEndpoint
+import cl.emilym.gtfs.RouteHeadingsEndpoint
 import cl.emilym.gtfs.RouteServicesEndpoint
 import cl.emilym.gtfs.RouteTimetableEndpoint
 import cl.emilym.gtfs.RouteTripTimetableEndpoint
@@ -10,6 +11,7 @@ import cl.emilym.gtfs.ServiceAlertEndpoint
 import cl.emilym.gtfs.ServiceEndpoint
 import cl.emilym.gtfs.StopDetailEndpoint
 import cl.emilym.gtfs.StopEndpoint
+import cl.emilym.gtfs.StopRoutesEndpoint
 import cl.emilym.gtfs.StopTimetable
 import cl.emilym.gtfs.content.Pages
 import cl.emilym.sinatra.BuildKonfig
@@ -80,7 +82,9 @@ fun protobufResponseConverterFactory(): ProtobufResponseConverterFactory {
             RouteTripTimetableEndpoint::class to RouteTripTimetableEndpoint::decodeFromByteArray,
             Pages::class to Pages::decodeFromByteArray,
             FeedMessage::class to FeedMessage::decodeFromByteArray,
-            ServiceAlertEndpoint::class to ServiceAlertEndpoint::decodeFromByteArray
+            ServiceAlertEndpoint::class to ServiceAlertEndpoint::decodeFromByteArray,
+            RouteHeadingsEndpoint::class to RouteHeadingsEndpoint::decodeFromByteArray,
+            StopRoutesEndpoint::class to StopRoutesEndpoint::decodeFromByteArray,
         )
     )
 }

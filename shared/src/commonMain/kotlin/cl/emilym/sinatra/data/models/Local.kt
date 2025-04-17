@@ -6,6 +6,7 @@ enum class CacheCategory(
 
     STOP("stop"),
     STOP_TIMETABLE("stop-timetable"),
+    STOP_ROUTES("stop_routes"),
     ROUTE("route"),
     SERVICE("service"),
     ROUTE_SERVICE("route_service"),

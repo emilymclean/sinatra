@@ -17,6 +17,7 @@ import cl.emilym.sinatra.room.dao.RouteTripStopEntityDao
 import cl.emilym.sinatra.room.dao.ServiceAlertDao
 import cl.emilym.sinatra.room.dao.ShaDao
 import cl.emilym.sinatra.room.dao.StopDao
+import cl.emilym.sinatra.room.dao.StopRouteEntityDao
 import cl.emilym.sinatra.room.dao.StopTimetableTimeEntityDao
 import cl.emilym.sinatra.room.dao.TimetableServiceExceptionEntityDao
 import cl.emilym.sinatra.room.dao.TimetableServiceRegularEntityDao
@@ -31,6 +32,7 @@ import cl.emilym.sinatra.room.entities.RouteTripStopEntity
 import cl.emilym.sinatra.room.entities.ServiceAlertEntity
 import cl.emilym.sinatra.room.entities.ShaEntity
 import cl.emilym.sinatra.room.entities.StopEntity
+import cl.emilym.sinatra.room.entities.StopRouteEntity
 import cl.emilym.sinatra.room.entities.StopTimetableTimeEntity
 import cl.emilym.sinatra.room.entities.TimetableServiceExceptionEntity
 import cl.emilym.sinatra.room.entities.TimetableServiceRegularEntity
@@ -64,7 +66,8 @@ expect object AppDatabaseConstructor : RoomDatabaseConstructor<AppDatabase> {
         FavouriteEntity::class,
         RecentVisitEntity::class,
         PlaceEntity::class,
-        ServiceAlertEntity::class
+        ServiceAlertEntity::class,
+        StopRouteEntity::class
     ],
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
@@ -79,6 +82,7 @@ expect object AppDatabaseConstructor : RoomDatabaseConstructor<AppDatabase> {
 abstract class AppDatabase: RoomDatabase() {
     abstract fun sha(): ShaDao
     abstract fun stop(): StopDao
+    abstract fun stopRoutes(): StopRouteEntityDao
     abstract fun stopTimetableTime(): StopTimetableTimeEntityDao
     abstract fun route(): RouteDao
     abstract fun routeService(): RouteServiceEntityDao
@@ -110,6 +114,11 @@ fun shaDao(db: AppDatabase): ShaDao {
 @Factory
 fun stopDao(db: AppDatabase): StopDao {
     return db.stop()
+}
+
+@Factory
+fun stopRouteDao(db: AppDatabase): StopRouteEntityDao {
+    return db.stopRoutes()
 }
 
 @Factory

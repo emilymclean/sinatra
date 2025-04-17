@@ -77,3 +77,19 @@ data class StopEntityWithChildren(
     )
     val children: List<StopEntity>,
 )
+
+@Entity
+data class StopRouteEntity(
+    @PrimaryKey(autoGenerate = true) val id: Long,
+    val resource: String,
+    val routeId: String
+)
+
+data class StopRouteEntityWithRoute(
+    @Embedded val stopRoute: StopRouteEntity,
+    @Relation(
+        parentColumn = "id",
+        entityColumn = "routeId"
+    )
+    val route: RouteEntity,
+)

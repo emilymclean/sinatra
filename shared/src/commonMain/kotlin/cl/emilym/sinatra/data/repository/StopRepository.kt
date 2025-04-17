@@ -4,6 +4,8 @@ import cl.emilym.sinatra.data.client.StopClient
 import cl.emilym.sinatra.data.models.Cachable
 import cl.emilym.sinatra.data.models.CacheCategory
 import cl.emilym.sinatra.data.models.ResourceKey
+import cl.emilym.sinatra.data.models.Route
+import cl.emilym.sinatra.data.models.RouteId
 import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.data.models.StopId
 import cl.emilym.sinatra.data.models.StopTimetable
@@ -11,6 +13,7 @@ import cl.emilym.sinatra.data.models.StopWithChildren
 import cl.emilym.sinatra.data.models.flatMap
 import cl.emilym.sinatra.data.models.map
 import cl.emilym.sinatra.data.persistence.StopPersistence
+import cl.emilym.sinatra.data.persistence.StopRoutePersistence
 import cl.emilym.sinatra.data.persistence.StopTimetablePersistence
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
@@ -67,6 +70,38 @@ class StopsCleanupWorker(
 }
 
 @Factory
+class StopRoutesCacheWorker(
+    private val stopRoutePersistence: StopRoutePersistence,
+    private val stopClient: StopClient,
+    override val cacheWorkerDependencies: CacheWorkerDependencies,
+    override val clock: Clock,
+): DifferingCacheWorker<List<RouteId>, List<Route>, Unit>() {
+    override val cacheCategory: CacheCategory = CacheCategory.STOP_ROUTES
+
+    override suspend fun saveToPersistence(data: List<RouteId>, resource: ResourceKey) =
+        stopRoutePersistence.save(data, resource)
+    override suspend fun getFromPersistence(resource: ResourceKey, extras: Unit) =
+        stopRoutePersistence.get(resource)
+
+    suspend fun get(stopId: StopId): Cachable<List<Route>> {
+        return run(stopClient.routesEndpointPair(stopId), "stop/${stopId}/route", Unit)
+    }
+}
+
+@Factory
+class StopRoutesCleanupWorker(
+    private val stopRoutePersistence: StopRoutePersistence,
+    override val shaRepository: ShaRepository,
+    override val clock: Clock
+): CleanupWorker() {
+
+    override val cacheCategory: CacheCategory = CacheCategory.STOP_ROUTES
+    override suspend fun delete(resource: ResourceKey) =
+        stopRoutePersistence.clear(resource)
+
+}
+
+@Factory
 class StopTimetableCleanupWorker(
     private val stopTimetablePersistence: StopTimetablePersistence,
     override val shaRepository: ShaRepository,
@@ -84,8 +119,10 @@ class StopRepository(
     private val routesCacheWorker: RoutesCacheWorker,
     private val stopsCacheWorker: StopsCacheWorker,
     private val stopTimetableCacheWorker: StopTimetableCacheWorker,
+    private val stopRoutesCacheWorker: StopRoutesCacheWorker,
     private val stopsCleanupWorker: StopsCleanupWorker,
     private val stopTimetableCleanupWorker: StopTimetableCleanupWorker,
+    private val stopRoutesCleanupWorker: StopRoutesCleanupWorker,
     private val stopPersistence: StopPersistence,
 ) {
 
@@ -116,9 +153,17 @@ class StopRepository(
         ) }
     }
 
+    suspend fun routes(
+        stopId: StopId
+    ): Cachable<List<Route>> {
+        routesCacheWorker.get()
+        return stopRoutesCacheWorker.get(stopId)
+    }
+
     suspend fun cleanup() {
         stopsCleanupWorker()
         stopTimetableCleanupWorker()
+        stopRoutesCleanupWorker()
     }
 
 }

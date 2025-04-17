@@ -37,7 +37,7 @@ class CacheWorkerDependencies(
     val cacheWorkerLockProvider: CacheWorkerLockProvider,
 )
 
-abstract class BaseCacheWorker<T, E> {
+abstract class DifferingCacheWorker<I,O,E> {
     abstract val cacheWorkerDependencies: CacheWorkerDependencies
     private val shaRepository: ShaRepository get() = cacheWorkerDependencies.shaRepository
     private val remoteConfigRepository: RemoteConfigRepository
@@ -49,11 +49,11 @@ abstract class BaseCacheWorker<T, E> {
     open val expireTime: Duration = 24.hours
     private suspend fun adjustedExpireTime() = expireTime * remoteConfigRepository.dataCachePeriodMultiplier()
 
-    abstract suspend fun saveToPersistence(data: T, resource: ResourceKey)
-    abstract suspend fun getFromPersistence(resource: ResourceKey, extras: E): T?
+    abstract suspend fun saveToPersistence(data: I, resource: ResourceKey)
+    abstract suspend fun getFromPersistence(resource: ResourceKey, extras: E): O?
     open suspend fun existsInPersistence(resource: ResourceKey): Boolean { return true }
 
-    protected suspend fun run(pair: EndpointDigestPair<T>, resource: ResourceKey, extras: E): Cachable<T> {
+    protected suspend fun run(pair: EndpointDigestPair<I>, resource: ResourceKey, extras: E): Cachable<O> {
         val info = shaRepository.cached(cacheCategory, resource)
 
         if (!info.shouldCheckForUpdate(resource))
@@ -79,9 +79,9 @@ abstract class BaseCacheWorker<T, E> {
         }
     }
 
-    private suspend fun getCached(resource: ResourceKey, extras: E): Cachable<T> {
+    private suspend fun getCached(resource: ResourceKey, extras: E): Cachable<O> {
         return getFromPersistence(resource, extras)?.let { Cachable(it, CacheState.CACHED) } ?:
-            throw IllegalStateException("Resource was reported as cached, but could not be retrieved")
+        throw IllegalStateException("Resource was reported as cached, but could not be retrieved")
     }
 
     private suspend fun CacheInformation.shouldCheckForUpdate(resource: ResourceKey): Boolean {
@@ -94,10 +94,10 @@ abstract class BaseCacheWorker<T, E> {
     private suspend fun fetch(
         digest: ShaDigest,
         info: CacheInformation,
-        pair: EndpointDigestPair<T>,
+        pair: EndpointDigestPair<I>,
         resource: ResourceKey,
         extras: E
-    ): Cachable<T> {
+    ): Cachable<O> {
         val data = try {
             pair.endpoint()
         } catch (e: Throwable) {
@@ -106,7 +106,7 @@ abstract class BaseCacheWorker<T, E> {
         saveToPersistence(data, resource)
         shaRepository.save(digest, cacheCategory, resource)
         // We get from persistence anyway to ensure any joined tables are included
-        return Cachable.live(getFromPersistence(resource, extras) ?: data)
+        return Cachable.live(getFromPersistence(resource, extras)!!)
     }
 
     private suspend fun failure(
@@ -114,7 +114,7 @@ abstract class BaseCacheWorker<T, E> {
         e: Throwable,
         resource: ResourceKey,
         extras: E
-    ): Cachable<T> {
+    ): Cachable<O> {
         Napier.e(e)
         return when (info) {
             is CacheInformation.Unavailable -> throw e
@@ -127,8 +127,9 @@ abstract class BaseCacheWorker<T, E> {
             )
         }
     }
-
 }
+
+abstract class BaseCacheWorker<T, E>: DifferingCacheWorker<T,T,E>()
 
 abstract class CacheWorker<T>: BaseCacheWorker<T, Unit>() {
     abstract suspend fun getFromPersistence(resource: ResourceKey): T?

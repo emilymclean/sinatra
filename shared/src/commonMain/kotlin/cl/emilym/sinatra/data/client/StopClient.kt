@@ -1,5 +1,6 @@
 package cl.emilym.sinatra.data.client
 
+import cl.emilym.sinatra.data.models.RouteId
 import cl.emilym.sinatra.data.models.ShaDigest
 import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.data.models.StopId
@@ -24,6 +25,11 @@ class StopClient(
         override val digest = suspend { timetableDigest(stopId) }
     }
 
+    fun routesEndpointPair(stopId: StopId) = object : EndpointDigestPair<List<RouteId>>() {
+        override val endpoint = suspend { routes(stopId) }
+        override val digest = suspend { routesDigest(stopId) }
+    }
+
     suspend fun stops(): List<Stop> {
         val pbStops = gtfsApi.stops()
         return pbStops.stop.map { Stop.fromPB(it) }
@@ -40,6 +46,14 @@ class StopClient(
 
     suspend fun timetableDigest(stopId: StopId): ShaDigest {
         return gtfsApi.stopTimetableDigest(stopId)
+    }
+
+    suspend fun routes(stopId: StopId): List<RouteId> {
+        return gtfsApi.stopRoutes(stopId).routeIds
+    }
+
+    suspend fun routesDigest(stopId: StopId): ShaDigest {
+        return gtfsApi.stopRoutesDigest(stopId)
     }
 
 }

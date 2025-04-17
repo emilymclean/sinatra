@@ -239,6 +239,38 @@ public data class StopDetailEndpoint(
 }
 
 @pbandk.Export
+public data class StopRoutesEndpoint(
+    val routeIds: List<String> = emptyList(),
+    override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
+) : pbandk.Message {
+    override operator fun plus(other: pbandk.Message?): cl.emilym.gtfs.StopRoutesEndpoint = protoMergeImpl(other)
+    override val descriptor: pbandk.MessageDescriptor<cl.emilym.gtfs.StopRoutesEndpoint> get() = Companion.descriptor
+    override val protoSize: Int by lazy { super.protoSize }
+    public companion object : pbandk.Message.Companion<cl.emilym.gtfs.StopRoutesEndpoint> {
+        public val defaultInstance: cl.emilym.gtfs.StopRoutesEndpoint by lazy { cl.emilym.gtfs.StopRoutesEndpoint() }
+        override fun decodeWith(u: pbandk.MessageDecoder): cl.emilym.gtfs.StopRoutesEndpoint = cl.emilym.gtfs.StopRoutesEndpoint.decodeWithImpl(u)
+
+        override val descriptor: pbandk.MessageDescriptor<cl.emilym.gtfs.StopRoutesEndpoint> = pbandk.MessageDescriptor(
+            fullName = "proto.StopRoutesEndpoint",
+            messageClass = cl.emilym.gtfs.StopRoutesEndpoint::class,
+            messageCompanion = this,
+            fields = buildList(1) {
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "routeIds",
+                        number = 1,
+                        type = pbandk.FieldDescriptor.Type.Repeated<String>(valueType = pbandk.FieldDescriptor.Type.Primitive.String()),
+                        jsonName = "routeIds",
+                        value = cl.emilym.gtfs.StopRoutesEndpoint::routeIds
+                    )
+                )
+            }
+        )
+    }
+}
+
+@pbandk.Export
 public data class RouteDetailEndpoint(
     val route: cl.emilym.gtfs.Route,
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
@@ -1872,6 +1904,30 @@ private fun StopDetailEndpoint.Companion.decodeWithImpl(u: pbandk.MessageDecoder
         throw pbandk.InvalidProtocolBufferException.missingRequiredField("stop")
     }
     return StopDetailEndpoint(stop!!, pbandk.ListWithSize.Builder.fixed(children), unknownFields)
+}
+
+@pbandk.Export
+@pbandk.JsName("orDefaultForStopRoutesEndpoint")
+public fun StopRoutesEndpoint?.orDefault(): cl.emilym.gtfs.StopRoutesEndpoint = this ?: StopRoutesEndpoint.defaultInstance
+
+private fun StopRoutesEndpoint.protoMergeImpl(plus: pbandk.Message?): StopRoutesEndpoint = (plus as? StopRoutesEndpoint)?.let {
+    it.copy(
+        routeIds = routeIds + plus.routeIds,
+        unknownFields = unknownFields + plus.unknownFields
+    )
+} ?: this
+
+@Suppress("UNCHECKED_CAST")
+private fun StopRoutesEndpoint.Companion.decodeWithImpl(u: pbandk.MessageDecoder): StopRoutesEndpoint {
+    var routeIds: pbandk.ListWithSize.Builder<String>? = null
+
+    val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
+        when (_fieldNumber) {
+            1 -> routeIds = (routeIds ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as kotlin.sequences.Sequence<String> }
+        }
+    }
+
+    return StopRoutesEndpoint(pbandk.ListWithSize.Builder.fixed(routeIds), unknownFields)
 }
 
 private fun RouteDetailEndpoint.protoMergeImpl(plus: pbandk.Message?): RouteDetailEndpoint = (plus as? RouteDetailEndpoint)?.let {

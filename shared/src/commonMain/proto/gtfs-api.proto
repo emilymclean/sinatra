@@ -17,6 +17,10 @@ message StopDetailEndpoint {
   repeated Stop children = 2;
 }
 
+message StopRoutesEndpoint {
+  repeated string routeIds = 1;
+}
+
 message RouteDetailEndpoint {
   required Route route = 1;
 }

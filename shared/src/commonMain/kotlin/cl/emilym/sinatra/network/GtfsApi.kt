@@ -9,6 +9,7 @@ import cl.emilym.gtfs.RouteTripTimetableEndpoint
 import cl.emilym.gtfs.ServiceAlertEndpoint
 import cl.emilym.gtfs.ServiceEndpoint
 import cl.emilym.gtfs.StopEndpoint
+import cl.emilym.gtfs.StopRoutesEndpoint
 import cl.emilym.gtfs.StopTimetable
 import cl.emilym.gtfs.content.Pages
 import cl.emilym.sinatra.data.models.RouteId
@@ -39,6 +40,16 @@ interface GtfsApi {
 
     @GET("v1/stop/{stopId}/timetable.pb.sha")
     suspend fun stopTimetableDigest(
+        @Path("stopId") stopId: StopId
+    ): String
+
+    @GET("v1/stop/{stopId}/routes.pb")
+    suspend fun stopRoutes(
+        @Path("stopId") stopId: StopId
+    ): StopRoutesEndpoint
+
+    @GET("v1/stop/{stopId}/routes.pb.sha")
+    suspend fun stopRoutesDigest(
         @Path("stopId") stopId: StopId
     ): String
 
