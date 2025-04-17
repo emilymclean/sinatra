@@ -201,7 +201,7 @@ class CalculateJourneyUseCase(
         var legs = mutableListOf<JourneyLeg>()
         var lastEndTime: Duration? = when (val connection = connections.first()) {
             is RaptorJourneyConnection.Travel -> connection.endTime.seconds
-            is RaptorJourneyConnection.Transfer -> (connections[1] as? RaptorJourneyConnection.Travel)?.endTime?.seconds
+            else -> null
         }
 
         for (i in connections.indices) {
@@ -219,13 +219,32 @@ class CalculateJourneyUseCase(
                         Time.create(connection.endTime.seconds, startOfDayIndexed)
                     )
                 }
-                is RaptorJourneyConnection.Transfer -> JourneyLeg.Transfer(
-                    stops,
-                    connection.travelTime.seconds,
-                    Time.create(lastEndTime!!, startOfDay),
-                    Time.create(lastEndTime + connection.travelTime.seconds, startOfDay)
-                ).also {
-                    lastEndTime += connection.travelTime.seconds
+                is RaptorJourneyConnection.Transfer -> when {
+                    lastEndTime != null -> JourneyLeg.Transfer(
+                        stops,
+                        connection.travelTime.seconds,
+                        Time.create(lastEndTime, startOfDay),
+                        Time.create(lastEndTime + connection.travelTime.seconds, startOfDay)
+                    ).also {
+                        lastEndTime += connection.travelTime.seconds
+                    }
+                    else -> {
+                        val inbetweenTime = connections
+                            .drop(i)
+                            .takeWhile { it is RaptorJourneyConnection.Travel }
+                            .sumOf { it.travelTime }
+                        val concreteTime = ((connections
+                            .drop(i)
+                            .first { it is RaptorJourneyConnection.Travel } as RaptorJourneyConnection.Travel)
+                            .startTime - inbetweenTime).seconds
+
+                        JourneyLeg.Transfer(
+                            stops,
+                            connection.travelTime.seconds,
+                            Time.create(concreteTime - connection.travelTime.seconds, startOfDay),
+                            Time.create(concreteTime, startOfDay)
+                        )
+                    }
                 }
             }
         }
@@ -238,8 +257,8 @@ class CalculateJourneyUseCase(
                 val time = distance(departureLocation.location, attachedStop.location) * getGraph().item.metadata.assumedWalkingSecondsPerKilometer.toLong()
                 legs.add(0, JourneyLeg.TransferPoint(
                     time.seconds,
-                    legs.first().departureTime - time.seconds,
-                    legs.first().departureTime
+                    departureTime = legs.first().arrivalTime - time.seconds,
+                    arrivalTime = legs.first().arrivalTime
                 ))
             }
         }
@@ -253,8 +272,8 @@ class CalculateJourneyUseCase(
                 val time = distance(arrivalLocation.location, attachedStop.location) * getGraph().item.metadata.assumedWalkingSecondsPerKilometer.toLong()
                 legs.add(JourneyLeg.TransferPoint(
                     time.seconds,
-                    lastLeg.arrivalTime,
-                    lastLeg.arrivalTime + time.seconds
+                    departureTime = lastLeg.arrivalTime,
+                    arrivalTime = lastLeg.arrivalTime + time.seconds
                 ))
             }
         }
