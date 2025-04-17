@@ -257,8 +257,8 @@ class CalculateJourneyUseCase(
                 val time = distance(departureLocation.location, attachedStop.location) * getGraph().item.metadata.assumedWalkingSecondsPerKilometer.toLong()
                 legs.add(0, JourneyLeg.TransferPoint(
                     time.seconds,
-                    departureTime = legs.first().arrivalTime - time.seconds,
-                    arrivalTime = legs.first().arrivalTime
+                    departureTime = legs.first().departureTime - time.seconds,
+                    arrivalTime = legs.first().departureTime
                 ))
             }
         }
