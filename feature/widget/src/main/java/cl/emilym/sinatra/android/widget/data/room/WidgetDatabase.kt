@@ -5,14 +5,19 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import cl.emilym.sinatra.android.widget.data.room.dao.UpcomingVehiclesWidgetConfigurationDao
-import cl.emilym.sinatra.android.widget.data.room.entities.UpcomingVehiclesWidgetConfiguration
+import cl.emilym.sinatra.android.widget.data.room.entities.UpcomingVehiclesWidgetConfigurationEntity
 import kotlinx.coroutines.Dispatchers
 import org.koin.core.annotation.Factory
 import org.koin.core.annotation.Single
 
 private const val WIDGET_DATABASE_NAME = "widget_database"
 
-@Database(entities = [UpcomingVehiclesWidgetConfiguration::class], version = 1)
+@Database(
+    entities = [
+        UpcomingVehiclesWidgetConfigurationEntity::class
+    ],
+    version = 1
+)
 abstract class WidgetDatabase : RoomDatabase() {
     abstract fun upcomingVehiclesWidgetConfigurationDao(): UpcomingVehiclesWidgetConfigurationDao
 }
@@ -24,7 +29,6 @@ fun widgetDatabase(context: Context): WidgetDatabase {
         WidgetDatabase::class.java,
         WIDGET_DATABASE_NAME
     )
-        .fallbackToDestructiveMigration(true)
         .setQueryCoroutineContext(Dispatchers.IO)
         .build()
 }
