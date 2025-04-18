@@ -15,4 +15,5 @@
     <string name="upcoming_vehicle_configuration_route_placeholder">Select a route.</string>
     <string name="upcoming_vehicle_configuration_heading_title">Heading:</string>
     <string name="upcoming_vehicle_configuration_heading_placeholder">Select a heading.</string>
+    <string name="upcoming_vehicle_configuration_submit">Submit</string>
 </resources>

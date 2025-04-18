@@ -68,10 +68,15 @@ class KoinUpcomingVehiclesWidgetReceiverHelper: KoinGlanceAppWidgetReceiverCompo
     private suspend fun upcoming(appWidgetId: Int): UpcomingVehicleState {
         val out = UpcomingVehicleState.newBuilder()
 
+        Napier.d("Updating widget $appWidgetId")
         try {
             val configuration = withContext(Dispatchers.IO) {
                 upcomingVehiclesWidgetRepository.get(appWidgetId)
             } ?: return out.setIsConfigured(false).build()
+
+            out.setIsConfigured(true)
+
+            Napier.d("Fetching updates for config $configuration")
 
             val upcoming = withContext(Dispatchers.IO) {
                 upcomingRoutesForStopUseCase(
@@ -84,8 +89,14 @@ class KoinUpcomingVehiclesWidgetReceiverHelper: KoinGlanceAppWidgetReceiverCompo
             }
 
             out.setHasUpcoming(upcoming.item.isNotEmpty())
-                .setType(UpcomingType.UPCOMING_TYPE_STOP_ROUTE_HEADING)
+                .setType(when {
+                    configuration.heading != null -> UpcomingType.UPCOMING_TYPE_STOP_ROUTE_HEADING
+                    configuration.routeId != null -> UpcomingType.UPCOMING_TYPE_STOP_ROUTE
+                    else -> UpcomingType.UPCOMING_TYPE_STOP
+                })
                 .addAllTimes(upcoming.item.map { it.toProto() })
+
+            Napier.d("Widget $appWidgetId has content = ${out.hasUpcoming}")
 
             return out.build()
         } catch (e: Exception) {
@@ -111,10 +122,7 @@ class KoinUpcomingVehiclesWidgetReceiverHelper: KoinGlanceAppWidgetReceiverCompo
                 val intent = PendingIntent.getBroadcast(
                     context,
                     UPDATE_REQUEST_CODE,
-                    Intent(context, UpcomingVehiclesWidgetReceiver::class.java).apply {
-                        action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
-                        putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, intArrayOf(appWidgetId))
-                    },
+                    context.updateIntent(appWidgetId),
                     PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
                 )
                 val time = upcoming.timesList.first().departureTime
@@ -137,4 +145,9 @@ class KoinUpcomingVehiclesWidgetReceiverHelper: KoinGlanceAppWidgetReceiverCompo
         }
     }
 
+}
+
+fun Context.updateIntent(appWidgetId: Int): Intent = Intent(this, UpcomingVehiclesWidgetReceiver::class.java).apply {
+    action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
+    putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, intArrayOf(appWidgetId))
 }

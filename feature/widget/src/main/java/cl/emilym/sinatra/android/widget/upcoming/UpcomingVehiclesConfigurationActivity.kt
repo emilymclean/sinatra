@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -289,7 +290,12 @@ class UpcomingVehiclesConfigurationActivity: ComposeActivity() {
 
         LaunchedEffect(navigation) {
             when (navigation) {
-                UpcomingVehiclesConfigurationNavigation.Exit -> finish()
+                UpcomingVehiclesConfigurationNavigation.Exit -> {
+                    appWidgetId?.let {
+                        sendBroadcast(this@UpcomingVehiclesConfigurationActivity.updateIntent(it))
+                    }
+                    finish()
+                }
                 else -> {}
             }
         }
@@ -368,7 +374,15 @@ class UpcomingVehiclesConfigurationActivity: ComposeActivity() {
                 )
             }
             Spacer(Modifier.weight(1f))
-
+            Button(
+                onClick = {
+                    viewModel.save()
+                },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = state.validConfiguration
+            ) {
+                Text(stringResource(R.string.upcoming_vehicle_configuration_submit))
+            }
         }
     }
 }
