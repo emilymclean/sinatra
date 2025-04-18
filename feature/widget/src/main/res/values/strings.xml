@@ -11,4 +11,8 @@
     <string name="upcoming_vehicle_configuration_invalid_widget">Widget not found.</string>
     <string name="upcoming_vehicle_configuration_stop_title">Stop:</string>
     <string name="upcoming_vehicle_configuration_stop_placeholder">Select a stop.</string>
+    <string name="upcoming_vehicle_configuration_route_title">Route:</string>
+    <string name="upcoming_vehicle_configuration_route_placeholder">Select a route.</string>
+    <string name="upcoming_vehicle_configuration_heading_title">Heading:</string>
+    <string name="upcoming_vehicle_configuration_heading_placeholder">Select a heading.</string>
 </resources>

@@ -7,10 +7,10 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -19,12 +19,12 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cl.emilym.compose.requeststate.RequestState
 import cl.emilym.compose.requeststate.handle
@@ -32,15 +32,13 @@ import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.android.base.ComposeActivity
 import cl.emilym.sinatra.android.base.SinatraViewModel
 import cl.emilym.sinatra.android.widget.R
+import cl.emilym.sinatra.android.widget.data.models.UpcomingVehiclesWidgetConfiguration
 import cl.emilym.sinatra.android.widget.data.repository.UpcomingVehiclesWidgetRepository
 import cl.emilym.sinatra.data.models.Heading
 import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.data.models.RecentVisit
 import cl.emilym.sinatra.data.models.Route
-import cl.emilym.sinatra.data.models.RouteId
 import cl.emilym.sinatra.data.models.Stop
-import cl.emilym.sinatra.data.models.StopId
-import cl.emilym.sinatra.data.models.StopWithDistance
 import cl.emilym.sinatra.data.repository.RecentVisitRepository
 import cl.emilym.sinatra.data.repository.RouteRepository
 import cl.emilym.sinatra.data.repository.StopRepository
@@ -50,26 +48,26 @@ import cl.emilym.sinatra.domain.search.SearchResult
 import cl.emilym.sinatra.e
 import cl.emilym.sinatra.nullIf
 import cl.emilym.sinatra.nullIfEmpty
-import cl.emilym.sinatra.ui.presentation.screens.maps.search.MapSearchState
 import cl.emilym.sinatra.ui.presentation.screens.search.SearchScreen
 import cl.emilym.sinatra.ui.presentation.screens.search.SearchScreenViewModel
 import cl.emilym.sinatra.ui.presentation.screens.search.searchHandler
 import cl.emilym.sinatra.ui.widgets.SinatraFakeTextField
-import cl.emilym.sinatra.ui.widgets.SinatraTextField
 import cl.emilym.sinatra.ui.widgets.collectAsStateWithLifecycle
 import cl.emilym.sinatra.ui.widgets.createRequestStateFlowFlow
 import cl.emilym.sinatra.ui.widgets.currentLocation
 import cl.emilym.sinatra.ui.widgets.handleFlowProperly
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
+import org.koin.androidx.scope.activityScope
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 sealed interface UpcomingVehiclesConfigurationState {
@@ -83,6 +81,10 @@ sealed interface UpcomingVehiclesConfigurationState {
     ): UpcomingVehiclesConfigurationState
 }
 
+sealed interface UpcomingVehiclesConfigurationNavigation {
+    data object Exit: UpcomingVehiclesConfigurationNavigation
+}
+
 @KoinViewModel
 class UpcomingVehiclesConfigurationViewModel(
     private val upcomingVehiclesWidgetRepository: UpcomingVehiclesWidgetRepository,
@@ -93,9 +95,12 @@ class UpcomingVehiclesConfigurationViewModel(
     private val routeStopSearchUseCase: RouteStopSearchUseCase
 ): SinatraViewModel(), SearchScreenViewModel {
 
+    var appWidgetId: Int? = null
     val stop = MutableStateFlow<Stop?>(null)
     val route = MutableStateFlow<Route?>(null)
     val heading = MutableStateFlow<Heading?>(null)
+
+    val navigation = MutableSharedFlow<UpcomingVehiclesConfigurationNavigation>()
 
     private val _isValid = MutableStateFlow(true)
     private val _isLoading = MutableStateFlow(true)
@@ -152,6 +157,7 @@ class UpcomingVehiclesConfigurationViewModel(
             _isValid.value = false
             return
         }
+        this.appWidgetId = appWidgetId
 
         retryStops()
         retryRecentVisits()
@@ -211,7 +217,44 @@ class UpcomingVehiclesConfigurationViewModel(
         stop: Stop
     ) {
         this.stop.value = stop
+        route.value = null
+        heading.value = null
         closeSearch()
+    }
+
+    fun selectRoute(
+        route: Route
+    ) {
+        this.route.value = route
+        heading.value = null
+    }
+
+    fun selectHeading(
+        heading: Heading
+    ) {
+        this.heading.value = heading
+    }
+
+    fun save() {
+        val appWidgetId = appWidgetId ?: return
+        val stop = stop.value ?: return
+        _isLoading.value = true
+        viewModelScope.launch {
+            try {
+                upcomingVehiclesWidgetRepository.save(
+                    UpcomingVehiclesWidgetConfiguration(
+                        appWidgetId,
+                        stop.id,
+                        route.value?.id,
+                        heading.value
+                    )
+                )
+                navigation.emit(UpcomingVehiclesConfigurationNavigation.Exit)
+            } catch (e: Exception) {
+                Napier.e(e)
+            }
+            _isLoading.value = false
+        }
     }
 
 }
@@ -236,10 +279,18 @@ class UpcomingVehiclesConfigurationActivity: ComposeActivity() {
     override fun Content() {
         val state by viewModel.state.collectAsStateWithLifecycle()
         val currentLocation = currentLocation()
+        val navigation by viewModel.navigation.collectAsState(null)
 
         LaunchedEffect(currentLocation) {
             currentLocation?.let {
                 viewModel.updateLocation(it)
+            }
+        }
+
+        LaunchedEffect(navigation) {
+            when (navigation) {
+                UpcomingVehiclesConfigurationNavigation.Exit -> finish()
+                else -> {}
             }
         }
 
@@ -298,26 +349,26 @@ class UpcomingVehiclesConfigurationActivity: ComposeActivity() {
     private fun ConfigurationEntryWidget() {
         val state = (viewModel.state.collectAsStateWithLifecycle().value as?
                 UpcomingVehiclesConfigurationState.ConfigurationEntry) ?: return
-        LazyColumn(
+        Column(
             Modifier.padding(horizontal = 1.rdp),
             verticalArrangement = Arrangement.spacedBy(1.rdp)
         ) {
-            item {
-                Column(verticalArrangement = Arrangement.spacedBy(0.5.rdp)) {
-                    Text(
-                        stringResource(R.string.upcoming_vehicle_configuration_stop_title),
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                    val stop by viewModel.stop.collectAsStateWithLifecycle()
-                    SinatraFakeTextField(
-                        stop?.name,
-                        placeholder = stringResource(R.string.upcoming_vehicle_configuration_stop_placeholder),
-                        modifier = Modifier.fillMaxWidth().clickable {
-                            viewModel.openSearch()
-                        }
-                    )
-                }
+            Column(verticalArrangement = Arrangement.spacedBy(0.5.rdp)) {
+                Text(
+                    stringResource(R.string.upcoming_vehicle_configuration_stop_title),
+                    style = MaterialTheme.typography.titleMedium
+                )
+                val stop by viewModel.stop.collectAsStateWithLifecycle()
+                SinatraFakeTextField(
+                    stop?.name,
+                    placeholder = stringResource(R.string.upcoming_vehicle_configuration_stop_placeholder),
+                    modifier = Modifier.fillMaxWidth().clickable {
+                        viewModel.openSearch()
+                    }
+                )
             }
+            Spacer(Modifier.weight(1f))
+
         }
     }
 }
