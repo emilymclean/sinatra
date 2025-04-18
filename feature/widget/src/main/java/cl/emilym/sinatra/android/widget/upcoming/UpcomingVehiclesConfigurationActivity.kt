@@ -2,13 +2,18 @@ package cl.emilym.sinatra.android.widget.upcoming
 
 import android.appwidget.AppWidgetManager
 import android.os.Bundle
+import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -49,6 +54,8 @@ import cl.emilym.sinatra.ui.presentation.screens.maps.search.MapSearchState
 import cl.emilym.sinatra.ui.presentation.screens.search.SearchScreen
 import cl.emilym.sinatra.ui.presentation.screens.search.SearchScreenViewModel
 import cl.emilym.sinatra.ui.presentation.screens.search.searchHandler
+import cl.emilym.sinatra.ui.widgets.SinatraFakeTextField
+import cl.emilym.sinatra.ui.widgets.SinatraTextField
 import cl.emilym.sinatra.ui.widgets.collectAsStateWithLifecycle
 import cl.emilym.sinatra.ui.widgets.createRequestStateFlowFlow
 import cl.emilym.sinatra.ui.widgets.currentLocation
@@ -147,6 +154,7 @@ class UpcomingVehiclesConfigurationViewModel(
         }
 
         retryStops()
+        retryRecentVisits()
         viewModelScope.launch {
             val existingConfig = upcomingVehiclesWidgetRepository.get(appWidgetId) ?: return@launch
             stop.value = try {
@@ -185,6 +193,10 @@ class UpcomingVehiclesConfigurationViewModel(
                 }
             }
         }
+    }
+
+    fun openSearch() {
+        _isSearching.value = true
     }
 
     fun closeSearch() {
@@ -231,30 +243,39 @@ class UpcomingVehiclesConfigurationActivity: ComposeActivity() {
             }
         }
 
-        Scaffold(
-           topBar = {
-               TopAppBar(
-                   title = {
-                       Text(stringResource(R.string.upcoming_vehicle_widget_label))
-                   }
-               )
-           }
-        ) {
-            Box(Modifier.padding(it).fillMaxSize()) {
-                when (state) {
-                    is UpcomingVehiclesConfigurationState.Loading -> {
-                        CircularProgressIndicator(Modifier.align(Alignment.Center))
+        BackHandler(state is UpcomingVehiclesConfigurationState.Search) {
+            viewModel.closeSearch()
+        }
+
+        when (state) {
+            is UpcomingVehiclesConfigurationState.Search -> SearchScreen(
+                viewModel,
+                { viewModel.closeSearch() },
+                { viewModel.selectStop(it) },
+                {},
+                {}
+            )
+            else -> {
+                Scaffold(
+                    topBar = {
+                        TopAppBar(
+                            title = {
+                                Text(stringResource(R.string.upcoming_vehicle_widget_label))
+                            }
+                        )
                     }
-                    is UpcomingVehiclesConfigurationState.InvalidAppWidget -> InvalidWidget()
-                    is UpcomingVehiclesConfigurationState.Search -> SearchScreen(
-                        viewModel,
-                        { viewModel.closeSearch() },
-                        { viewModel.selectStop(it) },
-                        {},
-                        {}
-                    )
-                    is UpcomingVehiclesConfigurationState.ConfigurationEntry ->
-                        ConfigurationEntryWidget()
+                ) {
+                    Box(Modifier.padding(it).fillMaxSize()) {
+                        when (state) {
+                            is UpcomingVehiclesConfigurationState.Loading -> {
+                                CircularProgressIndicator(Modifier.align(Alignment.Center))
+                            }
+                            is UpcomingVehiclesConfigurationState.InvalidAppWidget -> InvalidWidget()
+                            is UpcomingVehiclesConfigurationState.ConfigurationEntry ->
+                                ConfigurationEntryWidget()
+                            else -> {}
+                        }
+                    }
                 }
             }
         }
@@ -277,6 +298,26 @@ class UpcomingVehiclesConfigurationActivity: ComposeActivity() {
     private fun ConfigurationEntryWidget() {
         val state = (viewModel.state.collectAsStateWithLifecycle().value as?
                 UpcomingVehiclesConfigurationState.ConfigurationEntry) ?: return
-        Text("Test")
+        LazyColumn(
+            Modifier.padding(horizontal = 1.rdp),
+            verticalArrangement = Arrangement.spacedBy(1.rdp)
+        ) {
+            item {
+                Column(verticalArrangement = Arrangement.spacedBy(0.5.rdp)) {
+                    Text(
+                        stringResource(R.string.upcoming_vehicle_configuration_stop_title),
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                    val stop by viewModel.stop.collectAsStateWithLifecycle()
+                    SinatraFakeTextField(
+                        stop?.name,
+                        placeholder = stringResource(R.string.upcoming_vehicle_configuration_stop_placeholder),
+                        modifier = Modifier.fillMaxWidth().clickable {
+                            viewModel.openSearch()
+                        }
+                    )
+                }
+            }
+        }
     }
 }

@@ -14,6 +14,7 @@ import cl.emilym.sinatra.ui.presentation.theme.SinatraTheme
 import cl.emilym.sinatra.ui.widgets.LocalPermissionRequestQueue
 import cl.emilym.sinatra.ui.widgets.PermissionRequestQueue
 import cl.emilym.sinatra.ui.widgets.PermissionRequestQueueHandler
+import cl.emilym.sinatra.ui.widgets.ViewportSizeWidget
 
 interface ComposeView {
 
@@ -34,7 +35,9 @@ abstract class ComposeActivity: ComponentActivity(), ComposeView {
                 CompositionLocalProvider(
                     LocalPermissionRequestQueue provides permissionQueue
                 ) {
-                    Content()
+                    ViewportSizeWidget {
+                        Content()
+                    }
                     PermissionRequestQueueHandler()
                 }
             }
