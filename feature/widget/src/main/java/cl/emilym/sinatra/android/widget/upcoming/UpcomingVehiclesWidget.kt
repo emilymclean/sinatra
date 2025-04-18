@@ -53,28 +53,26 @@ class UpcomingVehiclesWidget: SinatraGlanceAppWidget() {
                 contentAlignment = Alignment.Center
             ) {
                 when {
+                    !state.isConfigured -> {
+                        SinatraText(
+                            LocalContext.current.getString(
+                                R.string.upcoming_vehicle_widget_needs_config,
+                            )
+                        )
+                    }
                     state.errorMessage.isNotBlank() -> {
                         val context = LocalContext.current
                         val glanceId = LocalGlanceId.current
                         Column {
-                            Text(
+                            SinatraText(
                                 LocalContext.current.getString(
                                     R.string.upcoming_vehicle_widget_something_went_wrong,
                                 ),
-                                style = TextStyle(
-                                    color = GlanceTheme.colors.onSurface,
-                                    textAlign = TextAlign.Center,
-                                    fontWeight = FontWeight.Bold
-                                ),
-                                modifier = GlanceModifier.fillMaxWidth()
+                                bold = true
                             )
-                            Text(
+                            SinatraText(
                                 state.errorMessage ?: "",
-                                style = TextStyle(
-                                    color = GlanceTheme.colors.onSurface,
-                                    textAlign = TextAlign.Center
-                                ),
-                                modifier = GlanceModifier.fillMaxWidth()
+                                maxLines = 2
                             )
                             Spacer(GlanceModifier.height(8.dp))
                             Button(
@@ -89,15 +87,10 @@ class UpcomingVehiclesWidget: SinatraGlanceAppWidget() {
                         }
                     }
                     !state.hasUpcoming -> {
-                        Text(
+                        SinatraText(
                             LocalContext.current.getString(
                                 R.string.upcoming_vehicle_widget_no_upcoming,
-                            ),
-                            style = TextStyle(
-                                color = GlanceTheme.colors.onSurface,
-                                textAlign = TextAlign.Center
-                            ),
-                            modifier = GlanceModifier.fillMaxWidth()
+                            )
                         )
                     }
                     else -> state.timesList.firstOrNull()?.let {
@@ -120,7 +113,7 @@ fun UpcomingStopWidget(
     modifier: GlanceModifier = GlanceModifier
 ) {
     Column(modifier) {
-        Text(
+        SinatraText(
             when(type) {
                 UpcomingType.UPCOMING_TYPE_STOP_ROUTE_HEADING -> LocalContext.current.getString(
                     R.string.upcoming_vehicle_widget_heading,
@@ -131,22 +124,33 @@ fun UpcomingStopWidget(
                     upcoming.routeCode,
                     upcoming.heading
                 )
-            },
-            style = TextStyle(
-                color = GlanceTheme.colors.onSurface,
-                textAlign = TextAlign.Center
-            ),
-            modifier = GlanceModifier.fillMaxWidth()
+            }
         )
         val time = Instant.fromEpochMilliseconds(upcoming.departureTime).widgetFormat()
-        Text(
+        SinatraText(
             time,
-            style = TextStyle(
-                color = GlanceTheme.colors.onSurface,
-                fontSize = 24.sp,
-                textAlign = TextAlign.Center
-            ),
-            modifier = GlanceModifier.fillMaxWidth()
+            big = true
         )
     }
+}
+
+@Composable
+@GlanceComposable
+fun SinatraText(
+    content: String,
+    big: Boolean = false,
+    bold: Boolean = false,
+    maxLines: Int = Int.MAX_VALUE
+) {
+    Text(
+        content,
+        style = TextStyle(
+            color = GlanceTheme.colors.onSurface,
+            textAlign = TextAlign.Center,
+            fontWeight = if (bold) FontWeight.Bold else null,
+            fontSize = if (big) 24.sp else null
+        ),
+        modifier = GlanceModifier.fillMaxWidth(),
+        maxLines = maxLines
+    )
 }

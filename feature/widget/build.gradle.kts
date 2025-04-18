@@ -64,6 +64,8 @@ dependencies {
 
     // Room
     implementation(libs.room.runtime)
+    ksp(libs.room.compiler)
+
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
     implementation(libs.androidx.activity)

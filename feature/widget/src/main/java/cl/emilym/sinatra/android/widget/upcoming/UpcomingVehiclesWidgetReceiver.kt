@@ -13,8 +13,11 @@ import cl.emilym.sinatra.android.widget.base.KoinGlanceAppWidgetReceiver
 import cl.emilym.sinatra.android.widget.base.KoinGlanceAppWidgetReceiverComponent
 import cl.emilym.sinatra.android.widget.data.proto.UpcomingType
 import cl.emilym.sinatra.android.widget.data.proto.UpcomingVehicleState
+import cl.emilym.sinatra.android.widget.data.repository.UpcomingVehiclesWidgetRepository
 import cl.emilym.sinatra.android.widget.data.toProto
 import cl.emilym.sinatra.domain.UpcomingRoutesForStopUseCase
+import cl.emilym.sinatra.e
+import io.github.aakira.napier.Napier
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -34,6 +37,7 @@ class KoinUpcomingVehiclesWidgetReceiverHelper: KoinGlanceAppWidgetReceiverCompo
 
     override val glanceAppWidget: GlanceAppWidget = UpcomingVehiclesWidget()
     private val upcomingRoutesForStopUseCase by inject<UpcomingRoutesForStopUseCase>()
+    private val upcomingVehiclesWidgetRepository by inject<UpcomingVehiclesWidgetRepository>()
 
     override fun onUpdate(
         context: Context,
@@ -46,34 +50,56 @@ class KoinUpcomingVehiclesWidgetReceiverHelper: KoinGlanceAppWidgetReceiverCompo
         }
     }
 
-    private suspend fun upcoming(): UpcomingVehicleState {
-        val upcoming = withContext(Dispatchers.IO) {
-            upcomingRoutesForStopUseCase(
-                "8126",
-                "ACTO001",
-                "Alinga St",
-                number = 2,
-                forceNotLive = true
-            ).first()
+    override fun onDeleted(context: Context, appWidgetIds: IntArray) {
+        super.onDeleted(context, appWidgetIds)
+        coroutineScope.launch {
+            withContext(Dispatchers.IO) {
+                for (appWidgetId in appWidgetIds) {
+                    try {
+                        upcomingVehiclesWidgetRepository.delete(appWidgetId)
+                    } catch (e: Exception) {
+                        Napier.e(e)
+                    }
+                }
+            }
         }
+    }
 
-        return UpcomingVehicleState.newBuilder()
-            .setHasUpcoming(upcoming.item.isNotEmpty())
-            .setType(UpcomingType.UPCOMING_TYPE_STOP_ROUTE_HEADING)
-            .addAllTimes(upcoming.item.map { it.toProto() })
-            .build()
+    private suspend fun upcoming(appWidgetId: Int): UpcomingVehicleState {
+        val out = UpcomingVehicleState.newBuilder()
+
+        try {
+            val configuration = withContext(Dispatchers.IO) {
+                upcomingVehiclesWidgetRepository.get(appWidgetId)
+            } ?: return out.setIsConfigured(false).build()
+
+            val upcoming = withContext(Dispatchers.IO) {
+                upcomingRoutesForStopUseCase(
+                    configuration.stopId,
+                    configuration.routeId,
+                    configuration.heading,
+                    number = 2,
+                    forceNotLive = true
+                ).first()
+            }
+
+            out.setHasUpcoming(upcoming.item.isNotEmpty())
+                .setType(UpcomingType.UPCOMING_TYPE_STOP_ROUTE_HEADING)
+                .addAllTimes(upcoming.item.map { it.toProto() })
+
+            return out.build()
+        } catch (e: Exception) {
+            Napier.e(e)
+            return out
+                .setErrorMessage(e.message)
+                .build()
+        }
     }
 
     private fun update(context: Context, appWidgetId: Int) {
         coroutineScope.launch {
             val id = GlanceAppWidgetManager(context).getGlanceIdBy(appWidgetId)
-            val upcoming = try {
-                upcoming()
-            } catch (e: Exception) {
-                UpcomingVehicleState.newBuilder()
-                    .setErrorMessage(e.message)
-                    .build()
-            }
+            val upcoming = upcoming(appWidgetId)
 
             updateAppWidgetState(context, UpcomingVehicleWidgetState, id) { prefs ->
                 upcoming

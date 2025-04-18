@@ -2,9 +2,10 @@ package cl.emilym.sinatra.android.widget.data.repository
 
 import cl.emilym.sinatra.android.widget.data.models.UpcomingVehiclesWidgetConfiguration
 import cl.emilym.sinatra.android.widget.data.persistence.UpcomingVehiclesWidgetPersistence
-import cl.emilym.sinatra.android.widget.data.room.entities.UpcomingVehiclesWidgetConfigurationEntity
+import org.koin.core.annotation.Factory
 
-class UpcomingVehicleWidgetRepository(
+@Factory
+class UpcomingVehiclesWidgetRepository(
     private val upcomingVehiclesWidgetPersistence: UpcomingVehiclesWidgetPersistence
 ) {
 
@@ -12,9 +13,12 @@ class UpcomingVehicleWidgetRepository(
         upcomingVehiclesWidgetPersistence.save(config)
     }
 
-    suspend fun get(appWidgetId: Int): UpcomingVehiclesWidgetConfiguration {
-        return upcomingVehiclesWidgetPersistence.get(appWidgetId) ?:
-                throw Exception("Unable to find configuration for widget")
+    suspend fun get(appWidgetId: Int): UpcomingVehiclesWidgetConfiguration? {
+        return upcomingVehiclesWidgetPersistence.get(appWidgetId)
+    }
+
+    suspend fun delete(appWidgetId: Int) {
+        upcomingVehiclesWidgetPersistence.delete(appWidgetId)
     }
 
 }

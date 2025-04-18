@@ -6,4 +6,5 @@
     <string name="upcoming_vehicle_widget_no_upcoming">There are no routes scheduled for the rest of today.</string>
     <string name="upcoming_vehicle_widget_retry">Retry</string>
     <string name="upcoming_vehicle_widget_something_went_wrong">Something went wrong</string>
+    <string name="upcoming_vehicle_widget_needs_config">Configure this widget to see upcoming routes</string>
 </resources>

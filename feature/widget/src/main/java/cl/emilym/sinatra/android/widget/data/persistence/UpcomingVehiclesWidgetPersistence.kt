@@ -22,4 +22,8 @@ class UpcomingVehiclesWidgetPersistence(
         )?.toModel()
     }
 
+    suspend fun delete(appWidgetId: Int) {
+        upcomingVehiclesWidgetConfigurationDao.delete(appWidgetId)
+    }
+
 }

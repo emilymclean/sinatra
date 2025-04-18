@@ -8,6 +8,7 @@ message UpcomingVehicleState {
   UpcomingType type = 3;
   repeated UpcomingVehicleStopTime times = 2;
   string errorMessage = 4;
+  bool isConfigured = 5;
 }
 
 enum UpcomingType {
