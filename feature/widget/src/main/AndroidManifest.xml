@@ -4,7 +4,13 @@
     <application>
         <activity
             android:name=".upcoming.UpcomingVehiclesConfigurationActivity"
-            android:exported="true" />
+            android:exported="true">
+
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE"/>
+            </intent-filter>
+
+        </activity>
 
         <receiver
             android:name=".upcoming.UpcomingVehiclesWidgetReceiver"
