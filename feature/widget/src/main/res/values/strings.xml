@@ -7,4 +7,8 @@
     <string name="upcoming_vehicle_widget_retry">Retry</string>
     <string name="upcoming_vehicle_widget_something_went_wrong">Something went wrong</string>
     <string name="upcoming_vehicle_widget_needs_config">Configure this widget to see upcoming routes</string>
+
+    <string name="upcoming_vehicle_configuration_invalid_widget">Widget not found.</string>
+    <string name="upcoming_vehicle_configuration_stop_title">Stop:</string>
+    <string name="upcoming_vehicle_configuration_stop_placeholder">Select a stop.</string>
 </resources>

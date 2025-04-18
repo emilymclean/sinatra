@@ -52,6 +52,7 @@ dependencies {
 
     // Misc
     implementation(libs.emily.units)
+    implementation(libs.emily.requeststate)
     implementation(libs.datastore)
     implementation(libs.protobuf.javalite)
 

@@ -35,6 +35,9 @@ interface SearchScreenViewModel {
 @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
 fun <T> SearchScreenViewModel.searchHandler(
     routeStopSearchUseCase: RouteStopSearchUseCase,
+    routeEnabled: Boolean = true,
+    stopEnabled: Boolean = true,
+    placeEnabled: Boolean = true,
     toState: (RequestState<List<SearchResult>>) -> T
 ): Flow<T> {
     return flow {
@@ -48,7 +51,12 @@ fun <T> SearchScreenViewModel.searchHandler(
                             when (query) {
                                 null, "" -> flowOf(toState(RequestState.Initial()))
                                 else -> handleFlow {
-                                    routeStopSearchUseCase(query)
+                                    routeStopSearchUseCase(
+                                        query,
+                                        routeEnabled = routeEnabled,
+                                        stopEnabled = stopEnabled,
+                                        placeEnabled = placeEnabled,
+                                    )
                                 }.map { toState(it) }
                             }
                         }
