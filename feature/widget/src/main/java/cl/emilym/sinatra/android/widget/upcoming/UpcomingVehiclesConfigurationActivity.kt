@@ -368,9 +368,8 @@ class UpcomingVehiclesConfigurationActivity: ComposeActivity() {
                 SinatraFakeTextField(
                     stop?.name,
                     placeholder = stringResource(R.string.upcoming_vehicle_configuration_stop_placeholder),
-                    modifier = Modifier.fillMaxWidth().clickable {
-                        viewModel.openSearch()
-                    }
+                    onClick = { viewModel.openSearch() },
+                    modifier = Modifier.fillMaxWidth()
                 )
             }
             Spacer(Modifier.weight(1f))

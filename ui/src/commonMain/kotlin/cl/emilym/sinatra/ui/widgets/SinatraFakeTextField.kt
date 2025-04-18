@@ -1,6 +1,7 @@
 package cl.emilym.sinatra.ui.widgets
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
@@ -17,6 +18,7 @@ fun SinatraFakeTextField(
     value: String?,
     modifier: Modifier = Modifier,
     placeholder: String? = null,
+    onClick: (() -> Unit)? = null,
     leadingIcon: @Composable (() -> Unit)? = null,
     trailingIcon: @Composable (() -> Unit)? = null,
 ) {
@@ -24,6 +26,13 @@ fun SinatraFakeTextField(
         Modifier
             .clip(MaterialTheme.shapes.large)
             .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+            .then(
+                if (onClick != null) {
+                    Modifier.clickable { onClick() }
+                } else {
+                    Modifier
+                }
+            )
             .padding(16.dp)
             .then(modifier),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
