@@ -6,6 +6,7 @@ import cl.emilym.gtfs.RouteEndpoint
 import cl.emilym.gtfs.RouteServicesEndpoint
 import cl.emilym.gtfs.RouteTimetableEndpoint
 import cl.emilym.gtfs.RouteTripTimetableEndpoint
+import cl.emilym.gtfs.ServiceAlertEndpoint
 import cl.emilym.gtfs.ServiceEndpoint
 import cl.emilym.gtfs.StopDetailEndpoint
 import cl.emilym.gtfs.StopEndpoint
@@ -56,6 +57,7 @@ fun ktorDependency(
     install(ContentNegotiation) {
         json(Json {
             ignoreUnknownKeys = true
+            isLenient = true
         })
     }
 }.apply {
@@ -78,7 +80,8 @@ fun protobufResponseConverterFactory(): ProtobufResponseConverterFactory {
             RouteCanonicalTimetableEndpoint::class to RouteCanonicalTimetableEndpoint::decodeFromByteArray,
             RouteTripTimetableEndpoint::class to RouteTripTimetableEndpoint::decodeFromByteArray,
             Pages::class to Pages::decodeFromByteArray,
-            FeedMessage::class to FeedMessage::decodeFromByteArray
+            FeedMessage::class to FeedMessage::decodeFromByteArray,
+            ServiceAlertEndpoint::class to ServiceAlertEndpoint::decodeFromByteArray
         )
     )
 }

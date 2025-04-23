@@ -10,6 +10,7 @@
 
 <div align="center">
 
+![Version](https://img.shields.io/github/v/release/emilymclean/sinatra)
 [![Build App](https://github.com/emilymclean/sinatra/actions/workflows/build.yml/badge.svg)](https://github.com/emilymclean/sinatra/actions/workflows/build.yml)
 [![Unit Test](https://github.com/emilymclean/sinatra/actions/workflows/test.yml/badge.svg)](https://github.com/emilymclean/sinatra/actions/workflows/test.yml)
 [![Lint](https://github.com/emilymclean/sinatra/actions/workflows/lint.yml/badge.svg)](https://github.com/emilymclean/sinatra/actions/workflows/lint.yml)

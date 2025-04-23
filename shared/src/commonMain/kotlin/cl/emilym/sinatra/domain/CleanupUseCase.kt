@@ -1,6 +1,7 @@
 package cl.emilym.sinatra.domain
 
 import cl.emilym.sinatra.data.repository.RouteRepository
+import cl.emilym.sinatra.data.repository.ServiceAlertRepository
 import cl.emilym.sinatra.data.repository.ServiceRepository
 import cl.emilym.sinatra.data.repository.StopRepository
 import kotlinx.coroutines.Dispatchers
@@ -12,7 +13,8 @@ import org.koin.core.annotation.Factory
 class CleanupUseCase(
     private val stopRepository: StopRepository,
     private val serviceRepository: ServiceRepository,
-    private val routeRepository: RouteRepository
+    private val routeRepository: RouteRepository,
+    private val serviceAlertRepository: ServiceAlertRepository
 ) {
 
     suspend operator fun invoke() {
@@ -20,6 +22,7 @@ class CleanupUseCase(
             stopRepository.cleanup()
             serviceRepository.cleanup()
             routeRepository.cleanup()
+            serviceAlertRepository.cleanup()
         }
     }
 

@@ -1,5 +1,6 @@
 package cl.emilym.sinatra.ui.presentation.screens
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -44,7 +45,10 @@ import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberMarkerState
 
 @Composable
-actual fun Map(mapControl: MapControl) {
+actual fun Map(
+    mapControl: MapControl,
+    modifier: Modifier
+) {
     val context = LocalContext.current
 
     val cameraPositionState = rememberCameraPositionState {
@@ -76,37 +80,39 @@ actual fun Map(mapControl: MapControl) {
         (mapControl as? SafeMapControl)?.wrapped = realMapControl
     }
 
-    GoogleMap(
-        modifier = Modifier.fillMaxSize(),
-        cameraPositionState = cameraPositionState,
-        googleMapOptionsFactory = {
-            GoogleMapOptions()
-        },
-        properties = MapProperties(
-            mapStyleOptions = MapStyleOptions.loadRawResourceStyle(context, R.raw.maps_style)
-        ),
-        uiSettings = MapUiSettings(
-            compassEnabled = false,
-            rotationGesturesEnabled = false,
-            myLocationButtonEnabled = false,
-            zoomControlsEnabled = false
-        ),
-        contentPadding = insets,
-        mapColorScheme = ComposeMapColorScheme.FOLLOW_SYSTEM
-    ) {
-        currentLocation?.let { DrawMarker(MarkerItem(it, currentLocationIcon)) }
+    Box(Modifier.then(modifier)) {
+        GoogleMap(
+            modifier = Modifier.fillMaxSize(),
+            cameraPositionState = cameraPositionState,
+            googleMapOptionsFactory = {
+                GoogleMapOptions()
+            },
+            properties = MapProperties(
+                mapStyleOptions = MapStyleOptions.loadRawResourceStyle(context, R.raw.maps_style)
+            ),
+            uiSettings = MapUiSettings(
+                compassEnabled = false,
+                rotationGesturesEnabled = false,
+                myLocationButtonEnabled = false,
+                zoomControlsEnabled = false
+            ),
+            contentPadding = insets,
+            mapColorScheme = ComposeMapColorScheme.FOLLOW_SYSTEM
+        ) {
+            currentLocation?.let { DrawMarker(MarkerItem(it, currentLocationIcon)) }
 
-        currentMapItems { items ->
-            for (item in items) {
-                when (item) {
-                    is MarkerItem -> DrawMarker(item)
-                    is LineItem -> DrawLine(item)
-                    else -> {}
+            currentMapItems { items ->
+                for (item in items) {
+                    when (item) {
+                        is MarkerItem -> DrawMarker(item)
+                        is LineItem -> DrawLine(item)
+                        else -> {}
+                    }
                 }
             }
-        }
 
-        nativeMapScope.currentDrawNativeMap()
+            nativeMapScope.currentDrawNativeMap()
+        }
     }
 }
 

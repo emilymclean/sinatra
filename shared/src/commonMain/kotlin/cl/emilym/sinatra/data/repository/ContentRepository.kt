@@ -18,6 +18,7 @@ class ContentRepository(
 
     companion object {
         const val ABOUT_ID = "about"
+        const val SERVICE_ALERT_ID = "service-alerts"
         const val HOME_BANNER_ID = "home"
     }
 

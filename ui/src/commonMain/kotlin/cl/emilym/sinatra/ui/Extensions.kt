@@ -22,13 +22,23 @@ import cl.emilym.sinatra.data.models.OnColor.DARK
 import cl.emilym.sinatra.data.models.OnColor.LIGHT
 import cl.emilym.sinatra.data.models.Route
 import cl.emilym.sinatra.data.models.TimetableStationTime
+import cl.emilym.sinatra.ui.localization.LocalClock
+import cl.emilym.sinatra.ui.localization.LocalLocalTimeZone
+import cl.emilym.sinatra.ui.localization.dateFormat
+import cl.emilym.sinatra.ui.localization.format
 import cl.emilym.sinatra.ui.localization.toTodayInstant
 import kotlinx.datetime.Instant
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.format
+import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.pluralStringResource
+import org.jetbrains.compose.resources.stringResource
 import sinatra.ui.generated.resources.Res
 import sinatra.ui.generated.resources.distance_kilometer
 import sinatra.ui.generated.resources.distance_meter
+import sinatra.ui.generated.resources.time_ago
+import sinatra.ui.generated.resources.time_day
 import sinatra.ui.generated.resources.time_hour
 import sinatra.ui.generated.resources.time_minute
 import sinatra.ui.generated.resources.time_minute_short
@@ -36,6 +46,7 @@ import sinatra.ui.generated.resources.time_second
 import sinatra.ui.generated.resources.time_second_short
 import kotlin.math.roundToInt
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.days
 
 fun String.toColor(): Color {
     val trimmed = removePrefix("#")
@@ -127,7 +138,28 @@ fun Duration.text(short: Boolean): String {
     return when {
         duration.inWholeSeconds < 60 -> pluralStringResource(if (short) Res.plurals.time_second_short else Res.plurals.time_second, inWholeSeconds.toInt(), inWholeSeconds)
         duration.inWholeMinutes < 60 -> pluralStringResource(if (short) Res.plurals.time_minute_short else Res.plurals.time_minute, inWholeMinutes.toInt(), inWholeMinutes)
-        else -> pluralStringResource(Res.plurals.time_hour, inWholeHours.toInt(), inWholeHours)
+        duration.inWholeHours < 24 -> pluralStringResource(Res.plurals.time_hour, inWholeHours.toInt(), inWholeHours)
+        else -> pluralStringResource(Res.plurals.time_day, inWholeDays.toInt(), inWholeDays)
+    }
+}
+
+@Composable
+fun Instant.asDurationFromNow(limit: Duration = 28.days): String {
+    val now = LocalClock.current.now()
+    val tz = LocalLocalTimeZone.current
+    val duration = this - now
+    val dateFormat = dateFormat
+
+    return if (duration > limit || -duration > limit) {
+        toLocalDateTime(tz).format(LocalDateTime.Format {
+            date(dateFormat)
+        })
+    } else {
+        if (duration.isNegative()) {
+            stringResource(Res.string.time_ago, (-duration).text)
+        } else {
+            duration.text
+        }
     }
 }
 

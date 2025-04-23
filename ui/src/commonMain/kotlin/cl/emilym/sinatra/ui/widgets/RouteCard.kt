@@ -22,6 +22,9 @@ import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.data.models.Route
 import cl.emilym.sinatra.ui.color
 import cl.emilym.sinatra.ui.onColor
+import org.jetbrains.compose.resources.stringResource
+import sinatra.ui.generated.resources.Res
+import sinatra.ui.generated.resources.semantics_route_listing
 
 val routeRandleSize
     @Composable
@@ -64,11 +67,12 @@ fun RouteCard(
     modifier: Modifier = Modifier,
     onClick: (() -> Unit)? = null
 ) {
+    val routeListingSemantics = stringResource(Res.string.semantics_route_listing, route.displayCode)
     ListCard(
         { RouteRandle(route) },
         Modifier
             .semantics {
-                contentDescription = "Route listing for ${route.displayCode}"
+                contentDescription = routeListingSemantics
             }
             .then(modifier),
         onClick
