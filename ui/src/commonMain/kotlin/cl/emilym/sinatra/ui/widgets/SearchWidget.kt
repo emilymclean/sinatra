@@ -27,7 +27,9 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.koinScreenModel
 import cl.emilym.compose.requeststate.RequestState
 import cl.emilym.compose.requeststate.RequestStateWidget
+import cl.emilym.compose.requeststate.flatRequestStateFlow
 import cl.emilym.compose.requeststate.handle
+import cl.emilym.compose.requeststate.requestStateFlow
 import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.FeatureFlags
 import cl.emilym.sinatra.data.models.MapLocation
@@ -41,6 +43,7 @@ import cl.emilym.sinatra.data.repository.StopRepository
 import cl.emilym.sinatra.domain.NearbyStopsUseCase
 import cl.emilym.sinatra.domain.search.RouteStopSearchUseCase
 import cl.emilym.sinatra.domain.search.SearchResult
+import cl.emilym.sinatra.domain.search.SearchType
 import cl.emilym.sinatra.nullIfEmpty
 import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
 import cl.emilym.sinatra.ui.presentation.screens.search.SearchScreen
@@ -48,6 +51,7 @@ import cl.emilym.sinatra.ui.presentation.screens.search.SearchScreenViewModel
 import cl.emilym.sinatra.ui.presentation.screens.search.searchHandler
 import cl.emilym.sinatra.ui.text
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.mapLatest
@@ -69,54 +73,82 @@ internal class DefaultSearchScreenViewModel(
     private val stopRepository: StopRepository
 ): SinatraScreenModel, SearchScreenViewModel {
 
-    private val lastLocation = MutableStateFlow<MapLocation?>(null)
-    val stops = MutableStateFlow<RequestState<List<Stop>>>(RequestState.Initial())
+    val lastLocation = MutableStateFlow<MapLocation?>(null)
+    private val stops = requestStateFlow { stopRepository.stops() }
 
     override val query = MutableStateFlow<String?>(null)
-    override val results = query.flatMapLatest {
-        searchHandler(routeStopSearchUseCase) { it }
+    private val searchTypes = MutableStateFlow<List<SearchType>>(listOf())
+    override val results = combine(
+        query, searchTypes
+    ) { it, it1 -> it to it1 }.flatMapLatest {
+        searchHandler(routeStopSearchUseCase, it.second) { it }
     }.state(RequestState.Initial())
+
     override val nearbyStops = stops.combine(lastLocation) { stops, lastLocation ->
         if (stops !is RequestState.Success || lastLocation == null) return@combine null
-        val stops = stops.value.nullIfEmpty() ?: return@combine null
+        val stops = stops.value.item.nullIfEmpty() ?: return@combine null
         with(nearbyStopsUseCase) { stops.filter(lastLocation).nullIfEmpty() }
     }.state(null)
-    private val _recentVisits = createRequestStateFlowFlow<List<RecentVisit>>()
-    override val recentVisits = _recentVisits.presentable()
 
-    init {
-        retry()
+    private val _recentVisits = searchTypes.flatRequestStateFlow {
+        recentVisitRepository.all(it.mapNotNull { it.toRecentVisitType() })
     }
+    override val recentVisits = _recentVisits.state(RequestState.Initial())
 
     fun retry() {
         screenModelScope.launch {
-            stops.handle {
-                stopRepository.stops().item
-            }
+            stops.retry()
         }
         screenModelScope.launch {
-            _recentVisits.handleFlowProperly {
-                recentVisitRepository.all()
-            }
+            _recentVisits.retry()
         }
+    }
+
+    fun setSearchTypes(searchType: List<SearchType>) {
+        searchTypes.value = searchType
     }
 
 }
 
 @Composable
 fun Screen.SearchWidget(
+    searchTypes: List<SearchType> = listOf(),
     onBackPressed: () -> Unit,
     onStopPressed: (Stop) -> Unit,
     onRoutePressed: (Route) -> Unit,
     onPlacePressed: (Place) -> Unit,
     extraPlaceholderContent: LazyListScope.() -> Unit = {}
 ) {
+    val viewModel = koinScreenModel<DefaultSearchScreenViewModel>()
+
+    LaunchedEffect(searchTypes) {
+        viewModel.setSearchTypes(searchTypes)
+    }
+
+    val currentLocation = currentLocation()
+    LaunchedEffect(currentLocation) {
+        currentLocation?.let { viewModel.lastLocation.value = it }
+    }
+
     SearchScreen(
-        koinScreenModel<DefaultSearchScreenViewModel>(),
-        onBackPressed,
-        onStopPressed,
-        onRoutePressed,
-        onPlacePressed,
+        viewModel,
+        searchTypes,
+        {
+            viewModel.search("")
+            onBackPressed()
+        },
+        {
+            viewModel.search("")
+            onStopPressed(it)
+        },
+        {
+            viewModel.search("")
+            onRoutePressed(it)
+        },
+        {
+            viewModel.search("")
+            onPlacePressed(it)
+        },
         extraPlaceholderContent
     )
 }
@@ -126,6 +158,7 @@ fun LazyListScope.BaseSearchWidget(
     results: RequestState<List<SearchResult>>,
     nearbyStops: List<StopWithDistance>?,
     recentlyViewed: RequestState<List<RecentVisit>>,
+    searchTypes: List<SearchType>,
     onSearch: (String) -> Unit,
     onBackPressed: () -> Unit,
     onStopPressed: (Stop) -> Unit,
@@ -172,6 +205,7 @@ fun LazyListScope.BaseSearchWidget(
             extraPlaceholderContent()
             nearbyStops?.nullIfEmpty()?.let { nearbyStops ->
                 if (!FeatureFlags.MAP_SEARCH_SCREEN_NEARBY_STOPS_SEARCH) return@let
+                if (searchTypes.isNotEmpty() && !searchTypes.contains(SearchType.STOP)) return@let
                 item {
                     Subheading(stringResource(Res.string.map_search_nearby_stops))
                 }

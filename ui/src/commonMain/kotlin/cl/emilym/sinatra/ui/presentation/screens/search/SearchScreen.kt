@@ -31,6 +31,7 @@ import cl.emilym.sinatra.data.models.RecentVisit
 import cl.emilym.sinatra.data.models.Route
 import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.domain.search.SearchResult
+import cl.emilym.sinatra.domain.search.SearchType
 import cl.emilym.sinatra.nullIfEmpty
 import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
 import cl.emilym.sinatra.ui.text
@@ -59,6 +60,7 @@ import sinatra.ui.generated.resources.stop_detail_distance
 @Composable
 fun SearchScreen(
     viewModel: SearchScreenViewModel,
+    searchTypes: List<SearchType> = listOf(),
     onBackPressed: () -> Unit,
     onStopPressed: (Stop) -> Unit,
     onRoutePressed: (Route) -> Unit,
@@ -90,6 +92,7 @@ fun SearchScreen(
                 results,
                 nearbyStops,
                 recentlyViewed,
+                searchTypes,
                 onSearch = { viewModel.search(it) },
                 onBackPressed,
                 onStopPressed,

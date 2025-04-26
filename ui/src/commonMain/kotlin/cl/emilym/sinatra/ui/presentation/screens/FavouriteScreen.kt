@@ -45,6 +45,7 @@ import cl.emilym.sinatra.data.models.Favourite
 import cl.emilym.sinatra.data.models.SpecialFavouriteType
 import cl.emilym.sinatra.data.models.specialType
 import cl.emilym.sinatra.data.repository.FavouriteRepository
+import cl.emilym.sinatra.domain.search.SearchType
 import cl.emilym.sinatra.ui.label
 import cl.emilym.sinatra.ui.placeCardDefaultNavigation
 import cl.emilym.sinatra.ui.presentation.screens.maps.RouteDetailScreen
@@ -53,11 +54,14 @@ import cl.emilym.sinatra.ui.widgets.HomeIcon
 import cl.emilym.sinatra.ui.widgets.ListHint
 import cl.emilym.sinatra.ui.widgets.PlaceCard
 import cl.emilym.sinatra.ui.widgets.RouteCard
+import cl.emilym.sinatra.ui.widgets.SearchWidget
 import cl.emilym.sinatra.ui.widgets.SinatraScreenModel
 import cl.emilym.sinatra.ui.widgets.StarOutlineIcon
 import cl.emilym.sinatra.ui.widgets.StopCard
 import cl.emilym.sinatra.ui.widgets.WorkIcon
 import cl.emilym.sinatra.ui.widgets.collectAsStateWithLifecycle
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
@@ -67,6 +71,13 @@ import sinatra.ui.generated.resources.favourites_no_home
 import sinatra.ui.generated.resources.favourites_no_work
 import sinatra.ui.generated.resources.favourites_nothing_favourited
 import sinatra.ui.generated.resources.navigation_bar_favourites
+
+sealed interface FavouriteState {
+    data object Favourite: FavouriteState
+    data class Search(
+        val type: SpecialFavouriteType
+    ): FavouriteState
+}
 
 data class SpecialFavourite(
     val type: SpecialFavouriteType,
@@ -78,9 +89,8 @@ class FavouriteViewModel(
     private val favouriteRepository: FavouriteRepository
 ): SinatraScreenModel {
 
-    private val allFavourites = flatRequestStateFlow {
-        favouriteRepository.all()
-    }
+    private val allFavourites = flatRequestStateFlow { favouriteRepository.all() }
+    val state = MutableStateFlow<FavouriteState>(FavouriteState.Favourite)
 
     val anyFavourites = allFavourites.mapLatest {
         it.unwrap()?.isNotEmpty() ?: true
@@ -111,6 +121,14 @@ class FavouriteViewModel(
         }
     }
 
+    fun openSearch(type: SpecialFavouriteType) {
+        state.value = FavouriteState.Search(type)
+    }
+
+    fun closeSearch() {
+        state.value = FavouriteState.Favourite
+    }
+
 }
 
 class FavouriteScreen: Screen {
@@ -119,6 +137,24 @@ class FavouriteScreen: Screen {
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     override fun Content() {
+        val viewModel = koinScreenModel<FavouriteViewModel>()
+        val state by viewModel.state.collectAsStateWithLifecycle()
+
+        when (state) {
+            is FavouriteState.Favourite -> FavouriteContent()
+            is FavouriteState.Search -> SearchWidget(
+                listOf(SearchType.STOP, SearchType.PLACE),
+                onBackPressed = { viewModel.closeSearch() },
+                onStopPressed = {},
+                onPlacePressed = {},
+                onRoutePressed = {}
+            )
+        }
+    }
+
+    @OptIn(ExperimentalMaterial3Api::class)
+    @Composable
+    private fun FavouriteContent() {
         val viewModel = koinScreenModel<FavouriteViewModel>()
         val navigator = LocalNavigator.currentOrThrow
 
@@ -150,7 +186,9 @@ class FavouriteScreen: Screen {
                                 items(specials) {
                                     SpecialFavouriteWidget(
                                         it,
-                                        {},
+                                        {
+                                            viewModel.openSearch(it.type)
+                                        },
                                     )
                                 }
                             }

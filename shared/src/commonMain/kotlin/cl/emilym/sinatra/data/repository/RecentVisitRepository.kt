@@ -2,6 +2,7 @@ package cl.emilym.sinatra.data.repository
 
 import cl.emilym.sinatra.data.models.PlaceId
 import cl.emilym.sinatra.data.models.RecentVisit
+import cl.emilym.sinatra.data.models.RecentVisitType
 import cl.emilym.sinatra.data.models.RouteId
 import cl.emilym.sinatra.data.models.StopId
 import cl.emilym.sinatra.data.persistence.RecentVisitPersistence
@@ -17,11 +18,18 @@ class RecentVisitRepository(
     private val recentVisitPersistence: RecentVisitPersistence,
 ) {
 
-    fun all(): Flow<List<RecentVisit>> {
+    fun all(
+        type: List<RecentVisitType> = listOf()
+    ): Flow<List<RecentVisit>> {
+        val type = when {
+            type.isEmpty() -> listOf(RecentVisitType.STOP, RecentVisitType.ROUTE, RecentVisitType.PLACE)
+            else -> type
+        }
+
         return flow {
-            stopRepository.stops()
-            routeRepository.routes()
-            emitAll(recentVisitPersistence.all())
+            if (type.contains(RecentVisitType.STOP)) stopRepository.stops()
+            if (type.contains(RecentVisitType.ROUTE)) routeRepository.routes()
+            emitAll(recentVisitPersistence.all(type))
         }
     }
 

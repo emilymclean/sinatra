@@ -275,6 +275,7 @@ class NavigateEntryScreen(
         Box(Modifier.fillMaxSize()) {
             SearchScreen(
                 viewModel,
+                listOf(),
                 { viewModel.openJourneyCalculation() },
                 { viewModel.onSearchItemClicked(NavigationLocation.Stop(it)) },
                 {},

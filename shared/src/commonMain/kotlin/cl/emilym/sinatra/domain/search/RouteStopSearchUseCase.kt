@@ -1,6 +1,7 @@
 package cl.emilym.sinatra.domain.search
 
 import cl.emilym.sinatra.data.models.Place
+import cl.emilym.sinatra.data.models.RecentVisitType
 import cl.emilym.sinatra.data.models.Route
 import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.e
@@ -14,6 +15,18 @@ import kotlinx.coroutines.withContext
 import org.koin.core.annotation.Factory
 import kotlin.math.max
 
+enum class SearchType {
+    STOP, PLACE, ROUTE;
+
+    fun toRecentVisitType(): RecentVisitType? {
+        return when (this) {
+            STOP -> RecentVisitType.STOP
+            PLACE -> RecentVisitType.PLACE
+            ROUTE -> RecentVisitType.ROUTE
+        }
+    }
+}
+
 sealed interface SearchResult {
     data class RouteResult(val route: Route): SearchResult
     data class StopResult(val stop: Stop): SearchResult
@@ -22,15 +35,25 @@ sealed interface SearchResult {
 
 @Factory
 class RouteStopSearchUseCase(
-    routeTypeSearcher: RouteTypeSearcher,
-    stopTypeSearcher: StopTypeSearcher,
-    placeTypeSearcher: PlaceTypeSearcher,
+    private val routeTypeSearcher: RouteTypeSearcher,
+    private val stopTypeSearcher: StopTypeSearcher,
+    private val  placeTypeSearcher: PlaceTypeSearcher,
     private val tokenizer: Tokenizer
 ) {
 
-    private val searchers = listOf(routeTypeSearcher, stopTypeSearcher, placeTypeSearcher)
+    suspend operator fun invoke(
+        query: String,
+        filters: List<SearchType> = listOf()
+    ): List<SearchResult> {
+        val searchers = when {
+            filters.isEmpty() -> listOf(routeTypeSearcher, stopTypeSearcher, placeTypeSearcher)
+            else -> listOfNotNull(
+                if (filters.contains(SearchType.ROUTE)) routeTypeSearcher else null,
+                if (filters.contains(SearchType.STOP)) stopTypeSearcher else null,
+                if (filters.contains(SearchType.PLACE)) placeTypeSearcher else null,
+            )
+        }
 
-    suspend operator fun invoke(query: String): List<SearchResult> {
         val tokens = tokenizer.tokenize(query)
         val results = withContext(Dispatchers.IO) {
             val out = mutableListOf<RankableResult<*>>()

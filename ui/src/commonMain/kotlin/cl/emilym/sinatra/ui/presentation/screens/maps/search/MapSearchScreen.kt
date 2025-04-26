@@ -133,6 +133,7 @@ class MapSearchScreen: MapScreen, NativeMapScreen {
                 )
                 is MapSearchState.Search -> SearchScreen(
                     viewModel,
+                    listOf(),
                     { viewModel.openBrowse() },
                     { navigator.push(StopDetailScreen(it.id)) },
                     { navigator.push(RouteDetailScreen(it.id)) },
