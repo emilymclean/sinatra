@@ -40,8 +40,8 @@ interface FavouriteDao {
     @Query("SELECT * FROM favouriteEntity WHERE type = \"STOP\" AND stopId = :stopId")
     fun getStop(stopId: String): Flow<FavouriteEntity?>
 
-    @Query("SELECT * FROM favouriteEntity WHERE type = \"STOP_ON_ROUTE\" AND routeId = :routeId AND stopId = :stopId")
-    fun getStopOnRoute(stopId: String, routeId: String): Flow<FavouriteEntity?>
+    @Query("SELECT * FROM favouriteEntity WHERE type = \"STOP_ON_ROUTE\" AND routeId = :routeId AND stopId = :stopId AND heading = :heading")
+    fun getStopOnRoute(stopId: String, routeId: String, heading: String?): Flow<FavouriteEntity?>
 
     @Query("SELECT * FROM favouriteEntity WHERE type = \"PLACE\" AND placeId = :placeId")
     fun getPlace(placeId: String): Flow<FavouriteEntity?>

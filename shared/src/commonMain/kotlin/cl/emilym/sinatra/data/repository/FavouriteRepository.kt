@@ -4,6 +4,7 @@ import cl.emilym.sinatra.data.models.Favourite
 import cl.emilym.sinatra.data.models.PlaceId
 import cl.emilym.sinatra.data.models.RouteId
 import cl.emilym.sinatra.data.models.StopId
+import cl.emilym.sinatra.data.models.StopSpecialType
 import cl.emilym.sinatra.data.persistence.FavouritePersistence
 import cl.emilym.sinatra.data.persistence.FavouriteType
 import kotlinx.coroutines.flow.Flow
@@ -44,9 +45,13 @@ class FavouriteRepository(
         )
     }
 
-    suspend fun setStopFavourite(stopId: StopId, favourited: Boolean) {
+    suspend fun setStopFavourite(
+        stopId: StopId,
+        favourited: Boolean,
+        stopSpecialType: StopSpecialType? = null,
+    ) {
         when (favourited) {
-            true -> favouritePersistence.add(FavouriteType.STOP, stopId = stopId)
+            true -> favouritePersistence.add(FavouriteType.STOP, stopId = stopId, extra = stopSpecialType?.name)
             false -> favouritePersistence.remove(FavouriteType.STOP, stopId = stopId)
         }
     }

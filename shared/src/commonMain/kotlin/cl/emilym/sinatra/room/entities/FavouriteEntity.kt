@@ -1,5 +1,6 @@
 package cl.emilym.sinatra.room.entities
 
+import androidx.room.ColumnInfo
 import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.PrimaryKey
@@ -12,6 +13,12 @@ data class FavouriteEntity(
     val routeId: String?,
     val stopId: String?,
     val placeId: String?,
+    @ColumnInfo(defaultValue = "null")
+    val heading: String?,
+    @ColumnInfo(defaultValue = "null")
+    val extra: String?,
+    @ColumnInfo(defaultValue = "2147483647")
+    val order: Int
 )
 
 data class FavouriteEntityEntityWithStopAndRoute(
