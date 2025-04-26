@@ -23,7 +23,12 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import cl.emilym.compose.requeststate.RequestState
 import cl.emilym.compose.requeststate.RequestStateWidget
+import cl.emilym.compose.requeststate.flatRequestStateFlow
+import cl.emilym.compose.requeststate.map
+import cl.emilym.compose.requeststate.requestStateFlow
+import cl.emilym.compose.requeststate.unwrap
 import cl.emilym.sinatra.data.models.Favourite
+import cl.emilym.sinatra.data.models.StopSpecialType
 import cl.emilym.sinatra.data.repository.FavouriteRepository
 import cl.emilym.sinatra.ui.placeCardDefaultNavigation
 import cl.emilym.sinatra.ui.presentation.screens.maps.RouteDetailScreen
@@ -38,8 +43,10 @@ import cl.emilym.sinatra.ui.widgets.collectAsStateWithLifecycle
 import cl.emilym.sinatra.ui.widgets.createRequestStateFlowFlow
 import cl.emilym.sinatra.ui.widgets.handleFlowProperly
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
+import org.koin.core.KoinApplication.Companion.init
 import org.koin.core.annotation.Factory
 import sinatra.ui.generated.resources.Res
 import sinatra.ui.generated.resources.favourites_nothing_favourited
@@ -50,16 +57,33 @@ class FavouriteViewModel(
     private val favouriteRepository: FavouriteRepository
 ): SinatraScreenModel {
 
-    private val _favourites = createRequestStateFlowFlow<List<Favourite>>()
-    val favourites: StateFlow<RequestState<List<Favourite>>> = _favourites.presentable()
-
-    init {
-        retry()
+    private val allFavourites = flatRequestStateFlow {
+        favouriteRepository.all()
     }
+
+    val anyFavourites = allFavourites.mapLatest {
+        it.unwrap()?.isNotEmpty() ?: true
+    }.state(true)
+    val favourites = allFavourites.mapLatest {
+        it.map {
+            it.filter {
+                when (it) {
+                    is Favourite.Stop -> it.specialType == null
+                    else -> true
+                }
+            }
+        }
+    }.state(RequestState.Initial())
+    val home = allFavourites.mapLatest {
+        it.unwrap()?.filter { it is Favourite.Stop && it.specialType == StopSpecialType.HOME }
+    }.state(null)
+    val work = allFavourites.mapLatest {
+        it.unwrap()?.filter { it is Favourite.Stop && it.specialType == StopSpecialType.WORK }
+    }.state(null)
 
     fun retry() {
         screenModelScope.launch {
-            _favourites.handleFlowProperly { favouriteRepository.all() }
+            allFavourites.retry()
         }
     }
 
@@ -82,6 +106,7 @@ class FavouriteScreen: Screen {
             }
         ) { internalPadding ->
             val favourites by viewModel.favourites.collectAsStateWithLifecycle()
+            val anyFavourites by viewModel.anyFavourites.collectAsStateWithLifecycle()
             Box(
                 Modifier.fillMaxSize().padding(internalPadding),
                 contentAlignment = Alignment.Center
@@ -90,8 +115,8 @@ class FavouriteScreen: Screen {
                     favourites,
                     retry = { viewModel.retry() }
                 ) { favourites ->
-                    if (favourites.isNotEmpty()) {
-                        LazyColumn(Modifier.fillMaxSize()) {
+                    LazyColumn(Modifier.fillMaxSize()) {
+                        if (anyFavourites) {
                             items(favourites) {
                                 when (it) {
                                     is Favourite.Stop -> StopCard(
@@ -125,12 +150,14 @@ class FavouriteScreen: Screen {
                                     )
                                 }
                             }
-                        }
-                    } else {
-                        ListHint(
-                            stringResource(Res.string.favourites_nothing_favourited)
-                        ) {
-                            StarOutlineIcon(tint = MaterialTheme.colorScheme.primary)
+                        } else {
+                            item {
+                                ListHint(
+                                    stringResource(Res.string.favourites_nothing_favourited)
+                                ) {
+                                    StarOutlineIcon(tint = MaterialTheme.colorScheme.primary)
+                                }
+                            }
                         }
                     }
                 }
