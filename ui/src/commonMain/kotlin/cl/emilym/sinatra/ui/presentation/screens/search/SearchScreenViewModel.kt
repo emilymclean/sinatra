@@ -25,8 +25,6 @@ interface SearchScreenViewModel {
     val nearbyStops: StateFlow<List<StopWithDistance>?>
     val recentVisits: StateFlow<RequestState<List<RecentVisit>>>
 
-    fun retryRecentVisits()
-
     fun search(query: String) {
         this.query.value = query
     }

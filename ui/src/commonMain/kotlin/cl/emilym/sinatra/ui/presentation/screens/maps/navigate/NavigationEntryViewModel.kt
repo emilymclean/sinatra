@@ -290,7 +290,7 @@ class NavigationEntryViewModel(
         }
     }
 
-    override fun retryRecentVisits() {
+    fun retryRecentVisits() {
         screenModelScope.launch {
             _recentVisits.handleFlowProperly {
                 recentVisitRepository.all()
