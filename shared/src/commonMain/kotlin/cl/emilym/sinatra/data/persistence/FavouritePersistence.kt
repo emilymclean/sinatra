@@ -5,7 +5,12 @@ import cl.emilym.sinatra.data.models.Heading
 import cl.emilym.sinatra.data.models.PlaceId
 import cl.emilym.sinatra.data.models.RouteId
 import cl.emilym.sinatra.data.models.StopId
-import cl.emilym.sinatra.data.models.StopSpecialType
+import cl.emilym.sinatra.data.models.SpecialFavouriteType
+import cl.emilym.sinatra.data.models.heading
+import cl.emilym.sinatra.data.models.placeId
+import cl.emilym.sinatra.data.models.routeId
+import cl.emilym.sinatra.data.models.specialType
+import cl.emilym.sinatra.data.models.stopId
 import cl.emilym.sinatra.room.dao.FavouriteDao
 import cl.emilym.sinatra.room.entities.FavouriteEntity
 import kotlinx.coroutines.flow.Flow
@@ -47,7 +52,7 @@ class FavouritePersistence(
                 throw IllegalArgumentException("A stop must not specify route ID and must specify stop ID")
             FavouriteType.STOP_ON_ROUTE -> if (routeId == null || stopId == null || placeId != null || heading != null)
                 throw IllegalArgumentException("A stop on route must specify both a route ID and a stop ID")
-            FavouriteType.PLACE -> if (routeId != null || stopId != null || placeId == null || heading != null || extra != null)
+            FavouriteType.PLACE -> if (routeId != null || stopId != null || placeId == null || heading != null)
                 throw IllegalArgumentException("A place must specify a placeId and neither a route ID or a stop ID")
         }
     }
@@ -78,7 +83,7 @@ class FavouritePersistence(
     }
 
     suspend fun add(favourite: Favourite) {
-        add(FavouriteType.fromFavourite(favourite), favourite.routeId, favourite.stopId, favourite.placeId, (favourite as? Favourite.Stop)?.specialType?.name)
+        add(FavouriteType.fromFavourite(favourite), favourite.routeId, favourite.stopId, favourite.placeId, favourite.heading, favourite.specialType?.name)
     }
 
     suspend fun remove(favourite: Favourite) {
@@ -109,7 +114,7 @@ class FavouritePersistence(
                         stop.toModel(),
                         it.favourite.extra?.let {
                             try {
-                                StopSpecialType.valueOf(it)
+                                SpecialFavouriteType.valueOf(it)
                             } catch (e: IllegalArgumentException) {
                                 null
                             }
@@ -151,23 +156,6 @@ class FavouritePersistence(
         }.map {
             it != null
         }
-    }
-
-    private val Favourite.routeId: RouteId? get() = when (this) {
-        is Favourite.Route -> route.id
-        is Favourite.StopOnRoute -> route.id
-        else -> null
-    }
-
-    private val Favourite.stopId: StopId? get() = when (this) {
-        is Favourite.Stop -> stop.id
-        is Favourite.StopOnRoute -> stop.id
-        else -> null
-    }
-
-    private val Favourite.placeId: PlaceId? get() = when (this) {
-        is Favourite.Place -> place.id
-        else -> null
     }
 
 }

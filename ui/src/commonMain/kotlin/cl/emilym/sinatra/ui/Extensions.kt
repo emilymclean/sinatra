@@ -14,6 +14,7 @@ import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.unit.LayoutDirection
 import cl.emilym.compose.units.px
 import cl.emilym.sinatra.data.models.ColorPair
+import cl.emilym.sinatra.data.models.Favourite
 import cl.emilym.sinatra.data.models.IRouteTripStop
 import cl.emilym.sinatra.data.models.Kilometer
 import cl.emilym.sinatra.data.models.LocalizableString
@@ -188,3 +189,13 @@ operator fun PaddingValues.plus(other: PaddingValues): PaddingValues {
         bottom = this.calculateBottomPadding() + other.calculateBottomPadding(),
     )
 }
+
+val Favourite.label: String
+    @Composable
+    get() = when(this) {
+        is Favourite.Stop -> stop.name
+        is Favourite.Route -> route.name
+        is Favourite.Place -> place.name
+        // Todo represent this better
+        is Favourite.StopOnRoute -> stop.name
+    }
