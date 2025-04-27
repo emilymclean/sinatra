@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 6,
-    "identityHash": "c70c17ac5a44e75adc01632e194e8976",
+    "identityHash": "8c7719d69072cbca16b213a42c5c1f46",
     "entities": [
       {
         "tableName": "ShaEntity",
@@ -548,7 +548,7 @@
       },
       {
         "tableName": "FavouriteEntity",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `type` TEXT NOT NULL, `routeId` TEXT, `stopId` TEXT, `placeId` TEXT, `heading` TEXT DEFAULT null, `extra` TEXT DEFAULT null, `order` INTEGER NOT NULL DEFAULT 2147483647)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `type` TEXT NOT NULL, `routeId` TEXT, `stopId` TEXT, `placeId` TEXT, `heading` TEXT DEFAULT null, `extra` TEXT DEFAULT null, `order` INTEGER NOT NULL DEFAULT 0)",
         "fields": [
           {
             "fieldPath": "id",
@@ -594,7 +594,7 @@
             "columnName": "order",
             "affinity": "INTEGER",
             "notNull": true,
-            "defaultValue": "2147483647"
+            "defaultValue": "0"
           }
         ],
         "primaryKey": {
@@ -728,7 +728,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'c70c17ac5a44e75adc01632e194e8976')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '8c7719d69072cbca16b213a42c5c1f46')"
     ]
   }
 }
