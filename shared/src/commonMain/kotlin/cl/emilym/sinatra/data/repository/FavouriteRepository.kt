@@ -63,6 +63,10 @@ class FavouriteRepository(
         )
     }
 
+    fun favouritedStops(stopIds: List<StopId>): Flow<List<StopId>> {
+        return favouritePersistence.stopsFavourited(stopIds)
+    }
+
     suspend fun setPlaceFavourite(
         placeId: PlaceId,
         favourited: Boolean,

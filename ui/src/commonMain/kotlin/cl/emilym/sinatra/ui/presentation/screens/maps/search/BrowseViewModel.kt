@@ -7,16 +7,20 @@ import cl.emilym.compose.requeststate.flatRequestStateFlow
 import cl.emilym.compose.requeststate.handle
 import cl.emilym.compose.requeststate.requestStateFlow
 import cl.emilym.compose.requeststate.unwrap
+import cl.emilym.sinatra.data.models.IStopTimetableTime
 import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.data.models.NavigationObject
 import cl.emilym.sinatra.data.models.Route
 import cl.emilym.sinatra.data.models.ServiceAlert
 import cl.emilym.sinatra.data.models.SpecialFavouriteType
+import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.domain.DisplayRoutesUseCase
+import cl.emilym.sinatra.domain.smart.FavouriteNearbyStopDeparturesUseCase
 import cl.emilym.sinatra.domain.smart.NewServiceUpdateUseCase
 import cl.emilym.sinatra.domain.smart.QuickNavigateUseCase
 import cl.emilym.sinatra.domain.smart.QuickNavigation
 import cl.emilym.sinatra.domain.smart.SpecialAddUseCase
+import cl.emilym.sinatra.domain.smart.StopDepartures
 import cl.emilym.sinatra.nullIfEmpty
 import cl.emilym.sinatra.ui.presentation.screens.SpecialFavourite
 import cl.emilym.sinatra.ui.presentation.screens.maps.navigate.NavigationLocation
@@ -31,6 +35,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -60,8 +65,8 @@ sealed interface BrowseOption {
     data class QuickNavigateGroup(
         val items: List<QuickNavigationItem>
     ): BrowseOption
-    data class AddSpecialFavourite(
-        val type: SpecialFavouriteType
+    data class LargeNearbyStopDepartures(
+        val stop: StopDepartures
     ): BrowseOption
     data class NewServiceUpdate(
         val serviceAlert: ServiceAlert
@@ -73,7 +78,8 @@ class BrowseViewModel(
     private val displayRoutesUseCase: DisplayRoutesUseCase,
     private val newServiceUpdateUseCase: NewServiceUpdateUseCase,
     private val quickNavigateUseCase: QuickNavigateUseCase,
-    private val specialAddUseCase: SpecialAddUseCase
+    private val specialAddUseCase: SpecialAddUseCase,
+    private val favouriteNearbyStopDeparturesUseCase: FavouriteNearbyStopDeparturesUseCase
 ): SinatraScreenModel {
 
     private val _routes = requestStateFlow { displayRoutesUseCase().item }
@@ -104,17 +110,25 @@ class BrowseViewModel(
             specialAddUseCase().mapLatest { it.map { QuickNavigationItem.ToAdd(it) } }
         }
     }
+    private val nearbyStopDepartures = lastLocation.flatRequestStateFlow {
+        it ?: return@flatRequestStateFlow flowOf(null)
+        withContext(Dispatchers.IO) {
+            favouriteNearbyStopDeparturesUseCase(it)
+        }
+    }
 
     val options: StateFlow<List<BrowseOption>> = combine(
         newServices,
         quickNavigation,
-        specialAdd
-    ) { newServices, quickNavigation, specialAdd ->
+        specialAdd,
+        nearbyStopDepartures
+    ) { newServices, quickNavigation, specialAdd, nearbyStopDepartures ->
         listOfNotNull(
             ((quickNavigation.unwrap().nullIfEmpty() ?: listOf()) +
             (specialAdd.unwrap().nullIfEmpty() ?: listOf())).nullIfEmpty()?.let {
                 BrowseOption.QuickNavigateGroup(it)
             },
+            nearbyStopDepartures.unwrap()?.let { BrowseOption.LargeNearbyStopDepartures(it) },
             newServices.unwrap().nullIfEmpty()?.let {
                 BrowseOption.NewServiceUpdate(it.first())
             }
@@ -131,6 +145,13 @@ class BrowseViewModel(
             newServices.retryIfNeeded()
             specialAdd.retryIfNeeded()
             quickNavigation.retryIfNeeded()
+            nearbyStopDepartures.retryIfNeeded()
+        }
+    }
+
+    fun refreshNearby() {
+        screenModelScope.launch {
+            nearbyStopDepartures.retry()
         }
     }
 

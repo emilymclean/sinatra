@@ -5,6 +5,7 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Transaction
+import cl.emilym.sinatra.data.models.StopId
 import cl.emilym.sinatra.room.entities.FavouriteEntity
 import cl.emilym.sinatra.room.entities.FavouriteEntityEntityWithStopAndRoute
 import kotlinx.coroutines.flow.Flow
@@ -42,6 +43,9 @@ interface FavouriteDao {
 
     @Query("SELECT * FROM favouriteEntity WHERE type = \"STOP\" AND stopId = :stopId")
     fun getStop(stopId: String): Flow<FavouriteEntity?>
+
+    @Query("SELECT stopId FROM favouriteEntity WHERE type = \"STOP\" AND stopId in (:stopIds)")
+    fun getStopIdExistence(stopIds: List<String>): Flow<List<String>>
 
     @Query("SELECT * FROM favouriteEntity WHERE type = \"STOP_ON_ROUTE\" AND routeId = :routeId AND stopId = :stopId AND heading = :heading")
     fun getStopOnRoute(stopId: String, routeId: String, heading: String?): Flow<FavouriteEntity?>

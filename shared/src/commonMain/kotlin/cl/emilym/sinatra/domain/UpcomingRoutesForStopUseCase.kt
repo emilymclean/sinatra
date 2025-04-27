@@ -37,7 +37,8 @@ class UpcomingRoutesForStopUseCase(
     @OptIn(ExperimentalCoroutinesApi::class)
     operator fun invoke(
         stopId: StopId,
-        number: Int = 10
+        number: Int = 10,
+        live: Boolean = true
     ): Flow<Cachable<List<IStopTimetableTime>>> {
         return flow {
             val scheduleTimeZone = metadataRepository.timeZone()
@@ -70,9 +71,9 @@ class UpcomingRoutesForStopUseCase(
         }
         .flowOn(Dispatchers.IO)
         .flatMapLatest { original ->
-            when (original.item.isEmpty()) {
-                true -> flowOf(original.map { it })
-                false -> liveStopTimetableUseCase(
+            when {
+                original.item.isEmpty() || !live -> flowOf(original.map { it })
+                else -> liveStopTimetableUseCase(
                     stopId,
                     original.item
                 ).map { live -> original.map { live } }
