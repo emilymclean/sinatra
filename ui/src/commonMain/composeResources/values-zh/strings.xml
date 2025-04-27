@@ -9,6 +9,12 @@
   <string name="navigation_bar_about">关于</string>
 
   <string name="favourites_nothing_favourited">您收藏的任何路线或站点都可以在这里找到。</string>
+
+  <string name="favourites_no_home">添加家</string>
+
+  <string name="favourites_no_work">添加公司</string>
+
+  <string name="favourites_clear_favourite">清除收藏地点</string>
       
   <string name="about_app_version">版本 %1$s (%2$s)</string>
       
