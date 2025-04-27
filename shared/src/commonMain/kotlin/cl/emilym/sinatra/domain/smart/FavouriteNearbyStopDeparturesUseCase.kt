@@ -46,13 +46,12 @@ class FavouriteNearbyStopDeparturesUseCase(
             )
 
             emitAll(favouriteRepository.favouritedStops(nearby.map { it.stop.id })
-                .mapLatest {
-                    it.firstOrNull()
+                .mapLatest { stopIds ->
+                    nearby.firstOrNull { stopIds.contains(it.stop.id) }?.stop
                 }
-                .flatMapLatest { stopId ->
-                    stopId ?: return@flatMapLatest flowOf(null)
-                    val stop = nearby.first { it.stop.id == stopId }.stop
-                    upcomingRoutesForStopUseCase(stopId).mapLatest {
+                .flatMapLatest { stop ->
+                    stop ?: return@flatMapLatest flowOf(null)
+                    upcomingRoutesForStopUseCase(stop.id).mapLatest {
                         if (it.item.isEmpty()) return@mapLatest null
                         StopDepartures(
                             stop,
