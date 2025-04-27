@@ -23,13 +23,16 @@ import cl.emilym.sinatra.ui.retryIfNeeded
 import cl.emilym.sinatra.ui.toNavigationLocation
 import cl.emilym.sinatra.ui.widgets.SinatraScreenModel
 import io.github.aakira.napier.Napier
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.koin.core.KoinApplication.Companion.init
 import org.koin.core.annotation.Factory
 
@@ -62,15 +65,18 @@ class BrowseViewModel(
 
     private val lastLocation = MutableStateFlow<MapLocation?>(null)
 
-    private val newServices = flatRequestStateFlow { newServiceUpdateUseCase() }
+    private val newServices = flatRequestStateFlow {
+        withContext(Dispatchers.IO) { newServiceUpdateUseCase() }
+    }
     @OptIn(ExperimentalCoroutinesApi::class)
-    private val quickNavigation = lastLocation.flatRequestStateFlow { quickNavigateUseCase(it)
-        .mapLatest {
-            Napier.d("SSS $it")
-            it.mapNotNull { QuickNavigationItem(
-            it.navigation.toNavigationLocation() ?: return@mapNotNull null,
-            it.specialType
-        ) } }
+    private val quickNavigation = lastLocation.flatRequestStateFlow {
+        withContext(Dispatchers.IO) {
+            quickNavigateUseCase(it)
+                .mapLatest { it.mapNotNull { QuickNavigationItem(
+                    it.navigation.toNavigationLocation() ?: return@mapNotNull null,
+                    it.specialType
+                ) } }
+        }
     }
 
     val options: StateFlow<List<BrowseOption>> = combine(
