@@ -17,7 +17,7 @@ class NewServiceUpdateUseCase(
 ) {
 
     companion object {
-        private val NEW_ALERT_CUTOFF = 200.days
+        private val NEW_ALERT_CUTOFF = 2.days
         const val NEW_SERVICE_FEATURE_FLAG = "new_service_home_screen"
     }
 
