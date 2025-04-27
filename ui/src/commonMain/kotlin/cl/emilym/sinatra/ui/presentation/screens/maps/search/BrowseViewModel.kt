@@ -16,6 +16,7 @@ import cl.emilym.sinatra.domain.DisplayRoutesUseCase
 import cl.emilym.sinatra.domain.smart.NewServiceUpdateUseCase
 import cl.emilym.sinatra.domain.smart.QuickNavigateUseCase
 import cl.emilym.sinatra.domain.smart.QuickNavigation
+import cl.emilym.sinatra.domain.smart.SpecialAddUseCase
 import cl.emilym.sinatra.nullIfEmpty
 import cl.emilym.sinatra.ui.presentation.screens.SpecialFavourite
 import cl.emilym.sinatra.ui.presentation.screens.maps.navigate.NavigationLocation
@@ -36,10 +37,17 @@ import kotlinx.coroutines.withContext
 import org.koin.core.KoinApplication.Companion.init
 import org.koin.core.annotation.Factory
 
-data class QuickNavigationItem(
-    val location: NavigationLocation,
+sealed interface QuickNavigationItem {
     val special: SpecialFavouriteType?
-)
+
+    data class Item(
+        val location: NavigationLocation,
+        override val special: SpecialFavouriteType?
+    ): QuickNavigationItem
+    data class ToAdd(
+        override val special: SpecialFavouriteType
+    ): QuickNavigationItem
+}
 
 sealed interface BrowseOption {
     data class QuickNavigateGroup(
@@ -58,6 +66,7 @@ class BrowseViewModel(
     private val displayRoutesUseCase: DisplayRoutesUseCase,
     private val newServiceUpdateUseCase: NewServiceUpdateUseCase,
     private val quickNavigateUseCase: QuickNavigateUseCase,
+    private val specialAddUseCase: SpecialAddUseCase
 ): SinatraScreenModel {
 
     private val _routes = requestStateFlow { displayRoutesUseCase().item }
@@ -72,19 +81,31 @@ class BrowseViewModel(
     private val quickNavigation = lastLocation.flatRequestStateFlow {
         withContext(Dispatchers.IO) {
             quickNavigateUseCase(it)
-                .mapLatest { it.mapNotNull { QuickNavigationItem(
-                    it.navigation.toNavigationLocation() ?: return@mapNotNull null,
-                    it.specialType
-                ) } }
+                .mapLatest {
+                    it.mapNotNull {
+                        QuickNavigationItem.Item(
+                            it.navigation.toNavigationLocation() ?: return@mapNotNull null,
+                            it.specialType
+                        )
+                    }
+                }
+        }
+    }
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private val specialAdd = flatRequestStateFlow {
+        withContext(Dispatchers.IO) {
+            specialAddUseCase().mapLatest { it.map { QuickNavigationItem.ToAdd(it) } }
         }
     }
 
     val options: StateFlow<List<BrowseOption>> = combine(
         newServices,
-        quickNavigation
-    ) { newServices, quickNavigation ->
+        quickNavigation,
+        specialAdd
+    ) { newServices, quickNavigation, specialAdd ->
         listOfNotNull(
-            quickNavigation.unwrap().nullIfEmpty()?.let {
+            ((quickNavigation.unwrap().nullIfEmpty() ?: listOf()) +
+            (specialAdd.unwrap().nullIfEmpty() ?: listOf())).nullIfEmpty()?.let {
                 BrowseOption.QuickNavigateGroup(it)
             },
             newServices.unwrap().nullIfEmpty()?.let {
@@ -101,6 +122,8 @@ class BrowseViewModel(
         screenModelScope.launch {
             _routes.retryIfNeeded()
             newServices.retryIfNeeded()
+            specialAdd.retryIfNeeded()
+            quickNavigation.retryIfNeeded()
         }
     }
 

@@ -189,12 +189,20 @@ private fun QuickNavigationCard(
 ) {
     val navigator = LocalNavigator.currentOrThrow
     QuickSelectCard(
-        { navigator.push(NavigateEntryScreen(item.location)) },
+        {
+            when (item) {
+                is QuickNavigationItem.Item -> navigator.push(NavigateEntryScreen(item.location))
+                else -> {}
+            }
+        },
         null,
         backgroundColor = MaterialTheme.colorScheme.surfaceContainerHighest,
         modifier = Modifier.then(modifier)
     ) {
         item.special?.Icon()
-        Text(item.location.name)
+        Text(when (item) {
+            is QuickNavigationItem.Item -> item.location.name
+            is QuickNavigationItem.ToAdd ->  item.special.label
+        })
     }
 }
