@@ -121,14 +121,14 @@ class MapSearchScreen: MapScreen, NativeMapScreen {
     @Composable
     override fun BottomSheetContent() {
         val viewModel = koinScreenModel<MapSearchViewModel>()
-        val routeListViewModel = koinScreenModel<RouteListViewModel>()
+        val browseViewModel = koinScreenModel<BrowseViewModel>()
         val state by viewModel.state.collectAsStateWithLifecycle()
         val navigator = LocalNavigator.currentOrThrow
 
         Box(modifier = Modifier.heightIn(min = viewportHeight() * 0.5f)) {
             when (state) {
                 is MapSearchState.Browse -> MapSearchScreenBrowseState(
-                    routeListViewModel,
+                    browseViewModel,
                     viewModel
                 )
                 is MapSearchState.Search -> SearchScreen(

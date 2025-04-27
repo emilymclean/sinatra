@@ -12,6 +12,8 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.unit.LayoutDirection
+import cl.emilym.compose.requeststate.RequestState
+import cl.emilym.compose.requeststate.RequestStateFlow
 import cl.emilym.compose.units.px
 import cl.emilym.sinatra.data.models.ColorPair
 import cl.emilym.sinatra.data.models.Favourite
@@ -199,3 +201,7 @@ val Favourite.label: String
         // Todo represent this better
         is Favourite.StopOnRoute -> stop.name
     }
+
+suspend fun <T> RequestStateFlow<T>.retryIfNeeded() {
+    if (this is RequestState.Failure<*>) retry()
+}
