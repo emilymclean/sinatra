@@ -8,14 +8,14 @@ import kotlin.time.Duration
 private val SIMPLE_TERMINATORS = arrayOf(" Platform", " at", " Plt")
 
 data class Stop(
-    val id: StopId,
+    override val id: StopId,
     val parentStation: StopId?,
     val name: String,
     val _simpleName: String?,
     val location: MapLocation,
     val accessibility: StopAccessibility,
     val visibility: StopVisibility
-): Serializable {
+): Serializable, Identifiable<StopId>, NavigationObject {
 
     companion object {
 

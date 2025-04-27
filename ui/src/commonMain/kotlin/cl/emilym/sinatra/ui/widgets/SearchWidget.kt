@@ -113,6 +113,7 @@ internal class DefaultSearchScreenViewModel(
 @Composable
 fun Screen.SearchWidget(
     searchTypes: List<SearchType> = listOf(),
+    clearSearchOnSelect: Boolean = true,
     onBackPressed: () -> Unit,
     onStopPressed: (Stop) -> Unit,
     onRoutePressed: (Route) -> Unit,
@@ -138,15 +139,15 @@ fun Screen.SearchWidget(
             onBackPressed()
         },
         {
-            viewModel.search("")
+            if (clearSearchOnSelect) viewModel.search("")
             onStopPressed(it)
         },
         {
-            viewModel.search("")
+            if (clearSearchOnSelect) viewModel.search("")
             onRoutePressed(it)
         },
         {
-            viewModel.search("")
+            if (clearSearchOnSelect) viewModel.search("")
             onPlacePressed(it)
         },
         extraPlaceholderContent

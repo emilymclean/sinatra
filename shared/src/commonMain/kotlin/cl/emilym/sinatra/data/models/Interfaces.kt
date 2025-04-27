@@ -3,6 +3,12 @@ package cl.emilym.sinatra.data.models
 import cl.emilym.sinatra.nullIfEmpty
 import kotlinx.datetime.Instant
 
+interface Identifiable<T> {
+    val id: T
+}
+
+interface NavigationObject
+
 interface IRouteTripInformation {
     val startTime: Time?
     val endTime: Time?

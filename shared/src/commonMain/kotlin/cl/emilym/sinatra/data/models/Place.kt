@@ -4,11 +4,11 @@ import cl.emilym.kmp.serializable.Serializable
 import cl.emilym.sinatra.data.models.dto.NominatimPlace
 
 data class Place(
-    val id: String,
+    override val id: PlaceId,
     val name: String,
     val displayName: String,
     val location: MapLocation
-): Serializable {
+): Serializable, Identifiable<PlaceId>, NavigationObject {
 
     companion object {
 

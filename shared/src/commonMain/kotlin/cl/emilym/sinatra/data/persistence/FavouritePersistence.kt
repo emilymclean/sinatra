@@ -69,6 +69,10 @@ class FavouritePersistence(
         validate(type, routeId, stopId, placeId, heading, extra)
         remove(type, routeId, stopId, placeId)
 
+        if (extra != null) {
+            favouriteDao.deleteSpecial(extra)
+        }
+
         val entity = FavouriteEntity(
             0,
             type.name,
@@ -106,19 +110,21 @@ class FavouritePersistence(
                 compareBy({ it.favourite.order }, { -it.favourite.id })
             ).mapNotNull {
                 val type = FavouriteType.valueOf(it.favourite.type)
+                val special = it.favourite.extra?.let {
+                    try {
+                        SpecialFavouriteType.valueOf(it)
+                    } catch (e: IllegalArgumentException) {
+                        null
+                    }
+                }
+
                 when (type) {
                     FavouriteType.ROUTE -> it.route?.let { Favourite.Route(
                         it.toModel()
                     ) }
                     FavouriteType.STOP -> it.stop?.let { stop -> Favourite.Stop(
                         stop.toModel(),
-                        it.favourite.extra?.let {
-                            try {
-                                SpecialFavouriteType.valueOf(it)
-                            } catch (e: IllegalArgumentException) {
-                                null
-                            }
-                        }
+                        special
                     ) }
                     FavouriteType.STOP_ON_ROUTE ->
                         it.stop?.let { stop ->
@@ -132,7 +138,8 @@ class FavouritePersistence(
                         }
                     FavouriteType.PLACE -> it.place?.let {
                         Favourite.Place(
-                            it.toModel()
+                            it.toModel(),
+                            special
                         )
                     }
                 }

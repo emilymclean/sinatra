@@ -42,7 +42,10 @@ import cl.emilym.compose.requeststate.map
 import cl.emilym.compose.requeststate.unwrap
 import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.data.models.Favourite
+import cl.emilym.sinatra.data.models.NavigationObject
+import cl.emilym.sinatra.data.models.Place
 import cl.emilym.sinatra.data.models.SpecialFavouriteType
+import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.data.models.specialType
 import cl.emilym.sinatra.data.repository.FavouriteRepository
 import cl.emilym.sinatra.domain.search.SearchType
@@ -60,8 +63,10 @@ import cl.emilym.sinatra.ui.widgets.StarOutlineIcon
 import cl.emilym.sinatra.ui.widgets.StopCard
 import cl.emilym.sinatra.ui.widgets.WorkIcon
 import cl.emilym.sinatra.ui.widgets.collectAsStateWithLifecycle
+import io.github.aakira.napier.Napier
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
@@ -89,6 +94,10 @@ class FavouriteViewModel(
     private val favouriteRepository: FavouriteRepository
 ): SinatraScreenModel {
 
+    companion object {
+        private val SPECIAL_ORDER = listOf(SpecialFavouriteType.HOME, SpecialFavouriteType.WORK)
+    }
+
     private val allFavourites = flatRequestStateFlow { favouriteRepository.all() }
     val state = MutableStateFlow<FavouriteState>(FavouriteState.Favourite)
 
@@ -97,23 +106,20 @@ class FavouriteViewModel(
     }.state(true)
     val favourites = allFavourites.mapLatest {
         it.map {
-            it.filter {
-                when (it) {
-                    is Favourite.Stop -> it.specialType == null
-                    else -> true
-                }
-            }
+            it.filter { it.specialType == null }
         }
     }.state(RequestState.Initial())
     val special = allFavourites.mapLatest {
         val specials = it.unwrap(listOf()).filter { it.specialType != null }
-        listOf(SpecialFavouriteType.HOME, SpecialFavouriteType.WORK).map { type ->
+        SPECIAL_ORDER.map { type ->
             SpecialFavourite(
                 type,
                 specials.firstOrNull { it.specialType == type }
             )
         }
-    }.state(listOf())
+    }.state(
+        SPECIAL_ORDER.map { SpecialFavourite(it, null) }
+    )
 
     fun retry() {
         screenModelScope.launch {
@@ -127,6 +133,18 @@ class FavouriteViewModel(
 
     fun closeSearch() {
         state.value = FavouriteState.Favourite
+    }
+
+    fun selectSpecialFavourite(favourite: NavigationObject) {
+        val type = (state.value as? FavouriteState.Search)?.type ?: return
+
+        screenModelScope.launch {
+            state.value = FavouriteState.Favourite
+            when (favourite) {
+                is Stop -> favouriteRepository.setStopFavourite(favourite.id, true, type)
+                is Place -> favouriteRepository.setPlaceFavourite(favourite.id, true, type)
+            }
+        }
     }
 
 }
@@ -145,8 +163,12 @@ class FavouriteScreen: Screen {
             is FavouriteState.Search -> SearchWidget(
                 listOf(SearchType.STOP, SearchType.PLACE),
                 onBackPressed = { viewModel.closeSearch() },
-                onStopPressed = {},
-                onPlacePressed = {},
+                onStopPressed = {
+                    viewModel.selectSpecialFavourite(it)
+                },
+                onPlacePressed = {
+                    viewModel.selectSpecialFavourite(it)
+                },
                 onRoutePressed = {}
             )
         }

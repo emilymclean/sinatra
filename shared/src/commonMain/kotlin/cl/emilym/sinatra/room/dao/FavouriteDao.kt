@@ -30,6 +30,9 @@ interface FavouriteDao {
     @Query("DELETE FROM favouriteEntity WHERE type = \"PLACE\" AND placeId = :placeId")
     suspend fun deletePlace(placeId: String)
 
+    @Query("DELETE FROM favouriteEntity WHERE extra = :specialFavouriteType")
+    suspend fun deleteSpecial(specialFavouriteType: String)
+
     @Transaction
     @Query("SELECT * FROM favouriteEntity")
     fun get(): Flow<List<FavouriteEntityEntityWithStopAndRoute>>

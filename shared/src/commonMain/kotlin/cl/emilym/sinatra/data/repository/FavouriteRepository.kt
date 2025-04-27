@@ -63,9 +63,13 @@ class FavouriteRepository(
         )
     }
 
-    suspend fun setPlaceFavourite(placeId: PlaceId, favourited: Boolean) {
+    suspend fun setPlaceFavourite(
+        placeId: PlaceId,
+        favourited: Boolean,
+        specialFavourite: SpecialFavouriteType? = null,
+    ) {
         when (favourited) {
-            true -> favouritePersistence.add(FavouriteType.PLACE, placeId = placeId)
+            true -> favouritePersistence.add(FavouriteType.PLACE, placeId = placeId, extra = specialFavourite?.name)
             false -> favouritePersistence.remove(FavouriteType.PLACE, placeId = placeId)
         }
     }
