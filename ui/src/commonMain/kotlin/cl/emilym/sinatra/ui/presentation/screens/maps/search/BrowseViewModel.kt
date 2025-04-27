@@ -14,6 +14,7 @@ import cl.emilym.sinatra.data.models.Route
 import cl.emilym.sinatra.data.models.ServiceAlert
 import cl.emilym.sinatra.data.models.SpecialFavouriteType
 import cl.emilym.sinatra.data.models.Stop
+import cl.emilym.sinatra.data.models.distance
 import cl.emilym.sinatra.domain.DisplayRoutesUseCase
 import cl.emilym.sinatra.domain.smart.FavouriteNearbyStopDeparturesUseCase
 import cl.emilym.sinatra.domain.smart.NewServiceUpdateUseCase
@@ -91,7 +92,7 @@ class BrowseViewModel(
         withContext(Dispatchers.IO) { newServiceUpdateUseCase() }
     }
     @OptIn(ExperimentalCoroutinesApi::class)
-    private val quickNavigation = lastLocation.flatRequestStateFlow {
+    private val quickNavigation = lastLocation.flatRequestStateFlow(showLoading = false) {
         withContext(Dispatchers.IO) {
             quickNavigateUseCase(it)
                 .mapLatest {
@@ -110,7 +111,7 @@ class BrowseViewModel(
             specialAddUseCase().mapLatest { it.map { QuickNavigationItem.ToAdd(it) } }
         }
     }
-    private val nearbyStopDepartures = lastLocation.flatRequestStateFlow {
+    private val nearbyStopDepartures = lastLocation.flatRequestStateFlow(showLoading = false) {
         it ?: return@flatRequestStateFlow flowOf(null)
         withContext(Dispatchers.IO) {
             favouriteNearbyStopDeparturesUseCase(it)
@@ -156,7 +157,15 @@ class BrowseViewModel(
     }
 
     fun updateLocation(location: MapLocation?) {
-        lastLocation.value = location ?: return
+        location ?: return
+        val ll = lastLocation.value
+        if (ll == null) {
+            lastLocation.value = location
+            return
+        }
+
+        if (distance(ll, location) < 0.5) return
+        lastLocation.value = location
     }
 
 }
