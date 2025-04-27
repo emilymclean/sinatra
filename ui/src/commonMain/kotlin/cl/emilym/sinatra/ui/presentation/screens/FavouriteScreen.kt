@@ -133,9 +133,7 @@ class FavouriteViewModel(
                 specials.firstOrNull { it.specialType == type }
             )
         }
-    }.state(
-        SPECIAL_ORDER_EMPTY
-    )
+    }.state(listOf())
 
     fun retry() {
         screenModelScope.launch {
