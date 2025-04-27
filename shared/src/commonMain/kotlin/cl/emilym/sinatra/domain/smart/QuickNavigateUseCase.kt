@@ -41,7 +41,9 @@ class QuickNavigateUseCase(
             emitAll(
                 favouriteRepository.all().mapLatest {
                     it
-                        .filter { it.specialType != null }
+                        .asSequence()
+                        .filter { it is Favourite.Stop || it is Favourite.Place }
+                        .sortedWith(compareBy({ it.specialType?.ordinal ?: 100 }))
                         .filter {
                             currentLocation ?: return@filter true
                             val location = when (it) {
@@ -51,7 +53,7 @@ class QuickNavigateUseCase(
                             } ?: return@filter false
                             distance(location, currentLocation) > DISTANCE_THRESHOLD
                         }
-                        .sortedBy { it.specialType?.ordinal }
+                        .take(5)
                         .mapNotNull {
                             QuickNavigation(
                                 when (it) {
@@ -63,6 +65,7 @@ class QuickNavigateUseCase(
                                 false
                             )
                         }
+                        .toList()
                 }
             )
         }
