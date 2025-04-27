@@ -1,7 +1,9 @@
 package cl.emilym.sinatra.ui.presentation.screens
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -54,9 +56,13 @@ import cl.emilym.sinatra.ui.label
 import cl.emilym.sinatra.ui.placeCardDefaultNavigation
 import cl.emilym.sinatra.ui.presentation.screens.maps.RouteDetailScreen
 import cl.emilym.sinatra.ui.presentation.screens.maps.StopDetailScreen
+import cl.emilym.sinatra.ui.widgets.ClearIcon
 import cl.emilym.sinatra.ui.widgets.HomeIcon
+import cl.emilym.sinatra.ui.widgets.ListCard
 import cl.emilym.sinatra.ui.widgets.ListHint
+import cl.emilym.sinatra.ui.widgets.MyLocationIcon
 import cl.emilym.sinatra.ui.widgets.PlaceCard
+import cl.emilym.sinatra.ui.widgets.RandleScaffold
 import cl.emilym.sinatra.ui.widgets.RouteCard
 import cl.emilym.sinatra.ui.widgets.SearchWidget
 import cl.emilym.sinatra.ui.widgets.SinatraScreenModel
@@ -73,15 +79,18 @@ import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.koin.core.annotation.Factory
 import sinatra.ui.generated.resources.Res
+import sinatra.ui.generated.resources.current_location
 import sinatra.ui.generated.resources.favourites_no_home
 import sinatra.ui.generated.resources.favourites_no_work
 import sinatra.ui.generated.resources.favourites_nothing_favourited
 import sinatra.ui.generated.resources.navigation_bar_favourites
+import sinatra.ui.generated.resources.favourites_clear_favourite
 
 sealed interface FavouriteState {
     data object Favourite: FavouriteState
     data class Search(
-        val type: SpecialFavouriteType
+        val type: SpecialFavouriteType,
+        val hasExisting: Boolean
     ): FavouriteState
 }
 
@@ -97,6 +106,7 @@ class FavouriteViewModel(
 
     companion object {
         private val SPECIAL_ORDER = listOf(SpecialFavouriteType.HOME, SpecialFavouriteType.WORK)
+        private val SPECIAL_ORDER_EMPTY = SPECIAL_ORDER.map { SpecialFavourite(it, null) }
     }
 
     private val allFavourites = flatRequestStateFlow { favouriteRepository.all() }
@@ -119,7 +129,7 @@ class FavouriteViewModel(
             )
         }
     }.state(
-        SPECIAL_ORDER.map { SpecialFavourite(it, null) }
+        SPECIAL_ORDER_EMPTY
     )
 
     fun retry() {
@@ -129,14 +139,14 @@ class FavouriteViewModel(
     }
 
     fun openSearch(type: SpecialFavouriteType) {
-        state.value = FavouriteState.Search(type)
+        state.value = FavouriteState.Search(type, special.value.first { it.type == type }.favourite != null)
     }
 
     fun closeSearch() {
         state.value = FavouriteState.Favourite
     }
 
-    fun selectSpecialFavourite(favourite: NavigationObject) {
+    fun selectSpecialFavourite(favourite: NavigationObject?) {
         val type = (state.value as? FavouriteState.Search)?.type ?: return
 
         screenModelScope.launch {
@@ -144,6 +154,7 @@ class FavouriteViewModel(
             when (favourite) {
                 is Stop -> favouriteRepository.setStopFavourite(favourite.id, true, type)
                 is Place -> favouriteRepository.setPlaceFavourite(favourite.id, true, type)
+                null -> favouriteRepository.clearSpecial(type)
             }
         }
     }
@@ -169,7 +180,22 @@ class FavouriteScreen: Screen {
                 onPlacePressed = {
                     viewModel.selectSpecialFavourite(it)
                 },
-                onRoutePressed = {}
+                onRoutePressed = {},
+                extraPlaceholderContent = {
+                    if ((state as? FavouriteState.Search)?.hasExisting == true) {
+                        item {
+                            ListCard(
+                                { ClearIcon() },
+                                Modifier.fillMaxWidth(),
+                                { viewModel.selectSpecialFavourite(null) },
+                                hideForwardIcon = true
+                            ) {
+                                Text(stringResource(Res.string.favourites_clear_favourite),)
+                            }
+                            Spacer(Modifier.height(1.rdp))
+                        }
+                    }
+                }
             )
         }
     }
@@ -208,13 +234,16 @@ class FavouriteScreen: Screen {
                                 items(specials) {
                                     SpecialFavouriteWidget(
                                         it,
-                                        {
+                                        onClick = {
                                             if (it.favourite == null) {
                                                 viewModel.openSearch(it.type)
                                             } else {
                                                 it.favourite.navigate(navigator)
                                             }
                                         },
+                                        onLongClick = if (it.favourite != null) {
+                                            { viewModel.openSearch(it.type) }
+                                        } else null
                                     )
                                 }
                             }
@@ -276,19 +305,22 @@ class FavouriteScreen: Screen {
 
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun SpecialFavouriteWidget(
     special: SpecialFavourite,
     onClick: () -> Unit,
+    onLongClick: (() -> Unit)?,
     modifier: Modifier = Modifier
 ) {
     Row(
         Modifier
             .clip(MaterialTheme.shapes.extraSmall)
             .background(MaterialTheme.colorScheme.surfaceContainer)
-            .clickable {
-                onClick()
-            }
+            .combinedClickable(
+                onClick = onClick,
+                onLongClick = onLongClick
+            )
             .semantics {
                 this.role = Role.Button
             }

@@ -104,6 +104,10 @@ class FavouritePersistence(
         }
     }
 
+    suspend fun removeSpecial(type: SpecialFavouriteType) {
+        favouriteDao.deleteSpecial(type.name)
+    }
+
     fun all(): Flow<List<Favourite>> {
         return favouriteDao.get().map {
             it.sortedWith(

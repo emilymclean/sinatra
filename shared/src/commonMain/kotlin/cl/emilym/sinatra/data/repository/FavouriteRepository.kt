@@ -81,4 +81,8 @@ class FavouriteRepository(
         )
     }
 
+    suspend fun clearSpecial(type: SpecialFavouriteType) {
+        favouritePersistence.removeSpecial(type)
+    }
+
 }

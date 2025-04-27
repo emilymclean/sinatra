@@ -36,6 +36,7 @@ import sinatra.ui.generated.resources.walk
 import sinatra.ui.generated.resources.warning
 import sinatra.ui.generated.resources.home
 import sinatra.ui.generated.resources.work
+import sinatra.ui.generated.resources.clear
 
 @Composable
 fun AccessibleIcon(
@@ -417,6 +418,20 @@ fun WorkIcon(
 ) {
     Icon(
         painterResource(Res.drawable.work),
+        contentDescription = contentDescription,
+        modifier = modifier,
+        tint = tint
+    )
+}
+
+@Composable
+fun ClearIcon(
+    modifier: Modifier = Modifier,
+    tint: Color = LocalContentColor.current,
+    contentDescription: String? = null
+) {
+    Icon(
+        painterResource(Res.drawable.clear),
         contentDescription = contentDescription,
         modifier = modifier,
         tint = tint
