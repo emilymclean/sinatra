@@ -196,7 +196,12 @@ private fun QuickNavigationCard(
                 is QuickNavigationItem.ToAdd -> navigator.push(AddSpecialFavouriteScreen(item.special))
             }
         },
-        null,
+        when {
+            item is QuickNavigationItem.Item && item.special != null -> {
+                { navigator.push(AddSpecialFavouriteScreen(item.special!!)) }
+            }
+            else -> null
+        },
         backgroundColor = MaterialTheme.colorScheme.surfaceContainerHighest,
         modifier = Modifier.then(modifier)
     ) {
