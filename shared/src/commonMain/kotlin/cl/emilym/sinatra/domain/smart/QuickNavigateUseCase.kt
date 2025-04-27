@@ -8,6 +8,7 @@ import cl.emilym.sinatra.data.models.distance
 import cl.emilym.sinatra.data.models.specialType
 import cl.emilym.sinatra.data.repository.FavouriteRepository
 import cl.emilym.sinatra.data.repository.RemoteConfigRepository
+import cl.emilym.sinatra.domain.NearStartOfWorkDayUseCase
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
@@ -23,7 +24,8 @@ data class QuickNavigation(
 @Factory
 class QuickNavigateUseCase(
     private val favouriteRepository: FavouriteRepository,
-    private val remoteConfigRepository: RemoteConfigRepository
+    private val remoteConfigRepository: RemoteConfigRepository,
+    private val nearStartOfWorkDayUseCase: NearStartOfWorkDayUseCase
 ) {
 
     companion object {
@@ -40,10 +42,17 @@ class QuickNavigateUseCase(
 
             emitAll(
                 favouriteRepository.all().mapLatest {
+                    val isNearStartOfWorkDay = nearStartOfWorkDayUseCase()
                     it
                         .asSequence()
                         .filter { it is Favourite.Stop || it is Favourite.Place }
-                        .sortedWith(compareBy({ it.specialType?.ordinal ?: 100 }))
+                        .sortedWith(compareBy {
+                            when(it.specialType) {
+                                null -> 100
+                                SpecialFavouriteType.HOME -> if (isNearStartOfWorkDay) 1 else 0
+                                SpecialFavouriteType.WORK -> if (isNearStartOfWorkDay) 0 else 1
+                            }
+                        })
                         .filter {
                             currentLocation ?: return@filter true
                             val location = when (it) {
