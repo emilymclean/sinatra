@@ -1,4 +1,4 @@
-package cl.emilym.sinatra.domain.smart
+package cl.emilym.sinatra.domain.prompt
 
 import cl.emilym.sinatra.data.models.SpecialFavouriteType
 import cl.emilym.sinatra.data.models.specialType

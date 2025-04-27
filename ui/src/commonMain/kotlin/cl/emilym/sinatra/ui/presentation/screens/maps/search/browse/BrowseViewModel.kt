@@ -1,46 +1,35 @@
-package cl.emilym.sinatra.ui.presentation.screens.maps.search
+package cl.emilym.sinatra.ui.presentation.screens.maps.search.browse
 
-import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import cl.emilym.compose.requeststate.RequestState
 import cl.emilym.compose.requeststate.flatRequestStateFlow
-import cl.emilym.compose.requeststate.handle
 import cl.emilym.compose.requeststate.requestStateFlow
 import cl.emilym.compose.requeststate.unwrap
-import cl.emilym.sinatra.data.models.IStopTimetableTime
 import cl.emilym.sinatra.data.models.MapLocation
-import cl.emilym.sinatra.data.models.NavigationObject
-import cl.emilym.sinatra.data.models.Route
 import cl.emilym.sinatra.data.models.ServiceAlert
 import cl.emilym.sinatra.data.models.SpecialFavouriteType
-import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.data.models.distance
 import cl.emilym.sinatra.domain.DisplayRoutesUseCase
-import cl.emilym.sinatra.domain.smart.FavouriteNearbyStopDeparturesUseCase
-import cl.emilym.sinatra.domain.smart.NewServiceUpdateUseCase
-import cl.emilym.sinatra.domain.smart.QuickNavigateUseCase
-import cl.emilym.sinatra.domain.smart.QuickNavigation
-import cl.emilym.sinatra.domain.smart.SpecialAddUseCase
-import cl.emilym.sinatra.domain.smart.StopDepartures
+import cl.emilym.sinatra.domain.prompt.FavouriteNearbyStopDeparturesUseCase
+import cl.emilym.sinatra.domain.prompt.NewServiceUpdateUseCase
+import cl.emilym.sinatra.domain.prompt.QuickNavigateUseCase
+import cl.emilym.sinatra.domain.prompt.SpecialAddUseCase
+import cl.emilym.sinatra.domain.prompt.StopDepartures
 import cl.emilym.sinatra.nullIfEmpty
-import cl.emilym.sinatra.ui.presentation.screens.SpecialFavourite
 import cl.emilym.sinatra.ui.presentation.screens.maps.navigate.NavigationLocation
 import cl.emilym.sinatra.ui.retryIfNeeded
 import cl.emilym.sinatra.ui.toNavigationLocation
 import cl.emilym.sinatra.ui.widgets.SinatraScreenModel
-import io.github.aakira.napier.Napier
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.koin.core.KoinApplication.Companion.init
 import org.koin.core.annotation.Factory
 
 sealed interface QuickNavigationItem {
@@ -62,16 +51,16 @@ sealed interface QuickNavigationItem {
     }
 }
 
-sealed interface BrowseOption {
+sealed interface BrowsePrompt {
     data class QuickNavigateGroup(
         val items: List<QuickNavigationItem>
-    ): BrowseOption
+    ): BrowsePrompt
     data class LargeNearbyStopDepartures(
         val stop: StopDepartures
-    ): BrowseOption
+    ): BrowsePrompt
     data class NewServiceUpdate(
         val serviceAlert: ServiceAlert
-    ): BrowseOption
+    ): BrowsePrompt
 }
 
 @Factory
@@ -118,7 +107,7 @@ class BrowseViewModel(
         }
     }
 
-    val options: StateFlow<List<BrowseOption>> = combine(
+    val prompts: StateFlow<List<BrowsePrompt>> = combine(
         newServices,
         quickNavigation,
         specialAdd,
@@ -127,11 +116,11 @@ class BrowseViewModel(
         listOfNotNull(
             ((quickNavigation.unwrap().nullIfEmpty() ?: listOf()) +
             (specialAdd.unwrap().nullIfEmpty() ?: listOf())).nullIfEmpty()?.let {
-                BrowseOption.QuickNavigateGroup(it)
+                BrowsePrompt.QuickNavigateGroup(it)
             },
-            nearbyStopDepartures.unwrap()?.let { BrowseOption.LargeNearbyStopDepartures(it) },
+            nearbyStopDepartures.unwrap()?.let { BrowsePrompt.LargeNearbyStopDepartures(it) },
             newServices.unwrap().nullIfEmpty()?.let {
-                BrowseOption.NewServiceUpdate(it.first())
+                BrowsePrompt.NewServiceUpdate(it.first())
             }
         )
     }.state(listOf())

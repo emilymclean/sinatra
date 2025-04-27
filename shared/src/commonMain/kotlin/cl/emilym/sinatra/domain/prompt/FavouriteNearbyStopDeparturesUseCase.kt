@@ -1,4 +1,4 @@
-package cl.emilym.sinatra.domain.smart
+package cl.emilym.sinatra.domain.prompt
 
 import cl.emilym.sinatra.data.models.IStopTimetableTime
 import cl.emilym.sinatra.data.models.MapLocation
@@ -43,6 +43,7 @@ class FavouriteNearbyStopDeparturesUseCase(
 
             val nearby = nearbyStopsUseCase(
                 currentLocation,
+                limit = 30
             )
 
             emitAll(favouriteRepository.favouritedStops(nearby.map { it.stop.id })
