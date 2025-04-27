@@ -35,6 +35,7 @@ fun ListCard(
     icon: (@Composable () -> Unit)?,
     modifier: Modifier = Modifier,
     onClick: (() -> Unit)? = null,
+    hideForwardIcon: Boolean = false,
     content: @Composable () -> Unit,
 ) {
     Row(
@@ -67,7 +68,7 @@ fun ListCard(
             content()
         }
         Box(Modifier.clearAndSetSemantics {  }) {
-            if (onClick != null) {
+            if (onClick != null && !hideForwardIcon) {
                 ForwardIcon(
                     tint = MaterialTheme.colorScheme.primary
                 )
