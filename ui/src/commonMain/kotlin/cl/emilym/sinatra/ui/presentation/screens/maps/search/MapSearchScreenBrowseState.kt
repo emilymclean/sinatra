@@ -24,6 +24,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import cafe.adriel.voyager.core.annotation.ExperimentalVoyagerApi
@@ -46,8 +47,10 @@ import cl.emilym.sinatra.ui.widgets.ListCard
 import cl.emilym.sinatra.ui.widgets.QuickSelectCard
 import cl.emilym.sinatra.ui.widgets.RouteCard
 import cl.emilym.sinatra.ui.widgets.ServiceAlertCard
+import cl.emilym.sinatra.ui.widgets.bottomsheet.SinatraSheetValue
 import cl.emilym.sinatra.ui.widgets.collectAsStateWithLifecycle
 import cl.emilym.sinatra.ui.widgets.currentLocation
+import cl.emilym.sinatra.ui.widgets.rememberBottomSheetPosition
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
@@ -62,13 +65,7 @@ fun Screen.MapSearchScreenBrowseState(
     mainViewModel: MapSearchViewModel
 ) {
     val bottomSheetState = LocalBottomSheetState.current?.bottomSheetState
-    val scope = rememberCoroutineScope()
-
-    LifecycleEffectOnce {
-        scope.launch {
-            bottomSheetState?.halfExpand()
-        }
-    }
+    rememberBottomSheetPosition()
 
     val currentLocation = currentLocation()
     LaunchedEffect(currentLocation) {
