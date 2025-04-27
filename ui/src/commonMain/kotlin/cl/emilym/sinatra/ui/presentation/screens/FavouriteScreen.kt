@@ -62,6 +62,7 @@ import cl.emilym.sinatra.ui.widgets.ListCard
 import cl.emilym.sinatra.ui.widgets.ListHint
 import cl.emilym.sinatra.ui.widgets.MyLocationIcon
 import cl.emilym.sinatra.ui.widgets.PlaceCard
+import cl.emilym.sinatra.ui.widgets.QuickSelectCard
 import cl.emilym.sinatra.ui.widgets.RandleScaffold
 import cl.emilym.sinatra.ui.widgets.RouteCard
 import cl.emilym.sinatra.ui.widgets.SearchWidget
@@ -71,11 +72,15 @@ import cl.emilym.sinatra.ui.widgets.StopCard
 import cl.emilym.sinatra.ui.widgets.WorkIcon
 import cl.emilym.sinatra.ui.widgets.collectAsStateWithLifecycle
 import io.github.aakira.napier.Napier
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
+import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.jetbrains.compose.resources.stringResource
 import org.koin.core.annotation.Factory
 import sinatra.ui.generated.resources.Res
@@ -128,9 +133,7 @@ class FavouriteViewModel(
                 specials.firstOrNull { it.specialType == type }
             )
         }
-    }.state(
-        SPECIAL_ORDER_EMPTY
-    )
+    }.state(listOf())
 
     fun retry() {
         screenModelScope.launch {
@@ -149,12 +152,14 @@ class FavouriteViewModel(
     fun selectSpecialFavourite(favourite: NavigationObject?) {
         val type = (state.value as? FavouriteState.Search)?.type ?: return
 
-        screenModelScope.launch {
+        MainScope().launch {
             state.value = FavouriteState.Favourite
-            when (favourite) {
-                is Stop -> favouriteRepository.setStopFavourite(favourite.id, true, type)
-                is Place -> favouriteRepository.setPlaceFavourite(favourite.id, true, type)
-                null -> favouriteRepository.clearSpecial(type)
+            withContext(Dispatchers.IO) {
+                when (favourite) {
+                    is Stop -> favouriteRepository.setStopFavourite(favourite.id, true, type)
+                    is Place -> favouriteRepository.setPlaceFavourite(favourite.id, true, type)
+                    null -> favouriteRepository.clearSpecial(type)
+                }
             }
         }
     }
@@ -231,7 +236,10 @@ class FavouriteScreen: Screen {
                                 horizontalArrangement = Arrangement.spacedBy(1.rdp, Alignment.CenterHorizontally),
                                 contentPadding = PaddingValues(horizontal = 1.rdp)
                             ) {
-                                items(specials) {
+                                items(
+                                    specials,
+                                    { it.type }
+                                ) {
                                     SpecialFavouriteWidget(
                                         it,
                                         onClick = {
@@ -243,7 +251,8 @@ class FavouriteScreen: Screen {
                                         },
                                         onLongClick = if (it.favourite != null) {
                                             { viewModel.openSearch(it.type) }
-                                        } else null
+                                        } else null,
+                                        modifier = Modifier.animateItem()
                                     )
                                 }
                             }
@@ -305,7 +314,19 @@ class FavouriteScreen: Screen {
 
 }
 
-@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun SpecialFavouriteType.Icon() = when (this) {
+        SpecialFavouriteType.HOME -> HomeIcon()
+        SpecialFavouriteType.WORK -> WorkIcon()
+    }
+
+val SpecialFavouriteType.label
+    @Composable
+    get() = when (this) {
+        SpecialFavouriteType.HOME -> stringResource(Res.string.favourites_no_home)
+        SpecialFavouriteType.WORK -> stringResource(Res.string.favourites_no_work)
+    }
+
 @Composable
 fun SpecialFavouriteWidget(
     special: SpecialFavourite,
@@ -313,38 +334,17 @@ fun SpecialFavouriteWidget(
     onLongClick: (() -> Unit)?,
     modifier: Modifier = Modifier
 ) {
-    Row(
-        Modifier
-            .clip(MaterialTheme.shapes.extraSmall)
-            .background(MaterialTheme.colorScheme.surfaceContainer)
-            .combinedClickable(
-                onClick = onClick,
-                onLongClick = onLongClick
-            )
-            .semantics {
-                this.role = Role.Button
-            }
-            .padding(1.rdp)
-            .then(modifier),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(1.rdp, Alignment.CenterHorizontally)
+    QuickSelectCard(
+        onClick,
+        onLongClick,
+        modifier
     ) {
-        CompositionLocalProvider(
-            LocalContentColor provides MaterialTheme.colorScheme.onSurface
-        ) {
-            when (special.type) {
-                SpecialFavouriteType.HOME -> HomeIcon()
-                SpecialFavouriteType.WORK -> WorkIcon()
+        special.type.Icon()
+        Text(
+            when {
+                special.favourite != null -> special.favourite.label
+                else -> special.type.label
             }
-            Text(
-                when {
-                    special.favourite != null -> special.favourite.label
-                    else -> when (special.type) {
-                        SpecialFavouriteType.HOME -> stringResource(Res.string.favourites_no_home)
-                        SpecialFavouriteType.WORK -> stringResource(Res.string.favourites_no_work)
-                    }
-                }
-            )
-        }
+        )
     }
 }

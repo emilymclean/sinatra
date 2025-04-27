@@ -23,7 +23,7 @@ interface Size<T: Number> {
 data class MapLocation(
     val lat: Latitude,
     val lng: Longitude
-): Serializable {
+): Serializable, NavigationObject {
 
     companion object {
         fun fromPB(pb: cl.emilym.gtfs.Location): MapLocation {

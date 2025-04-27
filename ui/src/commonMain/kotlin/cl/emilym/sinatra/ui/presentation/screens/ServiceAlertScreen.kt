@@ -47,6 +47,7 @@ import cl.emilym.sinatra.ui.asDurationFromNow
 import cl.emilym.sinatra.ui.widgets.ExternalLinkIcon
 import cl.emilym.sinatra.ui.widgets.ListHint
 import cl.emilym.sinatra.ui.widgets.NavigatorBackButton
+import cl.emilym.sinatra.ui.widgets.ServiceAlertCard
 import cl.emilym.sinatra.ui.widgets.SinatraScreenModel
 import cl.emilym.sinatra.ui.widgets.WarningIcon
 import cl.emilym.sinatra.ui.widgets.collectAsStateWithLifecycle
@@ -130,56 +131,10 @@ class ServiceAlertScreen: ContentScreen(ContentRepository.SERVICE_ALERT_ID) {
                             contentPadding = PaddingValues(bottom = 1.rdp)
                         ) {
                             items(alerts) {
-                                Card(
-                                    Modifier
-                                        .fillMaxWidth()
-                                        .then(
-                                            it.url?.let {
-                                                Modifier.clickable { uriHandler.openUri(it) }
-                                            } ?: Modifier
-                                        )
-                                        .padding(horizontal = 1.rdp),
-                                    colors = CardDefaults.cardColors(
-                                        containerColor = MaterialTheme.colorScheme.surfaceContainer,
-                                        contentColor = MaterialTheme.colorScheme.onSurface
-                                    )
-                                ) {
-                                    Row(
-                                        Modifier.padding(1.rdp),
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(1.rdp)
-                                    ) {
-                                        Column(Modifier.weight(1f)) {
-                                            Text(
-                                                it.title,
-                                                maxLines = 3,
-                                                overflow = TextOverflow.Ellipsis
-                                            )
-                                            if (it.regions.isNotEmpty() || it.date != null) {
-                                                Text(
-                                                    when {
-                                                        it.regions.isNotEmpty() && it.date != null ->
-                                                            stringResource(
-                                                                Res.string.service_alert_region_and_date,
-                                                                it.regions.first().text,
-                                                                it.date!!.asDurationFromNow()
-                                                            )
-                                                        it.date != null -> it.date!!.asDurationFromNow()
-                                                        else -> it.regions.first().text
-                                                    },
-                                                    style = MaterialTheme.typography.bodySmall
-                                                )
-                                            }
-                                        }
-                                        if (it.url != null) {
-                                            Box(Modifier.clearAndSetSemantics {  }) {
-                                                ExternalLinkIcon(
-                                                    tint = MaterialTheme.colorScheme.secondary
-                                                )
-                                            }
-                                        }
-                                    }
-                                }
+                                ServiceAlertCard(
+                                    it,
+                                    modifier = Modifier.fillMaxWidth().padding(horizontal = 1.rdp)
+                                )
                                 Spacer(Modifier.height(0.5.rdp))
                             }
                             (content as? RequestState.Success)?.value?.let {
