@@ -64,7 +64,7 @@ class FavouritePersistence(
         placeId: PlaceId? = null,
         heading: Heading? = null,
         extra: String? = null,
-        order: Int = Int.MAX_VALUE
+        order: Int = 0
     ) {
         validate(type, routeId, stopId, placeId, heading, extra)
         remove(type, routeId, stopId, placeId)

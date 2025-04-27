@@ -17,7 +17,7 @@ data class FavouriteEntity(
     val heading: String?,
     @ColumnInfo(defaultValue = "null")
     val extra: String?,
-    @ColumnInfo(defaultValue = "2147483647")
+    @ColumnInfo(defaultValue = "0")
     val order: Int
 )
 
