@@ -1,6 +1,5 @@
 package cl.emilym.sinatra.ui.presentation.screens.maps.search
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -23,37 +22,42 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import cafe.adriel.voyager.core.annotation.ExperimentalVoyagerApi
-import cafe.adriel.voyager.core.lifecycle.LifecycleEffectOnce
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import cl.emilym.compose.requeststate.RequestState
 import cl.emilym.compose.requeststate.RequestStateWidget
 import cl.emilym.compose.units.rdp
+import cl.emilym.sinatra.data.models.ReferencedTime
+import cl.emilym.sinatra.ui.asInstants
 import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
 import cl.emilym.sinatra.ui.presentation.screens.AddSpecialFavouriteScreen
 import cl.emilym.sinatra.ui.presentation.screens.Icon
 import cl.emilym.sinatra.ui.presentation.screens.ServiceAlertScreen
 import cl.emilym.sinatra.ui.presentation.screens.label
 import cl.emilym.sinatra.ui.presentation.screens.maps.RouteDetailScreen
+import cl.emilym.sinatra.ui.presentation.screens.maps.StopDetailScreen
 import cl.emilym.sinatra.ui.presentation.screens.maps.navigate.NavigateEntryScreen
 import cl.emilym.sinatra.ui.widgets.AlertScaffold
 import cl.emilym.sinatra.ui.widgets.ListCard
 import cl.emilym.sinatra.ui.widgets.QuickSelectCard
 import cl.emilym.sinatra.ui.widgets.RouteCard
 import cl.emilym.sinatra.ui.widgets.ServiceAlertCard
+import cl.emilym.sinatra.ui.widgets.SpecificRecomposeOnInstants
+import cl.emilym.sinatra.ui.widgets.StopStationTime
+import cl.emilym.sinatra.ui.widgets.UpcomingRouteCard
 import cl.emilym.sinatra.ui.widgets.collectAsStateWithLifecycle
 import cl.emilym.sinatra.ui.widgets.currentLocation
-import kotlinx.coroutines.launch
+import cl.emilym.sinatra.ui.widgets.rememberBottomSheetPosition
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import sinatra.ui.generated.resources.Res
-import sinatra.ui.generated.resources.browse_option_quick_navigation
 import sinatra.ui.generated.resources.browse_option_see_all_service_alerts
+import sinatra.ui.generated.resources.browse_option_upcoming_routes
 
 @OptIn(ExperimentalVoyagerApi::class)
 @Composable
@@ -62,13 +66,7 @@ fun Screen.MapSearchScreenBrowseState(
     mainViewModel: MapSearchViewModel
 ) {
     val bottomSheetState = LocalBottomSheetState.current?.bottomSheetState
-    val scope = rememberCoroutineScope()
-
-    LifecycleEffectOnce {
-        scope.launch {
-            bottomSheetState?.halfExpand()
-        }
-    }
+    rememberBottomSheetPosition()
 
     val currentLocation = currentLocation()
     LaunchedEffect(currentLocation) {
@@ -117,6 +115,14 @@ fun Screen.MapSearchScreenBrowseState(
                             is BrowseOption.QuickNavigateGroup -> {
                                 Box(Modifier.animateItem()) {
                                     QuickNavigateGroupBrowseOption(it)
+                                }
+                            }
+                            is BrowseOption.LargeNearbyStopDepartures -> {
+                                Box(Modifier.animateItem()) {
+                                    LargeNearbyStopDeparturesWidget(
+                                        it,
+                                        { viewModel.refreshNearby() }
+                                    )
                                 }
                             }
                             else -> {}
@@ -222,5 +228,61 @@ private fun QuickNavigationCard(
             is QuickNavigationItem.Item -> item.location.name
             is QuickNavigationItem.ToAdd ->  item.special.label
         })
+    }
+}
+
+@Composable
+fun LargeNearbyStopDeparturesWidget(
+    option: BrowseOption.LargeNearbyStopDepartures,
+    refresh: () -> Unit
+) {
+    val navigator = LocalNavigator.currentOrThrow
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 1.rdp)
+            .clickable { navigator.push(StopDetailScreen(option.stop.stop.id)) },
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+            contentColor = MaterialTheme.colorScheme.onSurface,
+        )
+    ) {
+        Column {
+            Text(
+                stringResource(Res.string.browse_option_upcoming_routes, option.stop.stop.name),
+                modifier = Modifier.padding(1.rdp)
+            )
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                    contentColor = MaterialTheme.colorScheme.onSurface,
+                )
+            ) {
+                Column {
+                    val triggers = option.stop.departures.map { it.stationTime }.asInstants()
+                    SpecificRecomposeOnInstants(triggers) { trigger ->
+                        for (upcoming in option.stop.departures.take(2)) {
+                            UpcomingRouteCard(
+                                upcoming,
+                                StopStationTime.Departure(upcoming.stationTime.departure),
+                                short = true,
+                                modifier = Modifier.fillMaxWidth(),
+                                onClick = { navigator.push(
+                                    RouteDetailScreen(
+                                        upcoming.routeId,
+                                        upcoming.serviceId,
+                                        upcoming.tripId,
+                                        option.stop.stop.id,
+                                        (upcoming.stationTime.arrival.time as? ReferencedTime)?.startOfDay
+                                    )
+                                ) }
+                            )
+                        }
+                    }
+                }
+            }
+        }
     }
 }

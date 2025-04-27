@@ -15,6 +15,7 @@ fun UpcomingRouteCard(
     timetableTime: IStopTimetableTime,
     stopStationTime: StopStationTime?,
     modifier: Modifier = Modifier,
+    short: Boolean = false,
     onClick: (() -> Unit)? = null
 ) {
     ListCard(
@@ -27,10 +28,16 @@ fun UpcomingRouteCard(
         Text(
             stringResource(
                 Res.string.route_with_heading,
-                timetableTime.route?.name ?: stringResource(
-                    Res.string.route_code_name,
-                    timetableTime.routeCode
-                ), timetableTime.heading
+                when {
+                    short -> stringResource(
+                        Res.string.route_code_name,
+                        timetableTime.routeCode
+                    )
+                    else -> timetableTime.route?.name ?: stringResource(
+                        Res.string.route_code_name,
+                        timetableTime.routeCode
+                    )
+                }, timetableTime.heading
             )
         )
         stopStationTime?.let {

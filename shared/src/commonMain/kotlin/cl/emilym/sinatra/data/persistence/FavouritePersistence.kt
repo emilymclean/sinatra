@@ -169,4 +169,10 @@ class FavouritePersistence(
         }
     }
 
+    fun stopsFavourited(
+        stopIds: List<StopId>
+    ): Flow<List<StopId>> {
+        return favouriteDao.getStopIdExistence(stopIds)
+    }
+
 }
