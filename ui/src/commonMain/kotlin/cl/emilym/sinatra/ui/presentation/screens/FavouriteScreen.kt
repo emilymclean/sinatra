@@ -62,6 +62,7 @@ import cl.emilym.sinatra.ui.widgets.ListCard
 import cl.emilym.sinatra.ui.widgets.ListHint
 import cl.emilym.sinatra.ui.widgets.MyLocationIcon
 import cl.emilym.sinatra.ui.widgets.PlaceCard
+import cl.emilym.sinatra.ui.widgets.QuickSelectCard
 import cl.emilym.sinatra.ui.widgets.RandleScaffold
 import cl.emilym.sinatra.ui.widgets.RouteCard
 import cl.emilym.sinatra.ui.widgets.SearchWidget
@@ -305,7 +306,19 @@ class FavouriteScreen: Screen {
 
 }
 
-@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun SpecialFavouriteType.Icon() = when (this) {
+        SpecialFavouriteType.HOME -> HomeIcon()
+        SpecialFavouriteType.WORK -> WorkIcon()
+    }
+
+val SpecialFavouriteType.label
+    @Composable
+    get() = when (this) {
+        SpecialFavouriteType.HOME -> stringResource(Res.string.favourites_no_home)
+        SpecialFavouriteType.WORK -> stringResource(Res.string.favourites_no_work)
+    }
+
 @Composable
 fun SpecialFavouriteWidget(
     special: SpecialFavourite,
@@ -313,38 +326,17 @@ fun SpecialFavouriteWidget(
     onLongClick: (() -> Unit)?,
     modifier: Modifier = Modifier
 ) {
-    Row(
-        Modifier
-            .clip(MaterialTheme.shapes.extraSmall)
-            .background(MaterialTheme.colorScheme.surfaceContainer)
-            .combinedClickable(
-                onClick = onClick,
-                onLongClick = onLongClick
-            )
-            .semantics {
-                this.role = Role.Button
-            }
-            .padding(1.rdp)
-            .then(modifier),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(1.rdp, Alignment.CenterHorizontally)
+    QuickSelectCard(
+        onClick,
+        onLongClick,
+        modifier
     ) {
-        CompositionLocalProvider(
-            LocalContentColor provides MaterialTheme.colorScheme.onSurface
-        ) {
-            when (special.type) {
-                SpecialFavouriteType.HOME -> HomeIcon()
-                SpecialFavouriteType.WORK -> WorkIcon()
+        special.type.Icon()
+        Text(
+            when {
+                special.favourite != null -> special.favourite.label
+                else -> special.type.label
             }
-            Text(
-                when {
-                    special.favourite != null -> special.favourite.label
-                    else -> when (special.type) {
-                        SpecialFavouriteType.HOME -> stringResource(Res.string.favourites_no_home)
-                        SpecialFavouriteType.WORK -> stringResource(Res.string.favourites_no_work)
-                    }
-                }
-            )
-        }
+        )
     }
 }

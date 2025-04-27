@@ -1,13 +1,18 @@
 package cl.emilym.sinatra.ui.presentation.screens.maps.search
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -29,16 +34,22 @@ import cl.emilym.compose.requeststate.RequestState
 import cl.emilym.compose.requeststate.RequestStateWidget
 import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
+import cl.emilym.sinatra.ui.presentation.screens.Icon
 import cl.emilym.sinatra.ui.presentation.screens.ServiceAlertScreen
+import cl.emilym.sinatra.ui.presentation.screens.label
 import cl.emilym.sinatra.ui.presentation.screens.maps.RouteDetailScreen
+import cl.emilym.sinatra.ui.presentation.screens.maps.navigate.NavigateEntryScreen
 import cl.emilym.sinatra.ui.widgets.AlertScaffold
 import cl.emilym.sinatra.ui.widgets.ListCard
+import cl.emilym.sinatra.ui.widgets.QuickSelectCard
 import cl.emilym.sinatra.ui.widgets.RouteCard
 import cl.emilym.sinatra.ui.widgets.ServiceAlertCard
 import cl.emilym.sinatra.ui.widgets.collectAsStateWithLifecycle
+import cl.emilym.sinatra.ui.widgets.currentLocation
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import sinatra.ui.generated.resources.Res
+import sinatra.ui.generated.resources.browse_option_quick_navigation
 import sinatra.ui.generated.resources.browse_option_see_all_service_alerts
 
 @OptIn(ExperimentalVoyagerApi::class)
@@ -54,6 +65,11 @@ fun Screen.MapSearchScreenBrowseState(
         scope.launch {
             bottomSheetState?.halfExpand()
         }
+    }
+
+    val currentLocation = currentLocation()
+    LaunchedEffect(currentLocation) {
+        viewModel.updateLocation(currentLocation)
     }
 
     Scaffold { innerPadding ->
@@ -80,33 +96,18 @@ fun Screen.MapSearchScreenBrowseState(
                     item {
                         AlertScaffold((alerts as? RequestState.Success)?.value)
                     }
+                    if (options.isNotEmpty()) {
+                        item {
+                            Spacer(Modifier.height(1.rdp))
+                        }
+                    }
                     items(options) {
                         when (it) {
                             is BrowseOption.NewServiceUpdate -> {
-                                Card(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(horizontal = 1.rdp)
-                                        .clickable { navigator.push(ServiceAlertScreen()) },
-                                    colors = CardDefaults.cardColors(
-                                        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-                                        contentColor = MaterialTheme.colorScheme.onSurface,
-                                    )
-                                ) {
-                                    ServiceAlertCard(
-                                        it.serviceAlert,
-                                        colors = CardDefaults.cardColors(
-                                            containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
-                                            contentColor = MaterialTheme.colorScheme.onSurface,
-                                        )
-                                    )
-                                    ListCard(
-                                        icon = null,
-                                        onClick = { navigator.push(ServiceAlertScreen()) }
-                                    ) {
-                                        Text(stringResource(Res.string.browse_option_see_all_service_alerts))
-                                    }
-                                }
+                                NewServiceUpdateBrowseOption(it)
+                            }
+                            is BrowseOption.QuickNavigateGroup -> {
+                                QuickNavigateGroupBrowseOption(it)
                             }
                             else -> {}
                         }
@@ -130,5 +131,70 @@ fun Screen.MapSearchScreenBrowseState(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun NewServiceUpdateBrowseOption(option: BrowseOption.NewServiceUpdate) {
+    val navigator = LocalNavigator.currentOrThrow
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 1.rdp)
+            .clickable { navigator.push(ServiceAlertScreen()) },
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+            contentColor = MaterialTheme.colorScheme.onSurface,
+        )
+    ) {
+        ServiceAlertCard(
+            option.serviceAlert,
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                contentColor = MaterialTheme.colorScheme.onSurface,
+            )
+        )
+        ListCard(
+            icon = null,
+            onClick = { navigator.push(ServiceAlertScreen()) }
+        ) {
+            Text(stringResource(Res.string.browse_option_see_all_service_alerts))
+        }
+    }
+}
+
+@Composable
+private fun QuickNavigateGroupBrowseOption(option: BrowseOption.QuickNavigateGroup) {
+    when (option.items.size) {
+        1 -> Box(Modifier.padding(horizontal = 1.rdp)) {
+            QuickNavigationCard(option.items.first(), Modifier.fillMaxWidth())
+        }
+        else -> LazyRow(
+            Modifier.fillMaxWidth(),
+            contentPadding = PaddingValues(horizontal = 1.rdp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(1.rdp, Alignment.CenterHorizontally)
+        ) {
+            items(option.items) {
+                QuickNavigationCard(it)
+            }
+        }
+    }
+}
+
+@Composable
+private fun QuickNavigationCard(
+    item: QuickNavigationItem,
+    modifier: Modifier = Modifier
+) {
+    val navigator = LocalNavigator.currentOrThrow
+    QuickSelectCard(
+        { navigator.push(NavigateEntryScreen(item.location)) },
+        null,
+        backgroundColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+        modifier = Modifier.then(modifier)
+    ) {
+        item.special?.Icon()
+        Text(item.location.name)
     }
 }
