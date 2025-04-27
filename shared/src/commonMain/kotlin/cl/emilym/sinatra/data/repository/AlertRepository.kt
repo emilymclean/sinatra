@@ -18,8 +18,13 @@ import org.koin.core.annotation.Factory
 class AlertRepository(
     private val liveServiceRepository: LiveServiceRepository,
     private val routeRepository: RouteRepository,
-    private val contentRepository: ContentRepository
+    private val contentRepository: ContentRepository,
+    private val remoteConfigRepository: RemoteConfigRepository,
 ) {
+
+    companion object {
+        const val GTFS_ALERTS_ENABLED = "gtfs_alerts"
+    }
 
     fun alerts(
         routeId: RouteId? = null,
@@ -39,8 +44,9 @@ class AlertRepository(
                 else -> null
             })
 
-            val routeFeeds = when (routeId) {
-                null -> routeRepository.routes().item.mapNotNull { it.realTimeUrl }.distinct().toTypedArray()
+            val routeFeeds = when {
+                !remoteConfigRepository.feature(GTFS_ALERTS_ENABLED, false) -> emptyArray()
+                routeId == null -> routeRepository.routes().item.mapNotNull { it.realTimeUrl }.distinct().toTypedArray()
                 else -> routeRepository.route(routeId).item?.realTimeUrl?.let { arrayOf(it) } ?: emptyArray()
             }
             if (routeFeeds.isEmpty()) return@flow emit(banner)
