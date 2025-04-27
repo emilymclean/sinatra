@@ -43,6 +43,7 @@ class FavouriteNearbyStopDeparturesUseCase(
 
             val nearby = nearbyStopsUseCase(
                 currentLocation,
+                limit = 30
             )
 
             emitAll(favouriteRepository.favouritedStops(nearby.map { it.stop.id })
