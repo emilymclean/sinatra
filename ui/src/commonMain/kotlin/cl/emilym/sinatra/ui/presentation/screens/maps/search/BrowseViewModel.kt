@@ -39,14 +39,21 @@ import org.koin.core.annotation.Factory
 
 sealed interface QuickNavigationItem {
     val special: SpecialFavouriteType?
+    val key: Any
 
     data class Item(
         val location: NavigationLocation,
         override val special: SpecialFavouriteType?
-    ): QuickNavigationItem
+    ): QuickNavigationItem {
+        override val key: Any
+            get() = location.screenKey
+    }
     data class ToAdd(
         override val special: SpecialFavouriteType
-    ): QuickNavigationItem
+    ): QuickNavigationItem {
+        override val key: Any
+            get() = special
+    }
 }
 
 sealed interface BrowseOption {

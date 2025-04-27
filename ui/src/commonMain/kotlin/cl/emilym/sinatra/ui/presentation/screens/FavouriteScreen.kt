@@ -238,7 +238,10 @@ class FavouriteScreen: Screen {
                                 horizontalArrangement = Arrangement.spacedBy(1.rdp, Alignment.CenterHorizontally),
                                 contentPadding = PaddingValues(horizontal = 1.rdp)
                             ) {
-                                items(specials) {
+                                items(
+                                    specials,
+                                    { it.type }
+                                ) {
                                     SpecialFavouriteWidget(
                                         it,
                                         onClick = {
@@ -250,7 +253,8 @@ class FavouriteScreen: Screen {
                                         },
                                         onLongClick = if (it.favourite != null) {
                                             { viewModel.openSearch(it.type) }
-                                        } else null
+                                        } else null,
+                                        modifier = Modifier.animateItem()
                                     )
                                 }
                             }

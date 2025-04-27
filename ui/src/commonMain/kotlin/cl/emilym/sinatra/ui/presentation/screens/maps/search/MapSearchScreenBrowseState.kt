@@ -102,13 +102,20 @@ fun Screen.MapSearchScreenBrowseState(
                             Spacer(Modifier.height(1.rdp))
                         }
                     }
-                    items(options) {
+                    items(
+                        options,
+                        { it::class.simpleName ?: "" }
+                    ) {
                         when (it) {
                             is BrowseOption.NewServiceUpdate -> {
-                                NewServiceUpdateBrowseOption(it)
+                                Box(Modifier.animateItem()) {
+                                    NewServiceUpdateBrowseOption(it)
+                                }
                             }
                             is BrowseOption.QuickNavigateGroup -> {
-                                QuickNavigateGroupBrowseOption(it)
+                                Box(Modifier.animateItem()) {
+                                    QuickNavigateGroupBrowseOption(it)
+                                }
                             }
                             else -> {}
                         }
@@ -176,8 +183,14 @@ private fun QuickNavigateGroupBrowseOption(option: BrowseOption.QuickNavigateGro
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(1.rdp, Alignment.CenterHorizontally)
         ) {
-            items(option.items) {
-                QuickNavigationCard(it)
+            items(
+                option.items,
+                { it.key }
+            ) {
+                QuickNavigationCard(
+                    it,
+                    modifier = Modifier.animateItem()
+                )
             }
         }
     }
