@@ -16,6 +16,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -48,6 +49,7 @@ import cl.emilym.sinatra.ui.widgets.ServiceAlertCard
 import cl.emilym.sinatra.ui.widgets.collectAsStateWithLifecycle
 import cl.emilym.sinatra.ui.widgets.currentLocation
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import sinatra.ui.generated.resources.Res
 import sinatra.ui.generated.resources.browse_option_quick_navigation
@@ -209,17 +211,13 @@ private fun QuickNavigationCard(
                 is QuickNavigationItem.ToAdd -> navigator.push(AddSpecialFavouriteScreen(item.special))
             }
         },
-//        when {
-//            item is QuickNavigationItem.Item && item.special != null -> {
-//                { navigator.push(AddSpecialFavouriteScreen(item.special!!)) }
-//            }
-//            else -> null
-//        },
         null,
         backgroundColor = MaterialTheme.colorScheme.surfaceContainerHighest,
         modifier = Modifier.then(modifier)
     ) {
-        item.special?.Icon()
+        item.special?.Icon() ?: (item as? QuickNavigationItem.Item)?.let {
+            Icon(painterResource(it.location.icon), contentDescription = null)
+        }
         Text(when (item) {
             is QuickNavigationItem.Item -> item.location.name
             is QuickNavigationItem.ToAdd ->  item.special.label
