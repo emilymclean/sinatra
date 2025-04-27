@@ -1,4 +1,4 @@
-package cl.emilym.sinatra.domain.smart
+package cl.emilym.sinatra.domain.prompt
 
 import cl.emilym.sinatra.data.models.ServiceAlert
 import cl.emilym.sinatra.data.repository.RemoteConfigRepository

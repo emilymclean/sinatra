@@ -34,6 +34,8 @@ import cl.emilym.sinatra.ui.navigation.NativeMapScreen
 import cl.emilym.sinatra.ui.placeCardDefaultNavigation
 import cl.emilym.sinatra.ui.presentation.screens.maps.RouteDetailScreen
 import cl.emilym.sinatra.ui.presentation.screens.maps.StopDetailScreen
+import cl.emilym.sinatra.ui.presentation.screens.maps.search.browse.BrowseViewModel
+import cl.emilym.sinatra.ui.presentation.screens.maps.search.browse.MapSearchScreenBrowseState
 import cl.emilym.sinatra.ui.presentation.screens.search.SearchScreen
 import cl.emilym.sinatra.ui.widgets.LocalMapControl
 import cl.emilym.sinatra.ui.widgets.MyLocationIcon

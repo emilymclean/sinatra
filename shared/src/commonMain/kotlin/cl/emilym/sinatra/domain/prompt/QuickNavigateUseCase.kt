@@ -1,4 +1,4 @@
-package cl.emilym.sinatra.domain.smart
+package cl.emilym.sinatra.domain.prompt
 
 import cl.emilym.sinatra.data.models.Favourite
 import cl.emilym.sinatra.data.models.MapLocation
