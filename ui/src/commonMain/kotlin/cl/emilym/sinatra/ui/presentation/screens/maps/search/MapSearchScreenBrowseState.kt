@@ -34,6 +34,7 @@ import cl.emilym.compose.requeststate.RequestState
 import cl.emilym.compose.requeststate.RequestStateWidget
 import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
+import cl.emilym.sinatra.ui.presentation.screens.AddSpecialFavouriteScreen
 import cl.emilym.sinatra.ui.presentation.screens.Icon
 import cl.emilym.sinatra.ui.presentation.screens.ServiceAlertScreen
 import cl.emilym.sinatra.ui.presentation.screens.label
@@ -192,7 +193,7 @@ private fun QuickNavigationCard(
         {
             when (item) {
                 is QuickNavigationItem.Item -> navigator.push(NavigateEntryScreen(item.location))
-                else -> {}
+                is QuickNavigationItem.ToAdd -> navigator.push(AddSpecialFavouriteScreen(item.special))
             }
         },
         null,
