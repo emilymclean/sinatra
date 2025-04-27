@@ -34,6 +34,7 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.core.screen.ScreenKey
 import cafe.adriel.voyager.koin.koinScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
+import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import cl.emilym.compose.requeststate.RequestState
 import cl.emilym.compose.requeststate.RequestStateWidget
@@ -152,7 +153,6 @@ class FavouriteViewModel(
 class FavouriteScreen: Screen {
     override val key: ScreenKey = "favourite"
 
-    @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     override fun Content() {
         val viewModel = koinScreenModel<FavouriteViewModel>()
@@ -209,7 +209,11 @@ class FavouriteScreen: Screen {
                                     SpecialFavouriteWidget(
                                         it,
                                         {
-                                            viewModel.openSearch(it.type)
+                                            if (it.favourite == null) {
+                                                viewModel.openSearch(it.type)
+                                            } else {
+                                                it.favourite.navigate(navigator)
+                                            }
                                         },
                                     )
                                 }
@@ -223,24 +227,18 @@ class FavouriteScreen: Screen {
                                 when (it) {
                                     is Favourite.Stop -> StopCard(
                                         it.stop,
-                                        onClick = {
-                                            navigator.push(StopDetailScreen(it.stop.id))
-                                        },
+                                        onClick = { it.navigate(navigator) },
                                         showStopIcon = true
                                     )
 
                                     is Favourite.Route -> RouteCard(
                                         it.route,
-                                        onClick = {
-                                            navigator.push(RouteDetailScreen(it.route.id))
-                                        }
+                                        onClick = { it.navigate(navigator) }
                                     )
 
                                     is Favourite.StopOnRoute -> StopCard(
                                         it.stop,
-                                        onClick = {
-                                            navigator.push(StopDetailScreen(it.stop.id))
-                                        },
+                                        onClick = { it.navigate(navigator) },
                                         showStopIcon = true
                                     )
 
@@ -248,7 +246,7 @@ class FavouriteScreen: Screen {
                                         it.place,
                                         modifier = Modifier.fillMaxWidth(),
                                         showPlaceIcon = true,
-                                        onClick = { navigator.placeCardDefaultNavigation(it.place) }
+                                        onClick = { it.navigate(navigator) }
                                     )
                                 }
                             }
@@ -266,6 +264,16 @@ class FavouriteScreen: Screen {
             }
         }
     }
+
+    private fun Favourite.navigate(navigator: Navigator) {
+        when (this) {
+            is Favourite.Stop -> navigator.push(StopDetailScreen(stop.id))
+            is Favourite.Route -> navigator.push(RouteDetailScreen(route.id))
+            is Favourite.StopOnRoute -> navigator.push(StopDetailScreen(stop.id))
+            is Favourite.Place -> navigator.placeCardDefaultNavigation(place)
+        }
+    }
+
 }
 
 @Composable
