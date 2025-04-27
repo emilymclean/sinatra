@@ -77,6 +77,8 @@ import kotlinx.coroutines.IO
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
@@ -115,7 +117,7 @@ class FavouriteViewModel(
     }
 
     private val allFavourites = flatRequestStateFlow { favouriteRepository.all() }
-    val state = MutableStateFlow<FavouriteState>(FavouriteState.Favourite)
+    private val searchType = MutableStateFlow<SpecialFavouriteType?>(null)
 
     val anyFavourites = allFavourites.mapLatest {
         it.unwrap()?.isNotEmpty() ?: true
@@ -135,6 +137,18 @@ class FavouriteViewModel(
         }
     }.state(listOf())
 
+    val state = searchType.flatMapLatest { searchType ->
+        when (searchType) {
+            null -> flowOf(FavouriteState.Favourite)
+            else -> special.mapLatest {
+                FavouriteState.Search(
+                    searchType,
+                    it.firstOrNull { it.type == searchType }?.favourite != null
+                )
+            }
+        }
+    }.state(FavouriteState.Favourite)
+
     fun retry() {
         screenModelScope.launch {
             allFavourites.retry()
@@ -142,18 +156,18 @@ class FavouriteViewModel(
     }
 
     fun openSearch(type: SpecialFavouriteType) {
-        state.value = FavouriteState.Search(type, special.value.first { it.type == type }.favourite != null)
+        searchType.value = type
     }
 
     fun closeSearch() {
-        state.value = FavouriteState.Favourite
+        searchType.value = null
     }
 
     fun selectSpecialFavourite(favourite: NavigationObject?) {
         val type = (state.value as? FavouriteState.Search)?.type ?: return
 
         MainScope().launch {
-            state.value = FavouriteState.Favourite
+            closeSearch()
             withContext(Dispatchers.IO) {
                 when (favourite) {
                     is Stop -> favouriteRepository.setStopFavourite(favourite.id, true, type)
