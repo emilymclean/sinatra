@@ -35,6 +35,8 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import org.koin.core.annotation.Factory
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.days
@@ -203,20 +205,21 @@ class CalculateJourneyUseCase(
             is RaptorJourneyConnection.Travel -> connection.endTime.seconds
             else -> null
         }
+        var lastStartOfDay = startOfDay
 
         for (i in connections.indices) {
             val stops = connections[i].stops.mapNotNull { s -> stops.item.firstOrNull { it.id == s } }
             legs += when (val connection = connections[i]) {
                 is RaptorJourneyConnection.Travel -> {
-                    val startOfDayIndexed = startOfDay + connection.dayIndex.days
+                    lastStartOfDay = startOfDay + connection.dayIndex.days
                     lastEndTime = connection.endTime.seconds
                     JourneyLeg.Travel(
                         stops,
                         (connection.endTime - connection.startTime).seconds,
                         routes.item.first { it?.id == connection.routeId }!!,
                         connection.heading,
-                        Time.create(connection.startTime.seconds, startOfDayIndexed),
-                        Time.create(connection.endTime.seconds, startOfDayIndexed)
+                        Time.create(connection.startTime.seconds, lastStartOfDay),
+                        Time.create(connection.endTime.seconds, lastStartOfDay)
                     )
                 }
                 is RaptorJourneyConnection.Transfer -> when {
@@ -224,7 +227,7 @@ class CalculateJourneyUseCase(
                         stops,
                         connection.travelTime.seconds,
                         Time.create(lastEndTime, startOfDay),
-                        Time.create(lastEndTime + connection.travelTime.seconds, startOfDay)
+                        Time.create(lastEndTime + connection.travelTime.seconds, lastStartOfDay)
                     ).also {
                         lastEndTime += connection.travelTime.seconds
                     }
@@ -241,8 +244,8 @@ class CalculateJourneyUseCase(
                         JourneyLeg.Transfer(
                             stops,
                             connection.travelTime.seconds,
-                            Time.create(concreteTime - connection.travelTime.seconds, startOfDay),
-                            Time.create(concreteTime, startOfDay)
+                            Time.create(concreteTime - connection.travelTime.seconds, lastStartOfDay),
+                            Time.create(concreteTime, lastStartOfDay)
                         )
                     }
                 }
