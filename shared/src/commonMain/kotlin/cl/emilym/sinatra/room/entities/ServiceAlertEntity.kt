@@ -21,7 +21,10 @@ data class ServiceAlertEntity(
             title,
             url,
             date?.let { Instant.fromEpochMilliseconds(date) },
-            regions.split(",").map { ServiceAlertRegion.valueOf(it) }
+            when (regions) {
+                "" -> listOf()
+                else -> regions.split(",").map { ServiceAlertRegion.valueOf(it) }
+            }
         )
     }
 
