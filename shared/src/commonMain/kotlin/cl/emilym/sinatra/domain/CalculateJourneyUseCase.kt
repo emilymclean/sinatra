@@ -24,6 +24,7 @@ import cl.emilym.sinatra.router.RaptorConfig
 import cl.emilym.sinatra.router.RaptorJourney
 import cl.emilym.sinatra.router.RaptorJourneyConnection
 import cl.emilym.sinatra.router.RaptorStop
+import cl.emilym.sinatra.router.Router
 import cl.emilym.sinatra.router.RouterPrefs
 import cl.emilym.sinatra.router.Seconds
 import cl.emilym.sinatra.router.data.NetworkGraph
@@ -65,6 +66,7 @@ class CalculateJourneyUseCase(
     private val clock: Clock,
     private val transportMetadataRepository: TransportMetadataRepository,
     private val routingPreferencesRepository: RoutingPreferencesRepository,
+    private val routerFactory: RouterFactory
 ) {
 
     private val lock = Mutex()
@@ -152,7 +154,7 @@ class CalculateJourneyUseCase(
         }
     }
 
-    private suspend fun calculateJourney(
+    suspend fun calculateJourney(
         config: RaptorConfig,
         departureStops: List<RaptorStop>,
         arrivalStops: List<RaptorStop>
@@ -162,20 +164,13 @@ class CalculateJourneyUseCase(
             bikesAllowed = onlyBikes
         )
 
-        val raptor = when (anchorTime) {
-            is JourneyCalculationTime.ArrivalTime -> ArrivalBasedRouter(
-                getGraph().item,
-                services.map { it.item },
-                config,
-                prefs
-            )
-            is JourneyCalculationTime.DepartureTime -> DepartureBasedRouter(
-                getGraph().item,
-                services.map { it.item },
-                config,
-                prefs
-            )
-        }
+        val raptor = routerFactory(
+            anchorTime,
+            getGraph().item,
+            services,
+            config,
+            prefs
+        )
 
         val anchorTimeSeconds: Seconds = (anchorTime.time - startOfDay).inWholeSeconds
 
@@ -191,7 +186,7 @@ class CalculateJourneyUseCase(
         }
     }
 
-    private suspend fun RaptorJourney.toJourney(): Journey {
+    suspend fun RaptorJourney.toJourney(): Journey {
         val raptorJourney = this
         val connections = raptorJourney.connections
 
@@ -203,20 +198,21 @@ class CalculateJourneyUseCase(
             is RaptorJourneyConnection.Travel -> connection.endTime.seconds
             else -> null
         }
+        var lastStartOfDay = startOfDay
 
         for (i in connections.indices) {
             val stops = connections[i].stops.mapNotNull { s -> stops.item.firstOrNull { it.id == s } }
             legs += when (val connection = connections[i]) {
                 is RaptorJourneyConnection.Travel -> {
-                    val startOfDayIndexed = startOfDay + connection.dayIndex.days
+                    lastStartOfDay = startOfDay + connection.dayIndex.days
                     lastEndTime = connection.endTime.seconds
                     JourneyLeg.Travel(
                         stops,
                         (connection.endTime - connection.startTime).seconds,
                         routes.item.first { it?.id == connection.routeId }!!,
                         connection.heading,
-                        Time.create(connection.startTime.seconds, startOfDayIndexed),
-                        Time.create(connection.endTime.seconds, startOfDayIndexed)
+                        Time.create(connection.startTime.seconds, lastStartOfDay),
+                        Time.create(connection.endTime.seconds, lastStartOfDay)
                     )
                 }
                 is RaptorJourneyConnection.Transfer -> when {
@@ -224,7 +220,7 @@ class CalculateJourneyUseCase(
                         stops,
                         connection.travelTime.seconds,
                         Time.create(lastEndTime, startOfDay),
-                        Time.create(lastEndTime + connection.travelTime.seconds, startOfDay)
+                        Time.create(lastEndTime + connection.travelTime.seconds, lastStartOfDay)
                     ).also {
                         lastEndTime += connection.travelTime.seconds
                     }
@@ -241,8 +237,8 @@ class CalculateJourneyUseCase(
                         JourneyLeg.Transfer(
                             stops,
                             connection.travelTime.seconds,
-                            Time.create(concreteTime - connection.travelTime.seconds, startOfDay),
-                            Time.create(concreteTime, startOfDay)
+                            Time.create(concreteTime - connection.travelTime.seconds, lastStartOfDay),
+                            Time.create(concreteTime, lastStartOfDay)
                         )
                     }
                 }
@@ -281,7 +277,7 @@ class CalculateJourneyUseCase(
         return Journey(legs)
     }
 
-    private suspend fun List<Stop>.nearbyStops(location: JourneyLocation, maximumWalkingTime: Duration): List<RaptorStop> {
+    suspend fun List<Stop>.nearbyStops(location: JourneyLocation, maximumWalkingTime: Duration): List<RaptorStop> {
         if (location.exact) {
             return listOf(RaptorStop(minBy { distance(location.location, it.location) }.id, 0L))
         }
@@ -292,6 +288,34 @@ class CalculateJourneyUseCase(
                     it.stop.id,
                     (it.distance * getGraph().item.metadata.assumedWalkingSecondsPerKilometer.toInt()).toLong()
                 ) }
+    }
+
+}
+
+@Factory
+class RouterFactory {
+
+    operator fun invoke(
+        anchorTime: JourneyCalculationTime,
+        graph: NetworkGraph,
+        services: List<Cachable<List<ServiceId>>>,
+        config: RaptorConfig,
+        prefs: RouterPrefs
+    ): Router {
+        return when (anchorTime) {
+            is JourneyCalculationTime.ArrivalTime -> ArrivalBasedRouter(
+                graph,
+                services.map { it.item },
+                config,
+                prefs
+            )
+            is JourneyCalculationTime.DepartureTime -> DepartureBasedRouter(
+                graph,
+                services.map { it.item },
+                config,
+                prefs
+            )
+        }
     }
 
 }
