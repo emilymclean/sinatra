@@ -62,11 +62,11 @@ class CalculateJourneyUseCase(
     private val networkGraphRepository: NetworkGraphRepository,
     private val activeServicesUseCase: ActiveServicesUseCase,
     private val stopRepository: StopRepository,
-    private val routeRepository: RouteRepository,
     private val clock: Clock,
     private val transportMetadataRepository: TransportMetadataRepository,
     private val routingPreferencesRepository: RoutingPreferencesRepository,
-    private val routerFactory: RouterFactory
+    private val routerFactory: RouterFactory,
+    private val reconstructJourneyUseCase: ReconstructJourneyUseCase,
 ) {
 
     private val lock = Mutex()
@@ -175,20 +175,55 @@ class CalculateJourneyUseCase(
         val anchorTimeSeconds: Seconds = (anchorTime.time - startOfDay).inWholeSeconds
 
         return try {
-            raptor.calculate(
-                anchorTimeSeconds,
-                departureStops,
-                arrivalStops
-            ).toJourney()
+            reconstructJourneyUseCase(
+                raptor.calculate(
+                    anchorTimeSeconds,
+                    departureStops,
+                    arrivalStops
+                ),
+                departureLocation,
+                arrivalLocation,
+                anchorTime,
+                getGraph().item
+            )
         } catch (e: Exception) {
             Napier.e(e)
             null
         }
     }
 
-    suspend fun RaptorJourney.toJourney(): Journey {
-        val raptorJourney = this
+    suspend fun List<Stop>.nearbyStops(location: JourneyLocation, maximumWalkingTime: Duration): List<RaptorStop> {
+        if (location.exact) {
+            return listOf(RaptorStop(minBy { distance(location.location, it.location) }.id, 0L))
+        }
+
+        return map { StopWithDistance(it, distance(location.location, it.location)) }
+                .filter { (it.distance * getGraph().item.metadata.assumedWalkingSecondsPerKilometer.toLong()) < maximumWalkingTime.inWholeSeconds}
+                .map { RaptorStop(
+                    it.stop.id,
+                    (it.distance * getGraph().item.metadata.assumedWalkingSecondsPerKilometer.toInt()).toLong()
+                ) }
+    }
+
+}
+
+@Factory
+class ReconstructJourneyUseCase(
+    private val routeRepository: RouteRepository,
+    private val transportMetadataRepository: TransportMetadataRepository,
+    private val stopRepository: StopRepository
+) {
+
+    suspend operator fun invoke(
+        raptorJourney: RaptorJourney,
+        departureLocation: JourneyLocation,
+        arrivalLocation: JourneyLocation,
+        anchorTime: JourneyCalculationTime,
+        graph: NetworkGraph
+    ): Journey {
         val connections = raptorJourney.connections
+        val startOfDay = anchorTime.time.startOfDay(transportMetadataRepository.timeZone())
+        val stops = stopRepository.stops()
 
         val routes = routeRepository.routes(
             connections.filterIsInstance<RaptorJourneyConnection.Travel>().map { it.routeId }
@@ -219,7 +254,7 @@ class CalculateJourneyUseCase(
                     lastEndTime != null -> JourneyLeg.Transfer(
                         stops,
                         connection.travelTime.seconds,
-                        Time.create(lastEndTime, startOfDay),
+                        Time.create(lastEndTime, lastStartOfDay),
                         Time.create(lastEndTime + connection.travelTime.seconds, lastStartOfDay)
                     ).also {
                         lastEndTime += connection.travelTime.seconds
@@ -233,6 +268,10 @@ class CalculateJourneyUseCase(
                             .drop(i)
                             .first { it is RaptorJourneyConnection.Travel } as RaptorJourneyConnection.Travel)
                             .startTime - inbetweenTime).seconds
+                        lastStartOfDay = startOfDay + (connections
+                            .drop(i)
+                            .first { it is RaptorJourneyConnection.Travel } as RaptorJourneyConnection.Travel)
+                            .dayIndex.days
 
                         JourneyLeg.Transfer(
                             stops,
@@ -250,7 +289,7 @@ class CalculateJourneyUseCase(
                 legs = legs.dropWhile { it is JourneyLeg.Transfer }.toMutableList()
                 if (legs.isEmpty()) return@run
                 val attachedStop = (legs.first { it is JourneyLeg.RouteJourneyLeg } as JourneyLeg.RouteJourneyLeg).stops.first()
-                val time = distance(departureLocation.location, attachedStop.location) * getGraph().item.metadata.assumedWalkingSecondsPerKilometer.toLong()
+                val time = distance(departureLocation.location, attachedStop.location) * graph.metadata.assumedWalkingSecondsPerKilometer.toLong()
                 legs.add(0, JourneyLeg.TransferPoint(
                     time.seconds,
                     departureTime = legs.first().departureTime - time.seconds,
@@ -265,7 +304,7 @@ class CalculateJourneyUseCase(
                 if (legs.isEmpty()) return@run
                 val lastLeg = legs.last { it is JourneyLeg.RouteJourneyLeg } as JourneyLeg.RouteJourneyLeg
                 val attachedStop = lastLeg.stops.last()
-                val time = distance(arrivalLocation.location, attachedStop.location) * getGraph().item.metadata.assumedWalkingSecondsPerKilometer.toLong()
+                val time = distance(arrivalLocation.location, attachedStop.location) * graph.metadata.assumedWalkingSecondsPerKilometer.toLong()
                 legs.add(JourneyLeg.TransferPoint(
                     time.seconds,
                     departureTime = lastLeg.arrivalTime,
@@ -275,19 +314,6 @@ class CalculateJourneyUseCase(
         }
 
         return Journey(legs)
-    }
-
-    suspend fun List<Stop>.nearbyStops(location: JourneyLocation, maximumWalkingTime: Duration): List<RaptorStop> {
-        if (location.exact) {
-            return listOf(RaptorStop(minBy { distance(location.location, it.location) }.id, 0L))
-        }
-
-        return map { StopWithDistance(it, distance(location.location, it.location)) }
-                .filter { (it.distance * getGraph().item.metadata.assumedWalkingSecondsPerKilometer.toLong()) < maximumWalkingTime.inWholeSeconds}
-                .map { RaptorStop(
-                    it.stop.id,
-                    (it.distance * getGraph().item.metadata.assumedWalkingSecondsPerKilometer.toInt()).toLong()
-                ) }
     }
 
 }

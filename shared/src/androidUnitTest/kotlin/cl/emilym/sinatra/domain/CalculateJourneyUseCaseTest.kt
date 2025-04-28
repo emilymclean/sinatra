@@ -20,22 +20,22 @@ class CalculateJourneyUseCaseTest {
     private val activeServicesUseCase = mockk<ActiveServicesUseCase>()
     private val routerFactory = mockk<RouterFactory>()
     private val stopRepository = mockk<StopRepository>()
-    private val routeRepository = mockk<RouteRepository>()
     private val clock = mockk<Clock>()
     private val transportMetadataRepository = mockk<TransportMetadataRepository>()
     private val routingPreferencesRepository = mockk<RoutingPreferencesRepository>()
     private val config = mockk<JourneySearchConfig>()
     private val graph = mockk<NetworkGraph>()
+    private val reconstructJourneyUseCase = mockk<ReconstructJourneyUseCase>()
 
     private val useCase = CalculateJourneyUseCase(
         networkGraphRepository,
         activeServicesUseCase,
         stopRepository,
-        routeRepository,
         clock,
         transportMetadataRepository,
         routingPreferencesRepository,
-        routerFactory
+        routerFactory,
+        reconstructJourneyUseCase
     )
 
     private val now = Instant.parse("2025-04-28T10:00:00Z")
@@ -75,23 +75,7 @@ class CalculateJourneyUseCaseTest {
             )
         ))
         every { routerFactory(any(), any(), any(), any(), any()) } returns router
-
-        coEvery { routeRepository.routes(any()) } returns Cachable.live(listOf(
-            Route(
-                "ACTO001",
-                "R1",
-                "R1",
-                null,
-                "R1",
-                null,
-                RouteType.BUS,
-                null,
-                RouteVisibility(
-                    false,
-                    null
-                )
-            )
-        ))
+        coEvery { reconstructJourneyUseCase(any(), any(), any(), any(), any()) } returns Journey(listOf())
 
         val result = useCase(
             JourneyLocation(location, exact = true),
@@ -119,8 +103,7 @@ class CalculateJourneyUseCaseTest {
         val router = mockk<DepartureBasedRouter>()
         coEvery { router.calculate(any(), any<List<RaptorStop>>(), any<List<RaptorStop>>()) } throws RouterException.noJourneyFound()
         every { routerFactory(any(), any(), any(), any(), any()) } returns router
-
-        coEvery { routeRepository.routes(any()) } returns Cachable.live(emptyList())
+        coEvery { reconstructJourneyUseCase(any(), any(), any(), any(), any()) } returns Journey(listOf())
 
         assertFailsWith<RouterException> {
             useCase(
