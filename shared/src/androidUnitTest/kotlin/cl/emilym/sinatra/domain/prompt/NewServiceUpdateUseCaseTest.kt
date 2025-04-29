@@ -7,7 +7,6 @@ import cl.emilym.sinatra.data.repository.RemoteConfigRepository
 import cl.emilym.sinatra.data.repository.ServiceAlertRepository
 import io.mockk.coEvery
 import io.mockk.mockk
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.Clock
@@ -35,7 +34,8 @@ class NewServiceUpdateUseCaseTest {
         title = "Recent Alert",
         url = null,
         date = now - 1.days,
-        regions = listOf(ServiceAlertRegion.CENTRAL_CANBERRA)
+        regions = listOf(ServiceAlertRegion.CENTRAL_CANBERRA),
+        highlightDuration = 2.days
     )
 
     private val oldAlert = ServiceAlert(
@@ -43,7 +43,8 @@ class NewServiceUpdateUseCaseTest {
         title = "Old Alert",
         url = null,
         date = now - 10.days,
-        regions = listOf(ServiceAlertRegion.BELCONNEN)
+        regions = listOf(ServiceAlertRegion.BELCONNEN),
+        highlightDuration = 2.days
     )
 
     private val noDateAlert = ServiceAlert(
@@ -51,7 +52,18 @@ class NewServiceUpdateUseCaseTest {
         title = "No Date Alert",
         url = null,
         date = null,
-        regions = listOf(ServiceAlertRegion.OTHER)
+        regions = listOf(ServiceAlertRegion.OTHER),
+        highlightDuration = 2.days
+    )
+
+    private val viewedAlert = ServiceAlert(
+        id = "3",
+        title = "No Date Alert",
+        url = null,
+        date = null,
+        regions = listOf(ServiceAlertRegion.OTHER),
+        highlightDuration = 2.days,
+        viewed = true
     )
 
     private val allAlerts = listOf(recentAlert, oldAlert, noDateAlert)
@@ -71,6 +83,17 @@ class NewServiceUpdateUseCaseTest {
         coEvery { clock.now() } returns now
         coEvery { remoteConfigRepository.feature(NewServiceUpdateUseCase.NEW_SERVICE_FEATURE_FLAG) } returns true
         coEvery { serviceAlertRepository.alerts() } returns Cachable.live(allAlerts)
+
+        val result = useCase().first()
+
+        assertEquals(listOf(recentAlert), result)
+    }
+
+    @Test
+    fun `should filter out viewed alerts`() = runTest {
+        coEvery { clock.now() } returns now
+        coEvery { remoteConfigRepository.feature(NewServiceUpdateUseCase.NEW_SERVICE_FEATURE_FLAG) } returns true
+        coEvery { serviceAlertRepository.alerts() } returns Cachable.live(listOf(recentAlert, viewedAlert))
 
         val result = useCase().first()
 

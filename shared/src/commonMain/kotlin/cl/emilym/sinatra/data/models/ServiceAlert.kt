@@ -1,6 +1,7 @@
 package cl.emilym.sinatra.data.models
 
 import kotlinx.datetime.Instant
+import kotlin.time.Duration
 
 enum class ServiceAlertRegion {
     BELCONNEN,
@@ -31,7 +32,9 @@ data class ServiceAlert(
     val title: String,
     val url: String?,
     val date: Instant?,
-    val regions: List<ServiceAlertRegion>
+    val regions: List<ServiceAlertRegion>,
+    val highlightDuration: Duration?,
+    val viewed: Boolean = false
 ) {
 
     companion object {
@@ -41,7 +44,8 @@ data class ServiceAlert(
                 pb.title,
                 pb.url,
                 pb.date?.let { Instant.parse(it) },
-                pb.regions.map { ServiceAlertRegion.fromPB(it) }
+                pb.regions.map { ServiceAlertRegion.fromPB(it) },
+                pb.highlightDuration?.let { Duration.parse(it) }
             )
         }
     }

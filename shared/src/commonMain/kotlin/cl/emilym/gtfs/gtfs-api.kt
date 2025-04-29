@@ -1700,6 +1700,7 @@ public data class ServiceAlert(
     val date: String? = null,
     val url: String? = null,
     val regions: List<cl.emilym.gtfs.ServiceAlertRegion> = emptyList(),
+    val highlightDuration: String? = null,
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
 ) : pbandk.Message {
     override operator fun plus(other: pbandk.Message?): cl.emilym.gtfs.ServiceAlert = protoMergeImpl(other)
@@ -1712,7 +1713,7 @@ public data class ServiceAlert(
             fullName = "proto.ServiceAlert",
             messageClass = cl.emilym.gtfs.ServiceAlert::class,
             messageCompanion = this,
-            fields = buildList(5) {
+            fields = buildList(6) {
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
@@ -1761,6 +1762,16 @@ public data class ServiceAlert(
                         type = pbandk.FieldDescriptor.Type.Repeated<cl.emilym.gtfs.ServiceAlertRegion>(valueType = pbandk.FieldDescriptor.Type.Enum(enumCompanion = cl.emilym.gtfs.ServiceAlertRegion.Companion)),
                         jsonName = "regions",
                         value = cl.emilym.gtfs.ServiceAlert::regions
+                    )
+                )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "highlightDuration",
+                        number = 6,
+                        type = pbandk.FieldDescriptor.Type.Primitive.String(hasPresence = true),
+                        jsonName = "highlightDuration",
+                        value = cl.emilym.gtfs.ServiceAlert::highlightDuration
                     )
                 )
             }
@@ -2663,6 +2674,7 @@ private fun ServiceAlert.protoMergeImpl(plus: pbandk.Message?): ServiceAlert = (
         date = plus.date ?: date,
         url = plus.url ?: url,
         regions = regions + plus.regions,
+        highlightDuration = plus.highlightDuration ?: highlightDuration,
         unknownFields = unknownFields + plus.unknownFields
     )
 } ?: this
@@ -2674,6 +2686,7 @@ private fun ServiceAlert.Companion.decodeWithImpl(u: pbandk.MessageDecoder): Ser
     var date: String? = null
     var url: String? = null
     var regions: pbandk.ListWithSize.Builder<cl.emilym.gtfs.ServiceAlertRegion>? = null
+    var highlightDuration: String? = null
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
@@ -2682,6 +2695,7 @@ private fun ServiceAlert.Companion.decodeWithImpl(u: pbandk.MessageDecoder): Ser
             3 -> date = _fieldValue as String
             4 -> url = _fieldValue as String
             5 -> regions = (regions ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as kotlin.sequences.Sequence<cl.emilym.gtfs.ServiceAlertRegion> }
+            6 -> highlightDuration = _fieldValue as String
         }
     }
 
@@ -2692,5 +2706,5 @@ private fun ServiceAlert.Companion.decodeWithImpl(u: pbandk.MessageDecoder): Ser
         throw pbandk.InvalidProtocolBufferException.missingRequiredField("title")
     }
     return ServiceAlert(id!!, title!!, date, url,
-        pbandk.ListWithSize.Builder.fixed(regions), unknownFields)
+        pbandk.ListWithSize.Builder.fixed(regions), highlightDuration, unknownFields)
 }

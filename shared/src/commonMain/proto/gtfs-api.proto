@@ -229,4 +229,5 @@ message ServiceAlert {
   optional string date = 3;
   optional string url = 4;
   repeated ServiceAlertRegion regions = 5;
+  optional string highlightDuration = 6;
 }

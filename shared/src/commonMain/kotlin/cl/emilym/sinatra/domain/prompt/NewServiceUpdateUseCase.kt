@@ -30,8 +30,10 @@ class NewServiceUpdateUseCase(
             }
 
             emit(
-                serviceAlertRepository.alerts().item.filter {
-                    it.date?.let { now - it < NEW_ALERT_CUTOFF } ?: false
+                serviceAlertRepository.alerts().item.filter { serviceAlert ->
+                    serviceAlert.date?.let {
+                        now - it < (serviceAlert.highlightDuration ?: NEW_ALERT_CUTOFF)
+                    } ?: false && !serviceAlert.viewed
                 }
             )
         }
