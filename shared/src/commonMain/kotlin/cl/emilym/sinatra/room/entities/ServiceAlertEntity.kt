@@ -31,7 +31,8 @@ data class ServiceAlertEntity(
                 "" -> listOf()
                 else -> regions.split(",").map { ServiceAlertRegion.valueOf(it) }
             },
-            highlightDuration?.let { Duration.parse(it) }
+            highlightDuration?.let { Duration.parse(it) },
+            viewed
         )
     }
 

@@ -78,7 +78,7 @@ fun Screen.MapSearchScreenBrowseState(
                         when (it) {
                             is BrowsePrompt.NewServiceUpdate -> {
                                 Box(Modifier.animateItem()) {
-                                    NewServiceUpdateBrowseOption(it)
+                                    NewServiceUpdateBrowseOption(it, viewModel)
                                 }
                             }
                             is BrowsePrompt.QuickNavigateGroup -> {

@@ -3,8 +3,11 @@ package cl.emilym.sinatra.data.persistence
 import cl.emilym.sinatra.data.models.ServiceAlert
 import cl.emilym.sinatra.data.models.ServiceAlertRegion
 import cl.emilym.sinatra.room.dao.ServiceAlertDao
-import cl.emilym.sinatra.room.entities.ServiceAlertEntity
-import io.mockk.*
+import io.mockk.Runs
+import io.mockk.coEvery
+import io.mockk.coVerifySequence
+import io.mockk.just
+import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals

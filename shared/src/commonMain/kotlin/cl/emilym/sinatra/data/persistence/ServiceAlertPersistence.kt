@@ -8,6 +8,12 @@ import cl.emilym.sinatra.room.dao.RouteDao
 import cl.emilym.sinatra.room.dao.ServiceAlertDao
 import cl.emilym.sinatra.room.entities.RouteEntity
 import cl.emilym.sinatra.room.entities.ServiceAlertEntity
+import io.github.aakira.napier.Napier
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.mapLatest
 import org.koin.core.annotation.Factory
 
 @Factory
@@ -28,6 +34,11 @@ class ServiceAlertPersistence(
         return serviceAlertDao.get().map { it.toModel() }
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
+    fun getLive(): Flow<List<ServiceAlert>> {
+        return serviceAlertDao.getLive().mapLatest { it.map { it.toModel() } }
+    }
+
     suspend fun get(id: ServiceAlertId): ServiceAlert? {
         return serviceAlertDao.get(id)?.toModel()
     }
@@ -38,6 +49,7 @@ class ServiceAlertPersistence(
 
     suspend fun markViewed(id: ServiceAlertId) {
         serviceAlertDao.markViewed(id)
+        Napier.d("${get(id)}")
     }
 
 }

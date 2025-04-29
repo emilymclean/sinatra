@@ -22,6 +22,10 @@ import cl.emilym.sinatra.data.persistence.RouteServicePersistence
 import cl.emilym.sinatra.data.persistence.RouteServiceTimetablePersistence
 import cl.emilym.sinatra.data.persistence.RouteTripTimetablePersistence
 import cl.emilym.sinatra.data.persistence.ServiceAlertPersistence
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import org.koin.core.annotation.Factory
@@ -72,6 +76,13 @@ class ServiceAlertRepository(
 ) {
 
     suspend fun alerts() = serviceAlertCacheWorker.get()
+    fun alertsLive(): Flow<List<ServiceAlert>> = flow {
+        serviceAlertCacheWorker.get()
+        emitAll(serviceAlertPersistence.getLive().mapLatest {
+            it.sortedByDescending { it.date }
+        })
+    }
+
     suspend fun cleanup() = serviceAlertCleanupWorker()
     suspend fun markViewed(id: ServiceAlertId) = serviceAlertPersistence.markViewed(id)
 

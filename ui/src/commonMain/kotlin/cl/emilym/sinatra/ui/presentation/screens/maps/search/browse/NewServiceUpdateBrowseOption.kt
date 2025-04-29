@@ -20,7 +20,10 @@ import sinatra.ui.generated.resources.Res
 import sinatra.ui.generated.resources.browse_option_see_all_service_alerts
 
 @Composable
-fun NewServiceUpdateBrowseOption(option: BrowsePrompt.NewServiceUpdate) {
+fun NewServiceUpdateBrowseOption(
+    option: BrowsePrompt.NewServiceUpdate,
+    viewModel: BrowseViewModel
+) {
     val navigator = LocalNavigator.currentOrThrow
     Card(
         modifier = Modifier
@@ -37,7 +40,8 @@ fun NewServiceUpdateBrowseOption(option: BrowsePrompt.NewServiceUpdate) {
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
                 contentColor = MaterialTheme.colorScheme.onSurface,
-            )
+            ),
+            onClick = { viewModel.markAlertViewed(option.serviceAlert.id) }
         )
         ListCard(
             icon = null,

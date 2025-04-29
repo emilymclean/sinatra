@@ -7,8 +7,10 @@ import cl.emilym.compose.requeststate.requestStateFlow
 import cl.emilym.compose.requeststate.unwrap
 import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.data.models.ServiceAlert
+import cl.emilym.sinatra.data.models.ServiceAlertId
 import cl.emilym.sinatra.data.models.SpecialFavouriteType
 import cl.emilym.sinatra.data.models.distance
+import cl.emilym.sinatra.data.repository.ServiceAlertRepository
 import cl.emilym.sinatra.domain.DisplayRoutesUseCase
 import cl.emilym.sinatra.domain.prompt.FavouriteNearbyStopDeparturesUseCase
 import cl.emilym.sinatra.domain.prompt.NewServiceUpdateUseCase
@@ -20,6 +22,7 @@ import cl.emilym.sinatra.ui.presentation.screens.maps.navigate.NavigationLocatio
 import cl.emilym.sinatra.ui.retryIfNeeded
 import cl.emilym.sinatra.ui.toNavigationLocation
 import cl.emilym.sinatra.ui.widgets.SinatraScreenModel
+import io.github.aakira.napier.Napier
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.IO
@@ -69,7 +72,8 @@ class BrowseViewModel(
     private val newServiceUpdateUseCase: NewServiceUpdateUseCase,
     private val quickNavigateUseCase: QuickNavigateUseCase,
     private val specialAddUseCase: SpecialAddUseCase,
-    private val favouriteNearbyStopDeparturesUseCase: FavouriteNearbyStopDeparturesUseCase
+    private val favouriteNearbyStopDeparturesUseCase: FavouriteNearbyStopDeparturesUseCase,
+    private val serviceAlertRepository: ServiceAlertRepository
 ): SinatraScreenModel {
 
     private val _routes = requestStateFlow { displayRoutesUseCase().item }
@@ -155,6 +159,14 @@ class BrowseViewModel(
 
         if (distance(ll, location) < 0.5) return
         lastLocation.value = location
+    }
+
+    fun markAlertViewed(id: ServiceAlertId) {
+        screenModelScope.launch {
+            withContext(Dispatchers.IO) {
+                serviceAlertRepository.markViewed(id)
+            }
+        }
     }
 
 }
