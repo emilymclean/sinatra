@@ -4,9 +4,14 @@
     <string name="navigation_bar_favourites">Favourites</string>
     <string name="navigation_bar_about">About</string>
 
-    <string name="favourites_nothing_favourited">Any routes or stops you favourite can be found here</string>
+    <string name="browse_option_see_all_service_alerts">See all service updates</string>
+    <string name="browse_option_upcoming_routes">Upcoming vehicles to %1$s</string>
 
-    <string name="about_app_description">Sinatra is a companion app for the Canberra MyWay+ network made by locals for locals. We aim to provide a simpler experience for finding route and stop information, motivated by the suboptimal flow on the official app. We are unfortunately unable to offer the ticketing feature, nor proper routing.\n\n\nSinatra is open source! You can find and contribute to our codebase at [Github](https://github.com/emilymclean/sinatra).</string>
+    <string name="favourites_nothing_favourited">Any routes or stops you favourite can be found here</string>
+    <string name="favourites_no_home">Add home</string>
+    <string name="favourites_no_work">Add work</string>
+    <string name="favourites_clear_favourite">Clear favourite</string>
+
     <string name="about_app_version">Version %1$s (%2$s)</string>
 
     <string name="open_maps_android">Show in Google Maps</string>
@@ -150,8 +155,8 @@
     <string name="navigate_entry_no_destination">Pick a destination to plan a journey.</string>
     <string name="navigate_entry_no_starting_point_destination">Pick a starting point and destination to plan a journey.</string>
 
-    <string name="service_alert_title">Service Alerts</string>
-    <string name="service_alert_no_alerts">There are currently no service alerts.</string>
+    <string name="service_alert_title">Service Updates</string>
+    <string name="service_alert_no_alerts">There are currently no service updates.</string>
     <string name="service_alert_region_and_date">%1$s · %2$s</string>
     <string name="service_alert_region_belconnen">Belconnen</string>
     <string name="service_alert_region_central_canberra">Central Canberra</string>

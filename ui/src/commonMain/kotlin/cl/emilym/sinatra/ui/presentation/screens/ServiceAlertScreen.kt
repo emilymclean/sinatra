@@ -14,6 +14,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardColors
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -38,6 +40,7 @@ import cl.emilym.compose.requeststate.handle
 import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.data.models.Content
 import cl.emilym.sinatra.data.models.ServiceAlert
+import cl.emilym.sinatra.data.models.ServiceAlertId
 import cl.emilym.sinatra.data.models.ServiceAlertRegion
 import cl.emilym.sinatra.data.repository.ContentRepository
 import cl.emilym.sinatra.data.repository.ServiceAlertRepository
@@ -45,11 +48,15 @@ import cl.emilym.sinatra.ui.asDurationFromNow
 import cl.emilym.sinatra.ui.widgets.ExternalLinkIcon
 import cl.emilym.sinatra.ui.widgets.ListHint
 import cl.emilym.sinatra.ui.widgets.NavigatorBackButton
+import cl.emilym.sinatra.ui.widgets.ServiceAlertCard
 import cl.emilym.sinatra.ui.widgets.SinatraScreenModel
 import cl.emilym.sinatra.ui.widgets.WarningIcon
 import cl.emilym.sinatra.ui.widgets.collectAsStateWithLifecycle
 import cl.emilym.sinatra.ui.widgets.createRequestStateFlow
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.jetbrains.compose.resources.stringResource
 import org.koin.core.annotation.Factory
 import sinatra.ui.generated.resources.Res
@@ -94,6 +101,14 @@ class ServiceAlertViewModel(
         }
     }
 
+    fun markAlertViewed(id: ServiceAlertId) {
+        screenModelScope.launch {
+            withContext(Dispatchers.IO) {
+                serviceAlertRepository.markViewed(id)
+            }
+        }
+    }
+
 }
 
 class ServiceAlertScreen: ContentScreen(ContentRepository.SERVICE_ALERT_ID) {
@@ -113,7 +128,6 @@ class ServiceAlertScreen: ContentScreen(ContentRepository.SERVICE_ALERT_ID) {
             }
         ) { internalPadding ->
             val alerts by viewModel.serviceAlerts.collectAsStateWithLifecycle()
-            val uriHandler = LocalUriHandler.current
             Box(
                 Modifier.fillMaxSize().padding(internalPadding),
                 contentAlignment = Alignment.Center
@@ -128,52 +142,11 @@ class ServiceAlertScreen: ContentScreen(ContentRepository.SERVICE_ALERT_ID) {
                             contentPadding = PaddingValues(bottom = 1.rdp)
                         ) {
                             items(alerts) {
-                                Card(
-                                    Modifier
-                                        .fillMaxWidth()
-                                        .then(
-                                            it.url?.let {
-                                                Modifier.clickable { uriHandler.openUri(it) }
-                                            } ?: Modifier
-                                        )
-                                        .padding(horizontal = 1.rdp),
-                                ) {
-                                    Row(
-                                        Modifier.padding(1.rdp),
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(1.rdp)
-                                    ) {
-                                        Column(Modifier.weight(1f)) {
-                                            Text(
-                                                it.title,
-                                                maxLines = 3,
-                                                overflow = TextOverflow.Ellipsis
-                                            )
-                                            if (it.regions.isNotEmpty() || it.date != null) {
-                                                Text(
-                                                    when {
-                                                        it.regions.isNotEmpty() && it.date != null ->
-                                                            stringResource(
-                                                                Res.string.service_alert_region_and_date,
-                                                                it.regions.first().text,
-                                                                it.date!!.asDurationFromNow()
-                                                            )
-                                                        it.date != null -> it.date!!.asDurationFromNow()
-                                                        else -> it.regions.first().text
-                                                    },
-                                                    style = MaterialTheme.typography.bodySmall
-                                                )
-                                            }
-                                        }
-                                        if (it.url != null) {
-                                            Box(Modifier.clearAndSetSemantics {  }) {
-                                                ExternalLinkIcon(
-                                                    tint = MaterialTheme.colorScheme.secondary
-                                                )
-                                            }
-                                        }
-                                    }
-                                }
+                                ServiceAlertCard(
+                                    it,
+                                    modifier = Modifier.fillMaxWidth().padding(horizontal = 1.rdp),
+                                    onClick = { viewModel.markAlertViewed(id) }
+                                )
                                 Spacer(Modifier.height(0.5.rdp))
                             }
                             (content as? RequestState.Success)?.value?.let {

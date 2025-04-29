@@ -4,6 +4,7 @@ import cl.emilym.sinatra.data.models.Favourite
 import cl.emilym.sinatra.data.models.PlaceId
 import cl.emilym.sinatra.data.models.RouteId
 import cl.emilym.sinatra.data.models.StopId
+import cl.emilym.sinatra.data.models.SpecialFavouriteType
 import cl.emilym.sinatra.data.persistence.FavouritePersistence
 import cl.emilym.sinatra.data.persistence.FavouriteType
 import kotlinx.coroutines.flow.Flow
@@ -44,9 +45,13 @@ class FavouriteRepository(
         )
     }
 
-    suspend fun setStopFavourite(stopId: StopId, favourited: Boolean) {
+    suspend fun setStopFavourite(
+        stopId: StopId,
+        favourited: Boolean,
+        specialFavourite: SpecialFavouriteType? = null,
+    ) {
         when (favourited) {
-            true -> favouritePersistence.add(FavouriteType.STOP, stopId = stopId)
+            true -> favouritePersistence.add(FavouriteType.STOP, stopId = stopId, extra = specialFavourite?.name)
             false -> favouritePersistence.remove(FavouriteType.STOP, stopId = stopId)
         }
     }
@@ -58,9 +63,17 @@ class FavouriteRepository(
         )
     }
 
-    suspend fun setPlaceFavourite(placeId: PlaceId, favourited: Boolean) {
+    fun favouritedStops(stopIds: List<StopId>): Flow<List<StopId>> {
+        return favouritePersistence.stopsFavourited(stopIds)
+    }
+
+    suspend fun setPlaceFavourite(
+        placeId: PlaceId,
+        favourited: Boolean,
+        specialFavourite: SpecialFavouriteType? = null,
+    ) {
         when (favourited) {
-            true -> favouritePersistence.add(FavouriteType.PLACE, placeId = placeId)
+            true -> favouritePersistence.add(FavouriteType.PLACE, placeId = placeId, extra = specialFavourite?.name)
             false -> favouritePersistence.remove(FavouriteType.PLACE, placeId = placeId)
         }
     }
@@ -70,6 +83,10 @@ class FavouriteRepository(
             FavouriteType.PLACE,
             placeId = placeId
         )
+    }
+
+    suspend fun clearSpecial(type: SpecialFavouriteType) {
+        favouritePersistence.removeSpecial(type)
     }
 
 }

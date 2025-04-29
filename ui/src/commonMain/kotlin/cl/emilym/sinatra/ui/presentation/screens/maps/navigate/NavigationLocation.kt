@@ -5,8 +5,12 @@ import cl.emilym.kmp.serializable.Serializable
 import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.data.models.RecentVisit
 import cl.emilym.sinatra.ui.localization.format
+import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.stringResource
 import sinatra.ui.generated.resources.Res
+import sinatra.ui.generated.resources.bus
+import sinatra.ui.generated.resources.journey_start
+import sinatra.ui.generated.resources.marker_icon
 import sinatra.ui.generated.resources.navigate_current_location
 import sinatra.ui.generated.resources.navigate_lat_lng
 
@@ -17,6 +21,9 @@ sealed interface NavigationLocation: Serializable {
 
     @get:Composable
     val name: String
+    val icon: DrawableResource
+        get() = Res.drawable.journey_start
+
     val screenKey: String
 
     val recentVisit: RecentVisit?
@@ -52,6 +59,7 @@ sealed interface NavigationLocation: Serializable {
         override val name: String
             @Composable
             get() = place.name
+        override val icon: DrawableResource = Res.drawable.marker_icon
         override val screenKey: String = "place-${place.id}"
 
         override val recentVisit: RecentVisit get() = RecentVisit.Place(place)
@@ -65,6 +73,7 @@ sealed interface NavigationLocation: Serializable {
         override val name: String
             @Composable
             get() = stop.name
+        override val icon: DrawableResource = Res.drawable.bus
         override val screenKey: String = "stop-${stop.id}"
 
         override val recentVisit: RecentVisit get() = RecentVisit.Stop(stop)

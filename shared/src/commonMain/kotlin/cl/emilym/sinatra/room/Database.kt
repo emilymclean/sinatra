@@ -68,9 +68,10 @@ expect object AppDatabaseConstructor : RoomDatabaseConstructor<AppDatabase> {
         AutoMigration(from = 2, to = 3),
         AutoMigration(from = 3, to = 4),
         AutoMigration(from = 4, to = 5),
+        AutoMigration(from = 5, to = 6),
     ],
     exportSchema = true,
-    version = 5
+    version = 6
 )
 @ConstructedBy(AppDatabaseConstructor::class)
 abstract class AppDatabase: RoomDatabase() {
@@ -92,7 +93,6 @@ abstract class AppDatabase: RoomDatabase() {
 @Single
 fun appDatabase(builder: RoomDatabase.Builder<AppDatabase>): AppDatabase {
     return builder
-        .fallbackToDestructiveMigration(true)
         .setDriver(BundledSQLiteDriver())
         .setQueryCoroutineContext(Dispatchers.IO)
         .build()

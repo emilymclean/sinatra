@@ -93,8 +93,11 @@ actual fun Map(
             uiSettings = MapUiSettings(
                 compassEnabled = false,
                 rotationGesturesEnabled = false,
+                tiltGesturesEnabled = false,
+                indoorLevelPickerEnabled = false,
                 myLocationButtonEnabled = false,
-                zoomControlsEnabled = false
+                zoomControlsEnabled = false,
+                mapToolbarEnabled = false
             ),
             contentPadding = insets,
             mapColorScheme = ComposeMapColorScheme.FOLLOW_SYSTEM

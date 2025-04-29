@@ -8,6 +8,7 @@ typealias StopId = String
 typealias RouteId = String
 typealias RouteCode = String
 typealias ServiceId = String
+typealias Heading = String
 typealias TripId = String
 typealias ServiceAlertId = String
 

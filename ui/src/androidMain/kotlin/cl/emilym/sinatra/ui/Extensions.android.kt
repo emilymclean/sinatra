@@ -2,6 +2,7 @@ package cl.emilym.sinatra.ui
 
 import android.graphics.Point
 import androidx.compose.ui.unit.Density
+import cl.emilym.sinatra.data.models.Favourite
 import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.data.models.MapRegion
 import cl.emilym.sinatra.data.models.ScreenLocation

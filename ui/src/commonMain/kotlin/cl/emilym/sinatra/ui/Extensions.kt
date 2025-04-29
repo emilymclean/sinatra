@@ -12,21 +12,29 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.unit.LayoutDirection
+import cl.emilym.compose.requeststate.RequestState
+import cl.emilym.compose.requeststate.RequestStateFlow
 import cl.emilym.compose.units.px
 import cl.emilym.sinatra.data.models.ColorPair
+import cl.emilym.sinatra.data.models.Favourite
 import cl.emilym.sinatra.data.models.IRouteTripStop
 import cl.emilym.sinatra.data.models.Kilometer
 import cl.emilym.sinatra.data.models.LocalizableString
+import cl.emilym.sinatra.data.models.MapLocation
+import cl.emilym.sinatra.data.models.NavigationObject
 import cl.emilym.sinatra.data.models.OnColor
 import cl.emilym.sinatra.data.models.OnColor.DARK
 import cl.emilym.sinatra.data.models.OnColor.LIGHT
+import cl.emilym.sinatra.data.models.Place
 import cl.emilym.sinatra.data.models.Route
+import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.data.models.TimetableStationTime
 import cl.emilym.sinatra.ui.localization.LocalClock
 import cl.emilym.sinatra.ui.localization.LocalLocalTimeZone
 import cl.emilym.sinatra.ui.localization.dateFormat
 import cl.emilym.sinatra.ui.localization.format
 import cl.emilym.sinatra.ui.localization.toTodayInstant
+import cl.emilym.sinatra.ui.presentation.screens.maps.navigate.NavigationLocation
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.format
@@ -187,4 +195,27 @@ operator fun PaddingValues.plus(other: PaddingValues): PaddingValues {
         end = this.calculateEndPadding(layoutDirection) + other.calculateEndPadding(layoutDirection),
         bottom = this.calculateBottomPadding() + other.calculateBottomPadding(),
     )
+}
+
+val Favourite.label: String
+    @Composable
+    get() = when(this) {
+        is Favourite.Stop -> stop.name
+        is Favourite.Route -> route.name
+        is Favourite.Place -> place.name
+        // Todo represent this better
+        is Favourite.StopOnRoute -> stop.name
+    }
+
+suspend fun <T> RequestStateFlow<T>.retryIfNeeded() {
+    if (this is RequestState.Failure<*>) retry()
+}
+
+fun NavigationObject.toNavigationLocation(): NavigationLocation? {
+    return when (this) {
+        is Stop -> NavigationLocation.Stop(this)
+        is Place -> NavigationLocation.Place(this)
+        is MapLocation -> NavigationLocation.Point(this)
+        else -> null
+    }
 }

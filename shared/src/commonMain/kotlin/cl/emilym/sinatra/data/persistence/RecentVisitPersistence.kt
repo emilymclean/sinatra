@@ -2,6 +2,7 @@ package cl.emilym.sinatra.data.persistence
 
 import cl.emilym.sinatra.data.models.PlaceId
 import cl.emilym.sinatra.data.models.RecentVisit
+import cl.emilym.sinatra.data.models.RecentVisitType
 import cl.emilym.sinatra.data.models.RouteId
 import cl.emilym.sinatra.data.models.StopId
 import cl.emilym.sinatra.room.dao.RecentVisitDao
@@ -9,20 +10,6 @@ import cl.emilym.sinatra.room.entities.RecentVisitEntity
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import org.koin.core.annotation.Factory
-
-enum class RecentVisitType {
-    ROUTE, STOP, PLACE;
-
-    companion object {
-        fun fromRecentVisit(recentVisit: RecentVisit): RecentVisitType {
-            return when (recentVisit) {
-                is RecentVisit.Route -> ROUTE
-                is RecentVisit.Stop -> STOP
-                is RecentVisit.Place -> PLACE
-            }
-        }
-    }
-}
 
 @Factory
 class RecentVisitPersistence(
@@ -33,8 +20,12 @@ class RecentVisitPersistence(
         private const val RECENT_VISIT_LIMIT = 20
     }
 
-    fun all(): Flow<List<RecentVisit>> {
-        return recentVisitDao.getFlow().map {
+    fun all(
+        types: List<RecentVisitType>
+    ): Flow<List<RecentVisit>> {
+        return recentVisitDao.getFlow(
+            types.map { it.name }
+        ).map {
             it.mapNotNull {
                 val type = RecentVisitType.valueOf(it.recentVisit.type)
                 when (type) {

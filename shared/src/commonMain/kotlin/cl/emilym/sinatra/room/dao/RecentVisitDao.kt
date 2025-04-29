@@ -30,8 +30,10 @@ interface RecentVisitDao {
     suspend fun deletePlaceVisit(placeId: String)
 
     @Transaction
-    @Query("SELECT * FROM recentVisitEntity ORDER BY id DESC LIMIT 10")
-    fun getFlow(): Flow<List<RecentVisitEntityWithStopAndRoute>>
+    @Query("SELECT * FROM recentVisitEntity WHERE type IN (:types) ORDER BY id DESC LIMIT 10")
+    fun getFlow(
+        types: List<String>
+    ): Flow<List<RecentVisitEntityWithStopAndRoute>>
 
     @Query("SELECT * FROM recentVisitEntity ORDER BY id DESC")
     suspend fun all(): List<RecentVisitEntity>

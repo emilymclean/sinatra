@@ -34,6 +34,8 @@ import cl.emilym.sinatra.ui.navigation.NativeMapScreen
 import cl.emilym.sinatra.ui.placeCardDefaultNavigation
 import cl.emilym.sinatra.ui.presentation.screens.maps.RouteDetailScreen
 import cl.emilym.sinatra.ui.presentation.screens.maps.StopDetailScreen
+import cl.emilym.sinatra.ui.presentation.screens.maps.search.browse.BrowseViewModel
+import cl.emilym.sinatra.ui.presentation.screens.maps.search.browse.MapSearchScreenBrowseState
 import cl.emilym.sinatra.ui.presentation.screens.search.SearchScreen
 import cl.emilym.sinatra.ui.widgets.LocalMapControl
 import cl.emilym.sinatra.ui.widgets.MyLocationIcon
@@ -121,18 +123,19 @@ class MapSearchScreen: MapScreen, NativeMapScreen {
     @Composable
     override fun BottomSheetContent() {
         val viewModel = koinScreenModel<MapSearchViewModel>()
-        val routeListViewModel = koinScreenModel<RouteListViewModel>()
+        val browseViewModel = koinScreenModel<BrowseViewModel>()
         val state by viewModel.state.collectAsStateWithLifecycle()
         val navigator = LocalNavigator.currentOrThrow
 
         Box(modifier = Modifier.heightIn(min = viewportHeight() * 0.5f)) {
             when (state) {
                 is MapSearchState.Browse -> MapSearchScreenBrowseState(
-                    routeListViewModel,
+                    browseViewModel,
                     viewModel
                 )
                 is MapSearchState.Search -> SearchScreen(
                     viewModel,
+                    listOf(),
                     { viewModel.openBrowse() },
                     { navigator.push(StopDetailScreen(it.id)) },
                     { navigator.push(RouteDetailScreen(it.id)) },

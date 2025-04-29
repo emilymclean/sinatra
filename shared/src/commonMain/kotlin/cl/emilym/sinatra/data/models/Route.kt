@@ -1,7 +1,7 @@
 package cl.emilym.sinatra.data.models
 
 data class Route(
-    val id: RouteId,
+    override val id: RouteId,
     val code: RouteCode,
     val displayCode: String,
     val colors: ColorPair?,
@@ -10,7 +10,7 @@ data class Route(
     val type: RouteType,
     val designation: String?,
     val routeVisibility: RouteVisibility
-) {
+): Identifiable<RouteId>, NavigationObject {
 
     companion object {
         fun fromPB(pb: cl.emilym.gtfs.Route): Route {

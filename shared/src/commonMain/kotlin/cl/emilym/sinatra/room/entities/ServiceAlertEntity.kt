@@ -1,10 +1,12 @@
 package cl.emilym.sinatra.room.entities
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import cl.emilym.sinatra.data.models.ServiceAlert
 import cl.emilym.sinatra.data.models.ServiceAlertRegion
 import kotlinx.datetime.Instant
+import kotlin.time.Duration
 
 @Entity
 data class ServiceAlertEntity(
@@ -12,7 +14,11 @@ data class ServiceAlertEntity(
     val title: String,
     val url: String?,
     val date: Long?,
-    val regions: String
+    val regions: String,
+    @ColumnInfo(defaultValue = "null")
+    val highlightDuration: String?,
+    @ColumnInfo(defaultValue = "false")
+    val viewed: Boolean
 ) {
 
     fun toModel(): ServiceAlert {
@@ -21,7 +27,12 @@ data class ServiceAlertEntity(
             title,
             url,
             date?.let { Instant.fromEpochMilliseconds(date) },
-            regions.split(",").map { ServiceAlertRegion.valueOf(it) }
+            when (regions) {
+                "" -> listOf()
+                else -> regions.split(",").map { ServiceAlertRegion.valueOf(it) }
+            },
+            highlightDuration?.let { Duration.parse(it) },
+            viewed
         )
     }
 
@@ -32,7 +43,9 @@ data class ServiceAlertEntity(
                 model.title,
                 model.url,
                 model.date?.toEpochMilliseconds(),
-                model.regions.joinToString(",") { it.name }
+                model.regions.joinToString(",") { it.name },
+                model.highlightDuration?.toIsoString(),
+                model.viewed
             )
         }
     }
