@@ -11,6 +11,7 @@ import cl.emilym.sinatra.data.models.RouteServiceCanonicalTimetable
 import cl.emilym.sinatra.data.models.RouteServiceTimetable
 import cl.emilym.sinatra.data.models.RouteTripTimetable
 import cl.emilym.sinatra.data.models.ServiceAlert
+import cl.emilym.sinatra.data.models.ServiceAlertId
 import cl.emilym.sinatra.data.models.ServiceId
 import cl.emilym.sinatra.data.models.TripId
 import cl.emilym.sinatra.data.models.flatMap
@@ -21,6 +22,10 @@ import cl.emilym.sinatra.data.persistence.RouteServicePersistence
 import cl.emilym.sinatra.data.persistence.RouteServiceTimetablePersistence
 import cl.emilym.sinatra.data.persistence.RouteTripTimetablePersistence
 import cl.emilym.sinatra.data.persistence.ServiceAlertPersistence
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import org.koin.core.annotation.Factory
@@ -66,13 +71,19 @@ class ServiceAlertCleanupWorker(
 @Factory
 class ServiceAlertRepository(
     private val serviceAlertCacheWorker: ServiceAlertCacheWorker,
-    private val serviceAlertCleanupWorker: ServiceAlertCleanupWorker
+    private val serviceAlertCleanupWorker: ServiceAlertCleanupWorker,
+    private val serviceAlertPersistence: ServiceAlertPersistence
 ) {
 
     suspend fun alerts() = serviceAlertCacheWorker.get()
-
-    suspend fun cleanup() {
-        serviceAlertCleanupWorker()
+    fun alertsLive(): Flow<List<ServiceAlert>> = flow {
+        serviceAlertCacheWorker.get()
+        emitAll(serviceAlertPersistence.getLive().mapLatest {
+            it.sortedByDescending { it.date }
+        })
     }
+
+    suspend fun cleanup() = serviceAlertCleanupWorker()
+    suspend fun markViewed(id: ServiceAlertId) = serviceAlertPersistence.markViewed(id)
 
 }

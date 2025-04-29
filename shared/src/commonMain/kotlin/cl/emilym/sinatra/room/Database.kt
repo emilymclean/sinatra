@@ -93,7 +93,6 @@ abstract class AppDatabase: RoomDatabase() {
 @Single
 fun appDatabase(builder: RoomDatabase.Builder<AppDatabase>): AppDatabase {
     return builder
-        .fallbackToDestructiveMigration(true)
         .setDriver(BundledSQLiteDriver())
         .setQueryCoroutineContext(Dispatchers.IO)
         .build()

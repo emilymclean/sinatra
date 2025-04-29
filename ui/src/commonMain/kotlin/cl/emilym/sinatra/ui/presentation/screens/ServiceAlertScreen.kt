@@ -40,6 +40,7 @@ import cl.emilym.compose.requeststate.handle
 import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.data.models.Content
 import cl.emilym.sinatra.data.models.ServiceAlert
+import cl.emilym.sinatra.data.models.ServiceAlertId
 import cl.emilym.sinatra.data.models.ServiceAlertRegion
 import cl.emilym.sinatra.data.repository.ContentRepository
 import cl.emilym.sinatra.data.repository.ServiceAlertRepository
@@ -52,7 +53,10 @@ import cl.emilym.sinatra.ui.widgets.SinatraScreenModel
 import cl.emilym.sinatra.ui.widgets.WarningIcon
 import cl.emilym.sinatra.ui.widgets.collectAsStateWithLifecycle
 import cl.emilym.sinatra.ui.widgets.createRequestStateFlow
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.jetbrains.compose.resources.stringResource
 import org.koin.core.annotation.Factory
 import sinatra.ui.generated.resources.Res
@@ -97,6 +101,14 @@ class ServiceAlertViewModel(
         }
     }
 
+    fun markAlertViewed(id: ServiceAlertId) {
+        screenModelScope.launch {
+            withContext(Dispatchers.IO) {
+                serviceAlertRepository.markViewed(id)
+            }
+        }
+    }
+
 }
 
 class ServiceAlertScreen: ContentScreen(ContentRepository.SERVICE_ALERT_ID) {
@@ -116,7 +128,6 @@ class ServiceAlertScreen: ContentScreen(ContentRepository.SERVICE_ALERT_ID) {
             }
         ) { internalPadding ->
             val alerts by viewModel.serviceAlerts.collectAsStateWithLifecycle()
-            val uriHandler = LocalUriHandler.current
             Box(
                 Modifier.fillMaxSize().padding(internalPadding),
                 contentAlignment = Alignment.Center
@@ -133,7 +144,8 @@ class ServiceAlertScreen: ContentScreen(ContentRepository.SERVICE_ALERT_ID) {
                             items(alerts) {
                                 ServiceAlertCard(
                                     it,
-                                    modifier = Modifier.fillMaxWidth().padding(horizontal = 1.rdp)
+                                    modifier = Modifier.fillMaxWidth().padding(horizontal = 1.rdp),
+                                    onClick = { viewModel.markAlertViewed(id) }
                                 )
                                 Spacer(Modifier.height(0.5.rdp))
                             }

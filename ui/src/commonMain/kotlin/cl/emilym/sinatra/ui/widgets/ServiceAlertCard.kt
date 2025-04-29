@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardColors
@@ -33,14 +32,18 @@ fun ServiceAlertCard(
     colors: CardColors = CardDefaults.cardColors(
         containerColor = MaterialTheme.colorScheme.surfaceContainer,
         contentColor = MaterialTheme.colorScheme.onSurface
-    )
+    ),
+    onClick: (() -> Unit)? = null
 ) {
     val uriHandler = LocalUriHandler.current
     Card(
         Modifier
             .then(
                 alert.url?.let {
-                    Modifier.clickable { uriHandler.openUri(it) }
+                    Modifier.clickable {
+                        onClick?.invoke()
+                        uriHandler.openUri(it)
+                    }
                 } ?: Modifier
             )
             .then(modifier),

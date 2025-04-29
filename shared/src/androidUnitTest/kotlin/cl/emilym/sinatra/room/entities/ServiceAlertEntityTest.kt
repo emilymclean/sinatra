@@ -12,7 +12,9 @@ class ServiceAlertEntityTest {
             "title",
             "https://sinatra-transport.com",
             0L,
-            ""
+            "",
+            "P2D",
+            false
         )
 
         val alert = entity.toModel()

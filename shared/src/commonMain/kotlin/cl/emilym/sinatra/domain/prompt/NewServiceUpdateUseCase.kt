@@ -4,7 +4,10 @@ import cl.emilym.sinatra.data.models.ServiceAlert
 import cl.emilym.sinatra.data.repository.RemoteConfigRepository
 import cl.emilym.sinatra.data.repository.ServiceAlertRepository
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.datetime.Clock
 import org.koin.core.annotation.Factory
 import kotlin.time.Duration.Companion.days
@@ -29,9 +32,13 @@ class NewServiceUpdateUseCase(
                 return@flow
             }
 
-            emit(
-                serviceAlertRepository.alerts().item.filter {
-                    it.date?.let { now - it < NEW_ALERT_CUTOFF } ?: false
+            emitAll(
+                serviceAlertRepository.alertsLive().mapLatest {
+                    it.filter { serviceAlert ->
+                        serviceAlert.date?.let {
+                            now - it < (serviceAlert.highlightDuration ?: NEW_ALERT_CUTOFF)
+                        } ?: false && !serviceAlert.viewed
+                    }
                 }
             )
         }
