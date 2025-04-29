@@ -8,6 +8,7 @@ import cl.emilym.sinatra.data.repository.ServiceAlertRepository
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
@@ -82,7 +83,7 @@ class NewServiceUpdateUseCaseTest {
     fun `should filter only recent alerts`() = runTest {
         coEvery { clock.now() } returns now
         coEvery { remoteConfigRepository.feature(NewServiceUpdateUseCase.NEW_SERVICE_FEATURE_FLAG) } returns true
-        coEvery { serviceAlertRepository.alerts() } returns Cachable.live(allAlerts)
+        coEvery { serviceAlertRepository.alertsLive() } returns flowOf(allAlerts)
 
         val result = useCase().first()
 
@@ -93,7 +94,7 @@ class NewServiceUpdateUseCaseTest {
     fun `should filter out viewed alerts`() = runTest {
         coEvery { clock.now() } returns now
         coEvery { remoteConfigRepository.feature(NewServiceUpdateUseCase.NEW_SERVICE_FEATURE_FLAG) } returns true
-        coEvery { serviceAlertRepository.alerts() } returns Cachable.live(listOf(recentAlert, viewedAlert))
+        coEvery { serviceAlertRepository.alertsLive() } returns flowOf(listOf(recentAlert, viewedAlert))
 
         val result = useCase().first()
 
@@ -104,7 +105,7 @@ class NewServiceUpdateUseCaseTest {
     fun `should emit empty list when no alerts are recent`() = runTest {
         coEvery { clock.now() } returns now
         coEvery { remoteConfigRepository.feature(NewServiceUpdateUseCase.NEW_SERVICE_FEATURE_FLAG) } returns true
-        coEvery { serviceAlertRepository.alerts() } returns Cachable.live(listOf(oldAlert, noDateAlert))
+        coEvery { serviceAlertRepository.alertsLive() } returns flowOf(listOf(oldAlert, noDateAlert))
 
         val result = useCase().first()
 
