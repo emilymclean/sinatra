@@ -11,6 +11,9 @@ interface ServiceAlertDao {
     @Insert
     suspend fun insert(vararg routes: ServiceAlertEntity)
 
+    @Query("UPDATE serviceAlertEntity SET viewed = true WHERE id = :id")
+    suspend fun markViewed(id: String)
+
     @Query("DELETE FROM serviceAlertEntity")
     suspend fun clear()
 
@@ -19,5 +22,8 @@ interface ServiceAlertDao {
 
     @Query("SELECT * FROM serviceAlertEntity WHERE id = :id")
     suspend fun get(id: String): ServiceAlertEntity?
+
+    @Query("SELECT id FROM serviceAlertEntity WHERE viewed = true")
+    suspend fun getViewed(): List<String>
     
 }

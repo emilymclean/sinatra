@@ -16,8 +16,12 @@ class ServiceAlertPersistence(
 ) {
 
     suspend fun save(alerts: List<ServiceAlert>) {
+        val viewed = serviceAlertDao.getViewed()
         serviceAlertDao.clear()
-        serviceAlertDao.insert(*alerts.map { ServiceAlertEntity.fromModel(it) }.toTypedArray())
+        serviceAlertDao.insert(*alerts.map { alert ->
+            ServiceAlertEntity.fromModel(alert)
+                .copy(viewed = viewed.contains(alert.id))
+        }.toTypedArray())
     }
 
     suspend fun get(): List<ServiceAlert> {
@@ -30,6 +34,10 @@ class ServiceAlertPersistence(
 
     suspend fun clear() {
         serviceAlertDao.clear()
+    }
+
+    suspend fun markViewed(id: ServiceAlertId) {
+        serviceAlertDao.markViewed(id)
     }
 
 }

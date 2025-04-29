@@ -11,6 +11,7 @@ import cl.emilym.sinatra.data.models.RouteServiceCanonicalTimetable
 import cl.emilym.sinatra.data.models.RouteServiceTimetable
 import cl.emilym.sinatra.data.models.RouteTripTimetable
 import cl.emilym.sinatra.data.models.ServiceAlert
+import cl.emilym.sinatra.data.models.ServiceAlertId
 import cl.emilym.sinatra.data.models.ServiceId
 import cl.emilym.sinatra.data.models.TripId
 import cl.emilym.sinatra.data.models.flatMap
@@ -66,13 +67,12 @@ class ServiceAlertCleanupWorker(
 @Factory
 class ServiceAlertRepository(
     private val serviceAlertCacheWorker: ServiceAlertCacheWorker,
-    private val serviceAlertCleanupWorker: ServiceAlertCleanupWorker
+    private val serviceAlertCleanupWorker: ServiceAlertCleanupWorker,
+    private val serviceAlertPersistence: ServiceAlertPersistence
 ) {
 
     suspend fun alerts() = serviceAlertCacheWorker.get()
-
-    suspend fun cleanup() {
-        serviceAlertCleanupWorker()
-    }
+    suspend fun cleanup() = serviceAlertCleanupWorker()
+    suspend fun markViewed(id: ServiceAlertId) = serviceAlertPersistence.markViewed(id)
 
 }
