@@ -5,6 +5,7 @@ import cl.emilym.sinatra.data.models.Cachable
 import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.data.models.Place
 import cl.emilym.sinatra.data.models.PlaceId
+import cl.emilym.sinatra.data.models.Zoom
 import cl.emilym.sinatra.data.persistence.PlacePersistence
 import org.koin.core.annotation.Factory
 
@@ -23,8 +24,8 @@ class PlaceRepository(
         }
     }
 
-    suspend fun reverse(location: MapLocation): Place? {
-        return placeClient.reverse(location)?.also {
+    suspend fun reverse(location: MapLocation, zoom: Zoom?): Place? {
+        return placeClient.reverse(location, zoom)?.also {
             placePersistence.save(listOf(it))
         }
     }

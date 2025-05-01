@@ -2,6 +2,7 @@ package cl.emilym.sinatra.data.client
 
 import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.data.models.Place
+import cl.emilym.sinatra.data.models.Zoom
 import cl.emilym.sinatra.data.repository.RemoteConfigRepository
 import cl.emilym.sinatra.network.NominatimApi
 import cl.emilym.sinatra.nullIfEmpty
@@ -20,6 +21,7 @@ class PlaceClient(
     companion object {
         private val NOMINATIM_STATION_TYPES = listOf("bus_stop", "platform", "stop", "station")
         private val REMOVED_CATEGORIES = listOf<String>()
+        private const val REVERSE_DEFAULT_ZOOM = 16
     }
 
     @OptIn(ExperimentalUuidApi::class)
@@ -40,12 +42,13 @@ class PlaceClient(
             .toList()
     }
 
-    suspend fun reverse(location: MapLocation): Place? {
+    suspend fun reverse(location: MapLocation, zoom: Zoom?): Place? {
         try {
             val response = nominatimApi.reverse(
                 "https://${remoteConfigRepository.nominatimUrl() ?: return null}/reverse",
                 location.lat,
                 location.lng,
+                zoom = zoom?.toInt() ?: REVERSE_DEFAULT_ZOOM,
                 userAgent = remoteConfigRepository.nominatimUserAgent(),
                 email = remoteConfigRepository.nominatimEmail()
             )
