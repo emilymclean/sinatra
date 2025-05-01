@@ -4,6 +4,7 @@ import cafe.adriel.voyager.core.registry.ScreenProvider
 import cafe.adriel.voyager.navigator.Navigator
 import cl.emilym.kmp.serializable.Serializable
 import cl.emilym.sinatra.FeatureFlags
+import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.data.models.Place
 import cl.emilym.sinatra.data.models.Route
 import cl.emilym.sinatra.data.models.Stop
@@ -21,6 +22,12 @@ fun Navigator.stopJourneyNavigation(stop: Stop) {
 
 fun Navigator.placeJourneyNavigation(place: Place) {
     push(NavigateEntryScreen(NavigationLocation.Place(place)))
+}
+
+fun Navigator.pointJourneyNavigation(point: MapLocation) {
+    push(NavigateEntryScreen(NavigationLocation.Point(
+        point
+    )))
 }
 
 fun Navigator.placeCardDefaultNavigation(place: Place) {

@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
@@ -27,6 +28,7 @@ import cafe.adriel.voyager.core.annotation.ExperimentalVoyagerApi
 import cafe.adriel.voyager.core.lifecycle.LifecycleEffectOnce
 import cafe.adriel.voyager.koin.koinScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
+import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import cl.emilym.compose.requeststate.RequestState
 import cl.emilym.compose.requeststate.RequestStateWidget
@@ -65,6 +67,11 @@ abstract class AbstractPlaceScreen<T: AbstractPlaceViewModel>: MapScreen {
     @Composable
     abstract fun viewModel(): T
     abstract fun init(viewModel: T)
+
+    abstract fun LazyListScope.CallToAction(
+        place: Place,
+        navigator: Navigator
+    )
 
     @OptIn(ExperimentalVoyagerApi::class)
     @Composable
@@ -128,28 +135,20 @@ abstract class AbstractPlaceScreen<T: AbstractPlaceViewModel>: MapScreen {
                                         val favourited by viewModel.favourited.collectAsStateWithLifecycle()
                                         val favouriteContentDescription =
                                             stringResource(Res.string.semantics_favourite_place)
-                                        FavouriteButton(
-                                            favourited,
-                                            { viewModel.favourite(it) },
-                                            Modifier.semantics {
-                                                contentDescription = favouriteContentDescription
-                                                selected = favourited
-                                            }
-                                        )
+                                        favourited?.let {
+                                            FavouriteButton(
+                                                it,
+                                                { viewModel.favourite(it) },
+                                                Modifier.semantics {
+                                                    contentDescription = favouriteContentDescription
+                                                    selected = it
+                                                }
+                                            )
+                                        }
                                     }
                                 }
                                 item { Box(Modifier.height(1.rdp)) }
-                                item {
-                                    Button(
-                                        onClick = { navigator.placeJourneyNavigation(place) },
-                                        modifier = Modifier.fillMaxWidth()
-                                            .padding(horizontal = 1.rdp)
-                                    ) {
-                                        NavigateIcon()
-                                        Box(Modifier.width(0.5.rdp))
-                                        Text(stringResource(Res.string.place_detail_navigate))
-                                    }
-                                }
+                                CallToAction(place, navigator)
                                 item { Box(Modifier.height(1.rdp)) }
                                 item { Subheading(stringResource(Res.string.map_search_nearby_stops)) }
                                 item {
@@ -203,7 +202,7 @@ abstract class AbstractPlaceScreen<T: AbstractPlaceViewModel>: MapScreen {
 
     @Composable
     override fun mapItems(): List<MapItem> {
-        val viewModel = koinScreenModel<PlaceDetailViewModel>()
+        val viewModel = viewModel()
         val placeRS by viewModel.place.collectAsStateWithLifecycle()
         val place = (placeRS as? RequestState.Success<Place?>)?.value ?: return listOf()
 

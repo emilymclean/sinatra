@@ -30,9 +30,9 @@ abstract class AbstractPlaceViewModel : SinatraScreenModel {
     val place: StateFlow<RequestState<Place?>> by lazy { _place.state(RequestState.Initial()) }
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    val favourited: StateFlow<Boolean> by lazy { placeId.flatMapLatest {
+    val favourited: StateFlow<Boolean?> by lazy { placeId.flatMapLatest {
         it?.let { favouriteRepository.placeIsFavourited(it) } ?: flowOf(false)
-    }.state(false) }
+    }.state(null) }
 
     private val _nearbyStops by lazy { place.requestStateFlow {
         it.unwrap()?.let {
