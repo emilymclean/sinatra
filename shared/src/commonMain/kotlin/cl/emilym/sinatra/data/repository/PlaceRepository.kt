@@ -2,6 +2,7 @@ package cl.emilym.sinatra.data.repository
 
 import cl.emilym.sinatra.data.client.PlaceClient
 import cl.emilym.sinatra.data.models.Cachable
+import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.data.models.Place
 import cl.emilym.sinatra.data.models.PlaceId
 import cl.emilym.sinatra.data.persistence.PlacePersistence
@@ -19,6 +20,12 @@ class PlaceRepository(
     suspend fun search(query: String): List<Place> {
         return placeClient.search(query).also {
             placePersistence.save(it)
+        }
+    }
+
+    suspend fun reverse(location: MapLocation): Place? {
+        return placeClient.reverse(location)?.also {
+            placePersistence.save(listOf(it))
         }
     }
 
