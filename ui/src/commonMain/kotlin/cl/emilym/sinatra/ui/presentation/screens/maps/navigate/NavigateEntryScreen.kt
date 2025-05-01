@@ -58,6 +58,7 @@ import cl.emilym.sinatra.ui.presentation.screens.maps.zoomPadding
 import cl.emilym.sinatra.ui.presentation.screens.search.SearchScreen
 import cl.emilym.sinatra.ui.presentation.theme.Container
 import cl.emilym.sinatra.ui.presentation.theme.walkingColor
+import cl.emilym.sinatra.ui.stopJourneyNavigation
 import cl.emilym.sinatra.ui.text
 import cl.emilym.sinatra.ui.widgets.AccessibleIcon
 import cl.emilym.sinatra.ui.widgets.BackButton
@@ -123,6 +124,7 @@ class NavigateEntryScreen(
     @Composable
     override fun mapItems(): List<MapItem> {
         val viewModel = koinScreenModel<NavigationEntryViewModel>()
+        val navigator = LocalNavigator.currentOrThrow
         val state by viewModel.state.collectAsStateWithLifecycle()
         val journey = (state as? NavigationEntryState.JourneySelected)?.journey ?: return emptyList()
         val originLocation by viewModel.originLocation.collectAsStateWithLifecycle()
@@ -162,7 +164,10 @@ class NavigateEntryScreen(
                         MarkerItem(
                             it.location,
                             routeStopMarkerIcon(leg.route),
-                            id = "routeLeg-stop-${it.id}"
+                            id = "routeLeg-stop-${it.id}",
+                            onClick = {
+                                navigator.stopJourneyNavigation(it)
+                            }
                         )
                     })
                 }
