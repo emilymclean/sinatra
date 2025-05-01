@@ -22,29 +22,16 @@ import org.koin.core.annotation.Factory
 @Factory
 class PlaceDetailViewModel(
     private val placeRepository: PlaceRepository,
-    private val favouriteRepository: FavouriteRepository,
-    private val recentVisitRepository: RecentVisitRepository,
-    private val nearbyStopsUseCase: NearbyStopsUseCase
-): IPlaceViewModel {
+    override val favouriteRepository: FavouriteRepository,
+    override val recentVisitRepository: RecentVisitRepository,
+    override val nearbyStopsUseCase: NearbyStopsUseCase
+): AbstractPlaceViewModel() {
 
-    private val placeId = MutableStateFlow<PlaceId?>(null)
+    override val placeId = MutableStateFlow<PlaceId?>(null)
 
-    @OptIn(ExperimentalCoroutinesApi::class)
-    override val favourited = placeId.flatMapLatest {
-        it?.let { favouriteRepository.placeIsFavourited(it) } ?: flowOf(false)
-    }.state(false)
-
-    private val _place = placeId.requestStateFlow {
+    override val _place = placeId.requestStateFlow {
         it?.let { placeRepository.get(it).item }
     }
-    override val place = _place.state(RequestState.Initial())
-
-    private val _nearbyStops = place.requestStateFlow {
-        (it as? RequestState.Success)?.value?.let {
-            nearbyStopsUseCase(it.location, limit = 25).nullIfEmpty()
-        }
-    }
-    override val nearbyStops = _nearbyStops.state(RequestState.Initial())
 
     fun init(placeId: PlaceId) {
         this.placeId.value = placeId
@@ -53,22 +40,9 @@ class PlaceDetailViewModel(
         }
     }
 
-    override fun favourite(favourited: Boolean) {
-        val placeId = this.placeId.value ?: return
-        screenModelScope.launch {
-            favouriteRepository.setPlaceFavourite(placeId, favourited)
-        }
-    }
-
     override fun retryPlace() {
         screenModelScope.launch {
             _place.retry()
-        }
-    }
-
-    override fun retryNearby() {
-        screenModelScope.launch {
-            _nearbyStops.retry()
         }
     }
 }

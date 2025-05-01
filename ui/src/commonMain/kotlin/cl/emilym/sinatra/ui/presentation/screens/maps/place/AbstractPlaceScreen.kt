@@ -60,7 +60,7 @@ import sinatra.ui.generated.resources.place_not_found
 import sinatra.ui.generated.resources.semantics_favourite_place
 import sinatra.ui.generated.resources.stop_detail_distance
 
-abstract class AbstractPlaceScreen<T: IPlaceViewModel>: MapScreen {
+abstract class AbstractPlaceScreen<T: AbstractPlaceViewModel>: MapScreen {
 
     @Composable
     abstract fun viewModel(): T
@@ -151,7 +151,12 @@ abstract class AbstractPlaceScreen<T: IPlaceViewModel>: MapScreen {
                                 item { Box(Modifier.height(1.rdp)) }
                                 item { Subheading(stringResource(Res.string.map_search_nearby_stops)) }
                                 item {
-                                    Box(Modifier.padding(horizontal = 1.rdp)) {
+                                    Box(
+                                        Modifier
+                                            .fillMaxWidth()
+                                            .padding(horizontal = 1.rdp),
+                                        contentAlignment = Alignment.Center
+                                    ) {
                                         RequestStateWidget(
                                             nearbyStops,
                                             retry = { viewModel.retryNearby() }
