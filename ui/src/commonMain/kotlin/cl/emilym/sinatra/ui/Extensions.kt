@@ -202,7 +202,7 @@ val Favourite.label: String
     get() = when(this) {
         is Favourite.Stop -> stop.name
         is Favourite.Route -> route.name
-        is Favourite.Place -> place.name
+        is Favourite.Place -> place.name ?: place.displayName
         // Todo represent this better
         is Favourite.StopOnRoute -> stop.name
     }

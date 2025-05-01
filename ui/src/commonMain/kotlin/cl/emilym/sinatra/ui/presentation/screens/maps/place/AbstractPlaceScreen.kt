@@ -115,13 +115,15 @@ abstract class AbstractPlaceScreen<T: AbstractPlaceViewModel>: MapScreen {
                                         SheetIosBackButton()
                                         Column(Modifier.weight(1f)) {
                                             Text(
-                                                place.name,
+                                                place.name ?: place.displayName,
                                                 style = MaterialTheme.typography.titleLarge
                                             )
-                                            Text(
-                                                place.displayName,
-                                                style = MaterialTheme.typography.titleMedium
-                                            )
+                                            place.name?.let {
+                                                Text(
+                                                    place.displayName,
+                                                    style = MaterialTheme.typography.titleMedium
+                                                )
+                                            }
                                         }
                                         val favourited by viewModel.favourited.collectAsStateWithLifecycle()
                                         val favouriteContentDescription =
