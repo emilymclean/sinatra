@@ -54,6 +54,7 @@ import cl.emilym.sinatra.ui.maps.routeStopMarkerIcon
 import cl.emilym.sinatra.ui.maps.walkingMarkerIcon
 import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
 import cl.emilym.sinatra.ui.navigation.MapScreen
+import cl.emilym.sinatra.ui.placeCardDefaultNavigation
 import cl.emilym.sinatra.ui.presentation.screens.maps.zoomPadding
 import cl.emilym.sinatra.ui.presentation.screens.search.SearchScreen
 import cl.emilym.sinatra.ui.presentation.theme.Container
@@ -544,6 +545,7 @@ class NavigateEntryScreen(
         val lastLeg = journey.legs.last()
         val firstLeg = journey.legs.first()
         val viewModel = koinScreenModel<NavigationEntryViewModel>()
+        val navigator = LocalNavigator.currentOrThrow
         val destination by viewModel.destination.collectAsStateWithLifecycle()
         val origin by viewModel.origin.collectAsStateWithLifecycle()
         val anchorTime by viewModel.anchorTime.collectAsStateWithLifecycle()
@@ -558,14 +560,24 @@ class NavigateEntryScreen(
                 is JourneyLeg.Transfer -> {
                     DepartureLeg(
                         firstLeg.stops.first().name,
-                        departureTime
+                        departureTime,
+                        onClick = { navigator.stopCardDefaultNavigation(firstLeg.stops.first()) }
                     )
                     HorizontalDivider(Modifier.padding(start = journeyIconInset, end = 1.rdp))
                 }
                 is JourneyLeg.TransferPoint -> {
                     DepartureLeg(
                         origin.name,
-                        departureTime
+                        departureTime,
+                        onClick = origin.let { when (it) {
+                            is NavigationLocation.Stop -> { {
+                                navigator.stopCardDefaultNavigation(it.stop)
+                            } }
+                            is NavigationLocation.Place -> { {
+                                navigator.placeCardDefaultNavigation(it.place)
+                            } }
+                            else -> null
+                        } }
                     )
                     HorizontalDivider(Modifier.padding(start = journeyIconInset, end = 1.rdp))
                 }
@@ -592,11 +604,27 @@ class NavigateEntryScreen(
             when (lastLeg) {
                 is JourneyLeg.Transfer -> {
                     HorizontalDivider(Modifier.padding(start = journeyIconInset, end = 1.rdp))
-                    ArrivalLeg(lastLeg.stops.last().name, lastLeg.arrivalTime)
+                    ArrivalLeg(
+                        lastLeg.stops.last().name,
+                        lastLeg.arrivalTime,
+                        onClick = { navigator.stopCardDefaultNavigation(lastLeg.stops.last()) }
+                    )
                 }
                 is JourneyLeg.TransferPoint -> {
                     HorizontalDivider(Modifier.padding(start = journeyIconInset, end = 1.rdp))
-                    ArrivalLeg(destination.name, lastLeg.arrivalTime)
+                    ArrivalLeg(
+                        destination.name,
+                        lastLeg.arrivalTime,
+                        onClick = origin.let { when (it) {
+                            is NavigationLocation.Stop -> { {
+                                navigator.stopCardDefaultNavigation(it.stop)
+                            } }
+                            is NavigationLocation.Place -> { {
+                                navigator.placeCardDefaultNavigation(it.place)
+                            } }
+                            else -> null
+                        } }
+                    )
                 }
                 else -> {}
             }
@@ -671,7 +699,8 @@ fun TravelLeg(leg: JourneyLeg.Travel) {
 @Composable
 fun DepartureLeg(
     pointName: String,
-    departureTime: Time?
+    departureTime: Time?,
+    onClick: (() -> Unit)? = null
 ) {
     LegScaffold({ GenericMarkerIcon() }) {
         Column(
@@ -682,20 +711,38 @@ fun DepartureLeg(
                 when (departureTime) {
                     null -> stringResource(Res.string.navigate_travel_journey_depart, pointName)
                     else -> stringResource(Res.string.navigate_travel_depart, pointName, departureTime.format())
-                }
+                },
+                modifier = Modifier.then(
+                    when (onClick) {
+                        null -> Modifier
+                        else -> Modifier.noRippleClickable { onClick() }
+                    }
+                )
             )
         }
     }
 }
 
 @Composable
-fun ArrivalLeg(pointName: String, arrivalTime: Time) {
+fun ArrivalLeg(
+    pointName: String,
+    arrivalTime: Time,
+    onClick: (() -> Unit)? = null
+) {
     LegScaffold({ GenericMarkerIcon() }) {
         Column(
             Modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(0.75.rdp)
+            verticalArrangement = Arrangement.spacedBy(0.75.rdp),
         ) {
-            Markdown(stringResource(Res.string.navigate_travel_journey_arrive, pointName, arrivalTime.format()))
+            Markdown(
+                stringResource(Res.string.navigate_travel_journey_arrive, pointName, arrivalTime.format()),
+                modifier = Modifier.then(
+                    when (onClick) {
+                        null -> Modifier
+                        else -> Modifier.noRippleClickable { onClick() }
+                    }
+                )
+            )
         }
     }
 }
