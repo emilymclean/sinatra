@@ -342,21 +342,17 @@ class NavigateEntryScreen(
                             ) {
                                 val origin by viewModel.origin.collectAsStateWithLifecycle()
                                 val destination by viewModel.destination.collectAsStateWithLifecycle()
-                                origin?.let { origin ->
-                                    NavigationLocationDisplay(
-                                        origin,
-                                        false,
-                                        modifier = Modifier.clickable { viewModel.onOriginClick() }
-                                    )
-                                }
+                                NavigationLocationDisplay(
+                                    origin,
+                                    false,
+                                    modifier = Modifier.clickable { viewModel.onOriginClick() }
+                                )
                                 HorizontalDivider(Modifier.padding(start = iconInset))
-                                destination?.let { destination ->
-                                    NavigationLocationDisplay(
-                                        destination,
-                                        true,
-                                        modifier = Modifier.clickable { viewModel.onDestinationClick() }
-                                    )
-                                }
+                                NavigationLocationDisplay(
+                                    destination,
+                                    true,
+                                    modifier = Modifier.clickable { viewModel.onDestinationClick() }
+                                )
                             }
                             if (FeatureFlags.RAPTOR_SWAP_BUTTON) {
                                 IconButton(
@@ -538,7 +534,6 @@ class NavigateEntryScreen(
                     }
                 }
             }
-            else -> {}
         }
     }
 
@@ -567,13 +562,11 @@ class NavigateEntryScreen(
                     HorizontalDivider(Modifier.padding(start = journeyIconInset, end = 1.rdp))
                 }
                 is JourneyLeg.TransferPoint -> {
-                    origin?.name?.let {
-                        DepartureLeg(
-                            it,
-                            departureTime
-                        )
-                        HorizontalDivider(Modifier.padding(start = journeyIconInset, end = 1.rdp))
-                    }
+                    DepartureLeg(
+                        origin.name,
+                        departureTime
+                    )
+                    HorizontalDivider(Modifier.padding(start = journeyIconInset, end = 1.rdp))
                 }
                 else -> {}
             }
@@ -601,10 +594,8 @@ class NavigateEntryScreen(
                     ArrivalLeg(lastLeg.stops.last().name, lastLeg.arrivalTime)
                 }
                 is JourneyLeg.TransferPoint -> {
-                    destination?.name?.let {
-                        HorizontalDivider(Modifier.padding(start = journeyIconInset, end = 1.rdp))
-                        ArrivalLeg(it, lastLeg.arrivalTime)
-                    }
+                    HorizontalDivider(Modifier.padding(start = journeyIconInset, end = 1.rdp))
+                    ArrivalLeg(destination.name, lastLeg.arrivalTime)
                 }
                 else -> {}
             }
