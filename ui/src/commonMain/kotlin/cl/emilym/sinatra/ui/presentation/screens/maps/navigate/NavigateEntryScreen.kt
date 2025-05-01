@@ -58,6 +58,7 @@ import cl.emilym.sinatra.ui.presentation.screens.maps.zoomPadding
 import cl.emilym.sinatra.ui.presentation.screens.search.SearchScreen
 import cl.emilym.sinatra.ui.presentation.theme.Container
 import cl.emilym.sinatra.ui.presentation.theme.walkingColor
+import cl.emilym.sinatra.ui.routeCardDefaultNavigation
 import cl.emilym.sinatra.ui.stopJourneyNavigation
 import cl.emilym.sinatra.ui.text
 import cl.emilym.sinatra.ui.widgets.AccessibleIcon
@@ -80,6 +81,7 @@ import cl.emilym.sinatra.ui.widgets.WalkIcon
 import cl.emilym.sinatra.ui.widgets.collectAsStateWithLifecycle
 import cl.emilym.sinatra.ui.widgets.currentLocation
 import cl.emilym.sinatra.ui.widgets.hasLocationPermission
+import cl.emilym.sinatra.ui.widgets.noRippleClickable
 import cl.emilym.sinatra.ui.widgets.routeRandleSize
 import com.mikepenz.markdown.m3.Markdown
 import org.jetbrains.compose.resources.stringResource
@@ -652,14 +654,24 @@ fun TransferLeg(leg: JourneyLeg) {
 
 @Composable
 fun TravelLeg(leg: JourneyLeg.Travel) {
+    val navigator = LocalNavigator.currentOrThrow
     LegScaffold({ RouteRandle(leg.route) }) {
         Column(
             Modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(0.75.rdp)
         ) {
-            Markdown(stringResource(Res.string.navigate_travel_depart, leg.stops.first().name, leg.departureTime.format()))
-            Markdown(stringResource(Res.string.navigate_travel, leg.travelTime.text, leg.route.name, leg.heading))
-            Markdown(stringResource(Res.string.navigate_travel_arrive, leg.stops.last().name, leg.arrivalTime.format()))
+            Markdown(
+                stringResource(Res.string.navigate_travel_depart, leg.stops.first().name, leg.departureTime.format()),
+                modifier = Modifier.noRippleClickable { navigator.stopJourneyNavigation(leg.stops.first()) }
+            )
+            Markdown(
+                stringResource(Res.string.navigate_travel, leg.travelTime.text, leg.route.name, leg.heading),
+                modifier = Modifier.noRippleClickable { navigator.routeCardDefaultNavigation(leg.route) }
+            )
+            Markdown(
+                stringResource(Res.string.navigate_travel_arrive, leg.stops.last().name, leg.arrivalTime.format()),
+                modifier = Modifier.noRippleClickable { navigator.stopJourneyNavigation(leg.stops.last()) }
+            )
         }
     }
 }
