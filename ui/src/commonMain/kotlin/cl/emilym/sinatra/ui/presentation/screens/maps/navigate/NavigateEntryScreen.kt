@@ -59,6 +59,7 @@ import cl.emilym.sinatra.ui.presentation.screens.search.SearchScreen
 import cl.emilym.sinatra.ui.presentation.theme.Container
 import cl.emilym.sinatra.ui.presentation.theme.walkingColor
 import cl.emilym.sinatra.ui.routeCardDefaultNavigation
+import cl.emilym.sinatra.ui.stopCardDefaultNavigation
 import cl.emilym.sinatra.ui.stopJourneyNavigation
 import cl.emilym.sinatra.ui.text
 import cl.emilym.sinatra.ui.widgets.AccessibleIcon
@@ -168,7 +169,7 @@ class NavigateEntryScreen(
                             routeStopMarkerIcon(leg.route),
                             id = "routeLeg-stop-${it.id}",
                             onClick = {
-                                navigator.stopJourneyNavigation(it)
+                                navigator.stopCardDefaultNavigation(it)
                             }
                         )
                     })
@@ -653,7 +654,7 @@ fun TravelLeg(leg: JourneyLeg.Travel) {
         ) {
             Markdown(
                 stringResource(Res.string.navigate_travel_depart, leg.stops.first().name, leg.departureTime.format()),
-                modifier = Modifier.noRippleClickable { navigator.stopJourneyNavigation(leg.stops.first()) }
+                modifier = Modifier.noRippleClickable { navigator.stopCardDefaultNavigation(leg.stops.first()) }
             )
             Markdown(
                 stringResource(Res.string.navigate_travel, leg.travelTime.text, leg.route.name, leg.heading),
@@ -661,7 +662,7 @@ fun TravelLeg(leg: JourneyLeg.Travel) {
             )
             Markdown(
                 stringResource(Res.string.navigate_travel_arrive, leg.stops.last().name, leg.arrivalTime.format()),
-                modifier = Modifier.noRippleClickable { navigator.stopJourneyNavigation(leg.stops.last()) }
+                modifier = Modifier.noRippleClickable { navigator.stopCardDefaultNavigation(leg.stops.last()) }
             )
         }
     }
