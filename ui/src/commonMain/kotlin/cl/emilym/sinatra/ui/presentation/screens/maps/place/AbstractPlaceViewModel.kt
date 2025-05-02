@@ -14,9 +14,11 @@ import cl.emilym.sinatra.nullIfEmpty
 import cl.emilym.sinatra.ui.widgets.SinatraScreenModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 abstract class AbstractPlaceViewModel : SinatraScreenModel {
@@ -27,7 +29,7 @@ abstract class AbstractPlaceViewModel : SinatraScreenModel {
     protected abstract val placeId: StateFlow<PlaceId?>
 
     protected abstract val _place: Flow<RequestState<Place?>>
-    val place: StateFlow<RequestState<Place?>> by lazy { _place.state(RequestState.Initial()) }
+    val place: StateFlow<RequestState<Place?>> by lazy { _place.stateIn(screenModelScope, SharingStarted.Lazily, RequestState.Initial()) }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val favourited: StateFlow<Boolean?> by lazy { placeId.flatMapLatest {
