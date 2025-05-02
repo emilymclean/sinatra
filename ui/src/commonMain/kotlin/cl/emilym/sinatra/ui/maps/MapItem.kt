@@ -55,3 +55,12 @@ data class LineItem(
     override val visible: Boolean = true,
     override val id: String = uuid(),
 ): MapItem
+
+// Used to register callbacks on the map itself
+data class MapCallbackItem(
+    val onClick: ((location: MapLocation) -> Unit)? = null,
+    val onLongClick: ((location: MapLocation) -> Unit)? = null,
+): MapItem {
+    override val id: String = "map-click-item"
+    override val visible: Boolean = false
+}

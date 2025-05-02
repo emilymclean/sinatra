@@ -34,7 +34,6 @@ import cl.emilym.compose.requeststate.handle
 import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.data.models.Content
 import cl.emilym.sinatra.data.models.ContentId
-import cl.emilym.sinatra.data.models.ContentLink
 import cl.emilym.sinatra.data.repository.ContentRepository
 import cl.emilym.sinatra.ui.widgets.BackIcon
 import cl.emilym.sinatra.ui.widgets.ContentLinkWidget
