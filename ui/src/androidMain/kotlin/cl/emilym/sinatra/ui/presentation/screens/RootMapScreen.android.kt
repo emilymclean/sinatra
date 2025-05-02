@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import cl.emilym.sinatra.data.models.MapLocation
+import cl.emilym.sinatra.data.models.Zoom
 import cl.emilym.sinatra.ui.R
 import cl.emilym.sinatra.ui.canberra
 import cl.emilym.sinatra.ui.canberraZoom
@@ -86,8 +87,8 @@ actual fun Map(
         (mapControl as? SafeMapControl)?.wrapped = realMapControl
     }
 
-    var clickCallback by remember { mutableStateOf<((MapLocation) -> Unit)?>(null) }
-    var longClickCallback by remember { mutableStateOf<((MapLocation) -> Unit)?>(null) }
+    var clickCallback by remember { mutableStateOf<((MapLocation, Zoom) -> Unit)?>(null) }
+    var longClickCallback by remember { mutableStateOf<((MapLocation, Zoom) -> Unit)?>(null) }
 
     Box(Modifier.then(modifier)) {
         GoogleMap(
@@ -108,8 +109,8 @@ actual fun Map(
                 zoomControlsEnabled = false,
                 mapToolbarEnabled = false
             ),
-            onMapClick = { clickCallback?.invoke(it.toShared()) },
-            onMapLongClick = { longClickCallback?.invoke(it.toShared()) },
+            onMapClick = { clickCallback?.invoke(it.toShared(), cameraPositionState.position.zoom) },
+            onMapLongClick = { longClickCallback?.invoke(it.toShared(), cameraPositionState.position.zoom) },
             contentPadding = insets,
             mapColorScheme = ComposeMapColorScheme.FOLLOW_SYSTEM
         ) {

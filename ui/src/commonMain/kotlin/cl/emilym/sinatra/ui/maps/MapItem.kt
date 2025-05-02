@@ -2,6 +2,7 @@ package cl.emilym.sinatra.ui.maps
 
 import androidx.compose.ui.graphics.Color
 import cl.emilym.sinatra.data.models.MapLocation
+import cl.emilym.sinatra.data.models.Zoom
 import cl.emilym.sinatra.lib.FloatRange
 
 interface MapItem {
@@ -58,8 +59,8 @@ data class LineItem(
 
 // Used to register callbacks on the map itself
 data class MapCallbackItem(
-    val onClick: ((location: MapLocation) -> Unit)? = null,
-    val onLongClick: ((location: MapLocation) -> Unit)? = null,
+    val onClick: ((location: MapLocation, zoom: Zoom) -> Unit)? = null,
+    val onLongClick: ((location: MapLocation, zoom: Zoom) -> Unit)? = null,
 ): MapItem {
     override val id: String = "map-click-item"
     override val visible: Boolean = false

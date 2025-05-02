@@ -164,10 +164,11 @@ class MapSearchScreen: MapScreen, NativeMapScreen {
         val stops = (stopsRS as? RequestState.Success)?.value ?: return listOf()
         val navigator = LocalNavigator.currentOrThrow
 
-        return mapSearchScreenMapItems(stops) + listOf(
-            MapCallbackItem(
-                onLongClick = { navigator.push(PointDetailScreen(it)) }
-            )
+        return mapSearchScreenMapItems(stops) + listOfNotNull(
+            if (FeatureFlags.HOLD_MAP_POINT_DETAIL) MapCallbackItem(onLongClick = { pos, zoom ->
+                navigator.push(PointDetailScreen(pos, zoom + 2))
+            }
+            ) else null
         )
     }
 

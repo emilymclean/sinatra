@@ -9,6 +9,7 @@ import cl.emilym.sinatra.nullIfEmpty
 import io.github.aakira.napier.Napier
 import io.ktor.serialization.JsonConvertException
 import org.koin.core.annotation.Factory
+import kotlin.math.roundToInt
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
@@ -48,7 +49,7 @@ class PlaceClient(
                 "https://${remoteConfigRepository.nominatimUrl() ?: return null}/reverse",
                 location.lat,
                 location.lng,
-                zoom = zoom?.toInt() ?: REVERSE_DEFAULT_ZOOM,
+                zoom = zoom?.roundToInt() ?: REVERSE_DEFAULT_ZOOM,
                 userAgent = remoteConfigRepository.nominatimUserAgent(),
                 email = remoteConfigRepository.nominatimEmail()
             )
