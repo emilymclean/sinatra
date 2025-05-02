@@ -8,11 +8,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -26,7 +24,6 @@ import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import cafe.adriel.voyager.core.annotation.ExperimentalVoyagerApi
 import cafe.adriel.voyager.core.lifecycle.LifecycleEffectOnce
-import cafe.adriel.voyager.koin.koinScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
@@ -40,15 +37,14 @@ import cl.emilym.sinatra.ui.maps.MarkerItem
 import cl.emilym.sinatra.ui.maps.placeMarkerIcon
 import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
 import cl.emilym.sinatra.ui.navigation.MapScreen
-import cl.emilym.sinatra.ui.placeJourneyNavigation
 import cl.emilym.sinatra.ui.presentation.screens.maps.search.zoomThreshold
 import cl.emilym.sinatra.ui.stopCardDefaultNavigation
 import cl.emilym.sinatra.ui.text
 import cl.emilym.sinatra.ui.widgets.FavouriteButton
 import cl.emilym.sinatra.ui.widgets.ListHint
 import cl.emilym.sinatra.ui.widgets.LocalMapControl
-import cl.emilym.sinatra.ui.widgets.NavigateIcon
 import cl.emilym.sinatra.ui.widgets.NoBusIcon
+import cl.emilym.sinatra.ui.widgets.NoPlaceIcon
 import cl.emilym.sinatra.ui.widgets.SheetIosBackButton
 import cl.emilym.sinatra.ui.widgets.StopCard
 import cl.emilym.sinatra.ui.widgets.Subheading
@@ -57,8 +53,8 @@ import org.jetbrains.compose.resources.stringResource
 import sinatra.ui.generated.resources.Res
 import sinatra.ui.generated.resources.map_search_nearby_stops
 import sinatra.ui.generated.resources.no_nearby_stops
-import sinatra.ui.generated.resources.place_detail_navigate
 import sinatra.ui.generated.resources.place_not_found
+import sinatra.ui.generated.resources.point_outside_service_area
 import sinatra.ui.generated.resources.semantics_favourite_place
 import sinatra.ui.generated.resources.stop_detail_distance
 
@@ -90,6 +86,7 @@ abstract class AbstractPlaceScreen<T: AbstractPlaceViewModel>: MapScreen {
         }
 
         val place by viewModel.place.collectAsStateWithLifecycle()
+        val outsideServiceArea by viewModel.outsideServiceArea.collectAsStateWithLifecycle()
         val nearbyStops by viewModel.nearbyStops.collectAsStateWithLifecycle()
 
         Box(
@@ -98,8 +95,16 @@ abstract class AbstractPlaceScreen<T: AbstractPlaceViewModel>: MapScreen {
         ) {
             RequestStateWidget(place, { viewModel.retryPlace() }) { place ->
                 when {
+                    outsideServiceArea -> {
+                        ListHint(stringResource(Res.string.point_outside_service_area)) {
+                            NoPlaceIcon()
+                        }
+                    }
+
                     place == null -> {
-                        Text(stringResource(Res.string.place_not_found))
+                        ListHint(stringResource(Res.string.place_not_found)) {
+                            NoPlaceIcon()
+                        }
                     }
 
                     else -> {

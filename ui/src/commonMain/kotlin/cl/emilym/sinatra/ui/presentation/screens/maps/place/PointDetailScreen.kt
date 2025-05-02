@@ -24,11 +24,13 @@ import cl.emilym.sinatra.data.repository.PlaceRepository
 import cl.emilym.sinatra.data.repository.RecentVisitRepository
 import cl.emilym.sinatra.domain.NearbyStopsUseCase
 import cl.emilym.sinatra.nullIfEmpty
+import cl.emilym.sinatra.ui.canberraRegion
 import cl.emilym.sinatra.ui.localization.format
 import cl.emilym.sinatra.ui.placeJourneyNavigation
 import cl.emilym.sinatra.ui.pointJourneyNavigation
 import cl.emilym.sinatra.ui.widgets.NavigateIcon
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
@@ -64,7 +66,13 @@ class PointDetailViewModel(
     }
     override val placeId = place.map { it.unwrap()?.id?.nullIfEmpty() }.state(null)
 
+    override val outsideServiceArea = MutableStateFlow(false)
+
     fun init(point: MapLocation, zoom: Zoom?) {
+        val isOutsideServiceArea = !canberraRegion.contains(point)
+        outsideServiceArea.value = isOutsideServiceArea
+        if (isOutsideServiceArea) return
+
         this.point.value = MapLocationAndZoom(
             point, zoom
         )

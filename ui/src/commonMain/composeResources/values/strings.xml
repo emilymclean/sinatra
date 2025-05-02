@@ -108,6 +108,7 @@
     <string name="route_not_found">The requested route has no stops.</string>
     <string name="stop_not_found">The requested stop could not be found.</string>
     <string name="place_not_found">The requested place could not be found.</string>
+    <string name="point_outside_service_area">This point is outside the service area.</string>
     <string name="trip_not_found">There are currently no trips for the requested route.</string>
 
     <string name="stops_title">Stops</string>

@@ -26,6 +26,7 @@ import cl.emilym.compose.requeststate.RequestState
 import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.FeatureFlags
 import cl.emilym.sinatra.data.models.Stop
+import cl.emilym.sinatra.ui.canberraRegion
 import cl.emilym.sinatra.ui.maps.MapCallbackItem
 import cl.emilym.sinatra.ui.maps.MapItem
 import cl.emilym.sinatra.ui.maps.MarkerItem
@@ -166,6 +167,7 @@ class MapSearchScreen: MapScreen, NativeMapScreen {
 
         return mapSearchScreenMapItems(stops) + listOfNotNull(
             if (FeatureFlags.HOLD_MAP_POINT_DETAIL) MapCallbackItem(onLongClick = { pos, zoom ->
+                if (!canberraRegion.contains(pos)) return@MapCallbackItem
                 navigator.push(PointDetailScreen(pos, zoom + 2))
             }
             ) else null
