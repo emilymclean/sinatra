@@ -25,7 +25,9 @@ class PlaceRepository(
     }
 
     suspend fun reverse(location: MapLocation, zoom: Zoom?): Place? {
-        return placeClient.reverse(location, zoom)?.also {
+        return placeClient.reverse(location, zoom)?.copy(
+            location = location
+        )?.also {
             placePersistence.save(listOf(it))
         }
     }
