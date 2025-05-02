@@ -4,6 +4,7 @@ import cafe.adriel.voyager.core.model.screenModelScope
 import cl.emilym.compose.requeststate.RequestState
 import cl.emilym.compose.requeststate.requestStateFlow
 import cl.emilym.compose.requeststate.unwrap
+import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.data.models.Place
 import cl.emilym.sinatra.data.models.PlaceId
 import cl.emilym.sinatra.data.models.StopWithDistance
@@ -34,6 +35,7 @@ abstract class AbstractPlaceViewModel : SinatraScreenModel {
 
     protected abstract val _place: Flow<RequestState<Place?>>
     val place: StateFlow<RequestState<Place?>> by lazy { _place.stateIn(screenModelScope, SharingStarted.Lazily, RequestState.Initial()) }
+    abstract val location: StateFlow<MapLocation?>
 
     open val outsideServiceArea: StateFlow<Boolean> = MutableStateFlow(false).asStateFlow()
 

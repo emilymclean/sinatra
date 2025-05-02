@@ -15,7 +15,9 @@ import cafe.adriel.voyager.koin.koinScreenModel
 import cafe.adriel.voyager.navigator.Navigator
 import cl.emilym.compose.requeststate.RequestState
 import cl.emilym.compose.requeststate.requestStateFlow
+import cl.emilym.compose.requeststate.unwrap
 import cl.emilym.compose.units.rdp
+import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.data.models.Place
 import cl.emilym.sinatra.data.models.PlaceId
 import cl.emilym.sinatra.data.repository.FavouriteRepository
@@ -27,8 +29,10 @@ import cl.emilym.sinatra.ui.placeJourneyNavigation
 import cl.emilym.sinatra.ui.widgets.NavigateIcon
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.koin.core.annotation.Factory
@@ -48,6 +52,10 @@ class PlaceDetailViewModel(
     override val _place = placeId.requestStateFlow {
         it?.let { placeRepository.get(it).item }
     }
+
+    override val location: StateFlow<MapLocation?> = place.mapLatest {
+        it.unwrap()?.location
+    }.state(null)
 
     fun init(placeId: PlaceId) {
         this.placeId.value = placeId

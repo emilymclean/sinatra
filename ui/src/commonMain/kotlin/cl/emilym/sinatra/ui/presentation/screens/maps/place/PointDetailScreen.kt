@@ -32,6 +32,7 @@ import cl.emilym.sinatra.ui.widgets.NavigateIcon
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.koin.core.annotation.Factory
@@ -65,6 +66,8 @@ class PointDetailViewModel(
         }
     }
     override val placeId = place.map { it.unwrap()?.id?.nullIfEmpty() }.state(null)
+
+    override val location: StateFlow<MapLocation?> = point.mapLatest { it?.mapLocation }.state(null)
 
     override val outsideServiceArea = MutableStateFlow(false)
 

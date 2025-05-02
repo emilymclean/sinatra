@@ -49,6 +49,7 @@ import cl.emilym.sinatra.ui.widgets.SheetIosBackButton
 import cl.emilym.sinatra.ui.widgets.StopCard
 import cl.emilym.sinatra.ui.widgets.Subheading
 import cl.emilym.sinatra.ui.widgets.collectAsStateWithLifecycle
+import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.stringResource
 import sinatra.ui.generated.resources.Res
 import sinatra.ui.generated.resources.map_search_nearby_stops
@@ -89,6 +90,12 @@ abstract class AbstractPlaceScreen<T: AbstractPlaceViewModel>: MapScreen {
         val outsideServiceArea by viewModel.outsideServiceArea.collectAsStateWithLifecycle()
         val nearbyStops by viewModel.nearbyStops.collectAsStateWithLifecycle()
         val noNearbyStops by viewModel.noNearbyStops.collectAsStateWithLifecycle()
+        val location by viewModel.location.collectAsStateWithLifecycle()
+
+        LaunchedEffect(location) {
+            delay(100)
+            location?.let { mapControl.moveToPoint(it, minZoom = zoomThreshold) }
+        }
 
         Box(
             Modifier.fillMaxSize(),
@@ -109,10 +116,6 @@ abstract class AbstractPlaceScreen<T: AbstractPlaceViewModel>: MapScreen {
                     }
 
                     else -> {
-                        LaunchedEffect(place.location) {
-                            mapControl.moveToPoint(place.location, minZoom = zoomThreshold)
-                        }
-
                         Scaffold { innerPadding ->
                             LazyColumn(
                                 Modifier.fillMaxSize(),
@@ -209,14 +212,13 @@ abstract class AbstractPlaceScreen<T: AbstractPlaceViewModel>: MapScreen {
     @Composable
     override fun mapItems(): List<MapItem> {
         val viewModel = viewModel()
-        val placeRS by viewModel.place.collectAsStateWithLifecycle()
-        val place = (placeRS as? RequestState.Success<Place?>)?.value ?: return listOf()
+        val location = viewModel.location.collectAsStateWithLifecycle().value ?: return emptyList()
 
         return listOf(
             MarkerItem(
-                place.location,
-                placeMarkerIcon(place),
-                id = "placeDetail-${place.id}"
+                location,
+                placeMarkerIcon(),
+                id = "placeDetail-${location}"
             )
         )
     }
