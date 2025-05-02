@@ -37,6 +37,7 @@ import sinatra.ui.generated.resources.warning
 import sinatra.ui.generated.resources.home
 import sinatra.ui.generated.resources.work
 import sinatra.ui.generated.resources.clear
+import sinatra.ui.generated.resources.no_place
 
 @Composable
 fun AccessibleIcon(
@@ -432,6 +433,20 @@ fun ClearIcon(
 ) {
     Icon(
         painterResource(Res.drawable.clear),
+        contentDescription = contentDescription,
+        modifier = modifier,
+        tint = tint
+    )
+}
+
+@Composable
+fun NoPlaceIcon(
+    modifier: Modifier = Modifier,
+    tint: Color = LocalContentColor.current,
+    contentDescription: String? = null
+) {
+    Icon(
+        painterResource(Res.drawable.no_place),
         contentDescription = contentDescription,
         modifier = modifier,
         tint = tint
