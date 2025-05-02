@@ -88,6 +88,7 @@ abstract class AbstractPlaceScreen<T: AbstractPlaceViewModel>: MapScreen {
         val place by viewModel.place.collectAsStateWithLifecycle()
         val outsideServiceArea by viewModel.outsideServiceArea.collectAsStateWithLifecycle()
         val nearbyStops by viewModel.nearbyStops.collectAsStateWithLifecycle()
+        val noNearbyStops by viewModel.noNearbyStops.collectAsStateWithLifecycle()
 
         Box(
             Modifier.fillMaxSize(),
@@ -184,9 +185,9 @@ abstract class AbstractPlaceScreen<T: AbstractPlaceViewModel>: MapScreen {
                                         showStopIcon = true
                                     )
                                 }
-                                if ((nearbyStops as? RequestState.Success<List<StopWithDistance>?>)?.value?.size == 0) {
+                                if (noNearbyStops) {
                                     item {
-                                        Box(Modifier.padding(horizontal = 1.rdp)) {
+                                        Box(Modifier.padding(horizontal = 1.rdp).padding(top = 1.rdp)) {
                                             ListHint(
                                                 stringResource(Res.string.no_nearby_stops)
                                             ) {

@@ -12,6 +12,7 @@ import cl.emilym.sinatra.data.repository.RecentVisitRepository
 import cl.emilym.sinatra.domain.NearbyStopsUseCase
 import cl.emilym.sinatra.nullIfEmpty
 import cl.emilym.sinatra.ui.widgets.SinatraScreenModel
+import io.github.aakira.napier.Napier
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,6 +21,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -42,11 +44,16 @@ abstract class AbstractPlaceViewModel : SinatraScreenModel {
 
     private val _nearbyStops by lazy { place.requestStateFlow {
         it.unwrap()?.let {
-            nearbyStopsUseCase(it.location, limit = 25).nullIfEmpty()
+            nearbyStopsUseCase(it.location, limit = 25)
         }
     } }
     val nearbyStops: StateFlow<RequestState<List<StopWithDistance>?>> by lazy { _nearbyStops
         .state(RequestState.Initial()) }
+    val noNearbyStops: StateFlow<Boolean> by lazy {
+        nearbyStops.mapLatest {
+            it.unwrap()?.size == 0
+        }.state(false)
+    }
 
     fun favourite(favourited: Boolean) {
         val placeId = this.placeId.value ?: return
