@@ -62,7 +62,7 @@ class PointDetailViewModel(
             )
         }
     }
-    override val placeId = _place.map { it.unwrap()?.id?.nullIfEmpty() }.state(null)
+    override val placeId = place.map { it.unwrap()?.id?.nullIfEmpty() }.state(null)
 
     fun init(point: MapLocation, zoom: Zoom?) {
         this.point.value = MapLocationAndZoom(
