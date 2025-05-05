@@ -28,7 +28,10 @@ import cl.emilym.sinatra.data.repository.ContentRepository
 import cl.emilym.sinatra.ui.minimumTouchTarget
 import cl.emilym.sinatra.ui.presentation.screens.AboutScreen
 import cl.emilym.sinatra.ui.presentation.screens.ContentScreen
+import cl.emilym.sinatra.ui.presentation.screens.FavouriteScreen
 import cl.emilym.sinatra.ui.presentation.screens.ServiceAlertScreen
+import cl.emilym.sinatra.ui.presentation.screens.maps.navigate.NavigateEntryScreen
+import cl.emilym.sinatra.ui.presentation.screens.maps.search.MapSearchScreen
 import cl.emilym.sinatra.ui.presentation.screens.preferences.RootPreferencesScreen
 import cl.emilym.sinatra.ui.presentation.theme.Container
 
@@ -44,6 +47,9 @@ fun contentRoute(id: ContentId): Screen {
 fun nativeRoute(reference: NativePageReference): Screen? {
     return when (reference) {
         ContentRepository.NATIVE_PREFERENCES_ID -> RootPreferencesScreen()
+        ContentRepository.NATIVE_FAVOURITES_ID -> FavouriteScreen()
+        ContentRepository.NATIVE_BROWSE_ID -> MapSearchScreen()
+        ContentRepository.NATIVE_NAVIGATE_ENTRY_ID -> NavigateEntryScreen()
         else -> null
     }
 }
