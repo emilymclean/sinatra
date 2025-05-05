@@ -1,18 +1,13 @@
 package cl.emilym.sinatra.ui.presentation.screens.preferences
 
 import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import cafe.adriel.voyager.core.screen.ScreenKey
-import cl.emilym.sinatra.data.repository.state
 import cl.emilym.sinatra.lib.FloatRange
 import cl.emilym.sinatra.ui.text
-import cl.emilym.sinatra.ui.widgets.collectAsStateWithLifecycle
 import cl.emilym.sinatra.ui.widgets.form.HorizontalLockup
 import cl.emilym.sinatra.ui.widgets.form.PreferencesCheckbox
 import cl.emilym.sinatra.ui.widgets.form.PreferencesFloatSlider
