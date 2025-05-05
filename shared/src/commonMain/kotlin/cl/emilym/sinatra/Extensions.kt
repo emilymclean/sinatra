@@ -67,3 +67,12 @@ fun Float.nullIfNaN(): Float? {
         else -> this
     }
 }
+
+fun <T> nullIfThrows(operation: () -> T): T? {
+    return try {
+        operation()
+    } catch (e: Throwable) {
+        Napier.e(e)
+        null
+    }
+}

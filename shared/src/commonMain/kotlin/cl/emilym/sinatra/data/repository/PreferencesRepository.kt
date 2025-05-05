@@ -4,11 +4,15 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.floatPreferencesKey
 import cl.emilym.sinatra.data.persistence.PreferencesPersistence
+import cl.emilym.sinatra.e
+import cl.emilym.sinatra.nullIfThrows
+import io.github.aakira.napier.Napier
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.stateIn
@@ -39,10 +43,22 @@ internal abstract class MappablePreferencesUnit<I,O>: BasePreferencesUnit<O>() {
 
     @OptIn(ExperimentalCoroutinesApi::class)
     override val flow: Flow<O>
-        get() = persistence.get(key).mapLatest { it?.let { toPersistence(it) } ?: default }
+        get() = persistence.get(key).catch {
+            Napier.e(it)
+            emit(null)
+        }.mapLatest { it?.let { nullIfThrows { toPersistence(it) } } ?: default }
     override suspend fun current(): O =
-        persistence.get(key).first()?.let { toPersistence(it) } ?: default
-    override suspend fun save(value: O) { persistence.save(key, fromPersistence(value)) }
+        persistence.get(key).catch {
+            Napier.e(it)
+            emit(null)
+        }.first()?.let { nullIfThrows { toPersistence(it) } } ?: default
+    override suspend fun save(value: O) {
+        try {
+            persistence.save(key, fromPersistence(value))
+        } catch(e: Throwable) {
+            Napier.e(e)
+        }
+    }
 }
 
 internal class SimplePreferencesUnit<T>(
