@@ -35,6 +35,7 @@ import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.data.models.Content
 import cl.emilym.sinatra.data.models.ContentId
 import cl.emilym.sinatra.data.repository.ContentRepository
+import cl.emilym.sinatra.nullIfBlank
 import cl.emilym.sinatra.ui.widgets.BackIcon
 import cl.emilym.sinatra.ui.widgets.ContentLinkWidget
 import cl.emilym.sinatra.ui.widgets.ListHint
@@ -168,16 +169,18 @@ open class ContentScreen(
     @Composable
     protected fun ColumnScope.RenderDynamicContent(content: Content) {
         RenderBodyContent(content)
-        Box(Modifier.height(1.rdp))
         RenderLinks(content)
     }
 
     @Composable
     protected open fun RenderBodyContent(content: Content) {
-        Markdown(
-            content.content,
-            modifier = Modifier.padding(horizontal = 1.rdp)
-        )
+        content.content.nullIfBlank()?.let {
+            Markdown(
+                content.content,
+                modifier = Modifier.padding(horizontal = 1.rdp)
+            )
+            Box(Modifier.height(1.rdp))
+        }
     }
 
     @Composable

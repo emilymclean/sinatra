@@ -42,7 +42,6 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.invisibleToUser
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
@@ -60,6 +59,7 @@ import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
 import cl.emilym.sinatra.ui.navigation.bottomSheetHalfHeight
 import cl.emilym.sinatra.ui.navigation.isCurrentMapScreen
 import cl.emilym.sinatra.ui.plus
+import cl.emilym.sinatra.ui.presentation.screens.content.MoreScreen
 import cl.emilym.sinatra.ui.presentation.screens.maps.navigate.NavigateEntryScreen
 import cl.emilym.sinatra.ui.presentation.screens.maps.search.MapSearchScreen
 import cl.emilym.sinatra.ui.widgets.InfoIcon
@@ -80,7 +80,7 @@ import cl.emilym.sinatra.ui.widgets.viewportHeight
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import sinatra.ui.generated.resources.Res
-import sinatra.ui.generated.resources.navigation_bar_about
+import sinatra.ui.generated.resources.navigation_bar_more
 import sinatra.ui.generated.resources.navigation_bar_favourites
 import sinatra.ui.generated.resources.navigation_bar_map
 import sinatra.ui.generated.resources.navigation_bar_navigate
@@ -228,10 +228,10 @@ class RootMapScreen: Screen {
                     NavigationItem(
                         index++,
                         {
-                            navigator.replaceAll(AboutScreen())
+                            navigator.replaceAll(MoreScreen())
                         },
                         { InfoIcon() },
-                        { Text(stringResource(Res.string.navigation_bar_about)) }
+                        { Text(stringResource(Res.string.navigation_bar_more)) }
                     )
                 )
             }

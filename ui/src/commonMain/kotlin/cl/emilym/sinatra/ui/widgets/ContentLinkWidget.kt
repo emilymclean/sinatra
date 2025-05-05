@@ -29,11 +29,13 @@ import cl.emilym.sinatra.ui.minimumTouchTarget
 import cl.emilym.sinatra.ui.presentation.screens.AboutScreen
 import cl.emilym.sinatra.ui.presentation.screens.ContentScreen
 import cl.emilym.sinatra.ui.presentation.screens.ServiceAlertScreen
+import cl.emilym.sinatra.ui.presentation.screens.preferences.RootPreferencesScreen
 import cl.emilym.sinatra.ui.presentation.theme.Container
 
 fun contentRoute(id: ContentId): Screen {
     return when (id) {
         ContentRepository.ABOUT_ID -> AboutScreen()
+        ContentRepository.MORE_ID -> AboutScreen()
         ContentRepository.SERVICE_ALERT_ID -> ServiceAlertScreen()
         else -> ContentScreen(id)
     }
@@ -41,6 +43,7 @@ fun contentRoute(id: ContentId): Screen {
 
 fun nativeRoute(reference: NativePageReference): Screen? {
     return when (reference) {
+        ContentRepository.NATIVE_PREFERENCES_ID -> RootPreferencesScreen()
         else -> null
     }
 }
