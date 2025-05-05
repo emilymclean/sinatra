@@ -13,18 +13,19 @@
     <string name="favourites_no_work">Add work</string>
     <string name="favourites_clear_favourite">Clear favourite</string>
 
-
     <string name="about_app_version">Version %1$s (%2$s)</string>
 
     <string name="preferences_root_title">Settings</string>
     <string name="preferences_routing_title">Journey Planner</string>
     <string name="preferences_location_title">Location</string>
+    <string name="preferences_units_title">Units</string>
     <string name="preferences_setting_clear_recent_history">Clear view history</string>
     <string name="preferences_setting_wheelchair">Wheelchair Required</string>
     <string name="preferences_setting_wheelchair_subtitle">Default to calculating routes with wheelchair accessibility when navigating.</string>
     <string name="preferences_setting_bikes">Bike Rack Required</string>
     <string name="preferences_setting_bikes_subtitle">Require routes to have bike racks available.</string>
     <string name="preferences_setting_max_walking">Maximum walking time</string>
+    <string name="preferences_setting_metric">Use metric units</string>
 
     <string name="open_maps_android">Show in Google Maps</string>
     <string name="open_maps_ios">Show in Apple Maps</string>
@@ -39,11 +40,19 @@
     <plurals name="distance_kilometer">
         <item quantity="one">%1$d kilometer</item>
         <item quantity="other">%1$d kilometers</item>
-        <item quantity="other">%1$d kilometers</item>
     </plurals>
     <plurals name="distance_meter">
         <item quantity="one">%1$d meter</item>
         <item quantity="other">%1$d meters</item>
+    </plurals>
+
+    <plurals name="distance_miles">
+        <item quantity="one">%1$d mile</item>
+        <item quantity="other">%1$d miles</item>
+    </plurals>
+    <plurals name="distance_feet">
+        <item quantity="one">%1$d foot</item>
+        <item quantity="other">%1$d feet</item>
     </plurals>
 
     <string name="time_ago">%1$s ago</string>

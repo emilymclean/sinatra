@@ -4,6 +4,8 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.floatPreferencesKey
 import cl.emilym.sinatra.data.persistence.PreferencesPersistence
+import cl.emilym.sinatra.data.repository.PreferencesRepository.Companion.DISPLAY_METRIC_UNITS_KEY
+import cl.emilym.sinatra.data.repository.PreferencesRepository.Companion.DISPLAY_METRIC_UNITS_QUALIFIER
 import cl.emilym.sinatra.e
 import cl.emilym.sinatra.nullIfThrows
 import io.github.aakira.napier.Napier
@@ -17,6 +19,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.stateIn
 import org.koin.core.annotation.Factory
+import org.koin.core.annotation.Qualifier
 
 interface PreferencesUnit<T> {
 
@@ -129,22 +132,49 @@ class PreferencesRepository(
     preferencesPersistence: PreferencesPersistence
 ) {
 
+    companion object {
+        internal val REQUIRES_WHEELCHAIR_KEY = booleanPreferencesKey("ROUTER_REQUIRES_WHEELCHAIR")
+        internal val ROUTER_REQUIRES_BIKE_KEY = booleanPreferencesKey("ROUTER_REQUIRES_BIKE")
+        internal val ROUTER_MAXIMUM_WALKING_TIME_KEY = floatPreferencesKey("ROUTER_MAXIMUM_WALKING_TIME")
+        internal val DISPLAY_METRIC_UNITS_KEY = booleanPreferencesKey("DISPLAY_METRIC_UNITS")
+
+        const val DISPLAY_METRIC_UNITS_QUALIFIER = "DISPLAY_METRIC_UNITS"
+    }
+
     val requiresWheelchair: PreferencesUnit<Boolean> = SimplePreferencesUnit(
-        booleanPreferencesKey("ROUTER_REQUIRES_WHEELCHAIR"),
+        REQUIRES_WHEELCHAIR_KEY,
         false,
         preferencesPersistence
     )
 
     val requiresBikes: PreferencesUnit<Boolean> = SimplePreferencesUnit(
-        booleanPreferencesKey("ROUTER_REQUIRES_BIKE"),
+        ROUTER_REQUIRES_BIKE_KEY,
         false,
         preferencesPersistence
     )
 
     val maximumWalkingTime: PreferencesUnit<Float> = SimplePreferencesUnit(
-        floatPreferencesKey("ROUTER_MAXIMUM_WALKING_TIME"),
+        ROUTER_MAXIMUM_WALKING_TIME_KEY,
         30f,
         preferencesPersistence
     )
 
+    val metric: PreferencesUnit<Boolean> = SimplePreferencesUnit(
+        DISPLAY_METRIC_UNITS_KEY,
+        true,
+        preferencesPersistence
+    )
+
+}
+
+@Factory
+@Qualifier(name = DISPLAY_METRIC_UNITS_QUALIFIER)
+fun metric(
+    preferencesPersistence: PreferencesPersistence
+): PreferencesUnit<Boolean> {
+    return SimplePreferencesUnit(
+        DISPLAY_METRIC_UNITS_KEY,
+        true,
+        preferencesPersistence
+    )
 }

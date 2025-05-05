@@ -36,6 +36,7 @@ data class PreferencesCollection(
     val requiresWheelchair: StatefulPreferencesUnit<Boolean>,
     val requiresBikes: StatefulPreferencesUnit<Boolean>,
     val maximumWalkingTime: StatefulPreferencesUnit<Float>,
+    val metric: StatefulPreferencesUnit<Boolean>
 )
 
 abstract class PreferencesScreen: Screen {
@@ -76,7 +77,8 @@ abstract class PreferencesScreen: Screen {
                             PreferencesCollection(
                                 preferencesRepository.requiresWheelchair.state(scope),
                                 preferencesRepository.requiresBikes.state(scope),
-                                preferencesRepository.maximumWalkingTime.state(scope)
+                                preferencesRepository.maximumWalkingTime.state(scope),
+                                preferencesRepository.metric.state(scope)
                             )
                         )
                     }

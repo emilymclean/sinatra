@@ -24,6 +24,7 @@ class ContentRepository(
 
         const val NATIVE_PREFERENCES_ID = "preferences"
         const val NATIVE_PREFERENCES_ROUTING_ID = "preferences-routing"
+        const val NATIVE_PREFERENCES_UNITS_ID = "preferences-units"
         const val NATIVE_FAVOURITES_ID = "favourites"
         const val NATIVE_NAVIGATE_ENTRY_ID = "navigate"
         const val NATIVE_BROWSE_ID = "browse"

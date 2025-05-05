@@ -19,6 +19,7 @@ import sinatra.ui.generated.resources.Res
 import sinatra.ui.generated.resources.preferences_location_title
 import sinatra.ui.generated.resources.preferences_root_title
 import sinatra.ui.generated.resources.preferences_routing_title
+import sinatra.ui.generated.resources.preferences_units_title
 import sinatra.ui.generated.resources.preferences_setting_clear_recent_history
 
 @Factory
@@ -53,6 +54,10 @@ class RootPreferencesScreen: PreferencesScreen() {
             ContentLink.native(
                 stringResource(Res.string.preferences_routing_title),
                 ContentRepository.NATIVE_PREFERENCES_ROUTING_ID
+            ),
+            ContentLink.native(
+                stringResource(Res.string.preferences_units_title),
+                ContentRepository.NATIVE_PREFERENCES_UNITS_ID
             ),
             ContentLink.Custom(
                 stringResource(Res.string.preferences_location_title),
