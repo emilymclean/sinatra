@@ -4,8 +4,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -18,11 +20,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
 import cl.emilym.compose.units.rdp
+import cl.emilym.sinatra.data.models.ContentLink
 import cl.emilym.sinatra.data.repository.PreferencesRepository
 import cl.emilym.sinatra.data.repository.StatefulPreferencesUnit
 import cl.emilym.sinatra.data.repository.state
+import cl.emilym.sinatra.nullIfEmpty
+import cl.emilym.sinatra.ui.widgets.ContentLinkWidget
 import cl.emilym.sinatra.ui.widgets.NavigatorBackButton
 import org.koin.compose.getKoin
 
@@ -54,7 +60,7 @@ abstract class PreferencesScreen: Screen {
                 Column(
                     Modifier
                         .fillMaxSize()
-                        .verticalScroll(rememberScrollState())
+                        .verticalScroll(rememberScrollState()),
                 ) {
                     val koin = getKoin()
                     val preferencesRepository = remember(koin) { koin.get<PreferencesRepository>() }
@@ -74,6 +80,17 @@ abstract class PreferencesScreen: Screen {
                             )
                         )
                     }
+                    options().nullIfEmpty()?.let {
+                        Spacer(Modifier.height(1.rdp))
+                        Column(
+                            Modifier.fillMaxWidth(),
+                            verticalArrangement = Arrangement.spacedBy(2.dp)
+                        ) {
+                            for (link in it) {
+                                ContentLinkWidget(link, Modifier.fillMaxWidth())
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -83,5 +100,8 @@ abstract class PreferencesScreen: Screen {
     abstract fun ColumnScope.Preferences(
         preferencesCollection: PreferencesCollection
     )
+
+    @Composable
+    open fun options(): List<ContentLink> { return emptyList() }
 
 }

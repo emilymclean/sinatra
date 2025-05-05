@@ -44,6 +44,12 @@ sealed interface ContentLink {
     val title: String
     val order: Int
 
+    data class Custom(
+        override val title: String,
+        val external: Boolean,
+        override val order: Int,
+        val onClick: () -> Unit,
+    ): ContentLink
     data class External(
         override val title: String,
         val url: String,
@@ -63,6 +69,10 @@ sealed interface ContentLink {
     companion object {
         fun external(title: String, url: String?) : ContentLink? {
             return url?.let { External(title, it, 0) }
+        }
+
+        fun native(title: String, ref: String): ContentLink {
+            return Native(title, ref, 0)
         }
     }
 }

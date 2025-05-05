@@ -1,26 +1,17 @@
 package cl.emilym.sinatra.ui.presentation.screens.preferences
 
 import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
 import cafe.adriel.voyager.core.screen.ScreenKey
-import cl.emilym.sinatra.lib.FloatRange
-import cl.emilym.sinatra.ui.text
-import cl.emilym.sinatra.ui.widgets.form.HorizontalLockup
-import cl.emilym.sinatra.ui.widgets.form.PreferencesCheckbox
-import cl.emilym.sinatra.ui.widgets.form.PreferencesFloatSlider
-import cl.emilym.sinatra.ui.widgets.form.VerticalLockup
+import cl.emilym.sinatra.data.models.ContentLink
+import cl.emilym.sinatra.data.repository.ContentRepository
+import cl.emilym.sinatra.data.repository.PlatformContext
+import cl.emilym.sinatra.ui.widgets.platformContext
 import org.jetbrains.compose.resources.stringResource
 import sinatra.ui.generated.resources.Res
+import sinatra.ui.generated.resources.preferences_location_title
 import sinatra.ui.generated.resources.preferences_root_title
-import sinatra.ui.generated.resources.preferences_setting_bikes
-import sinatra.ui.generated.resources.preferences_setting_bikes_subtitle
-import sinatra.ui.generated.resources.preferences_setting_max_walking
-import sinatra.ui.generated.resources.preferences_setting_wheelchair
-import sinatra.ui.generated.resources.preferences_setting_wheelchair_subtitle
-import kotlin.time.Duration.Companion.minutes
+import sinatra.ui.generated.resources.preferences_routing_title
 
 class RootPreferencesScreen: PreferencesScreen() {
     override val key: ScreenKey = "preferences-root"
@@ -30,37 +21,26 @@ class RootPreferencesScreen: PreferencesScreen() {
         get() = stringResource(Res.string.preferences_root_title)
 
     @Composable
-    override fun ColumnScope.Preferences(preferencesCollection: PreferencesCollection) {
-        HorizontalLockup(
-            stringResource(Res.string.preferences_setting_wheelchair),
-            stringResource(Res.string.preferences_setting_wheelchair_subtitle),
-            Modifier.fillMaxWidth()
-        ) {
-            PreferencesCheckbox(preferencesCollection.requiresWheelchair)
-        }
+    override fun ColumnScope.Preferences(preferencesCollection: PreferencesCollection) {}
 
-        HorizontalLockup(
-            stringResource(Res.string.preferences_setting_bikes),
-            stringResource(Res.string.preferences_setting_bikes_subtitle),
-            Modifier.fillMaxWidth()
-        ) {
-            PreferencesCheckbox(preferencesCollection.requiresBikes)
-        }
-
-        VerticalLockup(
-            stringResource(Res.string.preferences_setting_max_walking),
-            null,
-            Modifier.fillMaxWidth()
-        ) {
-            PreferencesFloatSlider(
-                preferencesCollection.maximumWalkingTime,
-                FloatRange(10f, 60f),
-                Modifier.fillMaxWidth(1f)
+    @Composable
+    override fun options(): List<ContentLink> {
+        val context = platformContext()
+        return listOf(
+            ContentLink.native(
+                stringResource(Res.string.preferences_routing_title),
+                ContentRepository.NATIVE_PREFERENCES_ROUTING_ID
+            ),
+            ContentLink.Custom(
+                stringResource(Res.string.preferences_location_title),
+                true,
+                0,
             ) {
-                Text(
-                    it.toDouble().minutes.text
-                )
+                openLocationSettings(context)
             }
-        }
+        )
     }
+
 }
+
+expect fun openLocationSettings(platformContext: PlatformContext)

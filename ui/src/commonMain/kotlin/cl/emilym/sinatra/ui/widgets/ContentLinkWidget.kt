@@ -33,6 +33,7 @@ import cl.emilym.sinatra.ui.presentation.screens.ServiceAlertScreen
 import cl.emilym.sinatra.ui.presentation.screens.maps.navigate.NavigateEntryScreen
 import cl.emilym.sinatra.ui.presentation.screens.maps.search.MapSearchScreen
 import cl.emilym.sinatra.ui.presentation.screens.preferences.RootPreferencesScreen
+import cl.emilym.sinatra.ui.presentation.screens.preferences.RoutingPreferencesScreen
 import cl.emilym.sinatra.ui.presentation.theme.Container
 
 fun contentRoute(id: ContentId): Screen {
@@ -47,6 +48,7 @@ fun contentRoute(id: ContentId): Screen {
 fun nativeRoute(reference: NativePageReference): Screen? {
     return when (reference) {
         ContentRepository.NATIVE_PREFERENCES_ID -> RootPreferencesScreen()
+        ContentRepository.NATIVE_PREFERENCES_ROUTING_ID -> RoutingPreferencesScreen()
         ContentRepository.NATIVE_FAVOURITES_ID -> FavouriteScreen()
         ContentRepository.NATIVE_BROWSE_ID -> MapSearchScreen()
         ContentRepository.NATIVE_NAVIGATE_ENTRY_ID -> NavigateEntryScreen()
@@ -82,7 +84,9 @@ fun ContentLinkWidget(
                             navigator.push(it)
                         }
                     }
-                    else -> {}
+                    is ContentLink.Custom -> {
+                        link.onClick()
+                    }
                 }
             }
             .padding(horizontal = 1.rdp, vertical = 0.75.rdp)
@@ -97,6 +101,16 @@ fun ContentLinkWidget(
                     ExternalLinkIcon(
                         tint = MaterialTheme.colorScheme.secondary
                     )
+                }
+                is ContentLink.Custom -> {
+                    when (link.external) {
+                        true -> ExternalLinkIcon(
+                            tint = MaterialTheme.colorScheme.secondary
+                        )
+                        false -> ForwardIcon(
+                            tint = MaterialTheme.colorScheme.secondary
+                        )
+                    }
                 }
                 else -> {
                     ForwardIcon(
