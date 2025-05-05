@@ -23,6 +23,7 @@ import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.data.repository.PreferencesRepository
 import cl.emilym.sinatra.data.repository.StatefulPreferencesUnit
 import cl.emilym.sinatra.data.repository.state
+import cl.emilym.sinatra.ui.widgets.NavigatorBackButton
 import org.koin.compose.getKoin
 
 data class PreferencesCollection(
@@ -41,7 +42,8 @@ abstract class PreferencesScreen: Screen {
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text(title) }
+                    title = { Text(title) },
+                    navigationIcon = { NavigatorBackButton() }
                 )
             }
         ) { internalPadding ->
