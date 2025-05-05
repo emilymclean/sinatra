@@ -19,6 +19,7 @@
     <string name="preferences_root_title">Settings</string>
     <string name="preferences_routing_title">Journey Planner</string>
     <string name="preferences_location_title">Location</string>
+    <string name="preferences_setting_clear_recent_history">Clear view history</string>
     <string name="preferences_setting_wheelchair">Wheelchair Required</string>
     <string name="preferences_setting_wheelchair_subtitle">Default to calculating routes with wheelchair accessibility when navigating.</string>
     <string name="preferences_setting_bikes">Bike Rack Required</string>

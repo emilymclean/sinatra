@@ -23,6 +23,7 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.data.models.ContentId
 import cl.emilym.sinatra.data.models.ContentLink
+import cl.emilym.sinatra.data.models.DisclosureType
 import cl.emilym.sinatra.data.models.NativePageReference
 import cl.emilym.sinatra.data.repository.ContentRepository
 import cl.emilym.sinatra.ui.minimumTouchTarget
@@ -103,13 +104,14 @@ fun ContentLinkWidget(
                     )
                 }
                 is ContentLink.Custom -> {
-                    when (link.external) {
-                        true -> ExternalLinkIcon(
+                    when (link.disclosure) {
+                        DisclosureType.EXTERNAL -> ExternalLinkIcon(
                             tint = MaterialTheme.colorScheme.secondary
                         )
-                        false -> ForwardIcon(
+                        DisclosureType.LOCAL -> ForwardIcon(
                             tint = MaterialTheme.colorScheme.secondary
                         )
+                        DisclosureType.NONE -> {}
                     }
                 }
                 else -> {

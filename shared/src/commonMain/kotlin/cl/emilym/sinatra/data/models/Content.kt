@@ -40,13 +40,17 @@ data class Content(
 
 }
 
+enum class DisclosureType {
+    EXTERNAL, LOCAL, NONE
+}
+
 sealed interface ContentLink {
     val title: String
     val order: Int
 
     data class Custom(
         override val title: String,
-        val external: Boolean,
+        val disclosure: DisclosureType,
         override val order: Int,
         val onClick: () -> Unit,
     ): ContentLink
