@@ -1,10 +1,8 @@
 package cl.emilym.sinatra.data.repository
 
-import io.github.aakira.napier.Napier
 import org.koin.core.annotation.Factory
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
-import cl.emilym.sinatra.e
 
 @Factory
 class RoutingPreferencesRepository(
@@ -12,12 +10,7 @@ class RoutingPreferencesRepository(
 ) {
 
     suspend fun maximumWalkingTime(): Duration {
-        return try {
-            preferencesRepository.maximumWalkingTime.current().toDouble().minutes
-        } catch(e: Exception) {
-            Napier.e(e)
-            30.minutes
-        }
+        return preferencesRepository.maximumWalkingTime.current().toDouble().minutes
     }
 
     suspend fun requiresWheelchair(): Boolean {
