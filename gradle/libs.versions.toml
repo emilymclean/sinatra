@@ -34,6 +34,7 @@ markdown = "0.31.0"
 google-services = "4.4.2"
 firebase-crashlytics = "3.0.3"
 coroutines-test = "1.10.1"
+datastore = "1.1.4"
 
 [libraries]
 
@@ -94,6 +95,10 @@ voyager-screenmodel = { module = "cafe.adriel.voyager:voyager-screenmodel", vers
 room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
 room-driver = { module = "androidx.sqlite:sqlite-bundled", version.ref = "sqlite" }
 room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
+
+# Datastore
+datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastore" }
+datastore = { module = "androidx.datastore:datastore", version.ref = "datastore" }
 
 # Misc
 markdown = { module = "com.mikepenz:multiplatform-markdown-renderer-m3", version.ref = "markdown" }

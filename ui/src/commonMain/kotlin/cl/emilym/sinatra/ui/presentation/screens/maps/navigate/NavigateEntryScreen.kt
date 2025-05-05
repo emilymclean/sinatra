@@ -415,7 +415,7 @@ class NavigateEntryScreen(
                             item {
                                 val bikesAllowed by viewModel.bikesAllowed.collectAsStateWithLifecycle()
                                 Chip(
-                                    selected = bikesAllowed,
+                                    selected = bikesAllowed ?: false,
                                     onToggle = { viewModel.bikesAllowed.value = it },
                                     contentDescription = stringResource(Res.string.navigate_chip_bikes_allowed)
                                 ) {
@@ -425,7 +425,7 @@ class NavigateEntryScreen(
                             item {
                                 val wheelchairAccessibility by viewModel.wheelchairAccessible.collectAsStateWithLifecycle()
                                 Chip(
-                                    selected = wheelchairAccessibility,
+                                    selected = wheelchairAccessibility ?: false,
                                     onToggle = { viewModel.wheelchairAccessible.value = it },
                                     contentDescription = stringResource(Res.string.navigate_chip_wheelchair_accessible)
                                 ) {
