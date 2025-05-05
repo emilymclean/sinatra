@@ -38,23 +38,23 @@ internal abstract class MappablePreferencesUnit<I,O>: BasePreferencesUnit<O>() {
     protected abstract val key: Preferences.Key<I>
     protected abstract val persistence: PreferencesPersistence
 
-    abstract fun toPersistence(i: I): O
-    abstract fun fromPersistence(o: O): I
+    abstract fun fromPersistence(i: I): O
+    abstract fun toPersistence(o: O): I
 
     @OptIn(ExperimentalCoroutinesApi::class)
     override val flow: Flow<O>
         get() = persistence.get(key).catch {
             Napier.e(it)
             emit(null)
-        }.mapLatest { it?.let { nullIfThrows { toPersistence(it) } } ?: default }
+        }.mapLatest { it?.let { nullIfThrows { fromPersistence(it) } } ?: default }
     override suspend fun current(): O =
         persistence.get(key).catch {
             Napier.e(it)
             emit(null)
-        }.first()?.let { nullIfThrows { toPersistence(it) } } ?: default
+        }.first()?.let { nullIfThrows { fromPersistence(it) } } ?: default
     override suspend fun save(value: O) {
         try {
-            persistence.save(key, fromPersistence(value))
+            persistence.save(key, toPersistence(value))
         } catch(e: Throwable) {
             Napier.e(e)
         }
@@ -66,23 +66,23 @@ internal class SimplePreferencesUnit<T>(
     override val default: T,
     override val persistence: PreferencesPersistence
 ): MappablePreferencesUnit<T,T>() {
-    override fun toPersistence(i: T): T = i
-    override fun fromPersistence(o: T): T = o
+    override fun fromPersistence(i: T): T = i
+    override fun toPersistence(o: T): T = o
 }
 
 internal class MappedPreferencesUnit<I,O>(
     override val key: Preferences.Key<I>,
     override val default: O,
     override val persistence: PreferencesPersistence,
-    private val toPersistence: (I) -> O,
-    private val fromPersistence: (O) -> I
+    private val fromPersistence: (I) -> O,
+    private val toPersistence: (O) -> I
 ): MappablePreferencesUnit<I,O>() {
 
-    override fun toPersistence(i: I): O = toPersistence.invoke(i)
-    override fun fromPersistence(o: O): I = fromPersistence.invoke(o)
+    override fun fromPersistence(i: I): O = fromPersistence.invoke(i)
+    override fun toPersistence(o: O): I = toPersistence.invoke(o)
 }
 
-internal class DefaultStatefulPreferencesUnit<T>(
+internal class WrapperStatefulPreferencesUnit<T>(
     private val delegate: BasePreferencesUnit<T>,
     private val scope: CoroutineScope
 ): StatefulPreferencesUnit<T> {
@@ -95,10 +95,32 @@ internal class DefaultStatefulPreferencesUnit<T>(
     override suspend fun save(value: T) = delegate.save(value)
 }
 
+internal class WrapperMappedPreferencesUnit<I,O>(
+    private val delegate: PreferencesUnit<I>,
+    private val fromPersistence: (I) -> O,
+    private val toPersistence: (O) -> I
+): PreferencesUnit<O> {
+
+    override val flow: Flow<O> = delegate.flow.mapLatest { fromPersistence(it) }
+
+    override suspend fun current(): O = fromPersistence(delegate.current())
+
+    override suspend fun save(value: O) = delegate.save(toPersistence(value))
+}
+
 fun <T> PreferencesUnit<T>.state(scope: CoroutineScope): StatefulPreferencesUnit<T> {
-    return DefaultStatefulPreferencesUnit(
+    return WrapperStatefulPreferencesUnit(
         (this as BasePreferencesUnit<T>),
         scope
+    )
+}
+
+fun <I,O> PreferencesUnit<I>.map(
+    from: (I) -> O,
+    to: (O) -> I
+): PreferencesUnit<O> {
+    return WrapperMappedPreferencesUnit(
+        this, from, to
     )
 }
 
