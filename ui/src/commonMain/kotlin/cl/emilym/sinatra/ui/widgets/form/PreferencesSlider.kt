@@ -135,10 +135,7 @@ fun PreferencesFloatSlider(
         }
 
         valueDisplay?.let {
-            Box(
-                Modifier.width(100.dp),
-                contentAlignment = Alignment.CenterEnd
-            ) {
+            Box {
                 it(((range.endInclusive - range.start) * trackProgress) + range.start)
             }
         }

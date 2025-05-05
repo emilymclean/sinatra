@@ -1,10 +1,14 @@
 package cl.emilym.sinatra.ui.presentation.screens.preferences
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.ScreenKey
 import cl.emilym.sinatra.lib.FloatRange
 import cl.emilym.sinatra.ui.text
@@ -56,9 +60,14 @@ class RoutingPreferencesScreen: PreferencesScreen() {
                 FloatRange(10f, 60f),
                 Modifier.fillMaxWidth(1f)
             ) {
-                Text(
-                    it.toDouble().minutes.text
-                )
+                Box(
+                    Modifier.width(100.dp),
+                    contentAlignment = Alignment.CenterEnd
+                ) {
+                    Text(
+                        it.toDouble().minutes.text
+                    )
+                }
             }
         }
     }
