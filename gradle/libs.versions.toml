@@ -20,6 +20,7 @@ coil-compose = "3.0.0-rc01"
 units = "2.0.3"
 requeststate = "2.1.0"
 errorwidget = "2.0.2"
+mediacontrol = "0.1.0"
 koin = "4.0.0"
 koin-annotations = "1.4.0"
 kotlinx-serialization = "1.8.0"
@@ -81,6 +82,7 @@ emily-units = { module = "cl.emilym.compose:units", version.ref = "units" }
 emily-serializable = { module = "cl.emilym.kmp:serializable", version.ref = "serializable" }
 emily-requeststate = { module = "cl.emilym.compose:requeststate", version.ref = "requeststate" }
 emily-errorwidget = { module = "cl.emilym.compose:errorwidget", version.ref = "errorwidget" }
+emily-mediacontrol = { module = "cl.emilym.compose:mediacontrol", version.ref = "mediacontrol" }
 
 # Serialization
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref="kotlinx-serialization" }

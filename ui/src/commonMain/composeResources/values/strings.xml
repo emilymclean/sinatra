@@ -12,7 +12,15 @@
     <string name="favourites_no_work">Add work</string>
     <string name="favourites_clear_favourite">Clear favourite</string>
 
+
     <string name="about_app_version">Version %1$s (%2$s)</string>
+
+    <string name="preferences_root_title">Settings</string>
+    <string name="preferences_setting_wheelchair">Wheelchair Required</string>
+    <string name="preferences_setting_wheelchair_subtitle">Default to calculating routes with wheelchair accessibility when navigating.</string>
+    <string name="preferences_setting_bikes">Bike Rack Required</string>
+    <string name="preferences_setting_bikes_subtitle">Require routes to have bike racks available.</string>
+    <string name="preferences_setting_max_walking">Maximum walking time</string>
 
     <string name="open_maps_android">Show in Google Maps</string>
     <string name="open_maps_ios">Show in Apple Maps</string>
