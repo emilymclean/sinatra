@@ -8,6 +8,8 @@
       
   <string name="navigation_bar_about">关于</string>
 
+  <string name="navigation_bar_more">更多</string>
+
   <string name="browse_option_see_all_service_alerts">查看所有服务警报</string>
 
   <string name="browse_option_upcoming_routes">即将开通的航线: %1$s</string>
@@ -21,6 +23,28 @@
   <string name="favourites_clear_favourite">清除收藏地点</string>
       
   <string name="about_app_version">版本 %1$s (%2$s)</string>
+
+  <string name="preferences_root_title">设置</string>
+
+  <string name="preferences_routing_title">导航</string>
+
+  <string name="preferences_location_title">位置</string>
+
+  <string name="preferences_units_title">单位</string>
+
+  <string name="preferences_setting_clear_recent_history">清除查看历史记录</string>
+
+  <string name="preferences_setting_wheelchair">需要轮椅</string>
+
+  <string name="preferences_setting_wheelchair_subtitle">导航时默认规划适合轮椅通行的路线。</string>
+
+  <string name="preferences_setting_bikes">需要自行车架</string>
+
+  <string name="preferences_setting_bikes_subtitle">配备自行车架的路线。</string>
+
+  <string name="preferences_setting_max_walking">最长步行时间</string>
+
+  <string name="preferences_setting_metric">使用公制单位</string>
       
   <string name="open_maps_android">在 Google Maps</string>
       
@@ -38,6 +62,13 @@
       
   <plurals name="distance_meter">
     <item quantity="other">%1$d米</item>
+  </plurals>
+
+  <plurals name="distance_miles">
+    <item quantity="other">%1$d英里</item>
+  </plurals>
+  <plurals name="distance_feet">
+    <item quantity="other">%1$d英尺</item>
   </plurals>
 
   <string name="time_ago">%1$s前</string>
