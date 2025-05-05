@@ -114,8 +114,6 @@ open class ContentScreen(
                                     .fillMaxSize()
                                     .verticalScroll(rememberScrollState())
                             ) {
-                                Box(Modifier.height(1.rdp))
-
                                 PageContent(content)
 
                                 Box(Modifier.height(1.rdp))
@@ -175,6 +173,7 @@ open class ContentScreen(
     @Composable
     protected open fun RenderBodyContent(content: Content) {
         content.content.nullIfBlank()?.let {
+            Box(Modifier.height(1.rdp))
             Markdown(
                 content.content,
                 modifier = Modifier.padding(horizontal = 1.rdp)

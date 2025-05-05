@@ -83,7 +83,6 @@ abstract class PreferencesScreen: Screen {
                         )
                     }
                     options().nullIfEmpty()?.let {
-                        Spacer(Modifier.height(1.rdp))
                         Column(
                             Modifier.fillMaxWidth(),
                             verticalArrangement = Arrangement.spacedBy(2.dp)
