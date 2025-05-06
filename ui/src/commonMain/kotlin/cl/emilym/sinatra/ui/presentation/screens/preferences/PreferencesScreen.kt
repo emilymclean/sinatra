@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
 import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.data.models.ContentLink
+import cl.emilym.sinatra.data.models.Time24HSetting
 import cl.emilym.sinatra.data.repository.PreferencesRepository
 import cl.emilym.sinatra.data.repository.StatefulPreferencesUnit
 import cl.emilym.sinatra.data.repository.state
@@ -36,7 +37,8 @@ data class PreferencesCollection(
     val requiresWheelchair: StatefulPreferencesUnit<Boolean>,
     val requiresBikes: StatefulPreferencesUnit<Boolean>,
     val maximumWalkingTime: StatefulPreferencesUnit<Float>,
-    val metric: StatefulPreferencesUnit<Boolean>
+    val metric: StatefulPreferencesUnit<Boolean>,
+    val time24Hour: StatefulPreferencesUnit<Time24HSetting>
 )
 
 abstract class PreferencesScreen: Screen {
@@ -78,7 +80,8 @@ abstract class PreferencesScreen: Screen {
                                 preferencesRepository.requiresWheelchair.state(scope),
                                 preferencesRepository.requiresBikes.state(scope),
                                 preferencesRepository.maximumWalkingTime.state(scope),
-                                preferencesRepository.metric.state(scope)
+                                preferencesRepository.metric.state(scope),
+                                preferencesRepository.use24Hour.state(scope)
                             )
                         )
                     }

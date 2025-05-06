@@ -5,6 +5,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 
 @Composable
-actual fun is24HourTimeFormat(): Boolean {
+actual fun is24HourTimeFormatInternal(): Boolean {
     return DateFormat.is24HourFormat(LocalContext.current)
 }

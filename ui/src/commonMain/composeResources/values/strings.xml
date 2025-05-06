@@ -29,6 +29,12 @@
     <string name="preferences_setting_metric_subtitle">Display distances in metric (km, m) or imperial (mi, ft) units.</string>
     <string name="preferences_setting_metric_metric">Metric</string>
     <string name="preferences_setting_metric_imperial">Imperial</string>
+    <string name="preferences_setting_time">24-Hour Time</string>
+    <string name="preferences_setting_time_subtitle">Enable to show time in 24-hour format.</string>
+    <string name="preferences_setting_time_subtitle_alt">Override system settings to always show 12 or 24-hour time.</string>
+    <string name="preferences_setting_time_automatic">Automatic</string>
+    <string name="preferences_setting_time_12h">12-hour</string>
+    <string name="preferences_setting_time_24h">24-hour</string>
 
     <string name="open_maps_android">Show in Google Maps</string>
     <string name="open_maps_ios">Show in Apple Maps</string>

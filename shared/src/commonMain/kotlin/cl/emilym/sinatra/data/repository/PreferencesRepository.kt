@@ -3,9 +3,13 @@ package cl.emilym.sinatra.data.repository
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.floatPreferencesKey
+import androidx.datastore.preferences.core.stringPreferencesKey
+import cl.emilym.sinatra.data.models.Time24HSetting
 import cl.emilym.sinatra.data.persistence.PreferencesPersistence
 import cl.emilym.sinatra.data.repository.PreferencesRepository.Companion.DISPLAY_METRIC_UNITS_KEY
 import cl.emilym.sinatra.data.repository.PreferencesRepository.Companion.DISPLAY_METRIC_UNITS_QUALIFIER
+import cl.emilym.sinatra.data.repository.PreferencesRepository.Companion.TIME_24H_KEY
+import cl.emilym.sinatra.data.repository.PreferencesRepository.Companion.TIME_24H_QUALIFIER
 import cl.emilym.sinatra.e
 import cl.emilym.sinatra.nullIfThrows
 import io.github.aakira.napier.Napier
@@ -98,11 +102,25 @@ internal class WrapperStatefulPreferencesUnit<T>(
     override suspend fun save(value: T) = delegate.save(value)
 }
 
+internal class WrapperStatefulNullablePreferencesUnit<T>(
+    private val delegate: PreferencesUnit<T>,
+    private val scope: CoroutineScope
+): StatefulPreferencesUnit<T?> {
+    override suspend fun current(): T? = delegate.current()
+
+    override val flow: StateFlow<T?> = delegate.flow.stateIn(
+        scope, SharingStarted.WhileSubscribed(5000), null
+    )
+
+    override suspend fun save(value: T?) { value?.let { delegate.save(value) } }
+}
+
 internal class WrapperMappedPreferencesUnit<I,O>(
     private val delegate: PreferencesUnit<I>,
+    override val default: O,
     private val fromPersistence: (I) -> O,
     private val toPersistence: (O) -> I
-): PreferencesUnit<O> {
+): BasePreferencesUnit<O>() {
 
     override val flow: Flow<O> = delegate.flow.mapLatest { fromPersistence(it) }
 
@@ -119,11 +137,12 @@ fun <T> PreferencesUnit<T>.state(scope: CoroutineScope): StatefulPreferencesUnit
 }
 
 fun <I,O> PreferencesUnit<I>.map(
+    default: O,
     from: (I) -> O,
     to: (O) -> I
 ): PreferencesUnit<O> {
     return WrapperMappedPreferencesUnit(
-        this, from, to
+        this, default, from, to
     )
 }
 
@@ -137,8 +156,10 @@ class PreferencesRepository(
         internal val ROUTER_REQUIRES_BIKE_KEY = booleanPreferencesKey("ROUTER_REQUIRES_BIKE")
         internal val ROUTER_MAXIMUM_WALKING_TIME_KEY = floatPreferencesKey("ROUTER_MAXIMUM_WALKING_TIME")
         internal val DISPLAY_METRIC_UNITS_KEY = booleanPreferencesKey("DISPLAY_METRIC_UNITS")
+        internal val TIME_24H_KEY = stringPreferencesKey("TIME_24H")
 
         const val DISPLAY_METRIC_UNITS_QUALIFIER = "DISPLAY_METRIC_UNITS"
+        const val TIME_24H_QUALIFIER = "TIME_24H"
     }
 
     val requiresWheelchair: PreferencesUnit<Boolean> = SimplePreferencesUnit(
@@ -165,6 +186,14 @@ class PreferencesRepository(
         preferencesPersistence
     )
 
+    val use24Hour: PreferencesUnit<Time24HSetting> = MappedPreferencesUnit(
+        TIME_24H_KEY,
+        Time24HSetting.AUTOMATIC,
+        preferencesPersistence,
+        { Time24HSetting.valueOf(it) },
+        { it.name }
+    )
+
 }
 
 @Factory
@@ -176,5 +205,19 @@ fun metric(
         DISPLAY_METRIC_UNITS_KEY,
         true,
         preferencesPersistence
+    )
+}
+
+@Factory
+@Qualifier(name = TIME_24H_QUALIFIER)
+fun time24H(
+    preferencesPersistence: PreferencesPersistence
+): PreferencesUnit<Time24HSetting> {
+    return MappedPreferencesUnit(
+        TIME_24H_KEY,
+        Time24HSetting.AUTOMATIC,
+        preferencesPersistence,
+        { Time24HSetting.valueOf(it) },
+        { it.name }
     )
 }
