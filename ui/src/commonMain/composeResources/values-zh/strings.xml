@@ -195,9 +195,9 @@
       
   <string name="accessibility_title">无障碍设施</string>
       
-  <string name="scheduled_arrival">预计于%1$s抵达</string>
+  <string name="scheduled_arrival">计划到达%1$s</string>
       
-  <string name="estimated_arrival">预计于 %1$s 抵达</string>
+  <string name="estimated_arrival">预计到达%1$s</string>
       
   <string name="estimated_arrival_late">预计到达时间为%1$s（晚点%2$s）</string>
       
