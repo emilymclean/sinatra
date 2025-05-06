@@ -45,6 +45,24 @@
   <string name="preferences_setting_max_walking">最长步行时间</string>
 
   <string name="preferences_setting_metric">使用公制单位</string>
+
+  <string name="preferences_setting_metric_subtitle">显示距离单位为公制（公里、米）或英制（英里、英尺）。</string>
+
+  <string name="preferences_setting_metric_metric">公制</string>
+
+  <string name="preferences_setting_metric_imperial">英制</string>
+
+  <string name="preferences_setting_time">24小时制</string>
+
+  <string name="preferences_setting_time_subtitle">启用后将以 24 小时格式显示时间。</string>
+
+  <string name="preferences_setting_time_subtitle_alt">覆盖系统设置，始终使用 12 小时或 24 小时格式显示时间。</string>
+
+  <string name="preferences_setting_time_automatic">自动</string>
+
+  <string name="preferences_setting_time_12h">12小时</string>
+  
+  <string name="preferences_setting_time_24h">24小时</string>
       
   <string name="open_maps_android">在 Google Maps</string>
       
