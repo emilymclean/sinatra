@@ -10,6 +10,7 @@ import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.data.models.StopWithDistance
 import cl.emilym.sinatra.data.repository.NetworkGraphRepository
 import cl.emilym.sinatra.data.repository.RecentVisitRepository
+import cl.emilym.sinatra.data.repository.RoutingPreferencesRepository
 import cl.emilym.sinatra.data.repository.StopRepository
 import cl.emilym.sinatra.domain.CalculateJourneyUseCase
 import cl.emilym.sinatra.domain.JourneyCalculationTime
@@ -84,8 +85,8 @@ private data class NavigationParameters(
     val destinationLocation: JourneyLocation?,
     val originLocation: JourneyLocation?,
     val anchorTime: NavigationAnchorTime,
-    val wheelchairAccessible: Boolean,
-    val bikesAllowed: Boolean
+    val wheelchairAccessible: Boolean?,
+    val bikesAllowed: Boolean?
 )
 
 @Factory
@@ -96,6 +97,7 @@ class NavigationEntryViewModel(
     private val recentVisitRepository: RecentVisitRepository,
     private val nearbyStopsUseCase: NearbyStopsUseCase,
     private val stopRepository: StopRepository,
+    private val routingPreferencesRepository: RoutingPreferencesRepository,
     private val clock: Clock
 ): SinatraScreenModel, SearchScreenViewModel {
 
@@ -103,8 +105,8 @@ class NavigationEntryViewModel(
     val destination = MutableStateFlow<NavigationLocation>(NavigationLocation.None)
     val origin = MutableStateFlow<NavigationLocation>(NavigationLocation.None)
     val anchorTime = MutableStateFlow<NavigationAnchorTime>(NavigationAnchorTime.Now)
-    val wheelchairAccessible = MutableStateFlow(false)
-    val bikesAllowed = MutableStateFlow(false)
+    val wheelchairAccessible = MutableStateFlow<Boolean?>(null)
+    val bikesAllowed = MutableStateFlow<Boolean?>(null)
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val destinationLocation = destination.flatMapLatest {
@@ -148,7 +150,12 @@ class NavigationEntryViewModel(
                             )
                         }.flatMapLatest {
                             flow {
-                                if (it.destinationLocation == null || it.originLocation == null) return@flow
+                                if (
+                                    it.destinationLocation == null ||
+                                    it.originLocation == null ||
+                                    it.bikesAllowed == null ||
+                                    it.wheelchairAccessible == null
+                                ) return@flow
                                 emit(NavigationState.JourneyCalculating)
                                 try {
                                     emit(NavigationState.JourneysFound(
@@ -261,6 +268,19 @@ class NavigationEntryViewModel(
             else -> RequestState.Initial()
         }
     }.state(RequestState.Initial())
+
+    init {
+        screenModelScope.launch {
+            wheelchairAccessible.value = try {
+                routingPreferencesRepository.requiresWheelchair()
+            } catch (e: Exception) { false }
+        }
+        screenModelScope.launch {
+            bikesAllowed.value = try {
+                routingPreferencesRepository.requiresBikes()
+            } catch (e: Exception) { false }
+        }
+    }
 
     fun init(destination: NavigationLocation, origin: NavigationLocation) {
         retryLoadingGraph()

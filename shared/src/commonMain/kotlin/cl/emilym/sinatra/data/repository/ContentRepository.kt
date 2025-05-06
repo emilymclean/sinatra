@@ -18,8 +18,16 @@ class ContentRepository(
 
     companion object {
         const val ABOUT_ID = "about"
+        const val MORE_ID = "more"
         const val SERVICE_ALERT_ID = "service-alerts"
         const val HOME_BANNER_ID = "home"
+
+        const val NATIVE_PREFERENCES_ID = "preferences"
+        const val NATIVE_PREFERENCES_ROUTING_ID = "preferences-routing"
+        const val NATIVE_PREFERENCES_UNITS_ID = "preferences-units"
+        const val NATIVE_FAVOURITES_ID = "favourites"
+        const val NATIVE_NAVIGATE_ENTRY_ID = "navigate"
+        const val NATIVE_BROWSE_ID = "browse"
     }
 
     private val lock = Mutex()

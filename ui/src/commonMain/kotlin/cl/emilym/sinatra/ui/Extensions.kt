@@ -35,6 +35,7 @@ import cl.emilym.sinatra.ui.localization.dateFormat
 import cl.emilym.sinatra.ui.localization.format
 import cl.emilym.sinatra.ui.localization.toTodayInstant
 import cl.emilym.sinatra.ui.presentation.screens.maps.navigate.NavigationLocation
+import cl.emilym.sinatra.ui.widgets.isMetricUnits
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.format
@@ -45,6 +46,8 @@ import org.jetbrains.compose.resources.stringResource
 import sinatra.ui.generated.resources.Res
 import sinatra.ui.generated.resources.distance_kilometer
 import sinatra.ui.generated.resources.distance_meter
+import sinatra.ui.generated.resources.distance_feet
+import sinatra.ui.generated.resources.distance_miles
 import sinatra.ui.generated.resources.time_ago
 import sinatra.ui.generated.resources.time_day
 import sinatra.ui.generated.resources.time_hour
@@ -122,16 +125,40 @@ fun List<TimetableStationTime>.asInstants(): List<Instant> {
 
 internal expect val Res.string.open_maps: StringResource
 
-val Kilometer.text
+val Kilometer.text: String
     @Composable
-    get() = when {
-        this < 1 -> {
-            val meters = (this * 1000).roundToInt()
-            pluralStringResource(Res.plurals.distance_meter, meters, meters)
-        }
-        else -> {
-            val kilometers = roundToInt()
-            pluralStringResource(Res.plurals.distance_kilometer, kilometers, kilometers)
+    get() {
+        val unit = isMetricUnits()
+        return when (unit) {
+            true -> when {
+                this < 1 -> {
+                    val meters = (this * 1000).roundToInt()
+                    pluralStringResource(Res.plurals.distance_meter, meters, meters)
+                }
+                else -> {
+                    val kilometers = roundToInt()
+                    pluralStringResource(Res.plurals.distance_kilometer, kilometers, kilometers)
+                }
+            }
+            false -> {
+                val feet = (this * 3.280839895 * 1000).roundToInt()
+                when {
+                    feet < 528 -> pluralStringResource(Res.plurals.distance_feet, feet, feet)
+                    feet < 5280 -> pluralStringResource(
+                        Res.plurals.distance_miles,
+                        2,
+                        (feet / 5280.0).format(1)
+                    )
+                    else -> {
+                        val miles = feet / 5280
+                        pluralStringResource(
+                            Res.plurals.distance_miles,
+                            miles,
+                            miles
+                        )
+                    }
+                }
+            }
         }
     }
 

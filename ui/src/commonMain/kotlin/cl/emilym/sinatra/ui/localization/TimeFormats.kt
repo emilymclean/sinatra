@@ -2,7 +2,9 @@ package cl.emilym.sinatra.ui.localization
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.intl.Locale
+import cl.emilym.sinatra.data.models.Time24HSetting
 import cl.emilym.sinatra.ui.LanguageConsts
+import cl.emilym.sinatra.ui.widgets.override24HTimeSetting
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
@@ -23,7 +25,17 @@ import sinatra.ui.generated.resources.time_am
 import sinatra.ui.generated.resources.time_pm
 
 @Composable
-expect fun is24HourTimeFormat(): Boolean
+fun is24HourTimeFormat(): Boolean {
+    val override = override24HTimeSetting()
+    return when (override) {
+        Time24HSetting.OVERRIDE_12 -> false
+        Time24HSetting.OVERRIDE_24 -> true
+        Time24HSetting.AUTOMATIC -> is24HourTimeFormatInternal()
+    }
+}
+
+@Composable
+internal expect fun is24HourTimeFormatInternal(): Boolean
 
 val dayOfWeekNames: DayOfWeekNames
     @Composable
