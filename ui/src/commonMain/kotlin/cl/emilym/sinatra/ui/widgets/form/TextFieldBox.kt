@@ -14,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -27,6 +28,7 @@ fun TextFieldBox(
                 MaterialTheme.colorScheme.surfaceContainerHighest,
                 shape = MaterialTheme.shapes.large
             )
+            .clip(MaterialTheme.shapes.large)
             .heightIn(min = 56.dp)
             .widthIn(min = 280.dp)
             .then(modifier)
