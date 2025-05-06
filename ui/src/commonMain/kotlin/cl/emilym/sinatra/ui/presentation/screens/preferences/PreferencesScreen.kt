@@ -73,7 +73,7 @@ abstract class PreferencesScreen: Screen {
                         Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 1.rdp),
-                        verticalArrangement = Arrangement.spacedBy(1.rdp)
+                        verticalArrangement = Arrangement.spacedBy(2.rdp)
                     ) {
                         Preferences(
                             PreferencesCollection(
