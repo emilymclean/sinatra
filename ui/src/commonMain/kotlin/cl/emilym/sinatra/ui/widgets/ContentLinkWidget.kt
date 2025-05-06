@@ -69,7 +69,7 @@ fun ContentLinkWidget(
 
     Row(
         modifier = Modifier
-            .heightIn(min = minimumTouchTarget)
+            .heightIn(min = 3.5.rdp)
             .background(Container)
             .semantics(mergeDescendants = true) {
                 role = Role.Button
