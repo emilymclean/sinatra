@@ -25,7 +25,10 @@
     <string name="preferences_setting_bikes">Bike Rack Required</string>
     <string name="preferences_setting_bikes_subtitle">Require routes to have bike racks available.</string>
     <string name="preferences_setting_max_walking">Maximum walking time</string>
-    <string name="preferences_setting_metric">Use metric units</string>
+    <string name="preferences_setting_metric">Distance Units</string>
+    <string name="preferences_setting_metric_subtitle">Display distances in metric (km, m) or imperial (mi, ft) units.</string>
+    <string name="preferences_setting_metric_metric">Metric</string>
+    <string name="preferences_setting_metric_imperial">Imperial</string>
 
     <string name="open_maps_android">Show in Google Maps</string>
     <string name="open_maps_ios">Show in Apple Maps</string>

@@ -38,6 +38,8 @@ import sinatra.ui.generated.resources.home
 import sinatra.ui.generated.resources.work
 import sinatra.ui.generated.resources.clear
 import sinatra.ui.generated.resources.no_place
+import sinatra.ui.generated.resources.dropdown_up
+import sinatra.ui.generated.resources.dropdown_down
 
 @Composable
 fun AccessibleIcon(
@@ -447,6 +449,34 @@ fun NoPlaceIcon(
 ) {
     Icon(
         painterResource(Res.drawable.no_place),
+        contentDescription = contentDescription,
+        modifier = modifier,
+        tint = tint
+    )
+}
+
+@Composable
+fun DropdownDownIcon(
+    modifier: Modifier = Modifier,
+    tint: Color = LocalContentColor.current,
+    contentDescription: String? = null
+) {
+    Icon(
+        painterResource(Res.drawable.dropdown_down),
+        contentDescription = contentDescription,
+        modifier = modifier,
+        tint = tint
+    )
+}
+
+@Composable
+fun DropdownUpIcon(
+    modifier: Modifier = Modifier,
+    tint: Color = LocalContentColor.current,
+    contentDescription: String? = null
+) {
+    Icon(
+        painterResource(Res.drawable.dropdown_up),
         contentDescription = contentDescription,
         modifier = modifier,
         tint = tint
