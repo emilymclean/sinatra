@@ -42,6 +42,10 @@
 
   <string name="preferences_setting_bikes_subtitle">配备自行车架的路线。</string>
 
+  <string name="preferences_setting_show_accessibility_icons_navigation">显示无障碍信息</string>
+
+  <string name="preferences_setting_show_accessibility_icons_navigation_subtitle">显示路线是否适合骑行或轮椅通行。</string>
+
   <string name="preferences_setting_max_walking">最长步行时间</string>
 
   <string name="preferences_setting_metric">使用公制单位</string>
