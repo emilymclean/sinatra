@@ -111,6 +111,8 @@ import sinatra.ui.generated.resources.navigate_travel_depart
 import sinatra.ui.generated.resources.navigate_travel_journey_arrive
 import sinatra.ui.generated.resources.navigate_travel_journey_depart
 import sinatra.ui.generated.resources.navigate_walk
+import sinatra.ui.generated.resources.route_accessibility_bikes_allowed
+import sinatra.ui.generated.resources.route_accessibility_wheelchair_accessible
 
 
 class NavigateEntryScreen(
@@ -706,10 +708,15 @@ fun TravelLeg(
             ) {
                 Row(horizontalArrangement = Arrangement.spacedBy(0.5.rdp)) {
                     if (leg.routeAccessibility?.wheelchairAccessible == ServiceWheelchairAccessible.ACCESSIBLE) {
-                        WheelchairAccessibleIcon(true)
+                        WheelchairAccessibleIcon(
+                            true,
+                            contentDescription = stringResource(Res.string.route_accessibility_wheelchair_accessible)
+                        )
                     }
                     if (leg.routeAccessibility?.bikesAllowed == ServiceBikesAllowed.ALLOWED) {
-                        BikeIcon()
+                        BikeIcon(
+                            contentDescription = stringResource(Res.string.route_accessibility_bikes_allowed)
+                        )
                     }
                 }
             }
