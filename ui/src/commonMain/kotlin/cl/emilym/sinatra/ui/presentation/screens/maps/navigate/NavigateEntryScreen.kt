@@ -44,6 +44,8 @@ import cl.emilym.sinatra.bounds
 import cl.emilym.sinatra.data.models.Journey
 import cl.emilym.sinatra.data.models.JourneyLeg
 import cl.emilym.sinatra.data.models.MapLocation
+import cl.emilym.sinatra.data.models.ServiceBikesAllowed
+import cl.emilym.sinatra.data.models.ServiceWheelchairAccessible
 import cl.emilym.sinatra.data.models.Time
 import cl.emilym.sinatra.ui.color
 import cl.emilym.sinatra.ui.localization.format
@@ -80,6 +82,7 @@ import cl.emilym.sinatra.ui.widgets.RouteRandle
 import cl.emilym.sinatra.ui.widgets.SinatraBackHandler
 import cl.emilym.sinatra.ui.widgets.SwapIcon
 import cl.emilym.sinatra.ui.widgets.WalkIcon
+import cl.emilym.sinatra.ui.widgets.WheelchairAccessibleIcon
 import cl.emilym.sinatra.ui.widgets.collectAsStateWithLifecycle
 import cl.emilym.sinatra.ui.widgets.currentLocation
 import cl.emilym.sinatra.ui.widgets.hasLocationPermission
@@ -686,8 +689,23 @@ fun TravelLeg(leg: JourneyLeg.Travel) {
             )
             Markdown(
                 stringResource(Res.string.navigate_travel, leg.travelTime.text, leg.route.name, leg.heading),
-                modifier = Modifier.noRippleClickable { navigator.routeCardDefaultNavigation(leg.route) }
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .noRippleClickable { navigator.routeCardDefaultNavigation(leg.route) }
             )
+            if (
+                leg.routeAccessibility?.wheelchairAccessible == ServiceWheelchairAccessible.ACCESSIBLE ||
+                leg.routeAccessibility?.bikesAllowed == ServiceBikesAllowed.ALLOWED
+            ) {
+                Row(horizontalArrangement = Arrangement.spacedBy(0.5.rdp)) {
+                    if (leg.routeAccessibility?.wheelchairAccessible == ServiceWheelchairAccessible.ACCESSIBLE) {
+                        WheelchairAccessibleIcon(true)
+                    }
+                    if (leg.routeAccessibility?.bikesAllowed == ServiceBikesAllowed.ALLOWED) {
+                        BikeIcon()
+                    }
+                }
+            }
             Markdown(
                 stringResource(Res.string.navigate_travel_arrive, leg.stops.last().name, leg.arrivalTime.format()),
                 modifier = Modifier.noRippleClickable { navigator.stopCardDefaultNavigation(leg.stops.last()) }
