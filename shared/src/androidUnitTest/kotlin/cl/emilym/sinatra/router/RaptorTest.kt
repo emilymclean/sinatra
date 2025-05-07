@@ -86,6 +86,8 @@ class RaptorTest {
                 endTime=33307,
                 travelTime=831,
                 dayIndex = 0,
+                bikesAllowed = true,
+                wheelchairAccessible = true
             )
         )), result)
     }
@@ -106,6 +108,8 @@ class RaptorTest {
                 endTime=33875,
                 travelTime=1475,
                 dayIndex = 0,
+                bikesAllowed = true,
+                wheelchairAccessible = true
             )
         )), result)
     }
@@ -127,6 +131,8 @@ class RaptorTest {
                 endTime=32427,
                 travelTime=871,
                 dayIndex = 0,
+                bikesAllowed = true,
+                wheelchairAccessible = true
             )
         )), result)
     }
@@ -147,6 +153,8 @@ class RaptorTest {
                 endTime=33875,
                 travelTime=1475,
                 dayIndex = 0,
+                bikesAllowed = true,
+                wheelchairAccessible = true
             )
         )), result)
     }
@@ -173,6 +181,8 @@ class RaptorTest {
                 endTime=33307,
                 travelTime=831,
                 dayIndex = 0,
+                bikesAllowed = true,
+                wheelchairAccessible = true
             ),
             RaptorJourneyConnection.Transfer(
                 listOf("8105", "MCK"),
@@ -203,6 +213,8 @@ class RaptorTest {
                 endTime=36027,
                 travelTime=871,
                 dayIndex = 0,
+                bikesAllowed = true,
+                wheelchairAccessible = true
             ),
             RaptorJourneyConnection.Transfer(
                 listOf("8105", "MCK"),
@@ -231,6 +243,8 @@ class RaptorTest {
                 endTime=52320,
                 travelTime=1560,
                 dayIndex = 0,
+                bikesAllowed = true,
+                wheelchairAccessible = true
             )
         )), result)
     }
@@ -279,6 +293,8 @@ class RaptorTest {
                 endTime = 33420,
                 travelTime = 720,
                 dayIndex = 0,
+                bikesAllowed = false,
+                wheelchairAccessible = true
             ),
             RaptorJourneyConnection.Travel(
                 listOf("8889", "3356", "3406"),
@@ -288,6 +304,8 @@ class RaptorTest {
                 endTime = 33540,
                 travelTime = 180,
                 dayIndex = 0,
+                bikesAllowed = true,
+                wheelchairAccessible = true
             ),
             RaptorJourneyConnection.Transfer(
                 listOf("3406", "8129"),
@@ -301,6 +319,8 @@ class RaptorTest {
                 endTime=34957,
                 travelTime=1357,
                 dayIndex = 0,
+                bikesAllowed = true,
+                wheelchairAccessible = true
             ),
             RaptorJourneyConnection.Transfer(
                 listOf("8105", "MCK"),
@@ -329,6 +349,8 @@ class RaptorTest {
                 endTime = 33300,
                 travelTime = 120,
                 dayIndex = 0,
+                bikesAllowed = true,
+                wheelchairAccessible = true
             ),
             RaptorJourneyConnection.Travel(
                 listOf("2373", "2376", "2258", "3261", "3259", "8889"),
@@ -338,6 +360,8 @@ class RaptorTest {
                 endTime = 34140,
                 travelTime = 540,
                 dayIndex = 0,
+                bikesAllowed = false,
+                wheelchairAccessible = false
             ),
             RaptorJourneyConnection.Travel(
                 listOf("8889", "3356", "3406"),
@@ -347,6 +371,8 @@ class RaptorTest {
                 endTime = 34380,
                 travelTime = 180,
                 dayIndex = 0,
+                bikesAllowed = true,
+                wheelchairAccessible = true
             ),
             RaptorJourneyConnection.Transfer(
                 listOf("3406", "8129"),
@@ -360,6 +386,8 @@ class RaptorTest {
                 endTime=36027,
                 travelTime=1377,
                 dayIndex = 0,
+                bikesAllowed = true,
+                wheelchairAccessible = true
             ),
             RaptorJourneyConnection.Transfer(
                 listOf("8105", "MCK"),
@@ -389,6 +417,8 @@ class RaptorTest {
                 endTime=33457,
                 travelTime=831,
                 dayIndex = 0,
+                bikesAllowed = true,
+                wheelchairAccessible = true
             ),
             RaptorJourneyConnection.Transfer(
                 listOf("8105", "MCK"),
@@ -446,6 +476,8 @@ class RaptorTest {
                 endTime=86947,
                 travelTime=423,
                 dayIndex=0,
+                bikesAllowed = true,
+                wheelchairAccessible = true
             ),
         )), result)
     }
