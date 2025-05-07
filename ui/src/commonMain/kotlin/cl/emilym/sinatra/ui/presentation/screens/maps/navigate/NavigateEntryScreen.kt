@@ -44,6 +44,8 @@ import cl.emilym.sinatra.bounds
 import cl.emilym.sinatra.data.models.Journey
 import cl.emilym.sinatra.data.models.JourneyLeg
 import cl.emilym.sinatra.data.models.MapLocation
+import cl.emilym.sinatra.data.models.ServiceBikesAllowed
+import cl.emilym.sinatra.data.models.ServiceWheelchairAccessible
 import cl.emilym.sinatra.data.models.Time
 import cl.emilym.sinatra.ui.color
 import cl.emilym.sinatra.ui.localization.format
@@ -80,6 +82,7 @@ import cl.emilym.sinatra.ui.widgets.RouteRandle
 import cl.emilym.sinatra.ui.widgets.SinatraBackHandler
 import cl.emilym.sinatra.ui.widgets.SwapIcon
 import cl.emilym.sinatra.ui.widgets.WalkIcon
+import cl.emilym.sinatra.ui.widgets.WheelchairAccessibleIcon
 import cl.emilym.sinatra.ui.widgets.collectAsStateWithLifecycle
 import cl.emilym.sinatra.ui.widgets.currentLocation
 import cl.emilym.sinatra.ui.widgets.hasLocationPermission
@@ -108,6 +111,8 @@ import sinatra.ui.generated.resources.navigate_travel_depart
 import sinatra.ui.generated.resources.navigate_travel_journey_arrive
 import sinatra.ui.generated.resources.navigate_travel_journey_depart
 import sinatra.ui.generated.resources.navigate_walk
+import sinatra.ui.generated.resources.route_accessibility_bikes_allowed
+import sinatra.ui.generated.resources.route_accessibility_wheelchair_accessible
 
 
 class NavigateEntryScreen(
@@ -584,11 +589,14 @@ class NavigateEntryScreen(
                 else -> {}
             }
 
+            val showAccessibilityIcons by viewModel.showAccessibilityIcons.collectAsStateWithLifecycle()
             for (legI in journey.legs.indices) {
                 val leg = journey.legs[legI]
                 when (leg) {
                     is JourneyLeg.Transfer -> TransferLeg(leg)
-                    is JourneyLeg.Travel -> TravelLeg(leg)
+                    is JourneyLeg.Travel -> TravelLeg(
+                        leg, showAccessibilityIcons
+                    )
                     else -> {
                         when (legI) {
                             0 -> TransferLeg(leg)
@@ -673,7 +681,10 @@ fun TransferLeg(leg: JourneyLeg) {
 }
 
 @Composable
-fun TravelLeg(leg: JourneyLeg.Travel) {
+fun TravelLeg(
+    leg: JourneyLeg.Travel,
+    showAccessibilityIcons: Boolean = true
+) {
     val navigator = LocalNavigator.currentOrThrow
     LegScaffold({ RouteRandle(leg.route) }) {
         Column(
@@ -686,8 +697,29 @@ fun TravelLeg(leg: JourneyLeg.Travel) {
             )
             Markdown(
                 stringResource(Res.string.navigate_travel, leg.travelTime.text, leg.route.name, leg.heading),
-                modifier = Modifier.noRippleClickable { navigator.routeCardDefaultNavigation(leg.route) }
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .noRippleClickable { navigator.routeCardDefaultNavigation(leg.route) }
             )
+            if (
+                (leg.routeAccessibility?.wheelchairAccessible == ServiceWheelchairAccessible.ACCESSIBLE ||
+                leg.routeAccessibility?.bikesAllowed == ServiceBikesAllowed.ALLOWED) &&
+                showAccessibilityIcons
+            ) {
+                Row(horizontalArrangement = Arrangement.spacedBy(0.5.rdp)) {
+                    if (leg.routeAccessibility?.wheelchairAccessible == ServiceWheelchairAccessible.ACCESSIBLE) {
+                        WheelchairAccessibleIcon(
+                            true,
+                            contentDescription = stringResource(Res.string.route_accessibility_wheelchair_accessible)
+                        )
+                    }
+                    if (leg.routeAccessibility?.bikesAllowed == ServiceBikesAllowed.ALLOWED) {
+                        BikeIcon(
+                            contentDescription = stringResource(Res.string.route_accessibility_bikes_allowed)
+                        )
+                    }
+                }
+            }
             Markdown(
                 stringResource(Res.string.navigate_travel_arrive, leg.stops.last().name, leg.arrivalTime.format()),
                 modifier = Modifier.noRippleClickable { navigator.stopCardDefaultNavigation(leg.stops.last()) }

@@ -5,7 +5,10 @@ import cl.emilym.sinatra.data.models.Cachable
 import cl.emilym.sinatra.data.models.Journey
 import cl.emilym.sinatra.data.models.JourneyLeg
 import cl.emilym.sinatra.data.models.MapLocation
+import cl.emilym.sinatra.data.models.RouteServiceAccessibility
+import cl.emilym.sinatra.data.models.ServiceBikesAllowed
 import cl.emilym.sinatra.data.models.ServiceId
+import cl.emilym.sinatra.data.models.ServiceWheelchairAccessible
 import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.data.models.StopWithDistance
 import cl.emilym.sinatra.data.models.Time
@@ -247,7 +250,11 @@ class ReconstructJourneyUseCase(
                         routes.item.first { it?.id == connection.routeId }!!,
                         connection.heading,
                         Time.create(connection.startTime.seconds, lastStartOfDay),
-                        Time.create(connection.endTime.seconds, lastStartOfDay)
+                        Time.create(connection.endTime.seconds, lastStartOfDay),
+                        RouteServiceAccessibility(
+                            if (connection.bikesAllowed) ServiceBikesAllowed.ALLOWED else ServiceBikesAllowed.DISALLOWED,
+                            if (connection.wheelchairAccessible) ServiceWheelchairAccessible.ACCESSIBLE else ServiceWheelchairAccessible.INACCESSIBLE,
+                        )
                     )
                 }
                 is RaptorJourneyConnection.Transfer -> when {

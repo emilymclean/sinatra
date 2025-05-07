@@ -24,6 +24,8 @@ import sinatra.ui.generated.resources.preferences_setting_max_walking
 import sinatra.ui.generated.resources.preferences_setting_wheelchair
 import sinatra.ui.generated.resources.preferences_setting_wheelchair_subtitle
 import sinatra.ui.generated.resources.preferences_routing_title
+import sinatra.ui.generated.resources.preferences_setting_show_accessibility_icons_navigation
+import sinatra.ui.generated.resources.preferences_setting_show_accessibility_icons_navigation_subtitle
 import kotlin.time.Duration.Companion.minutes
 
 class RoutingPreferencesScreen: PreferencesScreen() {
@@ -48,6 +50,14 @@ class RoutingPreferencesScreen: PreferencesScreen() {
             Modifier.fillMaxWidth()
         ) {
             PreferencesCheckbox(preferencesCollection.requiresBikes)
+        }
+
+        HorizontalLockup(
+            stringResource(Res.string.preferences_setting_show_accessibility_icons_navigation),
+            stringResource(Res.string.preferences_setting_show_accessibility_icons_navigation_subtitle),
+            Modifier.fillMaxWidth()
+        ) {
+            PreferencesCheckbox(preferencesCollection.showAccessibilityIconsNavigation)
         }
 
         VerticalLockup(

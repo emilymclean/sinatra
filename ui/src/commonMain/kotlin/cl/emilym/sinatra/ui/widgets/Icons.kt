@@ -45,10 +45,11 @@ import sinatra.ui.generated.resources.dropdown_down
 fun AccessibleIcon(
     modifier: Modifier = Modifier,
     tint: Color = LocalContentColor.current,
+    contentDescription: String? = null
 ) {
     Icon(
         painterResource(Res.drawable.accessible),
-        contentDescription = null,
+        contentDescription = contentDescription,
         modifier = modifier,
         tint = tint
     )
@@ -57,11 +58,12 @@ fun AccessibleIcon(
 @Composable
 fun NotAccessibleIcon(
     modifier: Modifier = Modifier,
-    tint: Color = LocalContentColor.current
+    tint: Color = LocalContentColor.current,
+    contentDescription: String? = null
 ) {
     Icon(
         painterResource(Res.drawable.not_accessible),
-        contentDescription = null,
+        contentDescription = contentDescription,
         modifier = modifier,
         tint = tint
     )
@@ -71,22 +73,24 @@ fun NotAccessibleIcon(
 fun WheelchairAccessibleIcon(
     isAccessible: Boolean,
     modifier: Modifier = Modifier,
-    tint: Color = LocalContentColor.current
+    tint: Color = LocalContentColor.current,
+    contentDescription: String? = null
 ) {
     when {
-        isAccessible -> AccessibleIcon(modifier, tint)
-        else -> NotAccessibleIcon(modifier, tint)
+        isAccessible -> AccessibleIcon(modifier, tint, contentDescription)
+        else -> NotAccessibleIcon(modifier, tint, contentDescription)
     }
 }
 
 @Composable
 fun BikeIcon(
     modifier: Modifier = Modifier,
-    tint: Color = LocalContentColor.current
+    tint: Color = LocalContentColor.current,
+    contentDescription: String? = null
 ) {
     Icon(
         painterResource(Res.drawable.bike),
-        contentDescription = null,
+        contentDescription = contentDescription,
         modifier = modifier,
         tint = tint
     )
