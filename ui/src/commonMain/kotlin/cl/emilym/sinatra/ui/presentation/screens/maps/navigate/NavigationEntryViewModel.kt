@@ -9,6 +9,7 @@ import cl.emilym.sinatra.data.models.RecentVisit
 import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.data.models.StopWithDistance
 import cl.emilym.sinatra.data.repository.NetworkGraphRepository
+import cl.emilym.sinatra.data.repository.PreferencesRepository
 import cl.emilym.sinatra.data.repository.RecentVisitRepository
 import cl.emilym.sinatra.data.repository.RoutingPreferencesRepository
 import cl.emilym.sinatra.data.repository.StopRepository
@@ -98,6 +99,7 @@ class NavigationEntryViewModel(
     private val nearbyStopsUseCase: NearbyStopsUseCase,
     private val stopRepository: StopRepository,
     private val routingPreferencesRepository: RoutingPreferencesRepository,
+    private val preferencesRepository: PreferencesRepository,
     private val clock: Clock
 ): SinatraScreenModel, SearchScreenViewModel {
 
@@ -118,6 +120,9 @@ class NavigationEntryViewModel(
     }.state(null)
     private val _state = MutableStateFlow<State>(State.JourneySelection)
     private val retryGraphLoad = Channel<Unit>(Channel.CONFLATED)
+
+    val showAccessibilityIcons = preferencesRepository.showAccessibilityIconsNavigation.flow
+        .state(true)
 
     @OptIn(ExperimentalCoroutinesApi::class)
     private val navigationState: StateFlow<NavigationState> = anchorTime.flatMapLatest {

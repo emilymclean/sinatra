@@ -37,6 +37,7 @@ data class PreferencesCollection(
     val requiresWheelchair: StatefulPreferencesUnit<Boolean>,
     val requiresBikes: StatefulPreferencesUnit<Boolean>,
     val maximumWalkingTime: StatefulPreferencesUnit<Float>,
+    val showAccessibilityIconsNavigation: StatefulPreferencesUnit<Boolean>,
     val metric: StatefulPreferencesUnit<Boolean>,
     val time24Hour: StatefulPreferencesUnit<Time24HSetting>
 )
@@ -80,6 +81,7 @@ abstract class PreferencesScreen: Screen {
                                 preferencesRepository.requiresWheelchair.state(scope),
                                 preferencesRepository.requiresBikes.state(scope),
                                 preferencesRepository.maximumWalkingTime.state(scope),
+                                preferencesRepository.showAccessibilityIconsNavigation.state(scope),
                                 preferencesRepository.metric.state(scope),
                                 preferencesRepository.use24Hour.state(scope)
                             )

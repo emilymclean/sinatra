@@ -155,6 +155,7 @@ class PreferencesRepository(
         internal val REQUIRES_WHEELCHAIR_KEY = booleanPreferencesKey("ROUTER_REQUIRES_WHEELCHAIR")
         internal val ROUTER_REQUIRES_BIKE_KEY = booleanPreferencesKey("ROUTER_REQUIRES_BIKE")
         internal val ROUTER_MAXIMUM_WALKING_TIME_KEY = floatPreferencesKey("ROUTER_MAXIMUM_WALKING_TIME")
+        internal val ROUTER_SHOW_ACCESSIBILITY_ICONS = booleanPreferencesKey("ROUTER_SHOW_ACCESSIBILITY_ICONS")
         internal val DISPLAY_METRIC_UNITS_KEY = booleanPreferencesKey("DISPLAY_METRIC_UNITS")
         internal val TIME_24H_KEY = stringPreferencesKey("TIME_24H")
 
@@ -177,6 +178,12 @@ class PreferencesRepository(
     val maximumWalkingTime: PreferencesUnit<Float> = SimplePreferencesUnit(
         ROUTER_MAXIMUM_WALKING_TIME_KEY,
         30f,
+        preferencesPersistence
+    )
+
+    val showAccessibilityIconsNavigation: PreferencesUnit<Boolean> = SimplePreferencesUnit(
+        ROUTER_SHOW_ACCESSIBILITY_ICONS,
+        true,
         preferencesPersistence
     )
 

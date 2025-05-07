@@ -587,11 +587,14 @@ class NavigateEntryScreen(
                 else -> {}
             }
 
+            val showAccessibilityIcons by viewModel.showAccessibilityIcons.collectAsStateWithLifecycle()
             for (legI in journey.legs.indices) {
                 val leg = journey.legs[legI]
                 when (leg) {
                     is JourneyLeg.Transfer -> TransferLeg(leg)
-                    is JourneyLeg.Travel -> TravelLeg(leg)
+                    is JourneyLeg.Travel -> TravelLeg(
+                        leg, showAccessibilityIcons
+                    )
                     else -> {
                         when (legI) {
                             0 -> TransferLeg(leg)
@@ -676,7 +679,10 @@ fun TransferLeg(leg: JourneyLeg) {
 }
 
 @Composable
-fun TravelLeg(leg: JourneyLeg.Travel) {
+fun TravelLeg(
+    leg: JourneyLeg.Travel,
+    showAccessibilityIcons: Boolean = true
+) {
     val navigator = LocalNavigator.currentOrThrow
     LegScaffold({ RouteRandle(leg.route) }) {
         Column(
@@ -694,8 +700,9 @@ fun TravelLeg(leg: JourneyLeg.Travel) {
                     .noRippleClickable { navigator.routeCardDefaultNavigation(leg.route) }
             )
             if (
-                leg.routeAccessibility?.wheelchairAccessible == ServiceWheelchairAccessible.ACCESSIBLE ||
-                leg.routeAccessibility?.bikesAllowed == ServiceBikesAllowed.ALLOWED
+                (leg.routeAccessibility?.wheelchairAccessible == ServiceWheelchairAccessible.ACCESSIBLE ||
+                leg.routeAccessibility?.bikesAllowed == ServiceBikesAllowed.ALLOWED) &&
+                showAccessibilityIcons
             ) {
                 Row(horizontalArrangement = Arrangement.spacedBy(0.5.rdp)) {
                     if (leg.routeAccessibility?.wheelchairAccessible == ServiceWheelchairAccessible.ACCESSIBLE) {

@@ -24,6 +24,8 @@
     <string name="preferences_setting_wheelchair_subtitle">Default to calculating routes with wheelchair accessibility when navigating.</string>
     <string name="preferences_setting_bikes">Bike Rack Required</string>
     <string name="preferences_setting_bikes_subtitle">Require routes to have bike racks available.</string>
+    <string name="preferences_setting_show_accessibility_icons_navigation">Highlight Accessibility</string>
+    <string name="preferences_setting_show_accessibility_icons_navigation_subtitle">Show whether a route is bike or wheelchair accessible.</string>
     <string name="preferences_setting_max_walking">Maximum walking time</string>
     <string name="preferences_setting_metric">Distance Units</string>
     <string name="preferences_setting_metric_subtitle">Display distances in metric (km, m) or imperial (mi, ft) units.</string>
