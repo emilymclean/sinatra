@@ -28,7 +28,7 @@
 
   <string name="preferences_routing_title">导航</string>
 
-  <string name="preferences_location_title">位置</string>
+  <string name="preferences_location_title">位置权限</string>
 
   <string name="preferences_units_title">单位</string>
 
