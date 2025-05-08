@@ -3,6 +3,7 @@ package cl.emilym.sinatra.room.dao
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
+import androidx.room.Transaction
 import cl.emilym.sinatra.room.entities.ContentEntity
 import cl.emilym.sinatra.room.entities.ContentEntityWithContentLinkEntity
 import cl.emilym.sinatra.room.entities.ContentLinkEntity
@@ -17,9 +18,11 @@ interface ContentDao {
     suspend fun clear()
 
     @Query("SELECT * FROM contentEntity")
+    @Transaction
     suspend fun get(): List<ContentEntityWithContentLinkEntity>
 
     @Query("SELECT * FROM contentEntity WHERE id = :id")
+    @Transaction
     suspend fun get(id: String): ContentEntityWithContentLinkEntity?
 
 }
@@ -29,5 +32,8 @@ interface ContentLinkDao {
 
     @Insert
     suspend fun insert(vararg contentLink: ContentLinkEntity)
+
+    @Query("SELECT * FROM contentLinkEntity WHERE contentId = :contentId")
+    suspend fun get(contentId: String): List<ContentLinkEntity>
 
 }

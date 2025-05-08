@@ -3,6 +3,7 @@ package cl.emilym.sinatra.room.entities
 import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import androidx.room.Relation
 import cl.emilym.sinatra.data.models.Content
@@ -39,10 +40,13 @@ data class ContentEntity(
             onDelete = ForeignKey.CASCADE,
             onUpdate = ForeignKey.CASCADE
         )
+    ],
+    indices = [
+        Index("contentId")
     ]
 )
 data class ContentLinkEntity(
-    @PrimaryKey(autoGenerate = true)
+    @PrimaryKey
     val id: Int,
     val contentId: String,
     val type: String,
@@ -63,13 +67,13 @@ data class ContentLinkEntity(
                 ContentLinkEntity(
                     0,
                     content.id,
-                    content.title,
                     when (it) {
                         is ContentLink.Content -> CONTENT_TYPE
                         is ContentLink.Native -> NATIVE_TYPE
                         is ContentLink.External -> EXTERNAL_TYPE
                         else -> return@mapNotNull null
                     },
+                    it.title,
                     when (it) {
                         is ContentLink.Content -> it.id
                         is ContentLink.Native -> it.nativeReference
@@ -87,8 +91,8 @@ data class ContentLinkEntity(
 data class ContentEntityWithContentLinkEntity(
     @Embedded val content: ContentEntity,
     @Relation(
-        parentColumn = "contentId",
-        entityColumn = "id"
+        parentColumn = "id",
+        entityColumn = "contentId"
     )
     val links: List<ContentLinkEntity>
 ) {

@@ -5,10 +5,18 @@ import cl.emilym.sinatra.data.models.Content
 import cl.emilym.sinatra.data.models.ContentId
 import cl.emilym.sinatra.data.models.ContentLink
 import cl.emilym.sinatra.data.repository.ContentRepository
+import cl.emilym.sinatra.room.dao.ContentDao
+import cl.emilym.sinatra.room.dao.ContentLinkDao
+import cl.emilym.sinatra.room.entities.ContentEntity
+import cl.emilym.sinatra.room.entities.ContentLinkEntity
+import io.github.aakira.napier.Napier
 import org.koin.core.annotation.Single
 
 @Single
-class ContentPersistence {
+class ContentPersistence(
+    private val contentDao: ContentDao,
+    private val contentLinkDao: ContentLinkDao
+) {
 
     companion object {
         val FALLBACK_CONTENT = mapOf(
@@ -38,23 +46,35 @@ class ContentPersistence {
         )
     }
 
-    private val contents = mutableMapOf<String, Content>()
     private val banners = mutableMapOf<String, Alert>()
-    val cached: Boolean get() = contents.isNotEmpty()
 
-    fun get(id: ContentId): Content? {
-        return contents[id]
+    private var _cached = false
+    val cached: Boolean get() = _cached
+
+    suspend fun get(id: ContentId): Content? {
+        Napier.d("${contentLinkDao.get(id)}")
+        return (contentDao.get(id)?.toModel() ?: FALLBACK_CONTENT[id]).also {
+            Napier.d("$it")
+        }
     }
 
-    fun getBanner(id: String): Alert? {
+    suspend fun getBanner(id: String): Alert? {
         return banners[id]
     }
 
-    fun store(content: List<Content>) {
-        content.forEach { contents[it.id] = it }
+    suspend fun store(content: List<Content>) {
+        val contentEntities = content.map { ContentEntity.fromModel(it) }.toTypedArray()
+        val linkEntities = content
+            .flatMap { ContentLinkEntity.fromModel(it) }
+            .mapIndexed { index, it -> it.copy(id = index + 1) }
+            .toTypedArray()
+        contentDao.clear()
+        contentDao.insert(*contentEntities)
+        contentLinkDao.insert(*linkEntities)
+        _cached = true
     }
 
-    fun storeBanner(banners: Map<String, Alert>) {
+    suspend fun storeBanner(banners: Map<String, Alert>) {
         this.banners.putAll(banners)
     }
 
