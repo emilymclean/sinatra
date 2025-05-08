@@ -9,7 +9,6 @@ import cl.emilym.sinatra.room.dao.ContentDao
 import cl.emilym.sinatra.room.dao.ContentLinkDao
 import cl.emilym.sinatra.room.entities.ContentEntity
 import cl.emilym.sinatra.room.entities.ContentLinkEntity
-import io.github.aakira.napier.Napier
 import org.koin.core.annotation.Single
 
 @Single
@@ -52,7 +51,7 @@ class ContentPersistence(
     val cached: Boolean get() = _cached
 
     suspend fun get(id: ContentId): Content? {
-        return (contentDao.get(id)?.toModel() ?: FALLBACK_CONTENT[id])
+        return contentDao.get(id)?.toModel() ?: FALLBACK_CONTENT[id]
     }
 
     suspend fun getBanner(id: String): Alert? {
