@@ -113,16 +113,16 @@ interface GtfsApi {
     @GET("v1/content.pb.sha")
     suspend fun contentDigest(): String
 
-    @GET("v1/content.android.pb")
+    @GET("v1/content-0.10.0.android.pb")
     suspend fun contentAndroid(): Pages
 
-    @GET("v1/content.android.pb.sha")
+    @GET("v1/content-0.10.0.android.pb.sha")
     suspend fun contentAndroidDigest(): String
 
-    @GET("v1/content.ios.pb")
+    @GET("v1/content-0.10.0.ios.pb")
     suspend fun contentIos(): Pages
 
-    @GET("v1/content.ios.pb.sha")
+    @GET("v1/content-0.10.0.ios.pb.sha")
     suspend fun contentIosDigest(): String
 
     @GET("v1/network-graph.eng")

@@ -45,7 +45,11 @@ class ContentRepository(
     }
 
     suspend fun content(id: ContentId): Content? {
-        load()
+        try {
+            load()
+        } catch(e: Exception) {
+            return ContentPersistence.FALLBACK_CONTENT[id] ?: throw e
+        }
         return contentPersistence.get(id)
     }
 
