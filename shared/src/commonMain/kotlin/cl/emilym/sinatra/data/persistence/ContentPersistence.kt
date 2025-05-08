@@ -52,10 +52,7 @@ class ContentPersistence(
     val cached: Boolean get() = _cached
 
     suspend fun get(id: ContentId): Content? {
-        Napier.d("${contentLinkDao.get(id)}")
-        return (contentDao.get(id)?.toModel() ?: FALLBACK_CONTENT[id]).also {
-            Napier.d("$it")
-        }
+        return (contentDao.get(id)?.toModel() ?: FALLBACK_CONTENT[id])
     }
 
     suspend fun getBanner(id: String): Alert? {
