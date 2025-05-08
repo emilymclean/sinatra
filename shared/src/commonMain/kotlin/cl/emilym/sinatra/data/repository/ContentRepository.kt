@@ -5,6 +5,8 @@ import cl.emilym.sinatra.data.models.Alert
 import cl.emilym.sinatra.data.models.Content
 import cl.emilym.sinatra.data.models.ContentId
 import cl.emilym.sinatra.data.persistence.ContentPersistence
+import cl.emilym.sinatra.e
+import io.github.aakira.napier.Napier
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.koin.core.annotation.Factory
@@ -48,7 +50,8 @@ class ContentRepository(
         try {
             load()
         } catch(e: Exception) {
-            return ContentPersistence.FALLBACK_CONTENT[id] ?: throw e
+            Napier.e(e)
+            return contentPersistence.get(id) ?: throw e
         }
         return contentPersistence.get(id)
     }

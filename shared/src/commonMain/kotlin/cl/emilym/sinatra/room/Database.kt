@@ -6,6 +6,8 @@ import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.RoomDatabaseConstructor
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
+import cl.emilym.sinatra.room.dao.ContentDao
+import cl.emilym.sinatra.room.dao.ContentLinkDao
 import cl.emilym.sinatra.room.dao.FavouriteDao
 import cl.emilym.sinatra.room.dao.PlaceDao
 import cl.emilym.sinatra.room.dao.RecentVisitDao
@@ -19,6 +21,8 @@ import cl.emilym.sinatra.room.dao.StopDao
 import cl.emilym.sinatra.room.dao.StopTimetableTimeEntityDao
 import cl.emilym.sinatra.room.dao.TimetableServiceExceptionEntityDao
 import cl.emilym.sinatra.room.dao.TimetableServiceRegularEntityDao
+import cl.emilym.sinatra.room.entities.ContentEntity
+import cl.emilym.sinatra.room.entities.ContentLinkEntity
 import cl.emilym.sinatra.room.entities.FavouriteEntity
 import cl.emilym.sinatra.room.entities.PlaceEntity
 import cl.emilym.sinatra.room.entities.RecentVisitEntity
@@ -61,7 +65,9 @@ expect object AppDatabaseConstructor : RoomDatabaseConstructor<AppDatabase> {
         FavouriteEntity::class,
         RecentVisitEntity::class,
         PlaceEntity::class,
-        ServiceAlertEntity::class
+        ServiceAlertEntity::class,
+        ContentEntity::class,
+        ContentLinkEntity::class
     ],
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
@@ -69,9 +75,10 @@ expect object AppDatabaseConstructor : RoomDatabaseConstructor<AppDatabase> {
         AutoMigration(from = 3, to = 4),
         AutoMigration(from = 4, to = 5),
         AutoMigration(from = 5, to = 6),
+        AutoMigration(from = 6, to = 7),
     ],
     exportSchema = true,
-    version = 6
+    version = 7
 )
 @ConstructedBy(AppDatabaseConstructor::class)
 abstract class AppDatabase: RoomDatabase() {
@@ -88,6 +95,8 @@ abstract class AppDatabase: RoomDatabase() {
     abstract fun recentVisitDao(): RecentVisitDao
     abstract fun placeDao(): PlaceDao
     abstract fun serviceAlertDao(): ServiceAlertDao
+    abstract fun contentDao(): ContentDao
+    abstract fun contentLinkDao(): ContentLinkDao
 }
 
 @Single
@@ -161,4 +170,14 @@ fun placeDao(db: AppDatabase): PlaceDao {
 @Factory
 fun serviceAlertDao(db: AppDatabase): ServiceAlertDao {
     return db.serviceAlertDao()
+}
+
+@Factory
+fun contentDao(db: AppDatabase): ContentDao {
+    return db.contentDao()
+}
+
+@Factory
+fun contentLinkDao(db: AppDatabase): ContentLinkDao {
+    return db.contentLinkDao()
 }
