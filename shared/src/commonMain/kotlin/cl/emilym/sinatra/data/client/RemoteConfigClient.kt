@@ -20,6 +20,10 @@ class RemoteConfigClient(
         }
     }
 
+    suspend fun forceReload() {
+        wrapper.forceReload()
+    }
+
     private suspend fun <T> getIfExistsAndLoaded(key: String, operation: RemoteConfigGetter<T>): T? {
         if (!load()) return null
         if (!wrapper.exists(key)) return null

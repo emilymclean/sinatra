@@ -16,6 +16,7 @@ import cl.emilym.sinatra.data.repository.LocaleRepository
 import cl.emilym.sinatra.data.repository.RemoteConfigRepository
 import cl.emilym.sinatra.data.repository.TransportMetadataRepository
 import cl.emilym.sinatra.domain.CacheInvalidationUseCase
+import cl.emilym.sinatra.domain.ForceRefreshRemoteConfigOnUpdateUseCase
 import cl.emilym.sinatra.domain.IsAboveMinimumVersionUseCase
 import cl.emilym.sinatra.ui.localization.LocalScheduleTimeZone
 import cl.emilym.sinatra.ui.presentation.screens.AppOutOfDateScreen
@@ -41,7 +42,8 @@ class AppViewModel(
     private val localeRepository: LocaleRepository,
     private val remoteConfigRepository: RemoteConfigRepository,
     private val cacheInvalidationUseCase: CacheInvalidationUseCase,
-    private val isAboveMinimumVersionUseCase: IsAboveMinimumVersionUseCase
+    private val isAboveMinimumVersionUseCase: IsAboveMinimumVersionUseCase,
+    private val forceRefreshRemoteConfigOnUpdateUseCase: ForceRefreshRemoteConfigOnUpdateUseCase
 ): ScreenModel {
 
     val scheduleTimeZone = MutableStateFlow(TimeZone.currentSystemDefault())
@@ -52,6 +54,8 @@ class AppViewModel(
             scheduleTimeZone.value = transportMetadataRepository.timeZone()
         }
         screenModelScope.launch {
+            forceRefreshRemoteConfigOnUpdateUseCase()
+            // If refresh was needed, this is a nop
             remoteConfigRepository.load()
             aboveMinimumVersion.value = isAboveMinimumVersionUseCase()
         }
