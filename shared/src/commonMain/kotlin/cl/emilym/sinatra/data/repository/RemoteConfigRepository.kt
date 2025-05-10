@@ -25,6 +25,10 @@ class RemoteConfigRepository(
         remoteConfigClient.load()
     }
 
+    suspend fun forceReload() {
+        remoteConfigClient.forceReload()
+    }
+
     suspend fun nominatimUrl(): String? {
         return remoteConfigClient.string(NOMINATIM_API_URL_KEY)
     }

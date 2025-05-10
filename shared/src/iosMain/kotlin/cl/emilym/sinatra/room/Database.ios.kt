@@ -21,4 +21,5 @@ actual val databaseBuilderModule: Module = module {
     single { createDatabaseBuilder<AppDatabase>(appDatabaseName) }
     factory { AppleCacheFileWriter() } binds arrayOf(CacheFileWriter::class)
     single(StringQualifier(PREFERENCES_DATASTORE_QUALIFIER)) { createDataStore(PREFERENCES_DATASTORE_NAME) }
+    single(StringQualifier(APP_DATASTORE_QUALIFIER)) { createDataStore(APP_DATASTORE_NAME) }
 }
