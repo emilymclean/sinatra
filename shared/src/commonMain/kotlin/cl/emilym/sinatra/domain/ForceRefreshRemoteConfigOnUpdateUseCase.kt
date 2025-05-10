@@ -5,7 +5,9 @@ import cl.emilym.sinatra.data.repository.AppRepository
 import cl.emilym.sinatra.data.repository.RemoteConfigRepository
 import cl.emilym.sinatra.e
 import io.github.aakira.napier.Napier
+import org.koin.core.annotation.Factory
 
+@Factory
 class ForceRefreshRemoteConfigOnUpdateUseCase(
     private val remoteConfigRepository: RemoteConfigRepository,
     private val appRepository: AppRepository,
