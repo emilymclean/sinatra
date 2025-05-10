@@ -1,6 +1,7 @@
 package cl.emilym.sinatra.domain
 
 import cl.emilym.sinatra.BuildInformation
+import cl.emilym.sinatra.data.persistence.ContentPersistence
 import cl.emilym.sinatra.data.repository.AppRepository
 import cl.emilym.sinatra.data.repository.RemoteConfigRepository
 import cl.emilym.sinatra.e
@@ -14,13 +15,14 @@ class ForceRefreshRemoteConfigOnUpdateUseCaseTest {
     private val remoteConfigRepository = mockk<RemoteConfigRepository>(relaxed = true)
     private val appRepository = mockk<AppRepository>(relaxed = true)
     private val build = BuildInformation(versionName = "1.0.0", versionNumber = "2")
+    private val contentPeristence = mockk<ContentPersistence>(relaxed = true)
 
     private lateinit var useCase: ForceRefreshRemoteConfigOnUpdateUseCase
 
     @BeforeTest
     fun setup() {
         MockKAnnotations.init(this)
-        useCase = ForceRefreshRemoteConfigOnUpdateUseCase(remoteConfigRepository, appRepository, build)
+        useCase = ForceRefreshRemoteConfigOnUpdateUseCase(remoteConfigRepository, appRepository, contentPeristence, build)
     }
 
     @Test
@@ -31,6 +33,7 @@ class ForceRefreshRemoteConfigOnUpdateUseCaseTest {
 
         coVerify(exactly = 0) { remoteConfigRepository.forceReload() }
         coVerify(exactly = 0) { appRepository.setLastAppCode(any()) }
+        coVerify(exactly = 0) { contentPeristence.clearCache() }
     }
 
     @Test
@@ -41,6 +44,7 @@ class ForceRefreshRemoteConfigOnUpdateUseCaseTest {
 
         coVerify(exactly = 1) { remoteConfigRepository.forceReload() }
         coVerify(exactly = 1) { appRepository.setLastAppCode(2) }
+        coVerify(exactly = 1) { contentPeristence.clearCache() }
     }
 
     @Test
@@ -55,6 +59,7 @@ class ForceRefreshRemoteConfigOnUpdateUseCaseTest {
 
         coVerify(exactly = 1) { remoteConfigRepository.forceReload() }
         coVerify(exactly = 0) { appRepository.setLastAppCode(any()) }
+        coVerify(exactly = 0) { contentPeristence.clearCache() }
         verify { Napier.e(any(), any()) }
 
         unmockkObject(Napier)
