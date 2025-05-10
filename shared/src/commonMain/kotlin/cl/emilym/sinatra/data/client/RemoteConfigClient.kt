@@ -59,6 +59,8 @@ class RemoteConfigClient(
 interface RemoteConfigWrapper {
     val loaded: Boolean
     suspend fun load()
+    suspend fun forceReload()
+
     fun exists(key: String): Boolean
     fun string(key: String): String
     fun number(key: String): Double

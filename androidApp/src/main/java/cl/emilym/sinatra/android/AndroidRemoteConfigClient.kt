@@ -32,6 +32,15 @@ class AndroidRemoteConfigWrapper(
         }
     }
 
+    override suspend fun forceReload() {
+        _loaded = false
+        lock.withLock {
+            config.fetch(0L).await()
+            config.activate().await()
+            _loaded = true
+        }
+    }
+
     override fun exists(key: String): Boolean {
         return config.getKeysByPrefix("").contains(key)
     }
