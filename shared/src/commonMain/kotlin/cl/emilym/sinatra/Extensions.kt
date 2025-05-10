@@ -38,6 +38,14 @@ fun <T> T?.nullIf(condition: (T) -> Boolean): T? {
     }
 }
 
+fun String?.nullIfBlank(): String? {
+    return nullIf { it.isBlank() }
+}
+
+fun String?.nullIfEmpty(): String? {
+    return nullIf { it.isEmpty() }
+}
+
 fun <T> List<T>?.nullIfEmpty(): List<T>? {
     return when {
         this.isNullOrEmpty() -> null
@@ -57,5 +65,14 @@ fun Float.nullIfNaN(): Float? {
     return when (this) {
         Float.NaN -> null
         else -> this
+    }
+}
+
+fun <T> nullIfThrows(operation: () -> T): T? {
+    return try {
+        operation()
+    } catch (e: Throwable) {
+        Napier.e(e)
+        null
     }
 }

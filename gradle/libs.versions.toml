@@ -20,6 +20,7 @@ coil-compose = "3.0.0-rc01"
 units = "2.0.3"
 requeststate = "2.1.0"
 errorwidget = "2.0.2"
+mediacontrol = "0.1.0"
 koin = "4.0.0"
 koin-annotations = "1.4.0"
 kotlinx-serialization = "1.8.0"
@@ -34,6 +35,7 @@ markdown = "0.31.0"
 google-services = "4.4.2"
 firebase-crashlytics = "3.0.3"
 coroutines-test = "1.10.1"
+datastore = "1.1.4"
 
 [libraries]
 
@@ -80,6 +82,7 @@ emily-units = { module = "cl.emilym.compose:units", version.ref = "units" }
 emily-serializable = { module = "cl.emilym.kmp:serializable", version.ref = "serializable" }
 emily-requeststate = { module = "cl.emilym.compose:requeststate", version.ref = "requeststate" }
 emily-errorwidget = { module = "cl.emilym.compose:errorwidget", version.ref = "errorwidget" }
+emily-mediacontrol = { module = "cl.emilym.compose:mediacontrol", version.ref = "mediacontrol" }
 
 # Serialization
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref="kotlinx-serialization" }
@@ -94,6 +97,10 @@ voyager-screenmodel = { module = "cafe.adriel.voyager:voyager-screenmodel", vers
 room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
 room-driver = { module = "androidx.sqlite:sqlite-bundled", version.ref = "sqlite" }
 room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
+
+# Datastore
+datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastore" }
+datastore = { module = "androidx.datastore:datastore", version.ref = "datastore" }
 
 # Misc
 markdown = { module = "com.mikepenz:multiplatform-markdown-renderer-m3", version.ref = "markdown" }

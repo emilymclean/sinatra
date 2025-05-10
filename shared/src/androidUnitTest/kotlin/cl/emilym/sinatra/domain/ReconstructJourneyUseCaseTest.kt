@@ -6,6 +6,8 @@ import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.data.models.Route
 import cl.emilym.sinatra.data.models.RouteType
 import cl.emilym.sinatra.data.models.RouteVisibility
+import cl.emilym.sinatra.data.models.ServiceBikesAllowed
+import cl.emilym.sinatra.data.models.ServiceWheelchairAccessible
 import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.data.models.StopAccessibility
 import cl.emilym.sinatra.data.models.StopVisibility
@@ -318,5 +320,73 @@ class ReconstructJourneyUseCaseTest {
 
         assertEquals(1, journey.legs.size)
         assertTrue(journey.legs.first() is JourneyLeg.Travel)
+    }
+
+    @Test
+    fun `toJourney correctly translates accessibility information`() = runTest {
+        val startStop = Stop("stop1", null, "Stop 1", "Stop 1", location, StopAccessibility(
+            StopWheelchairAccessibility.FULL), StopVisibility(false, false, false, null)
+        )
+        val endStop = Stop("stop2", null, "Stop 2", "Stop 2", location, StopAccessibility(
+            StopWheelchairAccessibility.FULL), StopVisibility(false, false, false, null)
+        )
+        val stopsList = listOf(startStop, endStop)
+
+        val raptorJourney = RaptorJourney(listOf(
+            RaptorJourneyConnection.Travel(
+                stops = listOf(startStop.id, endStop.id),
+                routeId = "route1",
+                heading = "East",
+                startTime = 100,
+                endTime = 200,
+                travelTime = 100,
+                dayIndex = 0,
+                bikesAllowed = true,
+                wheelchairAccessible = true
+            ),
+            RaptorJourneyConnection.Travel(
+                stops = listOf(startStop.id, endStop.id),
+                routeId = "route1",
+                heading = "East",
+                startTime = 100,
+                endTime = 200,
+                travelTime = 100,
+                dayIndex = 0,
+                bikesAllowed = false,
+                wheelchairAccessible = true
+            ),
+            RaptorJourneyConnection.Travel(
+                stops = listOf(startStop.id, endStop.id),
+                routeId = "route1",
+                heading = "East",
+                startTime = 100,
+                endTime = 200,
+                travelTime = 100,
+                dayIndex = 0,
+                bikesAllowed = true,
+                wheelchairAccessible = false
+            )
+        ))
+
+        coEvery { stopRepository.stops() } returns Cachable.live(stopsList)
+        coEvery { routeRepository.routes(any()) } returns Cachable.live(listOf(
+            Route("route1", "R1", "R1", null, "R1", null, RouteType.BUS, null, RouteVisibility(false, null))
+        ))
+        coEvery { graph.metadata.assumedWalkingSecondsPerKilometer } returns 25U * 60U
+
+        val journey = useCase(
+            raptorJourney,
+            JourneyLocation(location, exact = true),
+            JourneyLocation(location, exact = true),
+            JourneyCalculationTime.DepartureTime(now),
+            graph
+        )
+
+        assertEquals(ServiceWheelchairAccessible.ACCESSIBLE, (journey.legs[0] as JourneyLeg.Travel).routeAccessibility?.wheelchairAccessible)
+        assertEquals(ServiceBikesAllowed.ALLOWED, (journey.legs[0] as JourneyLeg.Travel).routeAccessibility?.bikesAllowed)
+        assertEquals(ServiceWheelchairAccessible.ACCESSIBLE, (journey.legs[1] as JourneyLeg.Travel).routeAccessibility?.wheelchairAccessible)
+        assertEquals(ServiceBikesAllowed.DISALLOWED, (journey.legs[1] as JourneyLeg.Travel).routeAccessibility?.bikesAllowed)
+        assertEquals(ServiceWheelchairAccessible.INACCESSIBLE, (journey.legs[2] as JourneyLeg.Travel).routeAccessibility?.wheelchairAccessible)
+        assertEquals(ServiceBikesAllowed.ALLOWED, (journey.legs[2] as JourneyLeg.Travel).routeAccessibility?.bikesAllowed)
     }
 }

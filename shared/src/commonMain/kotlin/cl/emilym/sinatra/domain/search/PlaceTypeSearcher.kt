@@ -23,7 +23,7 @@ class PlaceTypeSearcher(
     }
 
     override fun fields(t: Place): List<String> {
-        return listOf(t.name, t.displayName)
+        return listOfNotNull(t.name, t.displayName)
     }
 
     override fun wrap(item: Place): SearchResult {

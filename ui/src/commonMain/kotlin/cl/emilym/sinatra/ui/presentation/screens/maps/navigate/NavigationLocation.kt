@@ -58,7 +58,7 @@ sealed interface NavigationLocation: Serializable {
             get() = place.location
         override val name: String
             @Composable
-            get() = place.name
+            get() = place.name ?: place.displayName
         override val icon: DrawableResource = Res.drawable.marker_icon
         override val screenKey: String = "place-${place.id}"
 

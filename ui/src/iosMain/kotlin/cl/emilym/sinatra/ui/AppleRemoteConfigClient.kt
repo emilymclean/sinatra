@@ -11,7 +11,7 @@ import kotlin.coroutines.suspendCoroutine
 
 interface RemoteConfigProtocol {
 
-    fun fetch(callback: (Boolean) -> Unit)
+    fun fetch(forced: Boolean, callback: (Boolean) -> Unit)
     fun exists(key: String): Boolean
     fun string(key: String): String?
     fun number(key: String): NSNumber?
@@ -27,9 +27,9 @@ class AppleRemoteConfigWrapper(
     private var _loaded = false
     override val loaded get() = _loaded
 
-    private suspend fun fetchAndActivate() {
+    private suspend fun fetchAndActivate(forced: Boolean = false) {
         return suspendCoroutine { token ->
-            config.fetch {
+            config.fetch(forced) {
                 when (it) {
                     true -> token.resume(Unit)
                     false -> token.resumeWithException(DarwinException())
@@ -38,12 +38,19 @@ class AppleRemoteConfigWrapper(
         }
     }
 
-
     override suspend fun load() {
         if (_loaded) return
         lock.withLock {
             if (_loaded) return
             fetchAndActivate()
+            _loaded = true
+        }
+    }
+
+    override suspend fun forceReload() {
+        _loaded = false
+        lock.withLock {
+            fetchAndActivate(forced = true)
             _loaded = true
         }
     }

@@ -46,7 +46,8 @@ sealed interface JourneyLeg {
         val route: Route,
         val heading: String,
         override val departureTime: Time,
-        override val arrivalTime: Time
+        override val arrivalTime: Time,
+        val routeAccessibility: RouteServiceAccessibility? = null
     ): JourneyLeg, RouteJourneyLeg {
 
         override val deduplicationKey get() =

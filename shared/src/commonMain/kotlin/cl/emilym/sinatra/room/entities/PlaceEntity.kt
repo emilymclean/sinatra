@@ -4,6 +4,8 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.data.models.Place
+import cl.emilym.sinatra.nullIf
+import cl.emilym.sinatra.nullIfBlank
 
 @Entity
 data class PlaceEntity(
@@ -17,7 +19,7 @@ data class PlaceEntity(
     fun toModel(): Place {
         return Place(
             id,
-            name,
+            name.nullIfBlank(),
             displayName,
             MapLocation(
                 lat, lng
@@ -30,7 +32,7 @@ data class PlaceEntity(
         fun fromModel(place: Place): PlaceEntity {
             return PlaceEntity(
                 place.id,
-                place.name,
+                place.name ?: "",
                 place.displayName,
                 place.location.lat,
                 place.location.lng

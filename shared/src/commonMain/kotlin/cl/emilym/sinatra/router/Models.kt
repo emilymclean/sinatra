@@ -88,7 +88,9 @@ sealed interface RaptorJourneyConnection {
         val startTime: DaySeconds,
         val endTime: DaySeconds,
         val dayIndex: Int,
-        override val travelTime: Seconds
+        override val travelTime: Seconds,
+        val bikesAllowed: Boolean = false,
+        val wheelchairAccessible: Boolean = false
     ): RaptorJourneyConnection
 }
 

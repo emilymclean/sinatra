@@ -37,15 +37,19 @@ import sinatra.ui.generated.resources.warning
 import sinatra.ui.generated.resources.home
 import sinatra.ui.generated.resources.work
 import sinatra.ui.generated.resources.clear
+import sinatra.ui.generated.resources.no_place
+import sinatra.ui.generated.resources.dropdown_up
+import sinatra.ui.generated.resources.dropdown_down
 
 @Composable
 fun AccessibleIcon(
     modifier: Modifier = Modifier,
     tint: Color = LocalContentColor.current,
+    contentDescription: String? = null
 ) {
     Icon(
         painterResource(Res.drawable.accessible),
-        contentDescription = null,
+        contentDescription = contentDescription,
         modifier = modifier,
         tint = tint
     )
@@ -54,11 +58,12 @@ fun AccessibleIcon(
 @Composable
 fun NotAccessibleIcon(
     modifier: Modifier = Modifier,
-    tint: Color = LocalContentColor.current
+    tint: Color = LocalContentColor.current,
+    contentDescription: String? = null
 ) {
     Icon(
         painterResource(Res.drawable.not_accessible),
-        contentDescription = null,
+        contentDescription = contentDescription,
         modifier = modifier,
         tint = tint
     )
@@ -68,22 +73,24 @@ fun NotAccessibleIcon(
 fun WheelchairAccessibleIcon(
     isAccessible: Boolean,
     modifier: Modifier = Modifier,
-    tint: Color = LocalContentColor.current
+    tint: Color = LocalContentColor.current,
+    contentDescription: String? = null
 ) {
     when {
-        isAccessible -> AccessibleIcon(modifier, tint)
-        else -> NotAccessibleIcon(modifier, tint)
+        isAccessible -> AccessibleIcon(modifier, tint, contentDescription)
+        else -> NotAccessibleIcon(modifier, tint, contentDescription)
     }
 }
 
 @Composable
 fun BikeIcon(
     modifier: Modifier = Modifier,
-    tint: Color = LocalContentColor.current
+    tint: Color = LocalContentColor.current,
+    contentDescription: String? = null
 ) {
     Icon(
         painterResource(Res.drawable.bike),
-        contentDescription = null,
+        contentDescription = contentDescription,
         modifier = modifier,
         tint = tint
     )
@@ -432,6 +439,48 @@ fun ClearIcon(
 ) {
     Icon(
         painterResource(Res.drawable.clear),
+        contentDescription = contentDescription,
+        modifier = modifier,
+        tint = tint
+    )
+}
+
+@Composable
+fun NoPlaceIcon(
+    modifier: Modifier = Modifier,
+    tint: Color = LocalContentColor.current,
+    contentDescription: String? = null
+) {
+    Icon(
+        painterResource(Res.drawable.no_place),
+        contentDescription = contentDescription,
+        modifier = modifier,
+        tint = tint
+    )
+}
+
+@Composable
+fun DropdownDownIcon(
+    modifier: Modifier = Modifier,
+    tint: Color = LocalContentColor.current,
+    contentDescription: String? = null
+) {
+    Icon(
+        painterResource(Res.drawable.dropdown_down),
+        contentDescription = contentDescription,
+        modifier = modifier,
+        tint = tint
+    )
+}
+
+@Composable
+fun DropdownUpIcon(
+    modifier: Modifier = Modifier,
+    tint: Color = LocalContentColor.current,
+    contentDescription: String? = null
+) {
+    Icon(
+        painterResource(Res.drawable.dropdown_up),
         contentDescription = contentDescription,
         modifier = modifier,
         tint = tint

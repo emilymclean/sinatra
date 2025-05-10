@@ -35,7 +35,7 @@ jobs:
     - id: run-number
       run: |-
         current_run_number=${{ github.run_number }}
-        new_number=$((current_run_number+0))
+        new_number=$((current_run_number+100))
         echo "versionCode=${new_number}" >> $GITHUB_OUTPUT
     - name: Generate Job Summary
       run: |-

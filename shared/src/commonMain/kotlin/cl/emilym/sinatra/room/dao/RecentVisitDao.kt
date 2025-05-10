@@ -14,6 +14,9 @@ interface RecentVisitDao {
     @Insert
     suspend fun insert(visit: RecentVisitEntity): Long
 
+    @Query("DELETE FROM recentVisitEntity")
+    suspend fun clear()
+
     @Query("DELETE FROM recentVisitEntity WHERE id < :upToId")
     suspend fun deleteBelowId(upToId: Long)
 

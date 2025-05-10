@@ -23,17 +23,25 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.data.models.ContentId
 import cl.emilym.sinatra.data.models.ContentLink
+import cl.emilym.sinatra.data.models.DisclosureType
 import cl.emilym.sinatra.data.models.NativePageReference
 import cl.emilym.sinatra.data.repository.ContentRepository
 import cl.emilym.sinatra.ui.minimumTouchTarget
 import cl.emilym.sinatra.ui.presentation.screens.AboutScreen
 import cl.emilym.sinatra.ui.presentation.screens.ContentScreen
+import cl.emilym.sinatra.ui.presentation.screens.FavouriteScreen
 import cl.emilym.sinatra.ui.presentation.screens.ServiceAlertScreen
+import cl.emilym.sinatra.ui.presentation.screens.maps.navigate.NavigateEntryScreen
+import cl.emilym.sinatra.ui.presentation.screens.maps.search.MapSearchScreen
+import cl.emilym.sinatra.ui.presentation.screens.preferences.RootPreferencesScreen
+import cl.emilym.sinatra.ui.presentation.screens.preferences.RoutingPreferencesScreen
+import cl.emilym.sinatra.ui.presentation.screens.preferences.UnitsPreferencesScreen
 import cl.emilym.sinatra.ui.presentation.theme.Container
 
 fun contentRoute(id: ContentId): Screen {
     return when (id) {
         ContentRepository.ABOUT_ID -> AboutScreen()
+        ContentRepository.MORE_ID -> AboutScreen()
         ContentRepository.SERVICE_ALERT_ID -> ServiceAlertScreen()
         else -> ContentScreen(id)
     }
@@ -41,6 +49,12 @@ fun contentRoute(id: ContentId): Screen {
 
 fun nativeRoute(reference: NativePageReference): Screen? {
     return when (reference) {
+        ContentRepository.NATIVE_PREFERENCES_ID -> RootPreferencesScreen()
+        ContentRepository.NATIVE_PREFERENCES_ROUTING_ID -> RoutingPreferencesScreen()
+        ContentRepository.NATIVE_PREFERENCES_UNITS_ID -> UnitsPreferencesScreen()
+        ContentRepository.NATIVE_FAVOURITES_ID -> FavouriteScreen()
+        ContentRepository.NATIVE_BROWSE_ID -> MapSearchScreen()
+        ContentRepository.NATIVE_NAVIGATE_ENTRY_ID -> NavigateEntryScreen()
         else -> null
     }
 }
@@ -55,7 +69,7 @@ fun ContentLinkWidget(
 
     Row(
         modifier = Modifier
-            .heightIn(min = minimumTouchTarget)
+            .heightIn(min = 3.5.rdp)
             .background(Container)
             .semantics(mergeDescendants = true) {
                 role = Role.Button
@@ -73,7 +87,9 @@ fun ContentLinkWidget(
                             navigator.push(it)
                         }
                     }
-                    else -> {}
+                    is ContentLink.Custom -> {
+                        link.onClick()
+                    }
                 }
             }
             .padding(horizontal = 1.rdp, vertical = 0.75.rdp)
@@ -88,6 +104,17 @@ fun ContentLinkWidget(
                     ExternalLinkIcon(
                         tint = MaterialTheme.colorScheme.secondary
                     )
+                }
+                is ContentLink.Custom -> {
+                    when (link.disclosure) {
+                        DisclosureType.EXTERNAL -> ExternalLinkIcon(
+                            tint = MaterialTheme.colorScheme.secondary
+                        )
+                        DisclosureType.LOCAL -> ForwardIcon(
+                            tint = MaterialTheme.colorScheme.secondary
+                        )
+                        DisclosureType.NONE -> {}
+                    }
                 }
                 else -> {
                     ForwardIcon(

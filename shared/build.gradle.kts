@@ -86,6 +86,8 @@ kotlin {
             // Room
             implementation(libs.room.runtime)
             implementation(libs.room.driver)
+            implementation(libs.datastore.preferences)
+            implementation(libs.datastore)
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)

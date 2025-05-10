@@ -3,7 +3,7 @@ package cl.emilym.sinatra.ui.localization
 import androidx.compose.runtime.Composable
 
 @Composable
-actual fun is24HourTimeFormat(): Boolean {
+actual fun is24HourTimeFormatInternal(): Boolean {
 //    val formatter = NSDateFormatter()
 //    formatter.setDateStyle(NSDateFormatterNoStyle)
 //    formatter.setTimeStyle(NSDateFormatterShortStyle)

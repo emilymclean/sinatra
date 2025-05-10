@@ -53,4 +53,8 @@ class RecentVisitRepository(
         }
     }
 
+    suspend fun clear() {
+        recentVisitPersistence.clear()
+    }
+
 }

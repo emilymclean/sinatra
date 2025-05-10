@@ -35,7 +35,9 @@ fun Screen.MapSearchScreenBrowseState(
     mainViewModel: MapSearchViewModel
 ) {
     val bottomSheetState = LocalBottomSheetState.current?.bottomSheetState
-    rememberBottomSheetPosition()
+    LaunchedEffect(Unit) {
+        bottomSheetState?.halfExpand()
+    }
 
     val currentLocation = currentLocation()
     LaunchedEffect(currentLocation) {

@@ -5,18 +5,20 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 
 @Factory
-class RoutingPreferencesRepository {
+class RoutingPreferencesRepository(
+    private val preferencesRepository: PreferencesRepository
+) {
 
     suspend fun maximumWalkingTime(): Duration {
-        return 30.minutes
+        return preferencesRepository.maximumWalkingTime.current().toDouble().minutes
     }
 
     suspend fun requiresWheelchair(): Boolean {
-        return false
+        return preferencesRepository.requiresWheelchair.current()
     }
 
     suspend fun requiresBikes(): Boolean {
-        return false
+        return preferencesRepository.requiresBikes.current()
     }
 
 }

@@ -34,4 +34,5 @@ object FeatureFlags {
     val PLACE_DETAIL_ENABLED by FeatureFlagDelegate(true)
     val SPECIFY_TIMEZONE_WHEN_DIFFERENT by FeatureFlagDelegate(true)
     val HIDE_MAPS_FROM_ACCESSIBILITY by FeatureFlagDelegate(false)
+    val HOLD_MAP_POINT_DETAIL by FeatureFlagDelegate(true)
 }

@@ -19,7 +19,7 @@ android {
         applicationId = "cl.emilym.sinatra"
         minSdk = 23
         targetSdk = 34
-        versionCode = appVersionCode.toInt()+100
+        versionCode = appVersionCode.toInt()
         versionName = appVersionName
     }
     buildFeatures {

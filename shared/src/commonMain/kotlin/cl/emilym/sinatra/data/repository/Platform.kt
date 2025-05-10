@@ -1,5 +1,7 @@
 package cl.emilym.sinatra.data.repository
 
+expect class PlatformContext
+
 enum class Platform {
     ANDROID, IOS
 }

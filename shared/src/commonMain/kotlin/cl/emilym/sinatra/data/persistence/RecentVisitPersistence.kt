@@ -86,4 +86,8 @@ class RecentVisitPersistence(
         recentVisitDao.deleteBelowId(all[RECENT_VISIT_LIMIT - 1].id)
     }
 
+    suspend fun clear() {
+        recentVisitDao.clear()
+    }
+
 }
