@@ -74,4 +74,8 @@ class ContentPersistence(
         this.banners.putAll(banners)
     }
 
+    suspend fun clearCache() {
+        _cached = false
+    }
+
 }

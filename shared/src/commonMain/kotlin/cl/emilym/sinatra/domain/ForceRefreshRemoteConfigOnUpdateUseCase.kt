@@ -1,6 +1,7 @@
 package cl.emilym.sinatra.domain
 
 import cl.emilym.sinatra.BuildInformation
+import cl.emilym.sinatra.data.persistence.ContentPersistence
 import cl.emilym.sinatra.data.repository.AppRepository
 import cl.emilym.sinatra.data.repository.RemoteConfigRepository
 import cl.emilym.sinatra.e
@@ -11,6 +12,7 @@ import org.koin.core.annotation.Factory
 class ForceRefreshRemoteConfigOnUpdateUseCase(
     private val remoteConfigRepository: RemoteConfigRepository,
     private val appRepository: AppRepository,
+    private val contentPersistence: ContentPersistence,
     private val build: BuildInformation
 ) {
 
@@ -28,6 +30,7 @@ class ForceRefreshRemoteConfigOnUpdateUseCase(
         }
 
         appRepository.setLastAppCode(current)
+        contentPersistence.clearCache()
     }
 
 }
