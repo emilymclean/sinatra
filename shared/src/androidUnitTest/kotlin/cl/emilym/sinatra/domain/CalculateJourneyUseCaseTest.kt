@@ -3,6 +3,11 @@ package cl.emilym.sinatra.domain
 import cl.emilym.sinatra.RouterException
 import cl.emilym.sinatra.data.models.*
 import cl.emilym.sinatra.data.repository.*
+import cl.emilym.sinatra.domain.navigation.CalculateJourneyUseCase
+import cl.emilym.sinatra.domain.navigation.JourneyCalculationTime
+import cl.emilym.sinatra.domain.navigation.JourneyLocation
+import cl.emilym.sinatra.domain.navigation.ReconstructJourneyUseCase
+import cl.emilym.sinatra.domain.navigation.RouterFactory
 import cl.emilym.sinatra.router.*
 import cl.emilym.sinatra.router.data.NetworkGraph
 import io.mockk.*

@@ -15,10 +15,12 @@ import cl.emilym.sinatra.data.models.StopWheelchairAccessibility
 import cl.emilym.sinatra.data.repository.RouteRepository
 import cl.emilym.sinatra.data.repository.StopRepository
 import cl.emilym.sinatra.data.repository.TransportMetadataRepository
+import cl.emilym.sinatra.domain.navigation.JourneyCalculationTime
+import cl.emilym.sinatra.domain.navigation.JourneyLocation
+import cl.emilym.sinatra.domain.navigation.ReconstructJourneyUseCase
 import cl.emilym.sinatra.router.RaptorJourney
 import cl.emilym.sinatra.router.RaptorJourneyConnection
 import cl.emilym.sinatra.router.data.NetworkGraph
-import cl.emilym.sinatra.timeZone
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlin.test.*
