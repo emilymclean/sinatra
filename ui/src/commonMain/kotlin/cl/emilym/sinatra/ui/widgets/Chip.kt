@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -19,8 +20,10 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.unit.dp
 import cl.emilym.compose.units.rdp
+import cl.emilym.sinatra.data.repository.isIos
 
 @Composable
 fun Chip(
@@ -58,7 +61,11 @@ fun Chip(
         contentAlignment = Alignment.Center
     ) {
         CompositionLocalProvider(
-            LocalContentColor provides MaterialTheme.colorScheme.onSurface
+            LocalContentColor provides MaterialTheme.colorScheme.onSurface,
+            when {
+                !isIos -> LocalTextStyle provides LocalTextStyle.current
+                else -> LocalTextStyle provides localTextStyleFixIos
+            }
         ) {
             content()
         }
