@@ -62,10 +62,7 @@ fun Chip(
     ) {
         CompositionLocalProvider(
             LocalContentColor provides MaterialTheme.colorScheme.onSurface,
-            when {
-                !isIos -> LocalTextStyle provides LocalTextStyle.current
-                else -> LocalTextStyle provides localTextStyleFixIos
-            }
+            LocalTextStyle provides localTextStyleFixIos
         ) {
             content()
         }
