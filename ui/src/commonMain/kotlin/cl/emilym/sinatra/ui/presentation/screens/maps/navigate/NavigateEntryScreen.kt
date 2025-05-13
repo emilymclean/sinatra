@@ -188,12 +188,19 @@ class NavigateEntryScreen(
                     }
                 }
                 is JourneyLeg.TransferPoint -> {
-                    when (i) {
-                        0 -> originLocation?.let {
+                    when {
+                        journey.legs.size == 1 -> {
+                            originLocation?.let { o ->
+                                destinationLocation?.let { d ->
+                                    addWalking(listOf(o.location, o.location, d.location, d.location))
+                                }
+                            }
+                        }
+                        i == 0 -> originLocation?.let {
                             val next = (journey.legs.getOrNull(1) as? JourneyLeg.RouteJourneyLeg) ?: return@let
                             addWalking(listOf(it.location, it.location, next.stops.first().location))
                         }
-                        journey.legs.lastIndex -> destinationLocation?.let {
+                        i == journey.legs.lastIndex -> destinationLocation?.let {
                             val next = (journey.legs.getOrNull(journey.legs.lastIndex - 1) as? JourneyLeg.RouteJourneyLeg) ?: return@let
                             addWalking(listOf(next.stops.last().location, it.location, it.location))
                         }
