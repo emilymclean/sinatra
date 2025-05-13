@@ -13,9 +13,9 @@ import cl.emilym.sinatra.data.repository.PreferencesRepository
 import cl.emilym.sinatra.data.repository.RecentVisitRepository
 import cl.emilym.sinatra.data.repository.RoutingPreferencesRepository
 import cl.emilym.sinatra.data.repository.StopRepository
-import cl.emilym.sinatra.domain.CalculateJourneyUseCase
-import cl.emilym.sinatra.domain.JourneyCalculationTime
-import cl.emilym.sinatra.domain.JourneyLocation
+import cl.emilym.sinatra.domain.navigation.CalculateJourneyUseCase
+import cl.emilym.sinatra.domain.navigation.JourneyCalculationTime
+import cl.emilym.sinatra.domain.navigation.JourneyLocation
 import cl.emilym.sinatra.domain.NearbyStopsUseCase
 import cl.emilym.sinatra.domain.search.RouteStopSearchUseCase
 import cl.emilym.sinatra.domain.search.SearchResult

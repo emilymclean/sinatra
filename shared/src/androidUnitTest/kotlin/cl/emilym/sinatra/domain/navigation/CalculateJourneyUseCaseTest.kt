@@ -1,8 +1,9 @@
-package cl.emilym.sinatra.domain
+package cl.emilym.sinatra.domain.navigation
 
 import cl.emilym.sinatra.RouterException
 import cl.emilym.sinatra.data.models.*
 import cl.emilym.sinatra.data.repository.*
+import cl.emilym.sinatra.domain.ActiveServicesUseCase
 import cl.emilym.sinatra.router.*
 import cl.emilym.sinatra.router.data.NetworkGraph
 import io.mockk.*
@@ -26,6 +27,7 @@ class CalculateJourneyUseCaseTest {
     private val config = mockk<JourneySearchConfig>()
     private val graph = mockk<NetworkGraph>()
     private val reconstructJourneyUseCase = mockk<ReconstructJourneyUseCase>()
+    private val directWalkingJourneyUseCase = mockk<DirectWalkingJourneyUseCase>()
 
     private val useCase = CalculateJourneyUseCase(
         networkGraphRepository,
@@ -35,7 +37,8 @@ class CalculateJourneyUseCaseTest {
         transportMetadataRepository,
         routingPreferencesRepository,
         routerFactory,
-        reconstructJourneyUseCase
+        reconstructJourneyUseCase,
+        directWalkingJourneyUseCase
     )
 
     private val now = Instant.parse("2025-04-28T10:00:00Z")
@@ -47,6 +50,7 @@ class CalculateJourneyUseCaseTest {
         every { config.options } returns listOf(JourneySearchOption(1.seconds, 1.seconds, 1, 1.seconds, 1))
         coEvery { graph.metadata.assumedWalkingSecondsPerKilometer } returns 25U * 60U
         every { clock.now() } returns Instant.fromEpochMilliseconds(1745809143)
+        coEvery { directWalkingJourneyUseCase.invoke(any(), any(), any(), any()) } returns null
     }
 
     @Test
