@@ -1,4 +1,4 @@
-package cl.emilym.sinatra.domain
+package cl.emilym.sinatra.domain.navigation
 
 import cl.emilym.sinatra.data.models.Cachable
 import cl.emilym.sinatra.data.models.JourneyLeg
@@ -15,9 +15,6 @@ import cl.emilym.sinatra.data.models.StopWheelchairAccessibility
 import cl.emilym.sinatra.data.repository.RouteRepository
 import cl.emilym.sinatra.data.repository.StopRepository
 import cl.emilym.sinatra.data.repository.TransportMetadataRepository
-import cl.emilym.sinatra.domain.navigation.JourneyCalculationTime
-import cl.emilym.sinatra.domain.navigation.JourneyLocation
-import cl.emilym.sinatra.domain.navigation.ReconstructJourneyUseCase
 import cl.emilym.sinatra.router.RaptorJourney
 import cl.emilym.sinatra.router.RaptorJourneyConnection
 import cl.emilym.sinatra.router.data.NetworkGraph
