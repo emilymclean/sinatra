@@ -514,4 +514,41 @@ class RaptorTest {
         assert(start.startTime + (start.dayIndex * 86400) < end.endTime + (end.dayIndex * 86400))
     }
 
+    @Test
+    fun `when multiple valid nearby stops, the soonest should be picked`() {
+        val raptor = Raptor(graph, List(3) { listOf("2023-COMBVAC-Weekday-05", "WD") }, altConfig)
+        // This route would have previously followed the whole loop, since R2 visits the belconnen
+        // interchange twice in one journey, and the stop it visits the 2nd time just happens to
+        // appear first in the stop list
+        val result = raptor.calculate(
+            Duration.parseIsoString("PT9H").inWholeSeconds,
+            listOf(
+                RaptorStop(id="4528", addedTime=0)
+            ),
+            listOf(
+                RaptorStop(id="5511", addedTime=260),
+                RaptorStop(id="5512", addedTime=202),
+                RaptorStop(id="5513", addedTime=162),
+                RaptorStop(id="5514", addedTime=138),
+                RaptorStop(id="5515", addedTime=146),
+                RaptorStop(id="5516", addedTime=187),
+                RaptorStop(id="5517", addedTime=164),
+                RaptorStop(id="5518", addedTime=188)
+            )
+        )
+        assertEquals(RaptorJourney(listOf(
+            RaptorJourneyConnection.Travel(
+                listOf("4528", "4803", "4910", "4006", "4972", "3442", "5520", "5514"),
+                "2-10647",
+                "Fraser",
+                startTime=32400,
+                endTime=33240,
+                travelTime=840,
+                dayIndex = 0,
+                bikesAllowed = false,
+                wheelchairAccessible = true
+            ),
+        )), result)
+    }
+
 }
