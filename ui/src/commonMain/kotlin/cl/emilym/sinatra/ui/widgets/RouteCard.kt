@@ -55,7 +55,7 @@ fun RouteRandle(
         else -> Modifier
     }
     Box(
-        Modifier.size(size).then(extraModifier).padding((size * 0.12f)).then(modifier),
+        Modifier.size(size).then(extraModifier).padding((size * 0.15f)).then(modifier),
         contentAlignment = Alignment.Center
     ) {
         AutoSizeText(
