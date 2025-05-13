@@ -741,7 +741,7 @@ fun DepartureLeg(
     departureTime: Time?,
     onClick: (() -> Unit)? = null
 ) {
-    LegScaffold({ GenericMarkerIcon() }) {
+    LegScaffold({ JourneyStartIcon() }) {
         Column(
             Modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(0.75.rdp)
