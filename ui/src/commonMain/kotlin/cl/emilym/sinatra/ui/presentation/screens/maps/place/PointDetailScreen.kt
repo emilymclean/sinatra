@@ -33,6 +33,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.retry
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.koin.core.annotation.Factory
@@ -64,7 +66,12 @@ class PointDetailViewModel(
                 it.mapLocation
             )
         }
+    }.onEach {
+        it.unwrap()?.let {
+            recentVisitRepository.addPlaceVisit(it.id)
+        }
     }
+
     override val placeId = place.map { it.unwrap()?.id?.nullIfEmpty() }.state(null)
 
     override val location: StateFlow<MapLocation?> = point.mapLatest { it?.mapLocation }.state(null)
@@ -79,9 +86,6 @@ class PointDetailViewModel(
         this.point.value = MapLocationAndZoom(
             point, zoom
         )
-//        screenModelScope.launch {
-//            recentVisitRepository.addPlaceVisit(placeId)
-//        }
     }
 
     override fun retryPlace() {
