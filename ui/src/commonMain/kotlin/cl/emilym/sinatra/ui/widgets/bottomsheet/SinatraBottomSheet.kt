@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.requiredHeightIn
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -99,10 +100,10 @@ fun SinatraBottomSheet(
                 val newTarget = when (state.anchoredDraggableState.targetValue) {
                     SinatraSheetValue.Hidden, SinatraSheetValue.PartiallyExpanded -> SinatraSheetValue.PartiallyExpanded
                     SinatraSheetValue.Expanded -> {
-                        if (newAnchors.hasAnchorFor(SinatraSheetValue.Expanded)) SinatraSheetValue.Expanded else SinatraSheetValue.PartiallyExpanded
+                        if (newAnchors.hasPositionFor(SinatraSheetValue.Expanded)) SinatraSheetValue.Expanded else SinatraSheetValue.PartiallyExpanded
                     }
                     SinatraSheetValue.HalfExpanded -> {
-                        if (newAnchors.hasAnchorFor(SinatraSheetValue.HalfExpanded)) SinatraSheetValue.HalfExpanded else SinatraSheetValue.PartiallyExpanded
+                        if (newAnchors.hasPositionFor(SinatraSheetValue.HalfExpanded)) SinatraSheetValue.HalfExpanded else SinatraSheetValue.PartiallyExpanded
                     }
                 }
                 state.anchoredDraggableState.updateAnchors(newAnchors, newTarget)
@@ -147,7 +148,7 @@ fun <T : Any> sinatraDraggableAnchors(
 class SinatraDraggableAnchors<T>(private val anchors: Map<T, Float>) : DraggableAnchors<T> {
 
     override fun positionOf(value: T): Float = anchors[value] ?: Float.NaN
-    override fun hasAnchorFor(value: T) = anchors.containsKey(value)
+    override fun hasPositionFor(value: T) = anchors.containsKey(value)
 
     override fun closestAnchor(position: Float): T? = anchors.minByOrNull {
         abs(position - it.value)
@@ -163,9 +164,9 @@ class SinatraDraggableAnchors<T>(private val anchors: Map<T, Float>) : Draggable
         }?.key
     }
 
-    override fun minAnchor() = anchors.values.minOrNull() ?: Float.NaN
+    override fun minPosition() = anchors.values.minOrNull() ?: Float.NaN
 
-    override fun maxAnchor() = anchors.values.maxOrNull() ?: Float.NaN
+    override fun maxPosition() = anchors.values.maxOrNull() ?: Float.NaN
 
     override val size: Int
         get() = anchors.size
@@ -177,10 +178,12 @@ class SinatraDraggableAnchors<T>(private val anchors: Map<T, Float>) : Draggable
         return anchors == other.anchors
     }
 
-    override fun forEach(block: (anchor: T, position: Float) -> Unit) {
-        for (i in anchors.entries) {
-            block(i.key, i.value)
-        }
+    override fun anchorAt(index: Int): T? {
+        TODO("Not yet implemented")
+    }
+
+    override fun positionAt(index: Int): Float {
+        TODO("Not yet implemented")
     }
 
     override fun hashCode() = 31 * anchors.hashCode()

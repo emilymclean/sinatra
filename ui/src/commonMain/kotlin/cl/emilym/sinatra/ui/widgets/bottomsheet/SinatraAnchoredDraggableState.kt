@@ -512,7 +512,7 @@ class SinatraAnchoredDraggableState<T>(
         dragPriority: MutatePriority = MutatePriority.Default,
         block: suspend AnchoredDragScope.(anchor: DraggableAnchors<T>, targetValue: T) -> Unit
     ) {
-        if (anchors.hasAnchorFor(targetValue)) {
+        if (anchors.hasPositionFor(targetValue)) {
             try {
                 dragMutex.mutate(dragPriority) {
                     dragTarget = targetValue
@@ -541,7 +541,7 @@ class SinatraAnchoredDraggableState<T>(
 
     internal fun newOffsetForDelta(delta: Float) =
         ((if (offset.isNaN()) 0f else offset) + delta)
-            .coerceIn(anchors.minAnchor(), anchors.maxAnchor())
+            .coerceIn(anchors.minPosition(), anchors.maxPosition())
 
     /**
      * Drag by the [delta], coerce it in the bounds and dispatch it to the [AnchoredDraggableState].

@@ -142,18 +142,18 @@ class SinatraSheetState @OptIn(ExperimentalMaterial3Api::class) constructor(
 
     @OptIn(ExperimentalFoundationApi::class)
     val hasExpandedState: Boolean
-        get() = anchoredDraggableState.anchors.hasAnchorFor(SinatraSheetValue.Expanded)
+        get() = anchoredDraggableState.anchors.hasPositionFor(SinatraSheetValue.Expanded)
 
     @OptIn(ExperimentalFoundationApi::class)
     val hasHalfExpandedState: Boolean
-        get() = anchoredDraggableState.anchors.hasAnchorFor(SinatraSheetValue.HalfExpanded)
+        get() = anchoredDraggableState.anchors.hasPositionFor(SinatraSheetValue.HalfExpanded)
 
     /**
      * Whether the modal bottom sheet has a partially expanded state defined.
      */
     @OptIn(ExperimentalFoundationApi::class)
     val hasPartiallyExpandedState: Boolean
-        get() = anchoredDraggableState.anchors.hasAnchorFor(SinatraSheetValue.PartiallyExpanded)
+        get() = anchoredDraggableState.anchors.hasPositionFor(SinatraSheetValue.PartiallyExpanded)
 
     /**
      * Fully expand the bottom sheet with animation and suspend until it is fully expanded or
@@ -431,7 +431,7 @@ internal fun ConsumeSwipeWithinBottomSheetBoundsNestedScrollConnection(
     override suspend fun onPreFling(available: Velocity): Velocity {
         val toFling = available.toFloat()
         val currentOffset = sheetState.requireOffset()
-        val minAnchor = sheetState.anchoredDraggableState.anchors.minAnchor()
+        val minAnchor = sheetState.anchoredDraggableState.anchors.minPosition()
         return if (toFling < 0 && currentOffset > minAnchor) {
             onFling(toFling)
             // since we go to the anchor with tween settling, consume all for the best UX
