@@ -53,12 +53,12 @@ fun highlightedRouteStopMarkerIcon(route: Route, stop: Stop? = null): MarkerIcon
 
 @Composable
 fun routeStopMarkerIcon(route: Route): MarkerIcon {
-    return circularIcon(route.color(), size = 8.dp * if(isIos) 2.5f else 1f, borderWidth = 2.dp * if(isIos) 2.5f else 1f)
+    return circularIcon(route.color(), size = 8.dp * if(isIos) 1.5f else 1f, borderWidth = 2.dp * if(isIos) 1.5f else 1f)
 }
 
 @Composable
 fun walkingMarkerIcon(): MarkerIcon {
-    return circularIcon(walkingColor, size = 8.dp * if(isIos) 2.5f else 1f, borderWidth = 2.dp * if(isIos) 2.5f else 1f)
+    return circularIcon(walkingColor, size = 8.dp * if(isIos) 1.5f else 1f, borderWidth = 2.dp * if(isIos) 1.5f else 1f)
 }
 
 @Composable
