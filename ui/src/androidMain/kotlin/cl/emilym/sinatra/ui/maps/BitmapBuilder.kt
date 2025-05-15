@@ -42,7 +42,7 @@ fun bitmapBuilder(
 ): Bitmap {
     val pxWidth = with(density) { width.roundToPx() }
     val pxHeight = with(density) { height.roundToPx() }
-    return bitmapBuilder(width, height, density, config, init)
+    return bitmapBuilder(pxWidth, pxHeight, config, init)
 }
 
 fun bitmapBuilder(
