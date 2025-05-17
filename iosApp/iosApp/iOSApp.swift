@@ -35,12 +35,14 @@ class RemoteConfigWrapper: RemoteConfigProtocol {
     
     var config = RemoteConfig.remoteConfig()
     
-    func fetch(callback: @escaping (KotlinBoolean) -> Void) {
-        config.fetchAndActivate { status, error in
-            if status == .error {
+    func fetch(forced: Bool, callback: @escaping (KotlinBoolean) -> Void) {
+        config.fetch(withExpirationDuration: forced ? 0.0 : 43200.0) { status, error in
+            if status == .failure {
                 callback(KotlinBoolean(bool: false))
             } else {
-                callback(KotlinBoolean(bool: true))
+                self.config.activate(completion: { changed, error in
+                    callback(KotlinBoolean(bool: true))
+                })
             }
         }
     }

@@ -102,7 +102,7 @@ class LocalTypeSearcherTest {
 
         override suspend fun load(): List<Place> = mockData
 
-        override fun fields(t: Place): List<String> = listOf(t.name, t.displayName)
+        override fun fields(t: Place): List<String> = listOfNotNull(t.name, t.displayName)
 
         override fun wrap(item: Place): SearchResult {
             return SearchResult.PlaceResult(item)

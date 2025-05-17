@@ -5,6 +5,8 @@ import cl.emilym.sinatra.data.models.Alert
 import cl.emilym.sinatra.data.models.Content
 import cl.emilym.sinatra.data.models.ContentId
 import cl.emilym.sinatra.data.persistence.ContentPersistence
+import cl.emilym.sinatra.e
+import io.github.aakira.napier.Napier
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.koin.core.annotation.Factory
@@ -18,8 +20,16 @@ class ContentRepository(
 
     companion object {
         const val ABOUT_ID = "about"
+        const val MORE_ID = "more"
         const val SERVICE_ALERT_ID = "service-alerts"
         const val HOME_BANNER_ID = "home"
+
+        const val NATIVE_PREFERENCES_ID = "preferences"
+        const val NATIVE_PREFERENCES_ROUTING_ID = "preferences-routing"
+        const val NATIVE_PREFERENCES_UNITS_ID = "preferences-units"
+        const val NATIVE_FAVOURITES_ID = "favourites"
+        const val NATIVE_NAVIGATE_ENTRY_ID = "navigate"
+        const val NATIVE_BROWSE_ID = "browse"
     }
 
     private val lock = Mutex()
@@ -37,7 +47,12 @@ class ContentRepository(
     }
 
     suspend fun content(id: ContentId): Content? {
-        load()
+        try {
+            load()
+        } catch(e: Exception) {
+            Napier.e(e)
+            return contentPersistence.get(id) ?: throw e
+        }
         return contentPersistence.get(id)
     }
 

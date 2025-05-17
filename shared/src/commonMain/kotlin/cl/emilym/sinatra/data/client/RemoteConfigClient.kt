@@ -20,6 +20,10 @@ class RemoteConfigClient(
         }
     }
 
+    suspend fun forceReload() {
+        wrapper.forceReload()
+    }
+
     private suspend fun <T> getIfExistsAndLoaded(key: String, operation: RemoteConfigGetter<T>): T? {
         if (!load()) return null
         if (!wrapper.exists(key)) return null
@@ -59,6 +63,8 @@ class RemoteConfigClient(
 interface RemoteConfigWrapper {
     val loaded: Boolean
     suspend fun load()
+    suspend fun forceReload()
+
     fun exists(key: String): Boolean
     fun string(key: String): String
     fun number(key: String): Double

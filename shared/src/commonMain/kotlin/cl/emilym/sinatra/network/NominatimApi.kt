@@ -21,4 +21,16 @@ interface NominatimApi {
         @Header("User-Agent") userAgent: String? = null
     ): List<NominatimPlace>
 
+    @GET
+    suspend fun reverse(
+        @Url url: String,
+        @Query("lat") lat: Double,
+        @Query("lon") lon: Double,
+        @Query("format") format: String = "jsonv2",
+        @Query("zoom") zoom: Int = 16,
+        @Query("addressdetails") addressDetails: Int = 1,
+        @Query("email") email: String? = null,
+        @Header("User-Agent") userAgent: String? = null
+    ): NominatimPlace
+
 }

@@ -44,6 +44,8 @@ import cl.emilym.sinatra.bounds
 import cl.emilym.sinatra.data.models.Journey
 import cl.emilym.sinatra.data.models.JourneyLeg
 import cl.emilym.sinatra.data.models.MapLocation
+import cl.emilym.sinatra.data.models.ServiceBikesAllowed
+import cl.emilym.sinatra.data.models.ServiceWheelchairAccessible
 import cl.emilym.sinatra.data.models.Time
 import cl.emilym.sinatra.ui.color
 import cl.emilym.sinatra.ui.localization.format
@@ -54,10 +56,14 @@ import cl.emilym.sinatra.ui.maps.routeStopMarkerIcon
 import cl.emilym.sinatra.ui.maps.walkingMarkerIcon
 import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
 import cl.emilym.sinatra.ui.navigation.MapScreen
+import cl.emilym.sinatra.ui.placeCardDefaultNavigation
 import cl.emilym.sinatra.ui.presentation.screens.maps.zoomPadding
 import cl.emilym.sinatra.ui.presentation.screens.search.SearchScreen
 import cl.emilym.sinatra.ui.presentation.theme.Container
 import cl.emilym.sinatra.ui.presentation.theme.walkingColor
+import cl.emilym.sinatra.ui.routeCardDefaultNavigation
+import cl.emilym.sinatra.ui.stopCardDefaultNavigation
+import cl.emilym.sinatra.ui.stopJourneyNavigation
 import cl.emilym.sinatra.ui.text
 import cl.emilym.sinatra.ui.widgets.AccessibleIcon
 import cl.emilym.sinatra.ui.widgets.BackButton
@@ -76,9 +82,11 @@ import cl.emilym.sinatra.ui.widgets.RouteRandle
 import cl.emilym.sinatra.ui.widgets.SinatraBackHandler
 import cl.emilym.sinatra.ui.widgets.SwapIcon
 import cl.emilym.sinatra.ui.widgets.WalkIcon
+import cl.emilym.sinatra.ui.widgets.WheelchairAccessibleIcon
 import cl.emilym.sinatra.ui.widgets.collectAsStateWithLifecycle
 import cl.emilym.sinatra.ui.widgets.currentLocation
 import cl.emilym.sinatra.ui.widgets.hasLocationPermission
+import cl.emilym.sinatra.ui.widgets.noRippleClickable
 import cl.emilym.sinatra.ui.widgets.routeRandleSize
 import com.mikepenz.markdown.m3.Markdown
 import org.jetbrains.compose.resources.stringResource
@@ -103,6 +111,8 @@ import sinatra.ui.generated.resources.navigate_travel_depart
 import sinatra.ui.generated.resources.navigate_travel_journey_arrive
 import sinatra.ui.generated.resources.navigate_travel_journey_depart
 import sinatra.ui.generated.resources.navigate_walk
+import sinatra.ui.generated.resources.route_accessibility_bikes_allowed
+import sinatra.ui.generated.resources.route_accessibility_wheelchair_accessible
 
 
 class NavigateEntryScreen(
@@ -123,6 +133,7 @@ class NavigateEntryScreen(
     @Composable
     override fun mapItems(): List<MapItem> {
         val viewModel = koinScreenModel<NavigationEntryViewModel>()
+        val navigator = LocalNavigator.currentOrThrow
         val state by viewModel.state.collectAsStateWithLifecycle()
         val journey = (state as? NavigationEntryState.JourneySelected)?.journey ?: return emptyList()
         val originLocation by viewModel.originLocation.collectAsStateWithLifecycle()
@@ -162,7 +173,10 @@ class NavigateEntryScreen(
                         MarkerItem(
                             it.location,
                             routeStopMarkerIcon(leg.route),
-                            id = "routeLeg-stop-${it.id}"
+                            id = "routeLeg-stop-${it.id}",
+                            onClick = {
+                                navigator.stopCardDefaultNavigation(it)
+                            }
                         )
                     })
                 }
@@ -174,12 +188,19 @@ class NavigateEntryScreen(
                     }
                 }
                 is JourneyLeg.TransferPoint -> {
-                    when (i) {
-                        0 -> originLocation?.let {
+                    when {
+                        journey.legs.size == 1 -> {
+                            originLocation?.let { o ->
+                                destinationLocation?.let { d ->
+                                    addWalking(listOf(o.location, o.location, d.location, d.location))
+                                }
+                            }
+                        }
+                        i == 0 -> originLocation?.let {
                             val next = (journey.legs.getOrNull(1) as? JourneyLeg.RouteJourneyLeg) ?: return@let
                             addWalking(listOf(it.location, it.location, next.stops.first().location))
                         }
-                        journey.legs.lastIndex -> destinationLocation?.let {
+                        i == journey.legs.lastIndex -> destinationLocation?.let {
                             val next = (journey.legs.getOrNull(journey.legs.lastIndex - 1) as? JourneyLeg.RouteJourneyLeg) ?: return@let
                             addWalking(listOf(next.stops.last().location, it.location, it.location))
                         }
@@ -335,21 +356,17 @@ class NavigateEntryScreen(
                             ) {
                                 val origin by viewModel.origin.collectAsStateWithLifecycle()
                                 val destination by viewModel.destination.collectAsStateWithLifecycle()
-                                origin?.let { origin ->
-                                    NavigationLocationDisplay(
-                                        origin,
-                                        false,
-                                        modifier = Modifier.clickable { viewModel.onOriginClick() }
-                                    )
-                                }
+                                NavigationLocationDisplay(
+                                    origin,
+                                    false,
+                                    modifier = Modifier.clickable { viewModel.onOriginClick() }
+                                )
                                 HorizontalDivider(Modifier.padding(start = iconInset))
-                                destination?.let { destination ->
-                                    NavigationLocationDisplay(
-                                        destination,
-                                        true,
-                                        modifier = Modifier.clickable { viewModel.onDestinationClick() }
-                                    )
-                                }
+                                NavigationLocationDisplay(
+                                    destination,
+                                    true,
+                                    modifier = Modifier.clickable { viewModel.onDestinationClick() }
+                                )
                             }
                             if (FeatureFlags.RAPTOR_SWAP_BUTTON) {
                                 IconButton(
@@ -410,7 +427,7 @@ class NavigateEntryScreen(
                             item {
                                 val bikesAllowed by viewModel.bikesAllowed.collectAsStateWithLifecycle()
                                 Chip(
-                                    selected = bikesAllowed,
+                                    selected = bikesAllowed ?: false,
                                     onToggle = { viewModel.bikesAllowed.value = it },
                                     contentDescription = stringResource(Res.string.navigate_chip_bikes_allowed)
                                 ) {
@@ -420,7 +437,7 @@ class NavigateEntryScreen(
                             item {
                                 val wheelchairAccessibility by viewModel.wheelchairAccessible.collectAsStateWithLifecycle()
                                 Chip(
-                                    selected = wheelchairAccessibility,
+                                    selected = wheelchairAccessibility ?: false,
                                     onToggle = { viewModel.wheelchairAccessible.value = it },
                                     contentDescription = stringResource(Res.string.navigate_chip_wheelchair_accessible)
                                 ) {
@@ -531,7 +548,6 @@ class NavigateEntryScreen(
                     }
                 }
             }
-            else -> {}
         }
     }
 
@@ -541,6 +557,7 @@ class NavigateEntryScreen(
         val lastLeg = journey.legs.last()
         val firstLeg = journey.legs.first()
         val viewModel = koinScreenModel<NavigationEntryViewModel>()
+        val navigator = LocalNavigator.currentOrThrow
         val destination by viewModel.destination.collectAsStateWithLifecycle()
         val origin by viewModel.origin.collectAsStateWithLifecycle()
         val anchorTime by viewModel.anchorTime.collectAsStateWithLifecycle()
@@ -555,27 +572,38 @@ class NavigateEntryScreen(
                 is JourneyLeg.Transfer -> {
                     DepartureLeg(
                         firstLeg.stops.first().name,
-                        departureTime
+                        departureTime,
+                        onClick = { navigator.stopCardDefaultNavigation(firstLeg.stops.first()) }
                     )
                     HorizontalDivider(Modifier.padding(start = journeyIconInset, end = 1.rdp))
                 }
                 is JourneyLeg.TransferPoint -> {
-                    origin?.name?.let {
-                        DepartureLeg(
-                            it,
-                            departureTime
-                        )
-                        HorizontalDivider(Modifier.padding(start = journeyIconInset, end = 1.rdp))
-                    }
+                    DepartureLeg(
+                        origin.name,
+                        departureTime,
+                        onClick = origin.let { when (it) {
+                            is NavigationLocation.Stop -> { {
+                                navigator.stopCardDefaultNavigation(it.stop)
+                            } }
+                            is NavigationLocation.Place -> { {
+                                navigator.placeCardDefaultNavigation(it.place)
+                            } }
+                            else -> null
+                        } }
+                    )
+                    HorizontalDivider(Modifier.padding(start = journeyIconInset, end = 1.rdp))
                 }
                 else -> {}
             }
 
+            val showAccessibilityIcons by viewModel.showAccessibilityIcons.collectAsStateWithLifecycle()
             for (legI in journey.legs.indices) {
                 val leg = journey.legs[legI]
                 when (leg) {
                     is JourneyLeg.Transfer -> TransferLeg(leg)
-                    is JourneyLeg.Travel -> TravelLeg(leg)
+                    is JourneyLeg.Travel -> TravelLeg(
+                        leg, showAccessibilityIcons
+                    )
                     else -> {
                         when (legI) {
                             0 -> TransferLeg(leg)
@@ -591,13 +619,27 @@ class NavigateEntryScreen(
             when (lastLeg) {
                 is JourneyLeg.Transfer -> {
                     HorizontalDivider(Modifier.padding(start = journeyIconInset, end = 1.rdp))
-                    ArrivalLeg(lastLeg.stops.last().name, lastLeg.arrivalTime)
+                    ArrivalLeg(
+                        lastLeg.stops.last().name,
+                        lastLeg.arrivalTime,
+                        onClick = { navigator.stopCardDefaultNavigation(lastLeg.stops.last()) }
+                    )
                 }
                 is JourneyLeg.TransferPoint -> {
-                    destination?.name?.let {
-                        HorizontalDivider(Modifier.padding(start = journeyIconInset, end = 1.rdp))
-                        ArrivalLeg(it, lastLeg.arrivalTime)
-                    }
+                    HorizontalDivider(Modifier.padding(start = journeyIconInset, end = 1.rdp))
+                    ArrivalLeg(
+                        destination.name,
+                        lastLeg.arrivalTime,
+                        onClick = origin.let { when (it) {
+                            is NavigationLocation.Stop -> { {
+                                navigator.stopCardDefaultNavigation(it.stop)
+                            } }
+                            is NavigationLocation.Place -> { {
+                                navigator.placeCardDefaultNavigation(it.place)
+                            } }
+                            else -> null
+                        } }
+                    )
                 }
                 else -> {}
             }
@@ -646,15 +688,49 @@ fun TransferLeg(leg: JourneyLeg) {
 }
 
 @Composable
-fun TravelLeg(leg: JourneyLeg.Travel) {
+fun TravelLeg(
+    leg: JourneyLeg.Travel,
+    showAccessibilityIcons: Boolean = true
+) {
+    val navigator = LocalNavigator.currentOrThrow
     LegScaffold({ RouteRandle(leg.route) }) {
         Column(
             Modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(0.75.rdp)
         ) {
-            Markdown(stringResource(Res.string.navigate_travel_depart, leg.stops.first().name, leg.departureTime.format()))
-            Markdown(stringResource(Res.string.navigate_travel, leg.travelTime.text, leg.route.name, leg.heading))
-            Markdown(stringResource(Res.string.navigate_travel_arrive, leg.stops.last().name, leg.arrivalTime.format()))
+            Markdown(
+                stringResource(Res.string.navigate_travel_depart, leg.stops.first().name, leg.departureTime.format()),
+                modifier = Modifier.noRippleClickable { navigator.stopCardDefaultNavigation(leg.stops.first()) }
+            )
+            Markdown(
+                stringResource(Res.string.navigate_travel, leg.travelTime.text, leg.route.name, leg.heading),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .noRippleClickable { navigator.routeCardDefaultNavigation(leg.route) }
+            )
+            if (
+                (leg.routeAccessibility?.wheelchairAccessible == ServiceWheelchairAccessible.ACCESSIBLE ||
+                leg.routeAccessibility?.bikesAllowed == ServiceBikesAllowed.ALLOWED) &&
+                showAccessibilityIcons
+            ) {
+                Row(horizontalArrangement = Arrangement.spacedBy(0.5.rdp)) {
+                    if (leg.routeAccessibility?.wheelchairAccessible == ServiceWheelchairAccessible.ACCESSIBLE) {
+                        WheelchairAccessibleIcon(
+                            true,
+                            contentDescription = stringResource(Res.string.route_accessibility_wheelchair_accessible)
+                        )
+                    }
+                    if (leg.routeAccessibility?.bikesAllowed == ServiceBikesAllowed.ALLOWED) {
+                        BikeIcon(
+                            contentDescription = stringResource(Res.string.route_accessibility_bikes_allowed)
+                        )
+                    }
+                }
+            }
+            Markdown(
+                stringResource(Res.string.navigate_travel_arrive, leg.stops.last().name, leg.arrivalTime.format()),
+                modifier = Modifier.noRippleClickable { navigator.stopCardDefaultNavigation(leg.stops.last()) }
+            )
         }
     }
 }
@@ -662,9 +738,10 @@ fun TravelLeg(leg: JourneyLeg.Travel) {
 @Composable
 fun DepartureLeg(
     pointName: String,
-    departureTime: Time?
+    departureTime: Time?,
+    onClick: (() -> Unit)? = null
 ) {
-    LegScaffold({ GenericMarkerIcon() }) {
+    LegScaffold({ JourneyStartIcon() }) {
         Column(
             Modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(0.75.rdp)
@@ -673,20 +750,38 @@ fun DepartureLeg(
                 when (departureTime) {
                     null -> stringResource(Res.string.navigate_travel_journey_depart, pointName)
                     else -> stringResource(Res.string.navigate_travel_depart, pointName, departureTime.format())
-                }
+                },
+                modifier = Modifier.then(
+                    when (onClick) {
+                        null -> Modifier
+                        else -> Modifier.noRippleClickable { onClick() }
+                    }
+                )
             )
         }
     }
 }
 
 @Composable
-fun ArrivalLeg(pointName: String, arrivalTime: Time) {
+fun ArrivalLeg(
+    pointName: String,
+    arrivalTime: Time,
+    onClick: (() -> Unit)? = null
+) {
     LegScaffold({ GenericMarkerIcon() }) {
         Column(
             Modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(0.75.rdp)
+            verticalArrangement = Arrangement.spacedBy(0.75.rdp),
         ) {
-            Markdown(stringResource(Res.string.navigate_travel_journey_arrive, pointName, arrivalTime.format()))
+            Markdown(
+                stringResource(Res.string.navigate_travel_journey_arrive, pointName, arrivalTime.format()),
+                modifier = Modifier.then(
+                    when (onClick) {
+                        null -> Modifier
+                        else -> Modifier.noRippleClickable { onClick() }
+                    }
+                )
+            )
         }
     }
 }

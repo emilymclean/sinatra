@@ -186,9 +186,10 @@ abstract class Router {
                 options.filter {
                     prevEdge[it.first]?.type != EdgeType.TRANSFER ||
                             (prevEdge[it.first]?.type == EdgeType.TRANSFER &&
-                                    (dist[it.first] + it.second.addedTime) >= config.maximumWalkingTime)
+                            (dist[it.first] + it.second.addedTime) >= config.maximumWalkingTime)
                 }.nullIfEmpty()
-        )?.firstOrNull()?.first ?: throw RouterException.noJourneyFound()
+        )?.minByOrNull { dist[it.first] + ((dayIndex[it.first] ?: 0) * 86400) + it.second.addedTime}
+            ?.first ?: throw RouterException.noJourneyFound()
 
         val chain = mutableListOf<GroupedGraphEdges>()
         val stops = mutableListOf<StopId>()
@@ -326,11 +327,14 @@ abstract class Router {
         departureEdgeIndex: Int
     ): RaptorJourneyConnection.Travel {
         val firstNode = getNode(edges.first().connectedNodeIndex)
-        val arrival = edges[arrivalEdgeIndex].departureTime.toLong()
-        val departure = edges[departureEdgeIndex].departureTime.toLong()
+        val departureEdge = edges[departureEdgeIndex]
+        val arrivalEdge = edges[arrivalEdgeIndex]
 
-        val fencepostDepartureCost = if (departureEdgeIndex == 0) edges[departureEdgeIndex].cost.toLong() else 0
-        val fencepostArrivalCost = if (arrivalEdgeIndex == 0) edges[arrivalEdgeIndex].cost.toLong() else 0
+        val arrival = arrivalEdge.departureTime.toLong()
+        val departure = departureEdge.departureTime.toLong()
+
+        val fencepostDepartureCost = if (departureEdgeIndex == 0) departureEdge.cost.toLong() else 0
+        val fencepostArrivalCost = if (arrivalEdgeIndex == 0) arrivalEdge.cost.toLong() else 0
 
         return RaptorJourneyConnection.Travel(
             stops,
@@ -339,7 +343,9 @@ abstract class Router {
             departure - fencepostDepartureCost,
             arrival + fencepostArrivalCost,
             dayIndicies[departureEdgeIndex] ?: 0,
-            (arrival - departure) + fencepostArrivalCost + fencepostDepartureCost
+            (arrival - departure) + fencepostArrivalCost + fencepostDepartureCost,
+            departureEdge.bikesAllowed,
+            departureEdge.wheelchairAccessible
         )
     }
 

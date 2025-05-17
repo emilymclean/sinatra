@@ -14,6 +14,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.invisibleToUser
@@ -26,23 +27,30 @@ import cl.emilym.compose.requeststate.RequestState
 import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.FeatureFlags
 import cl.emilym.sinatra.data.models.Stop
+import cl.emilym.sinatra.ui.canberraRegion
+import cl.emilym.sinatra.ui.maps.MapCallbackItem
 import cl.emilym.sinatra.ui.maps.MapItem
 import cl.emilym.sinatra.ui.maps.MarkerItem
 import cl.emilym.sinatra.ui.maps.NativeMapScope
+import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
 import cl.emilym.sinatra.ui.navigation.MapScreen
 import cl.emilym.sinatra.ui.navigation.NativeMapScreen
 import cl.emilym.sinatra.ui.placeCardDefaultNavigation
 import cl.emilym.sinatra.ui.presentation.screens.maps.RouteDetailScreen
 import cl.emilym.sinatra.ui.presentation.screens.maps.StopDetailScreen
+import cl.emilym.sinatra.ui.presentation.screens.maps.place.PointDetailScreen
 import cl.emilym.sinatra.ui.presentation.screens.maps.search.browse.BrowseViewModel
 import cl.emilym.sinatra.ui.presentation.screens.maps.search.browse.MapSearchScreenBrowseState
 import cl.emilym.sinatra.ui.presentation.screens.search.SearchScreen
 import cl.emilym.sinatra.ui.widgets.LocalMapControl
 import cl.emilym.sinatra.ui.widgets.MyLocationIcon
 import cl.emilym.sinatra.ui.widgets.SearchIcon
+import cl.emilym.sinatra.ui.widgets.bottomsheet.SinatraSheetState
+import cl.emilym.sinatra.ui.widgets.bottomsheet.SinatraSheetValue
 import cl.emilym.sinatra.ui.widgets.collectAsStateWithLifecycle
 import cl.emilym.sinatra.ui.widgets.currentLocation
 import cl.emilym.sinatra.ui.widgets.viewportHeight
+import io.github.aakira.napier.Napier
 import org.jetbrains.compose.resources.stringResource
 import sinatra.ui.generated.resources.Res
 import sinatra.ui.generated.resources.semantics_open_search_screen
@@ -127,6 +135,23 @@ class MapSearchScreen: MapScreen, NativeMapScreen {
         val state by viewModel.state.collectAsStateWithLifecycle()
         val navigator = LocalNavigator.currentOrThrow
 
+        val bottomSheetState = LocalBottomSheetState.current
+        val keyboardController = LocalSoftwareKeyboardController.current
+
+        LaunchedEffect(bottomSheetState?.bottomSheetState?.currentValue) {
+            if (bottomSheetState?.bottomSheetState?.currentValue in listOf(
+                SinatraSheetValue.Hidden, SinatraSheetValue.PartiallyExpanded, SinatraSheetValue.HalfExpanded
+            )) {
+                keyboardController?.hide()
+            }
+        }
+
+        LaunchedEffect(state) {
+            if (state is MapSearchState.Browse) {
+                keyboardController?.hide()
+            }
+        }
+
         Box(modifier = Modifier.heightIn(min = viewportHeight() * 0.5f)) {
             when (state) {
                 is MapSearchState.Browse -> MapSearchScreenBrowseState(
@@ -159,8 +184,15 @@ class MapSearchScreen: MapScreen, NativeMapScreen {
         val viewModel = koinScreenModel<MapSearchViewModel>()
         val stopsRS by viewModel.stops.collectAsStateWithLifecycle()
         val stops = (stopsRS as? RequestState.Success)?.value ?: return listOf()
+        val navigator = LocalNavigator.currentOrThrow
 
-        return mapSearchScreenMapItems(stops)
+        return mapSearchScreenMapItems(stops) + listOfNotNull(
+            if (FeatureFlags.HOLD_MAP_POINT_DETAIL) MapCallbackItem(onLongClick = { pos, zoom ->
+                if (!canberraRegion.contains(pos)) return@MapCallbackItem
+                navigator.push(PointDetailScreen(pos, zoom + 2))
+            }
+            ) else null
+        )
     }
 
 }

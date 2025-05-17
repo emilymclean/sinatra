@@ -5,7 +5,7 @@ hidden modules: List<String>(length == 0) = List()
 hidden extraBuildSteps: Listing<Step>
 
 hidden iaToolPath: String? = null
-hidden versionNumberOffset = 0
+hidden versionNumberOffset = 100
 hidden instantVersionNumberOffset = 0
 hidden gradleVersionNameName = "version"
 hidden gradleVersionCodeName = "versionCode"

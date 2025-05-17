@@ -5,16 +5,22 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import cl.emilym.sinatra.data.models.MapLocation
+import cl.emilym.sinatra.data.models.Zoom
 import cl.emilym.sinatra.ui.R
 import cl.emilym.sinatra.ui.canberra
 import cl.emilym.sinatra.ui.canberraZoom
 import cl.emilym.sinatra.ui.maps.AndroidMapControl
 import cl.emilym.sinatra.ui.maps.LineItem
+import cl.emilym.sinatra.ui.maps.MapCallbackItem
 import cl.emilym.sinatra.ui.maps.MapControl
 import cl.emilym.sinatra.ui.maps.MarkerItem
 import cl.emilym.sinatra.ui.maps.NativeMapScope
@@ -29,6 +35,7 @@ import cl.emilym.sinatra.ui.navigation.currentMapItems
 import cl.emilym.sinatra.ui.plus
 import cl.emilym.sinatra.ui.presentation.theme.defaultLineColor
 import cl.emilym.sinatra.ui.toNative
+import cl.emilym.sinatra.ui.toShared
 import cl.emilym.sinatra.ui.widgets.currentLocation
 import cl.emilym.sinatra.ui.widgets.viewportSize
 import com.google.android.gms.maps.GoogleMapOptions
@@ -80,6 +87,9 @@ actual fun Map(
         (mapControl as? SafeMapControl)?.wrapped = realMapControl
     }
 
+    var clickCallback by remember { mutableStateOf<((MapLocation, Zoom) -> Unit)?>(null) }
+    var longClickCallback by remember { mutableStateOf<((MapLocation, Zoom) -> Unit)?>(null) }
+
     Box(Modifier.then(modifier)) {
         GoogleMap(
             modifier = Modifier.fillMaxSize(),
@@ -99,16 +109,24 @@ actual fun Map(
                 zoomControlsEnabled = false,
                 mapToolbarEnabled = false
             ),
+            onMapClick = { clickCallback?.invoke(it.toShared(), cameraPositionState.position.zoom) },
+            onMapLongClick = { longClickCallback?.invoke(it.toShared(), cameraPositionState.position.zoom) },
             contentPadding = insets,
             mapColorScheme = ComposeMapColorScheme.FOLLOW_SYSTEM
         ) {
             currentLocation?.let { DrawMarker(MarkerItem(it, currentLocationIcon)) }
 
             currentMapItems { items ->
+                clickCallback = null
+                longClickCallback = null
                 for (item in items) {
                     when (item) {
                         is MarkerItem -> DrawMarker(item)
                         is LineItem -> DrawLine(item)
+                        is MapCallbackItem -> {
+                            clickCallback = item.onClick
+                            longClickCallback = item.onLongClick
+                        }
                         else -> {}
                     }
                 }
