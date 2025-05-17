@@ -96,7 +96,6 @@ class NavigationEntryViewModel(
     private val routeStopSearchUseCase: RouteStopSearchUseCase,
     private val networkGraphRepository: NetworkGraphRepository,
     private val recentVisitRepository: RecentVisitRepository,
-    private val nearbyStopsUseCase: NearbyStopsUseCase,
     private val stopRepository: StopRepository,
     private val routingPreferencesRepository: RoutingPreferencesRepository,
     private val preferencesRepository: PreferencesRepository,
@@ -250,7 +249,6 @@ class NavigationEntryViewModel(
     // Search
     override val query = MutableStateFlow<String?>(null)
 
-    private val stops = MutableStateFlow<RequestState<List<Stop>>>(RequestState.Initial())
     private val _recentVisits = createRequestStateFlowFlow<List<RecentVisit>>()
     @OptIn(ExperimentalCoroutinesApi::class)
     override val recentVisits = _recentVisits.presentable().mapLatest {
@@ -260,11 +258,9 @@ class NavigationEntryViewModel(
         }
     }.state(RequestState.Initial())
 
-    override val nearbyStops: StateFlow<List<StopWithDistance>?> = stops.combine(currentLocation) { stops, lastLocation ->
-        if (stops !is RequestState.Success || lastLocation == null) return@combine null
-        val stops = stops.value.nullIfEmpty() ?: return@combine null
-        with(nearbyStopsUseCase) { stops.filter(lastLocation).nullIfEmpty() }
-    }.state(null)
+    override val nearbyStops: StateFlow<List<StopWithDistance>?> = flowOf(emptyList<StopWithDistance>()).state(
+        emptyList()
+    )
 
     @OptIn(ExperimentalCoroutinesApi::class)
     override val results = state.mapLatest {
@@ -290,7 +286,6 @@ class NavigationEntryViewModel(
     fun init(destination: NavigationLocation, origin: NavigationLocation) {
         retryLoadingGraph()
         retryRecentVisits()
-        retryStops()
         setDestination(destination)
         setOrigin(origin)
     }
@@ -319,14 +314,6 @@ class NavigationEntryViewModel(
         screenModelScope.launch {
             _recentVisits.handleFlowProperly {
                 recentVisitRepository.all()
-            }
-        }
-    }
-
-    fun retryStops() {
-        screenModelScope.launch {
-            stops.handle {
-                stopRepository.stops().item
             }
         }
     }
