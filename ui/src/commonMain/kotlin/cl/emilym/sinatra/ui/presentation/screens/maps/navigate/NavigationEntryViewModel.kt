@@ -318,8 +318,6 @@ class NavigationEntryViewModel(
         }
     }
 
-    fun retryStops() {}
-
     private fun setDestination(navigationLocation: NavigationLocation) {
         destination.value = navigationLocation
         navigationLocation.recentVisit?.let {
