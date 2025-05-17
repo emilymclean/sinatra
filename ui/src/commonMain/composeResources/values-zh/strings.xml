@@ -137,8 +137,10 @@
       
   <string name="navigate_calculating_journey">正在计算旅程...</string>
       
-  <string name="navigate_calculating_journey_failed">我们找不到合适的路线</string>
-      
+  <string name="navigate_calculating_journey_failed">我们找不到合适的路线。</string>
+
+  <string name="navigate_start_stop_same">出发点和目的地必须不同。</string>
+
   <string name="navigate_walk">步行%1$s</string>
       
   <string name="navigate_walk_to_stop">步行%1$s到 %2$s</string>

@@ -161,6 +161,12 @@ class NavigationEntryViewModel(
                                     it.bikesAllowed == null ||
                                     it.wheelchairAccessible == null
                                 ) return@flow
+
+                                if (it.destinationLocation == it.originLocation) {
+                                    emit(NavigationState.JourneyStartStopSame)
+                                    return@flow
+                                }
+
                                 emit(NavigationState.JourneyCalculating)
                                 try {
                                     emit(NavigationState.JourneysFound(
