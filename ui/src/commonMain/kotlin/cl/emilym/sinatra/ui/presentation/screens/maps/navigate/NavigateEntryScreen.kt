@@ -63,7 +63,6 @@ import cl.emilym.sinatra.ui.presentation.theme.Container
 import cl.emilym.sinatra.ui.presentation.theme.walkingColor
 import cl.emilym.sinatra.ui.routeCardDefaultNavigation
 import cl.emilym.sinatra.ui.stopCardDefaultNavigation
-import cl.emilym.sinatra.ui.stopJourneyNavigation
 import cl.emilym.sinatra.ui.text
 import cl.emilym.sinatra.ui.widgets.AccessibleIcon
 import cl.emilym.sinatra.ui.widgets.BackButton
@@ -113,6 +112,7 @@ import sinatra.ui.generated.resources.navigate_travel_journey_depart
 import sinatra.ui.generated.resources.navigate_walk
 import sinatra.ui.generated.resources.route_accessibility_bikes_allowed
 import sinatra.ui.generated.resources.route_accessibility_wheelchair_accessible
+import sinatra.ui.generated.resources.navigate_start_stop_same
 
 
 class NavigateEntryScreen(
@@ -515,6 +515,19 @@ class NavigateEntryScreen(
                         ErrorWidget(
                             state.exception,
                             retry = { viewModel.retryLoadingGraph() }
+                        )
+                    }
+                }
+            }
+            is NavigationState.JourneyStartStopSame -> {
+                item {
+                    Box(
+                        Modifier.padding(1.rdp).fillMaxWidth(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        ListHint(
+                            stringResource(Res.string.navigate_start_stop_same),
+                            icon = { MapIcon(tint = MaterialTheme.colorScheme.primary) }
                         )
                     }
                 }
