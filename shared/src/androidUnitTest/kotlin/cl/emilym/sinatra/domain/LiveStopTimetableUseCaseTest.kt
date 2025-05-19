@@ -22,6 +22,7 @@ import cl.emilym.sinatra.timeZone
 import com.google.transit.realtime.FeedMessage
 import io.github.aakira.napier.Napier
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
@@ -93,7 +94,7 @@ class LiveStopTimetableUseCaseTest {
             ),
             expire = Instant.DISTANT_FUTURE
         )
-        coEvery { liveServiceRepository.getStopRealtimeUpdates(any()) } returns flowOf(updates)
+        coEvery { liveServiceRepository.getStopRealtimeUpdates(any()) } returns updates
         coEvery { stopRepository.stop(sId) } returns Cachable.live(Stop("stop1", null, "Stop 1", "Stop 1",
             MapLocation(0.0,0.0,), StopAccessibility(StopWheelchairAccessibility.FULL), StopVisibility(false, false, false, null), true
         ))
@@ -147,7 +148,7 @@ class LiveStopTimetableUseCaseTest {
             ),
             expire = Instant.DISTANT_FUTURE
         )
-        coEvery { liveServiceRepository.getStopRealtimeUpdates(any()) } returns flowOf(updates)
+        coEvery { liveServiceRepository.getStopRealtimeUpdates(any()) } returns updates
         coEvery { stopRepository.stop(stopId) } returns Cachable.live(Stop("stop1", null, "Stop 1", "Stop 1",
             MapLocation(0.0,0.0,), StopAccessibility(StopWheelchairAccessibility.FULL), StopVisibility(false, false, false, null), true
         ))
@@ -197,7 +198,7 @@ class LiveStopTimetableUseCaseTest {
 
         assertEquals(1, result.size)
         assertEquals(scheduled, result[0])
-        verify(exactly = 0) { liveServiceRepository.getStopRealtimeUpdates(any()) }
+        coVerify(exactly = 0) { liveServiceRepository.getStopRealtimeUpdates(any()) }
     }
 
     @Test
@@ -230,7 +231,7 @@ class LiveStopTimetableUseCaseTest {
                 )
             )
         )
-        coEvery { liveServiceRepository.getStopRealtimeUpdates(any()) } returns flow { throw Exception("Network error") }
+        coEvery { liveServiceRepository.getStopRealtimeUpdates(any()) } throws Exception("Network error")
         coEvery { stopRepository.stop(stopId) } returns Cachable.live(Stop("stop1", null, "Stop 1", "Stop 1",
             MapLocation(0.0,0.0,), StopAccessibility(StopWheelchairAccessibility.FULL), StopVisibility(false, false, false, null), true
         ))

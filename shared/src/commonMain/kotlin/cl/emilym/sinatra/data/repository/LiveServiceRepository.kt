@@ -37,10 +37,8 @@ class LiveServiceRepository(
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    fun getStopRealtimeUpdates(stopId: StopId): Flow<StopRealtimeInformation> {
-        return periodicFlow().mapLatest {
-            liveServiceClient.getStopRealtime(stopId)
-        }
+    suspend fun getStopRealtimeUpdates(stopId: StopId): StopRealtimeInformation {
+        return liveServiceClient.getStopRealtime(stopId)
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)

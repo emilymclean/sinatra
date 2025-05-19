@@ -37,7 +37,8 @@ class LiveStopTimetableUseCase(
                 return@flow
             }
 
-            val out = liveServiceRepository.getStopRealtimeUpdates(stopId).map { realtime ->
+            val realtime = liveServiceRepository.getStopRealtimeUpdates(stopId)
+            emit(
                 scheduled.map { stopTimetableTime ->
                     val delay = realtime.updates.firstOrNull { it.tripId == stopTimetableTime.tripId }?.delay
                     if (delay == null || delay is DelayInformation.Unknown) return@map stopTimetableTime
@@ -49,14 +50,13 @@ class LiveStopTimetableUseCase(
                                 stopTimetableTime.arrivalTime,
                             ),
                             departure = decodeTime(
-                                delay ?: DelayInformation.Unknown,
+                                delay,
                                 stopTimetableTime.departureTime,
                             )
                         )
                     )
                 }.sortedBy { it.arrivalTime }
-            }
-            emitAll(out)
+            )
         }.catch {
             Napier.e(it)
             emit(scheduled)
