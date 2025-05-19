@@ -38,12 +38,4 @@ class LiveServiceRepository(
         }
     }
 
-    suspend fun getMultipleRealtimeUpdates(vararg url: String): Flow<List<FeedMessage>> {
-        return combine(
-            *url.map { url ->
-                getRealtimeUpdates(url)
-            }.toTypedArray()
-        ) { it.toList() }
-    }
-
 }
