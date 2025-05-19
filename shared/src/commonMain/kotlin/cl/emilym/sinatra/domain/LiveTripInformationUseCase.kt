@@ -40,28 +40,17 @@ abstract class LiveUseCase {
         scheduleStartOfDay: Instant,
         scheduleTimeZone: TimeZone
     ): StationTime {
-        val today = scheduleStartOfDay.toLocalDateTime(scheduleTimeZone)
-        if (!expected.instant.toLocalDateTime(scheduleTimeZone).isSameDay(today) &&
-            (specific?.time == null ||
-                    !Instant.fromEpochSeconds(specific.time).toLocalDateTime(scheduleTimeZone).isSameDay(today)
-            )
-        )
-            return StationTime.Scheduled(expected)
-
         val delay = delay.let {
             when (it) {
                 is DelayInformation.Unknown -> null
                 is DelayInformation.Fixed -> it.delay
             }
         }
+        if (delay == null) return StationTime.Scheduled(expected)
+
         return StationTime.Live(
-            specific?.time?.let {
-                Instant.fromEpochSeconds(it).toTime(scheduleStartOfDay)
-            } ?: specific?.delay?.seconds?.let { expected + it } ?:
-            delay?.let { expected + it } ?: expected,
-            specific?.time?.let {
-                Instant.fromEpochSeconds(it) - expected.instant
-            } ?: specific?.delay?.seconds ?: delay ?: 0.seconds
+            expected + delay,
+            delay
         )
     }
 
