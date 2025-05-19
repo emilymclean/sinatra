@@ -70,16 +70,16 @@ class UpcomingRoutesForStopUseCase(
             }
         }
         .flowOn(Dispatchers.IO)
-//        .flatMapLatest { original ->
-//            when {
-//                original.item.isEmpty() || !live -> flowOf(original.map { it })
-//                else -> liveStopTimetableUseCase(
-//                    stopId,
-//                    original.item
-//                ).map { live -> original.map { live } }
-//            }
-//        }
-//        .flowOn(Dispatchers.IO)
+        .flatMapLatest { original ->
+            when {
+                original.item.isEmpty() || !live -> flowOf(original.map { it })
+                else -> liveStopTimetableUseCase(
+                    stopId,
+                    original.item
+                ).map { live -> original.map { live } }
+            }
+        }
+        .flowOn(Dispatchers.IO)
         // Literally does nothing but change Cachable<out List<IStopTimetableTime>> to not out
         .map {
             it.map { it.map { it } }

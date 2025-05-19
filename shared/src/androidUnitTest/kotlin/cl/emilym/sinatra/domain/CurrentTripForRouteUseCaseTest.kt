@@ -57,7 +57,7 @@ class CurrentTripForRouteUseCaseTest {
         "R1",
         null,
         "Route 1",
-        null,
+        false,
         RouteType.LIGHT_RAIL,
         null,
         RouteVisibility(
@@ -173,7 +173,7 @@ class CurrentTripForRouteUseCaseTest {
         every { clock.now() } returns instant
 
         val route = route.copy(
-            realTimeUrl = "http://realtime.url"
+            hasRealtime = true
         )
         val serviceId = "service1"
         val tripId = "trip1"
@@ -187,7 +187,7 @@ class CurrentTripForRouteUseCaseTest {
             CacheState.LIVE
         )
         coEvery {
-            liveTripInformationUseCase.invoke(any(), any(), any(), any(), any())
+            liveTripInformationUseCase.invoke(any(), any(), any(), any())
         } returns flowOf(Cachable(tripInformation, CacheState.LIVE))
         coEvery { metadataRepository.timeZone() } returns timeZone
 
@@ -199,7 +199,6 @@ class CurrentTripForRouteUseCaseTest {
             routeRepository.route("route1")
             serviceRepository.services(listOf(serviceId))
             liveTripInformationUseCase.invoke(
-                "http://realtime.url",
                 "route1",
                 serviceId,
                 tripId,
@@ -214,7 +213,7 @@ class CurrentTripForRouteUseCaseTest {
         every { clock.now() } returns instant
 
         val route = route.copy(
-            realTimeUrl = "http://realtime.url"
+            hasRealtime = true
         )
         val serviceId = "service1"
         val tripId = "trip1"
@@ -228,7 +227,7 @@ class CurrentTripForRouteUseCaseTest {
             CacheState.LIVE
         )
         coEvery {
-            liveTripInformationUseCase.invoke(any(), any(), any(), any(), any())
+            liveTripInformationUseCase.invoke(any(), any(), any(), any())
         } throws RuntimeException("Real-time service error")
         coEvery {
             routeRepository.tripTimetable(any(), any(), any(), any())
@@ -243,7 +242,6 @@ class CurrentTripForRouteUseCaseTest {
             routeRepository.route("route1")
             serviceRepository.services(listOf(serviceId))
             liveTripInformationUseCase.invoke(
-                "http://realtime.url",
                 "route1",
                 serviceId,
                 tripId,

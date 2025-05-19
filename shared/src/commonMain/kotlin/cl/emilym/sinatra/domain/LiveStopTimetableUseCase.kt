@@ -7,6 +7,7 @@ import cl.emilym.sinatra.data.models.LiveStopTimetableTime
 import cl.emilym.sinatra.data.models.StopId
 import cl.emilym.sinatra.data.models.TimetableStationTime
 import cl.emilym.sinatra.data.repository.LiveServiceRepository
+import cl.emilym.sinatra.data.repository.StopRepository
 import cl.emilym.sinatra.data.repository.TransportMetadataRepository
 import cl.emilym.sinatra.e
 import io.github.aakira.napier.Napier
@@ -23,6 +24,7 @@ import kotlin.collections.map
 @Factory
 class LiveStopTimetableUseCase(
     private val liveServiceRepository: LiveServiceRepository,
+    private val stopRepository: StopRepository
 ): LiveUseCase() {
 
     operator fun invoke(
@@ -30,14 +32,20 @@ class LiveStopTimetableUseCase(
         scheduled: List<IStopTimetableTime>
     ): Flow<List<IStopTimetableTime>> {
         return flow {
+            if (stopRepository.stop(stopId).item?.hasRealtime != true) {
+                emit(scheduled)
+                return@flow
+            }
+
             val out = liveServiceRepository.getStopRealtimeUpdates(stopId).map { realtime ->
                 scheduled.map { stopTimetableTime ->
                     val delay = realtime.updates.firstOrNull { it.tripId == stopTimetableTime.tripId }?.delay
+                    if (delay == null || delay is DelayInformation.Unknown) return@map stopTimetableTime
                     LiveStopTimetableTime.fromOther(
                         stopTimetableTime,
                         TimetableStationTime(
                             arrival = decodeTime(
-                                delay ?: DelayInformation.Unknown,
+                                delay,
                                 stopTimetableTime.arrivalTime,
                             ),
                             departure = decodeTime(
@@ -49,6 +57,9 @@ class LiveStopTimetableUseCase(
                 }.sortedBy { it.arrivalTime }
             }
             emitAll(out)
+        }.catch {
+            Napier.e(it)
+            emit(scheduled)
         }
     }
 
