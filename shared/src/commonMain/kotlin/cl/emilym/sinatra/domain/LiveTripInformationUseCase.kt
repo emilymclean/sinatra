@@ -34,11 +34,8 @@ import kotlin.time.Duration.Companion.seconds
 abstract class LiveUseCase {
 
     protected fun decodeTime(
-        specific: TripUpdate.StopTimeEvent?,
         delay: DelayInformation,
         expected: Time,
-        scheduleStartOfDay: Instant,
-        scheduleTimeZone: TimeZone
     ): StationTime {
         val delay = delay.let {
             when (it) {
@@ -60,7 +57,6 @@ abstract class LiveUseCase {
 class LiveTripInformationUseCase(
     private val liveServiceRepository: LiveServiceRepository,
     private val routeRepository: RouteRepository,
-    private val metadataRepository: TransportMetadataRepository
 ): LiveUseCase() {
 
     suspend operator fun invoke(
@@ -69,7 +65,6 @@ class LiveTripInformationUseCase(
         tripId: TripId,
         startOfDay: Instant
     ): Flow<Cachable<IRouteTripInformation>> {
-        val scheduleTimeZone = metadataRepository.timeZone()
         val scheduledTimetable = routeRepository.tripTimetable(routeId, serviceId, tripId, startOfDay)
         return liveServiceRepository.getRouteRealtimeUpdates(routeId).map<RouteRealtimeInformation, Cachable<IRouteTripInformation>> { realtime ->
             val tripRealtime = realtime.updates.firstOrNull { it.tripId == tripId }
@@ -79,18 +74,12 @@ class LiveTripInformationUseCase(
                     scheduledTimetable.trip.stops.map {
                         TimetableStationTime(
                             arrival = decodeTime(
-                                null,
                                 tripRealtime?.delay ?: DelayInformation.Unknown,
                                 it.arrivalTime!!,
-                                startOfDay,
-                                scheduleTimeZone
                             ),
                             departure = decodeTime(
-                                null,
                                 tripRealtime?.delay ?: DelayInformation.Unknown,
                                 it.departureTime!!,
-                                startOfDay,
-                                scheduleTimeZone
                             )
                         )
                     }

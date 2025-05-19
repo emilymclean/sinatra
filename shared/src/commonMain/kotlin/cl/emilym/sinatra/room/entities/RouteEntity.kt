@@ -32,13 +32,14 @@ data class RouteEntity(
     val color: String?,
     val onColor: String?,
     val name: String,
-    val realTimeUrl: String?,
     val type: String,
     val designation: String?,
     @ColumnInfo(defaultValue = "0")
     val hidden: Boolean = RouteVisibility.HIDDEN_DEFAULT,
     @ColumnInfo(defaultValue = "NULL")
-    val searchWeight: Double? = RouteVisibility.SEARCH_WEIGHT_DEFAULT
+    val searchWeight: Double? = RouteVisibility.SEARCH_WEIGHT_DEFAULT,
+    @ColumnInfo(defaultValue = "0")
+    val hasRealtime: Boolean
 ) {
 
     fun toModel(): Route {
@@ -50,8 +51,7 @@ data class RouteEntity(
                 ColorPair(color, OnColor.valueOf(onColor))
             else null,
             name,
-            realTimeUrl != null,
-            realTimeUrl,
+            hasRealtime,
             RouteType.valueOf(type),
             designation,
             RouteVisibility(
@@ -70,11 +70,11 @@ data class RouteEntity(
                 m.colors?.color,
                 m.colors?.onColor?.name,
                 m.name,
-                m.realTimeUrl ?: if (m.hasRealtime) "" else null,
                 m.type.name,
                 m.designation,
                 m.routeVisibility.hidden,
-                m.routeVisibility.searchWeight
+                m.routeVisibility.searchWeight,
+                m.hasRealtime
             )
         }
     }

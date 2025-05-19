@@ -99,6 +99,9 @@ interface GtfsApi {
     @GET("v1/route/{routeId}/live.pb")
     suspend fun routeRealtime(@Path("routeId") routeId: RouteId): RealtimeEndpoint
 
+    @GET("v1/stop/{stopId}/live.pb")
+    suspend fun stopRealtime(@Path("stopId") stopId: StopId): RealtimeEndpoint
+
     @GET("v1/services.pb")
     suspend fun services(): ServiceEndpoint
 

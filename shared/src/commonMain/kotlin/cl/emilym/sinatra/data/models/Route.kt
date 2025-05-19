@@ -7,8 +7,6 @@ data class Route(
     val colors: ColorPair?,
     val name: String,
     val hasRealtime: Boolean,
-    @Deprecated("Use hasRealtime")
-    val realTimeUrl: String?,
     val type: RouteType,
     val designation: String?,
     val routeVisibility: RouteVisibility
@@ -23,7 +21,6 @@ data class Route(
                 pb.colors?.let { ColorPair.fromPB(it) },
                 pb.name,
                 pb.hasRealtime == true,
-                pb.realTimeUrl,
                 RouteType.fromPB(pb.type),
                 pb.designation,
                 RouteVisibility.fromPB(pb.routeVisibility)

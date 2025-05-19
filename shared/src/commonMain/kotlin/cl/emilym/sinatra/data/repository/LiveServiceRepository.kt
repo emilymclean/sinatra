@@ -3,6 +3,8 @@ package cl.emilym.sinatra.data.repository
 import cl.emilym.sinatra.data.client.LiveServiceClient
 import cl.emilym.sinatra.data.models.RouteId
 import cl.emilym.sinatra.data.models.RouteRealtimeInformation
+import cl.emilym.sinatra.data.models.StopId
+import cl.emilym.sinatra.data.models.StopRealtimeInformation
 import cl.emilym.sinatra.data.persistence.LiveServicePersistence
 import cl.emilym.sinatra.lib.periodicFlow
 import com.google.transit.realtime.FeedMessage
@@ -28,9 +30,16 @@ class LiveServiceRepository(
     val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    suspend fun getRouteRealtimeUpdates(routeId: RouteId): Flow<RouteRealtimeInformation> {
+    fun getRouteRealtimeUpdates(routeId: RouteId): Flow<RouteRealtimeInformation> {
         return periodicFlow().mapLatest {
             liveServiceClient.getRouteRealtime(routeId)
+        }
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    fun getStopRealtimeUpdates(stopId: StopId): Flow<StopRealtimeInformation> {
+        return periodicFlow().mapLatest {
+            liveServiceClient.getStopRealtime(stopId)
         }
     }
 

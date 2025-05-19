@@ -86,6 +86,7 @@ message Stop {
   required Location location = 3;
   required StopAccessibility accessibility = 4;
   optional StopVisibility visibility = 6;
+  optional bool hasRealtime = 8;
 }
 
 message StopAccessibility {

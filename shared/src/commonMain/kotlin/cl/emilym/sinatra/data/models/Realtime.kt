@@ -59,3 +59,41 @@ data class RouteRealtimeUpdate(
     }
 
 }
+
+data class StopRealtimeInformation(
+    override val updates: List<StopRealtimeUpdate>,
+    override val expire: Instant
+): RealtimeInformation<StopRealtimeUpdate> {
+
+    companion object {
+        fun fromPb(pb: cl.emilym.gtfs.RealtimeEndpoint): StopRealtimeInformation {
+            return StopRealtimeInformation(
+                pb.updates.map { StopRealtimeUpdate.fromPb(it) },
+                pb.expireTimestamp?.let { Instant.parse(pb.expireTimestamp) }
+                    ?: (Clock.System.now() + 2.minutes)
+            )
+        }
+    }
+
+}
+
+data class StopRealtimeUpdate(
+    val tripId: TripId,
+    override val delay: DelayInformation
+): RealtimeUpdate {
+
+    companion object {
+        fun fromPb(pb: cl.emilym.gtfs.RealtimeUpdate): StopRealtimeUpdate {
+            return StopRealtimeUpdate(
+                pb.tripId,
+                pb.delay.let {
+                    when (it) {
+                        null -> DelayInformation.Unknown
+                        else -> DelayInformation.Fixed(it.seconds)
+                    }
+                }
+            )
+        }
+    }
+
+}

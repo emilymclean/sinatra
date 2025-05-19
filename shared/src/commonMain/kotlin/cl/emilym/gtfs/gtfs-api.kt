@@ -769,6 +769,7 @@ public data class Stop(
     val location: cl.emilym.gtfs.Location,
     val accessibility: cl.emilym.gtfs.StopAccessibility,
     val visibility: cl.emilym.gtfs.StopVisibility? = null,
+    val hasRealtime: Boolean? = null,
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
 ) : pbandk.Message {
     override operator fun plus(other: pbandk.Message?): cl.emilym.gtfs.Stop = protoMergeImpl(other)
@@ -781,7 +782,7 @@ public data class Stop(
             fullName = "proto.Stop",
             messageClass = cl.emilym.gtfs.Stop::class,
             messageCompanion = this,
-            fields = buildList(7) {
+            fields = buildList(8) {
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
@@ -850,6 +851,16 @@ public data class Stop(
                         type = pbandk.FieldDescriptor.Type.Primitive.String(hasPresence = true),
                         jsonName = "simpleName",
                         value = cl.emilym.gtfs.Stop::simpleName
+                    )
+                )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "hasRealtime",
+                        number = 8,
+                        type = pbandk.FieldDescriptor.Type.Primitive.Bool(hasPresence = true),
+                        jsonName = "hasRealtime",
+                        value = cl.emilym.gtfs.Stop::hasRealtime
                     )
                 )
             }
@@ -2353,6 +2364,7 @@ private fun Stop.protoMergeImpl(plus: pbandk.Message?): Stop = (plus as? Stop)?.
         location = location.plus(plus.location),
         accessibility = accessibility.plus(plus.accessibility),
         visibility = visibility?.plus(plus.visibility) ?: plus.visibility,
+        hasRealtime = plus.hasRealtime ?: hasRealtime,
         unknownFields = unknownFields + plus.unknownFields
     )
 } ?: this
@@ -2366,6 +2378,7 @@ private fun Stop.Companion.decodeWithImpl(u: pbandk.MessageDecoder): Stop {
     var location: cl.emilym.gtfs.Location? = null
     var accessibility: cl.emilym.gtfs.StopAccessibility? = null
     var visibility: cl.emilym.gtfs.StopVisibility? = null
+    var hasRealtime: Boolean? = null
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
@@ -2376,6 +2389,7 @@ private fun Stop.Companion.decodeWithImpl(u: pbandk.MessageDecoder): Stop {
             5 -> parentStation = _fieldValue as String
             6 -> visibility = _fieldValue as cl.emilym.gtfs.StopVisibility
             7 -> simpleName = _fieldValue as String
+            8 -> hasRealtime = _fieldValue as Boolean
         }
     }
 
@@ -2392,7 +2406,7 @@ private fun Stop.Companion.decodeWithImpl(u: pbandk.MessageDecoder): Stop {
         throw pbandk.InvalidProtocolBufferException.missingRequiredField("accessibility")
     }
     return Stop(id!!, parentStation, name!!, simpleName,
-        location!!, accessibility!!, visibility, unknownFields)
+        location!!, accessibility!!, visibility, hasRealtime, unknownFields)
 }
 
 private fun StopAccessibility.protoMergeImpl(plus: pbandk.Message?): StopAccessibility = (plus as? StopAccessibility)?.let {
