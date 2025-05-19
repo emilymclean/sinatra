@@ -1,7 +1,10 @@
 package cl.emilym.sinatra.data.repository
 
 import cl.emilym.sinatra.data.client.LiveServiceClient
+import cl.emilym.sinatra.data.models.RouteId
+import cl.emilym.sinatra.data.models.RouteRealtimeInformation
 import cl.emilym.sinatra.data.persistence.LiveServicePersistence
+import cl.emilym.sinatra.lib.periodicFlow
 import com.google.transit.realtime.FeedMessage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -11,6 +14,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.shareIn
 import org.koin.core.annotation.Factory
@@ -22,6 +26,13 @@ class LiveServiceRepository(
 ) {
 
     val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    suspend fun getRouteRealtimeUpdates(routeId: RouteId): Flow<RouteRealtimeInformation> {
+        return periodicFlow().mapLatest {
+            liveServiceClient.getRouteRealtime(routeId)
+        }
+    }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     suspend fun getRealtimeUpdates(url: String): Flow<FeedMessage> {

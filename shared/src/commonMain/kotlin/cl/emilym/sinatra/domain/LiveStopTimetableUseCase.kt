@@ -1,5 +1,6 @@
 package cl.emilym.sinatra.domain
 
+import cl.emilym.sinatra.data.models.DelayInformation
 import cl.emilym.sinatra.data.models.IStopTimetableTime
 import cl.emilym.sinatra.data.models.LiveStopTimetableTime
 import cl.emilym.sinatra.data.models.StopId
@@ -51,14 +52,14 @@ class LiveStopTimetableUseCase(
                                 TimetableStationTime(
                                     arrival = decodeTime(
                                         s?.arrival,
-                                        delay,
+                                        DelayInformation.Unknown,
                                         stopTimetableTime.arrivalTime,
                                         scheduleStartOfDay,
                                         scheduleTimeZone
                                     ),
                                     departure = decodeTime(
                                         s?.departure,
-                                        delay,
+                                        DelayInformation.Unknown,
                                         stopTimetableTime.departureTime,
                                         scheduleStartOfDay,
                                         scheduleTimeZone

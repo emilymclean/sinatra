@@ -78,19 +78,21 @@ class CurrentTripForRouteUseCase(
                 val timetable = activeServices.flatMap { routeRepository.canonicalServiceTimetable(routeId, it!!.id) }
                 flowOf(timetable.map { CurrentTripInformation(it.trip, route) })
             }
-            route.realTimeUrl == null -> {
+            !route.hasRealtime -> {
                 fallback()
             }
             else -> {
                 try {
-                    liveTripInformationUseCase.invoke(
-                        route.realTimeUrl,
+                    liveTripInformationUseCase(
                         routeId,
                         activeServices.item!!.id,
                         tripId,
                         now
-                    ).map { it.map { CurrentTripInformation(it, route) }
-                        .merge(activeServices, { i1, i2 -> i1 }) }
+                    ).map {
+                        it
+                            .map { CurrentTripInformation(it, route) }
+                            .merge(activeServices) { i1, i2 -> i1 }
+                    }
                 } catch (e: Exception) {
                     Napier.e(e)
                     fallback()

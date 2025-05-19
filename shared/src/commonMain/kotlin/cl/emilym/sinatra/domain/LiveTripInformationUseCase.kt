@@ -1,9 +1,11 @@
 package cl.emilym.sinatra.domain
 
 import cl.emilym.sinatra.data.models.Cachable
+import cl.emilym.sinatra.data.models.DelayInformation
 import cl.emilym.sinatra.data.models.IRouteTripInformation
 import cl.emilym.sinatra.data.models.LiveRouteTripInformation
 import cl.emilym.sinatra.data.models.RouteId
+import cl.emilym.sinatra.data.models.RouteRealtimeInformation
 import cl.emilym.sinatra.data.models.ServiceId
 import cl.emilym.sinatra.data.models.StationTime
 import cl.emilym.sinatra.data.models.Time
@@ -19,6 +21,7 @@ import cl.emilym.sinatra.e
 import com.google.transit.realtime.FeedMessage
 import com.google.transit.realtime.TripUpdate
 import io.github.aakira.napier.Napier
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
@@ -32,7 +35,7 @@ abstract class LiveUseCase {
 
     protected fun decodeTime(
         specific: TripUpdate.StopTimeEvent?,
-        delay: Int?,
+        delay: DelayInformation,
         expected: Time,
         scheduleStartOfDay: Instant,
         scheduleTimeZone: TimeZone
@@ -45,14 +48,20 @@ abstract class LiveUseCase {
         )
             return StationTime.Scheduled(expected)
 
+        val delay = delay.let {
+            when (it) {
+                is DelayInformation.Unknown -> null
+                is DelayInformation.Fixed -> it.delay
+            }
+        }
         return StationTime.Live(
             specific?.time?.let {
                 Instant.fromEpochSeconds(it).toTime(scheduleStartOfDay)
             } ?: specific?.delay?.seconds?.let { expected + it } ?:
-            delay?.seconds?.let { expected + it } ?: expected,
+            delay?.let { expected + it } ?: expected,
             specific?.time?.let {
                 Instant.fromEpochSeconds(it) - expected.instant
-            } ?: specific?.delay?.seconds ?: delay?.seconds ?: 0.seconds
+            } ?: specific?.delay?.seconds ?: delay ?: 0.seconds
         )
     }
 
@@ -65,41 +74,31 @@ class LiveTripInformationUseCase(
     private val metadataRepository: TransportMetadataRepository
 ): LiveUseCase() {
 
-    suspend fun invoke(
-        liveInformationUrl: String,
+    suspend operator fun invoke(
         routeId: RouteId,
         serviceId: ServiceId,
         tripId: TripId,
         startOfDay: Instant
     ): Flow<Cachable<IRouteTripInformation>> {
         val scheduleTimeZone = metadataRepository.timeZone()
-
         val scheduledTimetable = routeRepository.tripTimetable(routeId, serviceId, tripId, startOfDay)
-        return liveServiceRepository.getRealtimeUpdates(liveInformationUrl).map<FeedMessage, Cachable<IRouteTripInformation>> {
-            val updates = it.entity
-                .filterNot { it.isDeleted == true }
-                .mapNotNull { it.tripUpdate }
-                .filter { it.trip.tripId == tripId }
-            val delay = updates.firstOrNull { it.delay != null }?.delay
-            val specific = updates.firstOrNull { it.stopTimeUpdate.isNotEmpty() }
-                ?.stopTimeUpdate?.associate { it.stopId to it }
-
-            scheduledTimetable.map {
+        return liveServiceRepository.getRouteRealtimeUpdates(routeId).map<RouteRealtimeInformation, Cachable<IRouteTripInformation>> { realtime ->
+            val tripRealtime = realtime.updates.firstOrNull { it.tripId == tripId }
+            scheduledTimetable.map { scheduledTimetable ->
                 LiveRouteTripInformation.fromOther(
-                    it.trip,
-                    it.trip.stops.map {
-                        val s = specific?.get(it.stopId)
+                    scheduledTimetable.trip,
+                    scheduledTimetable.trip.stops.map {
                         TimetableStationTime(
                             arrival = decodeTime(
-                                s?.arrival,
-                                delay,
+                                null,
+                                tripRealtime?.delay ?: DelayInformation.Unknown,
                                 it.arrivalTime!!,
                                 startOfDay,
                                 scheduleTimeZone
                             ),
                             departure = decodeTime(
-                                s?.departure,
-                                delay,
+                                null,
+                                tripRealtime?.delay ?: DelayInformation.Unknown,
                                 it.departureTime!!,
                                 startOfDay,
                                 scheduleTimeZone

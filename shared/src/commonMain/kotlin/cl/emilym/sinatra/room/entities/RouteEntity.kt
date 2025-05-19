@@ -50,6 +50,7 @@ data class RouteEntity(
                 ColorPair(color, OnColor.valueOf(onColor))
             else null,
             name,
+            realTimeUrl != null,
             realTimeUrl,
             RouteType.valueOf(type),
             designation,
@@ -69,7 +70,7 @@ data class RouteEntity(
                 m.colors?.color,
                 m.colors?.onColor?.name,
                 m.name,
-                m.realTimeUrl,
+                m.realTimeUrl ?: if (m.hasRealtime) "" else null,
                 m.type.name,
                 m.designation,
                 m.routeVisibility.hidden,
