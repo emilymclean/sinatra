@@ -17,6 +17,10 @@ message StopDetailEndpoint {
   repeated Stop children = 2;
 }
 
+message StopRoutesEndpoint {
+  repeated string routeIds = 1;
+}
+
 message RouteDetailEndpoint {
   required Route route = 1;
 }
@@ -48,6 +52,10 @@ message RouteServicesEndpoint {
   repeated string serviceIds = 1;
 }
 
+message RouteHeadingsEndpoint {
+  repeated string headings = 1;
+}
+
 message JourneySearchConfigEndpoint {
   required int32 maximumComputationTime = 1;
   repeated JourneySearchOption options = 2;
@@ -63,6 +71,11 @@ message JourneySearchOption {
   optional int32 changeOverTime = 3;
   optional int32 transferPenalty = 4;
   optional int32 changeOverPenalty = 5;
+}
+
+message RealtimeEndpoint {
+  repeated RealtimeUpdate updates = 1;
+  optional string expireTimestamp = 2;
 }
 
 message Stop {
@@ -101,7 +114,9 @@ message Route {
   required string name = 3;
   optional string designation = 7;
   required RouteType type = 4;
+  // Deprecated
   optional string realTimeUrl = 8;
+  optional bool hasRealtime = 10;
   optional RouteVisibility routeVisibility = 9;
 }
 
@@ -230,4 +245,9 @@ message ServiceAlert {
   optional string url = 4;
   repeated ServiceAlertRegion regions = 5;
   optional string highlightDuration = 6;
+}
+
+message RealtimeUpdate {
+  required string tripId = 1;
+  optional int32 delay = 2;
 }
