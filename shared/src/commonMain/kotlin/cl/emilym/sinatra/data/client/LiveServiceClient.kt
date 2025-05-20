@@ -27,7 +27,7 @@ class LiveServiceClient(
 
     suspend fun getStopRealtime(stopId: StopId): StopRealtimeInformation {
         return StopRealtimeInformation.fromPb(
-            api.routeRealtime(stopId)
+            api.stopRealtime(stopId)
         )
     }
 
