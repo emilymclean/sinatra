@@ -31,12 +31,14 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
+import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
 class LiveStopTimetableUseCaseTest {
@@ -45,12 +47,16 @@ class LiveStopTimetableUseCaseTest {
     private lateinit var stopRepository: StopRepository
     private lateinit var useCase: LiveStopTimetableUseCase
     private val scheduleStartOfDay = Instant.fromEpochMilliseconds(0)
+    private lateinit var clock: Clock
 
     @BeforeTest
     fun setUp() {
         liveServiceRepository = mockk()
         stopRepository = mockk()
-        useCase = LiveStopTimetableUseCase(liveServiceRepository, stopRepository)
+        clock = mockk()
+        useCase = LiveStopTimetableUseCase(liveServiceRepository, stopRepository, clock)
+
+        every { clock.now() } returns Instant.fromEpochMilliseconds(0) + 20.minutes
 
         mockkStatic(Napier::class)
     }
@@ -147,6 +153,56 @@ class LiveStopTimetableUseCaseTest {
                 )
             ),
             expire = Instant.DISTANT_FUTURE
+        )
+        coEvery { liveServiceRepository.getStopRealtimeUpdates(any()) } returns updates
+        coEvery { stopRepository.stop(stopId) } returns Cachable.live(Stop("stop1", null, "Stop 1", "Stop 1",
+            MapLocation(0.0,0.0,), StopAccessibility(StopWheelchairAccessibility.FULL), StopVisibility(false, false, false, null), true
+        ))
+
+        val result = useCase(stopId, scheduled).toList()
+
+        assertEquals(1, result.size)
+        assertEquals(scheduled, result[0])
+    }
+
+    @Test
+    fun `invoke should fallback to scheduled times when feed expired`() = runTest {
+        val stopId = "stop-1"
+        val scheduled = listOf(
+            StopTimetableTime(
+                null,
+                "R1",
+                "R1",
+                "S1",
+                "trip-1",
+                Time.parse("PT10H").addReference(scheduleStartOfDay),
+                Time.parse("PT10H1M").addReference(scheduleStartOfDay),
+                "North",
+                0,
+                Route(
+                    "R1",
+                    "R1",
+                    "R1",
+                    null,
+                    "R1",
+                    true,
+                    RouteType.BUS,
+                    null,
+                    RouteVisibility(
+                        false,
+                        null
+                    )
+                )
+            )
+        )
+        val updates = StopRealtimeInformation(
+            updates = listOf(
+                StopRealtimeUpdate(
+                    "trip-1",
+                    DelayInformation.Fixed(10.seconds)
+                )
+            ),
+            expire = Instant.fromEpochMilliseconds(0)
         )
         coEvery { liveServiceRepository.getStopRealtimeUpdates(any()) } returns updates
         coEvery { stopRepository.stop(stopId) } returns Cachable.live(Stop("stop1", null, "Stop 1", "Stop 1",

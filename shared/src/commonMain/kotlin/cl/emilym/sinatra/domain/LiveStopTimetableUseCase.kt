@@ -18,26 +18,31 @@ import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
+import kotlinx.datetime.Clock
 import org.koin.core.annotation.Factory
 import kotlin.collections.map
+import kotlin.time.Duration.Companion.minutes
 
 @Factory
 class LiveStopTimetableUseCase(
     private val liveServiceRepository: LiveServiceRepository,
-    private val stopRepository: StopRepository
+    private val stopRepository: StopRepository,
+    private val clock: Clock
 ): LiveUseCase() {
+
+    companion object {
+        val EXPIRE_LEEWAY = 10.minutes
+    }
 
     operator fun invoke(
         stopId: StopId,
         scheduled: List<IStopTimetableTime>
     ): Flow<List<IStopTimetableTime>> {
         return flow {
-            if (stopRepository.stop(stopId).item?.hasRealtime != true) {
-                emit(scheduled)
-                return@flow
-            }
-
+            if (stopRepository.stop(stopId).item?.hasRealtime != true) return@flow emit(scheduled)
             val realtime = liveServiceRepository.getStopRealtimeUpdates(stopId)
+            if (realtime.expire + EXPIRE_LEEWAY < clock.now()) return@flow emit(scheduled)
+
             emit(
                 scheduled.map { stopTimetableTime ->
                     val delay = realtime.updates.firstOrNull { it.tripId == stopTimetableTime.tripId }?.delay

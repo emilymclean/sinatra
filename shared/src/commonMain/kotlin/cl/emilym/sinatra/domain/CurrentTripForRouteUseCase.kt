@@ -33,8 +33,7 @@ class CurrentTripForRouteUseCase(
     private val serviceRepository: ServiceRepository,
     private val transportMetadataRepository: TransportMetadataRepository,
     private val clock: Clock,
-    private val liveTripInformationUseCase: LiveTripInformationUseCase,
-    private val metadataRepository: TransportMetadataRepository
+    private val liveTripInformationUseCase: LiveTripInformationUseCase
 ) {
 
     suspend operator fun invoke(
@@ -43,7 +42,7 @@ class CurrentTripForRouteUseCase(
         tripId: TripId? = null,
         referenceTime: Instant? = null
     ): Flow<Cachable<CurrentTripInformation?>> {
-        val now = (referenceTime ?: clock.now()).startOfDay(metadataRepository.timeZone())
+        val now = (referenceTime ?: clock.now()).startOfDay(transportMetadataRepository.timeZone())
 
         val rc = routeRepository.route(routeId)
         val route = rc.item ?: return flowOf(rc.map { null })

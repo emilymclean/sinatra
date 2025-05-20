@@ -26,15 +26,18 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
+import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.Month
 import kotlinx.datetime.toInstant
+import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
 class LiveTripInformationUseCaseTest {
@@ -44,11 +47,18 @@ class LiveTripInformationUseCaseTest {
     private val scheduleStartOfDay = LocalDateTime(2024, Month.JANUARY, 5, 0, 0, 0).toInstant(
         timeZone
     )
+    private val clock = mockk<Clock>()
 
     private val useCase = LiveTripInformationUseCase(
         liveServiceRepository = liveServiceRepository,
-        routeRepository = routeRepository
+        routeRepository = routeRepository,
+        clock = clock
     )
+
+    @BeforeTest
+    fun setup() {
+        every { clock.now() } returns Instant.fromEpochMilliseconds(0) + 20.minutes
+    }
 
     @Test
     fun `invoke should merge real-time updates with scheduled times when delay provided`() = runTest {
@@ -168,7 +178,6 @@ class LiveTripInformationUseCaseTest {
         val instant = Instant.parse("2024-01-05T12:00:00Z")
 
         // Arrange
-        val liveInformationUrl = "http://realtime.url"
         val routeId = "route-1"
         val serviceId = "service-1"
         val tripId = "trip-1"
@@ -197,6 +206,62 @@ class LiveTripInformationUseCaseTest {
 
         coEvery { routeRepository.tripTimetable(routeId, serviceId, tripId, any()) } returns Cachable.live(scheduledTimetable)
         coEvery { liveServiceRepository.getRouteRealtimeUpdates(any()) } returns flow { throw Exception("Network error") }
+
+        // Act
+        val result = useCase.invoke(routeId, serviceId, tripId, instant).first()
+
+        // Assert
+        val updatedTimetable = result.item
+        assertEquals(1, updatedTimetable.stops.size)
+        assertEquals(sId, updatedTimetable.stops[0].stopId)
+        assertNotNull(updatedTimetable.stops[0].stationTime)
+        assertIs<StationTime.Scheduled>(updatedTimetable.stops[0].stationTime!!.arrival)
+        assertEquals(36000, updatedTimetable.stops[0].stationTime!!.arrival.time.durationThroughDay.inWholeSeconds)
+    }
+
+    @Test
+    fun `invoke emits scheduled timetable when feed expired`() = runTest {
+        val instant = Instant.parse("2024-01-05T12:00:00Z")
+
+        // Arrange
+        val routeId = "route-1"
+        val serviceId = "service-1"
+        val tripId = "trip-1"
+        val sId = "stop-1"
+
+        val scheduledTimetable = RouteTripTimetable(
+            trip = RouteTripInformation(
+                startTime = null,
+                endTime = null,
+                accessibility = RouteServiceAccessibility(
+                    ServiceBikesAllowed.ALLOWED,
+                    ServiceWheelchairAccessible.ACCESSIBLE
+                ),
+                heading = "North",
+                stops = listOf(
+                    RouteTripStop(
+                        stopId = sId,
+                        arrivalTime = Time.parse("PT10H").addReference(scheduleStartOfDay),
+                        departureTime = Time.parse("PT10H1M").addReference(scheduleStartOfDay),
+                        sequence = 1,
+                        stop = null
+                    )
+                )
+            )
+        )
+
+        val updates = RouteRealtimeInformation(
+            updates = listOf(
+                RouteRealtimeUpdate(
+                    tripId,
+                    DelayInformation.Fixed(10.seconds)
+                )
+            ),
+            expire = Instant.fromEpochMilliseconds(0)
+        )
+        coEvery { liveServiceRepository.getRouteRealtimeUpdates(any()) } returns flowOf(updates)
+
+        coEvery { routeRepository.tripTimetable(routeId, serviceId, tripId, any()) } returns Cachable.live(scheduledTimetable)
 
         // Act
         val result = useCase.invoke(routeId, serviceId, tripId, instant).first()
