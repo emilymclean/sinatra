@@ -90,6 +90,7 @@ import cl.emilym.sinatra.ui.widgets.createRequestStateFlowFlow
 import cl.emilym.sinatra.ui.widgets.currentLocation
 import cl.emilym.sinatra.ui.widgets.handleFlowProperly
 import cl.emilym.sinatra.ui.widgets.pick
+import com.mikepenz.markdown.m3.Markdown
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.emitAll
@@ -112,6 +113,7 @@ import sinatra.ui.generated.resources.route_not_found
 import sinatra.ui.generated.resources.semantics_favourite_route
 import sinatra.ui.generated.resources.stop_detail_distance
 import sinatra.ui.generated.resources.stop_detail_nearest_stop
+import sinatra.ui.generated.resources.stops_timing_approximate
 import sinatra.ui.generated.resources.stops_title
 import sinatra.ui.generated.resources.trip_not_found
 
@@ -343,6 +345,14 @@ class RouteDetailScreen(
                 item {
                     AlertScaffold((alerts as? RequestState.Success)?.value)
                 }
+                if (route.description != null && trigger == null) {
+                    item {
+                        Column(Modifier.fillMaxWidth().padding(1.rdp)) {
+                            Markdown(route.description ?: "")
+                        }
+                    }
+                    item { Box(Modifier.height(1.rdp)) }
+                }
                 item {
                     Subheading(stringResource(Res.string.accessibility_title))
                 }
@@ -369,7 +379,7 @@ class RouteDetailScreen(
                         }
                     }
                 }
-                item { Box(Modifier.height(1.rdp)) }
+                item { Box(Modifier.height(2.rdp)) }
                 nearestStop?.let { nearestStop ->
                     if (!FeatureFlags.ROUTE_DETAIL_NEAREST_STOP) return@let
                     item {
@@ -385,6 +395,7 @@ class RouteDetailScreen(
                                 },
                                 subtitle = stringResource(Res.string.stop_detail_distance, nearestStop.distance.text)
                             )
+                            Box(Modifier.height(2.rdp))
                         }
                     }
                 }
@@ -395,11 +406,27 @@ class RouteDetailScreen(
                     }
                     else -> {
                         if (current != null) {
-                            item { Subheading(stringResource(Res.string.current_stops_title)) }
+                            item {
+                                Subheading(stringResource(Res.string.current_stops_title))
+                            }
+                            item {
+                                Column(Modifier.padding(horizontal = 1.rdp)) {
+                                    Text(stringResource(Res.string.stops_timing_approximate))
+                                }
+                            }
                             Cards(navigator, current ?: listOf())
                         }
                         if (past != null) {
-                            item { Subheading(stringResource(Res.string.past_stops_title)) }
+                            item {
+                                Subheading(stringResource(Res.string.past_stops_title))
+                            }
+                            if (current == null) {
+                                item {
+                                    Column(Modifier.padding(horizontal = 1.rdp)) {
+                                        Text(stringResource(Res.string.stops_timing_approximate))
+                                    }
+                                }
+                            }
                             Cards(navigator, past ?: listOf())
                         }
                     }

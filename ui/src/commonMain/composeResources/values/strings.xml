@@ -148,18 +148,22 @@
     <string name="stop_detail_child_stations">Additional stops</string>
     <string name="current_stops_title">Upcoming stops</string>
     <string name="past_stops_title">Past stops</string>
+    <string name="stops_timing_approximate">Scheduled times are approximate</string>
     <string name="accessibility_title">Accessibility</string>
 
     <string name="scheduled_arrival">Scheduled to arrive at %1$s</string>
     <string name="estimated_arrival">Expected to arrive at %1$s</string>
+    <string name="approximate_arrival">Approximately arriving at %1$s</string>
     <string name="estimated_arrival_late">Expected to arrive at %1$s (%2$s late)</string>
     <string name="estimated_arrival_early">Expected to arrive at %1$s (%2$s early)</string>
 
     <string name="past_departure">Departed at %1$s</string>
+    <string name="past_departure_approximate">Departed at approximately %1$s</string>
     <string name="past_departure_late">Departed at %1$s (%2$s late)</string>
     <string name="past_departure_early">Departed at %1$s (%2$s early)</string>
     <string name="future_scheduled_departure">Scheduled to depart at %1$s</string>
     <string name="future_estimated_departure">Expected to depart at %1$s</string>
+    <string name="future_approximate_departure">Expected to depart at approximately %1$s</string>
     <string name="future_estimated_departure_late">Expected to depart at %1$s (%2$s late)</string>
     <string name="future_estimated_departure_early">Expected to depart at %1$s (%2$s early)</string>
 

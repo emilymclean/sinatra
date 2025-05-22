@@ -26,14 +26,17 @@ import cl.emilym.sinatra.ui.localization.isInPast
 import cl.emilym.sinatra.ui.text
 import org.jetbrains.compose.resources.stringResource
 import sinatra.ui.generated.resources.Res
+import sinatra.ui.generated.resources.approximate_arrival
 import sinatra.ui.generated.resources.estimated_arrival
 import sinatra.ui.generated.resources.estimated_arrival_early
 import sinatra.ui.generated.resources.estimated_arrival_late
+import sinatra.ui.generated.resources.future_approximate_departure
 import sinatra.ui.generated.resources.future_estimated_departure
 import sinatra.ui.generated.resources.future_estimated_departure_early
 import sinatra.ui.generated.resources.future_estimated_departure_late
 import sinatra.ui.generated.resources.future_scheduled_departure
 import sinatra.ui.generated.resources.past_departure
+import sinatra.ui.generated.resources.past_departure_approximate
 import sinatra.ui.generated.resources.past_departure_early
 import sinatra.ui.generated.resources.past_departure_late
 import sinatra.ui.generated.resources.scheduled_arrival
@@ -128,10 +131,19 @@ val StopStationTime.text: String
         val isInPast = stationTime.time.isInPast()
         return when (stationTime) {
             is StationTime.Scheduled -> stringResource(when (this) {
-                is StopStationTime.Arrival -> Res.string.scheduled_arrival
+                is StopStationTime.Arrival -> when (stationTime.approximate) {
+                    true -> Res.string.approximate_arrival
+                    false -> Res.string.scheduled_arrival
+                }
                 is StopStationTime.Departure -> when (isInPast) {
-                    true -> Res.string.past_departure
-                    false -> Res.string.future_scheduled_departure
+                    true -> when(stationTime.approximate) {
+                        true -> Res.string.past_departure_approximate
+                        false -> Res.string.past_departure
+                    }
+                    false -> when(stationTime.approximate) {
+                        true -> Res.string.future_approximate_departure
+                        false -> Res.string.future_scheduled_departure
+                    }
                 }
             }, time)
             is StationTime.Live -> when {
