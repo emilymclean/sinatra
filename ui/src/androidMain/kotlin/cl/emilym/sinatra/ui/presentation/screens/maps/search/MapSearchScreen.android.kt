@@ -24,8 +24,8 @@ import sinatra.ui.generated.resources.semantics_stop
 actual fun NativeMapScope.DrawMapSearchScreenMapNative(stops: List<Stop>) {
     val navigator = LocalNavigator.currentOrThrow
     val icon = stopMarkerIcon()!!
-    val bitmapDescriptor = remember { icon.bitmapDescriptor }
-    val anchor = remember { icon.anchor.toNative() }
+    val bitmapDescriptor = remember(icon) { icon.bitmapDescriptor }
+    val anchor = remember(icon) { icon.anchor.toNative() }
     val markerStates = stops.map { rememberMarkerState(position = it.location.toNative()) }
 
     val visible = remember(zoom) { zoom >= zoomThreshold }

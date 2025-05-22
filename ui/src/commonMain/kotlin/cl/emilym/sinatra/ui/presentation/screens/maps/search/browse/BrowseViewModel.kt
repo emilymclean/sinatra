@@ -11,7 +11,9 @@ import cl.emilym.sinatra.data.models.ServiceAlertId
 import cl.emilym.sinatra.data.models.SpecialFavouriteType
 import cl.emilym.sinatra.data.models.distance
 import cl.emilym.sinatra.data.repository.ServiceAlertRepository
+import cl.emilym.sinatra.domain.CurrentTripInformation
 import cl.emilym.sinatra.domain.DisplayRoutesUseCase
+import cl.emilym.sinatra.domain.VisibleBrowseRouteUseCase
 import cl.emilym.sinatra.domain.prompt.FavouriteNearbyStopDeparturesUseCase
 import cl.emilym.sinatra.domain.prompt.NewServiceUpdateUseCase
 import cl.emilym.sinatra.domain.prompt.QuickNavigateUseCase
@@ -22,7 +24,6 @@ import cl.emilym.sinatra.ui.presentation.screens.maps.navigate.NavigationLocatio
 import cl.emilym.sinatra.ui.retryIfNeeded
 import cl.emilym.sinatra.ui.toNavigationLocation
 import cl.emilym.sinatra.ui.widgets.SinatraScreenModel
-import io.github.aakira.napier.Napier
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.IO

@@ -28,10 +28,14 @@ import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.FeatureFlags
 import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.ui.canberraRegion
+import cl.emilym.sinatra.ui.color
+import cl.emilym.sinatra.ui.maps.LineItem
 import cl.emilym.sinatra.ui.maps.MapCallbackItem
 import cl.emilym.sinatra.ui.maps.MapItem
 import cl.emilym.sinatra.ui.maps.MarkerItem
 import cl.emilym.sinatra.ui.maps.NativeMapScope
+import cl.emilym.sinatra.ui.maps.routeStopMarkerIcon
+import cl.emilym.sinatra.ui.maps.stopMarkerIcon
 import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
 import cl.emilym.sinatra.ui.navigation.MapScreen
 import cl.emilym.sinatra.ui.navigation.NativeMapScreen
@@ -173,26 +177,47 @@ class MapSearchScreen: MapScreen, NativeMapScreen {
     @Composable
     override fun NativeMapScope.DrawMapNative() {
         val viewModel = koinScreenModel<MapSearchViewModel>()
-        val stopsRS by viewModel.stops.collectAsStateWithLifecycle()
-        val stops = (stopsRS as? RequestState.Success)?.value ?: return
+        val stops by viewModel.mapStops.collectAsStateWithLifecycle()
 
-        DrawMapSearchScreenMapNative(stops)
+        stops?.let { DrawMapSearchScreenMapNative(it) }
     }
 
     @Composable
     override fun mapItems(): List<MapItem> {
         val viewModel = koinScreenModel<MapSearchViewModel>()
-        val stopsRS by viewModel.stops.collectAsStateWithLifecycle()
-        val stops = (stopsRS as? RequestState.Success)?.value ?: return listOf()
+        val stops by viewModel.mapStops.collectAsStateWithLifecycle()
+        val visibleBrowseRoute by viewModel.visibleBrowseRoute.collectAsStateWithLifecycle()
         val navigator = LocalNavigator.currentOrThrow
 
-        return mapSearchScreenMapItems(stops) + listOfNotNull(
-            if (FeatureFlags.HOLD_MAP_POINT_DETAIL) MapCallbackItem(onLongClick = { pos, zoom ->
-                if (!canberraRegion.contains(pos)) return@MapCallbackItem
-                navigator.push(PointDetailScreen(pos, zoom + 2))
+        return listOfNotNull(
+            stops?.let { mapSearchScreenMapItems(it) },
+            if (FeatureFlags.HOLD_MAP_POINT_DETAIL)
+                listOf(MapCallbackItem(onLongClick = { pos, zoom ->
+                    if (!canberraRegion.contains(pos)) return@MapCallbackItem
+                    navigator.push(PointDetailScreen(pos, zoom + 2))
+                }))
+            else null,
+            visibleBrowseRoute?.let { info ->
+                listOfNotNull(
+                    listOfNotNull(
+                        info.tripInformation?.stops?.let {
+                            LineItem(
+                                it.mapNotNull { it.stop?.location },
+                                info.route.colors?.color(),
+                                id = "route-${info.route.id}"
+                            )
+                        }
+                    ),
+                    info.tripInformation?.stops?.mapNotNull {
+                        MarkerItem(
+                            it.stop?.location ?: return@mapNotNull null,
+                            routeStopMarkerIcon(info.route),
+                            id = "stop-${it.stopId}-event"
+                        )
+                    }
+                ).flatten()
             }
-            ) else null
-        )
+        ).flatten()
     }
 
 }

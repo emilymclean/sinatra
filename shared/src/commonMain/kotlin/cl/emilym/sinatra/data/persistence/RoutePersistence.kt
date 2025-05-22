@@ -24,6 +24,10 @@ class RoutePersistence(
         return routeDao.get(id)?.toModel()
     }
 
+    suspend fun getShowOnBrowse(): List<Route> {
+        return routeDao.getShowOnBrowse().map { it.toModel() }
+    }
+
     suspend fun clear() {
         routeDao.clear()
     }
