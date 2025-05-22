@@ -198,18 +198,24 @@
   <string name="current_stops_title">即将停靠的站点</string>
       
   <string name="past_stops_title">过去的站点</string>
+
+  <string name="stops_timing_approximate">到达时间仅为预估，实际时间可能有所变动</string>
       
   <string name="accessibility_title">无障碍设施</string>
       
   <string name="scheduled_arrival">计划到达%1$s</string>
       
   <string name="estimated_arrival">预计到达%1$s</string>
+
+  <string name="approximate_arrival">约%1$s到达</string>
       
   <string name="estimated_arrival_late">预计到达时间为%1$s（晚点%2$s）</string>
       
   <string name="estimated_arrival_early">预计到达时间为%1$s（早%2$s）</string>
       
   <string name="past_departure">于 %1$s 出发</string>
+
+  <string name="past_departure_approximate">大约在 %1$s 出发</string>
       
   <string name="past_departure_late">于%1$s出发（晚点 %2$s）</string>
       
@@ -218,6 +224,8 @@
   <string name="future_scheduled_departure">预计于%1$s出发</string>
       
   <string name="future_estimated_departure">预计于%1$s出发</string>
+
+  <string name="future_approximate_departure">预计于%1$s出发</string>
       
   <string name="future_estimated_departure_late">预计于%1$s出发（晚点%2$s）</string>
       
@@ -232,6 +240,8 @@
   <string name="upcoming_vehicles">即将开通的航线</string>
       
   <string name="no_upcoming_vehicles">今天剩余时间没有安排航线。</string>
+
+  <string name="route_see_more">查看更多</string>
       
   <string name="accessibility_wheelchair_accessible">轮椅无障碍</string>
       
