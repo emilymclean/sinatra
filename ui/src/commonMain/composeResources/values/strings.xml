@@ -153,7 +153,7 @@
 
     <string name="scheduled_arrival">Scheduled to arrive at %1$s</string>
     <string name="estimated_arrival">Expected to arrive at %1$s</string>
-    <string name="approximate_arrival">Approximately arriving at %1$s</string>
+    <string name="approximate_arrival">Arriving at approximately %1$s</string>
     <string name="estimated_arrival_late">Expected to arrive at %1$s (%2$s late)</string>
     <string name="estimated_arrival_early">Expected to arrive at %1$s (%2$s early)</string>
 
