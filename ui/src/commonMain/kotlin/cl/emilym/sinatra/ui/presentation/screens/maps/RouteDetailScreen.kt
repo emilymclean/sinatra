@@ -438,7 +438,10 @@ class RouteDetailScreen(
                             }
                             item {
                                 Column(Modifier.padding(horizontal = 1.rdp)) {
-                                    Text(stringResource(Res.string.stops_timing_approximate))
+                                    Text(
+                                        stringResource(Res.string.stops_timing_approximate),
+                                        style = MaterialTheme.typography.bodySmall
+                                    )
                                 }
                             }
                             Cards(navigator, current ?: listOf(), route)
@@ -450,7 +453,10 @@ class RouteDetailScreen(
                             if (current == null) {
                                 item {
                                     Column(Modifier.padding(horizontal = 1.rdp)) {
-                                        Text(stringResource(Res.string.stops_timing_approximate))
+                                        Text(
+                                            stringResource(Res.string.stops_timing_approximate),
+                                            style = MaterialTheme.typography.bodySmall
+                                        )
                                     }
                                 }
                             }
