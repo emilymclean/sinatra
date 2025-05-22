@@ -402,7 +402,7 @@ class RouteDetailScreen(
                 when {
                     trigger == null -> {
                         item { Subheading(stringResource(Res.string.stops_title)) }
-                        Cards(navigator, current ?: listOf())
+                        Cards(navigator, current ?: listOf(), route)
                     }
                     else -> {
                         if (current != null) {
@@ -414,7 +414,7 @@ class RouteDetailScreen(
                                     Text(stringResource(Res.string.stops_timing_approximate))
                                 }
                             }
-                            Cards(navigator, current ?: listOf())
+                            Cards(navigator, current ?: listOf(), route)
                         }
                         if (past != null) {
                             item {
@@ -427,7 +427,7 @@ class RouteDetailScreen(
                                     }
                                 }
                             }
-                            Cards(navigator, past ?: listOf())
+                            Cards(navigator, past ?: listOf(), route)
                         }
                     }
                 }
@@ -438,14 +438,15 @@ class RouteDetailScreen(
 
     private fun LazyListScope.Cards(
         navigator: Navigator,
-        stops: List<IRouteTripStop>
+        stops: List<IRouteTripStop>,
+        route: Route
     ) {
         items(stops) {
             if (it.stop == null) return@items
             StopCard(
                 it.stop!!,
                 Modifier.fillMaxWidth(),
-                it.stationTime?.pick(),
+                it.stationTime?.pick(route),
                 onClick = {
                     navigator.push(StopDetailScreen(
                         it.stopId

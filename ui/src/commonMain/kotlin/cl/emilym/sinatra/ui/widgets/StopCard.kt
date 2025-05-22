@@ -13,6 +13,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.FeatureFlags
+import cl.emilym.sinatra.data.models.Route
 import cl.emilym.sinatra.data.models.ServiceAccessibility
 import cl.emilym.sinatra.data.models.ServiceBikesAllowed
 import cl.emilym.sinatra.data.models.ServiceWheelchairAccessible
@@ -21,6 +22,7 @@ import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.data.models.StopAccessibility
 import cl.emilym.sinatra.data.models.StopWheelchairAccessibility
 import cl.emilym.sinatra.data.models.TimetableStationTime
+import cl.emilym.sinatra.data.models.merge
 import cl.emilym.sinatra.ui.localization.format
 import cl.emilym.sinatra.ui.localization.isInPast
 import cl.emilym.sinatra.ui.text
@@ -55,10 +57,10 @@ sealed interface StopStationTime {
 }
 
 @Composable
-fun TimetableStationTime.pick(): StopStationTime {
+fun TimetableStationTime.pick(route: Route? = null): StopStationTime {
     return when (arrival.time.isInPast()) {
-        true -> StopStationTime.Departure(departure)
-        false -> StopStationTime.Arrival(arrival)
+        true -> StopStationTime.Departure(route?.let { departure.merge(route) } ?: departure)
+        false -> StopStationTime.Arrival(route?.let { arrival.merge(route) } ?: arrival)
     }
 }
 

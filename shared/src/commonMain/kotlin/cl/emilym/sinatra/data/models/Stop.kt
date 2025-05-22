@@ -190,3 +190,13 @@ data class TimetableStationTime(
     val times: List<StationTime> get() = listOf(arrival, departure)
 
 }
+
+fun StationTime.merge(route: Route): StationTime {
+    return when (this) {
+        is StationTime.Scheduled -> StationTime.Scheduled(
+            time,
+            route.approximateTimings
+        )
+        else -> this
+    }
+}
