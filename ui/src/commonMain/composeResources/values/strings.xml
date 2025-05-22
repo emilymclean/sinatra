@@ -172,6 +172,7 @@
     <string name="route_code_name">Route %1$s</string>
     <string name="upcoming_vehicles">Upcoming routes</string>
     <string name="no_upcoming_vehicles">There are no routes scheduled for the rest of today.</string>
+    <string name="route_see_more">See more</string>
 
     <string name="accessibility_wheelchair_accessible">Wheelchair accessible</string>
     <string name="accessibility_not_wheelchair_accessible">Not wheelchair accessible</string>

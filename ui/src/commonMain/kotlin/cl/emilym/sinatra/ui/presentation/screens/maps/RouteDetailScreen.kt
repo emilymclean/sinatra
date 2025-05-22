@@ -8,9 +8,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -21,6 +23,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
@@ -70,13 +73,16 @@ import cl.emilym.sinatra.ui.maps.highlightedRouteStopMarkerIcon
 import cl.emilym.sinatra.ui.maps.routeStopMarkerIcon
 import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
 import cl.emilym.sinatra.ui.navigation.MapScreen
+import cl.emilym.sinatra.ui.open_maps
 import cl.emilym.sinatra.ui.past
 import cl.emilym.sinatra.ui.text
 import cl.emilym.sinatra.ui.widgets.AccessibilityIconLockup
 import cl.emilym.sinatra.ui.widgets.AlertScaffold
 import cl.emilym.sinatra.ui.widgets.BikeIcon
+import cl.emilym.sinatra.ui.widgets.ExternalLinkIcon
 import cl.emilym.sinatra.ui.widgets.FavouriteButton
 import cl.emilym.sinatra.ui.widgets.LocalMapControl
+import cl.emilym.sinatra.ui.widgets.MapIcon
 import cl.emilym.sinatra.ui.widgets.RouteLine
 import cl.emilym.sinatra.ui.widgets.RouteRandle
 import cl.emilym.sinatra.ui.widgets.SheetIosBackButton
@@ -89,6 +95,7 @@ import cl.emilym.sinatra.ui.widgets.collectAsStateWithLifecycle
 import cl.emilym.sinatra.ui.widgets.createRequestStateFlowFlow
 import cl.emilym.sinatra.ui.widgets.currentLocation
 import cl.emilym.sinatra.ui.widgets.handleFlowProperly
+import cl.emilym.sinatra.ui.widgets.openMaps
 import cl.emilym.sinatra.ui.widgets.pick
 import com.mikepenz.markdown.m3.Markdown
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -110,6 +117,7 @@ import sinatra.ui.generated.resources.route_accessibility_not_wheelchair_accessi
 import sinatra.ui.generated.resources.route_accessibility_wheelchair_accessible
 import sinatra.ui.generated.resources.route_heading
 import sinatra.ui.generated.resources.route_not_found
+import sinatra.ui.generated.resources.route_see_more
 import sinatra.ui.generated.resources.semantics_favourite_route
 import sinatra.ui.generated.resources.stop_detail_distance
 import sinatra.ui.generated.resources.stop_detail_nearest_stop
@@ -347,11 +355,30 @@ class RouteDetailScreen(
                 }
                 if (route.description != null && trigger == null) {
                     item {
-                        Column(Modifier.fillMaxWidth().padding(1.rdp)) {
+                        Column(
+                            Modifier.fillMaxWidth().padding(1.rdp),
+                            verticalArrangement = Arrangement.spacedBy(1.rdp)
+                        ) {
                             Markdown(route.description ?: "")
                         }
                     }
-                    item { Box(Modifier.height(1.rdp)) }
+                    if (route.moreLink == null) {
+                        item { Box(Modifier.height(1.rdp)) }
+                    }
+                }
+                if (route.moreLink != null && trigger == null) {
+                    item {
+                        val uriHandler = LocalUriHandler.current
+                        Button(
+                            onClick = { uriHandler.openUri(route.moreLink ?: "") },
+                            modifier = Modifier.fillMaxWidth().padding(horizontal = 1.rdp)
+                        ) {
+                            Text(stringResource(Res.string.route_see_more))
+                            Box(Modifier.width(0.5.rdp))
+                            ExternalLinkIcon()
+                        }
+                    }
+                    item { Box(Modifier.height(2.rdp)) }
                 }
                 item {
                     Subheading(stringResource(Res.string.accessibility_title))
