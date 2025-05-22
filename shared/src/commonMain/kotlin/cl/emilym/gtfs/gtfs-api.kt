@@ -239,6 +239,38 @@ public data class StopDetailEndpoint(
 }
 
 @pbandk.Export
+public data class StopRoutesEndpoint(
+    val routeIds: List<String> = emptyList(),
+    override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
+) : pbandk.Message {
+    override operator fun plus(other: pbandk.Message?): cl.emilym.gtfs.StopRoutesEndpoint = protoMergeImpl(other)
+    override val descriptor: pbandk.MessageDescriptor<cl.emilym.gtfs.StopRoutesEndpoint> get() = Companion.descriptor
+    override val protoSize: Int by lazy { super.protoSize }
+    public companion object : pbandk.Message.Companion<cl.emilym.gtfs.StopRoutesEndpoint> {
+        public val defaultInstance: cl.emilym.gtfs.StopRoutesEndpoint by lazy { cl.emilym.gtfs.StopRoutesEndpoint() }
+        override fun decodeWith(u: pbandk.MessageDecoder): cl.emilym.gtfs.StopRoutesEndpoint = cl.emilym.gtfs.StopRoutesEndpoint.decodeWithImpl(u)
+
+        override val descriptor: pbandk.MessageDescriptor<cl.emilym.gtfs.StopRoutesEndpoint> = pbandk.MessageDescriptor(
+            fullName = "proto.StopRoutesEndpoint",
+            messageClass = cl.emilym.gtfs.StopRoutesEndpoint::class,
+            messageCompanion = this,
+            fields = buildList(1) {
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "routeIds",
+                        number = 1,
+                        type = pbandk.FieldDescriptor.Type.Repeated<String>(valueType = pbandk.FieldDescriptor.Type.Primitive.String()),
+                        jsonName = "routeIds",
+                        value = cl.emilym.gtfs.StopRoutesEndpoint::routeIds
+                    )
+                )
+            }
+        )
+    }
+}
+
+@pbandk.Export
 public data class RouteDetailEndpoint(
     val route: cl.emilym.gtfs.Route,
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
@@ -504,6 +536,38 @@ public data class RouteServicesEndpoint(
 }
 
 @pbandk.Export
+public data class RouteHeadingsEndpoint(
+    val headings: List<String> = emptyList(),
+    override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
+) : pbandk.Message {
+    override operator fun plus(other: pbandk.Message?): cl.emilym.gtfs.RouteHeadingsEndpoint = protoMergeImpl(other)
+    override val descriptor: pbandk.MessageDescriptor<cl.emilym.gtfs.RouteHeadingsEndpoint> get() = Companion.descriptor
+    override val protoSize: Int by lazy { super.protoSize }
+    public companion object : pbandk.Message.Companion<cl.emilym.gtfs.RouteHeadingsEndpoint> {
+        public val defaultInstance: cl.emilym.gtfs.RouteHeadingsEndpoint by lazy { cl.emilym.gtfs.RouteHeadingsEndpoint() }
+        override fun decodeWith(u: pbandk.MessageDecoder): cl.emilym.gtfs.RouteHeadingsEndpoint = cl.emilym.gtfs.RouteHeadingsEndpoint.decodeWithImpl(u)
+
+        override val descriptor: pbandk.MessageDescriptor<cl.emilym.gtfs.RouteHeadingsEndpoint> = pbandk.MessageDescriptor(
+            fullName = "proto.RouteHeadingsEndpoint",
+            messageClass = cl.emilym.gtfs.RouteHeadingsEndpoint::class,
+            messageCompanion = this,
+            fields = buildList(1) {
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "headings",
+                        number = 1,
+                        type = pbandk.FieldDescriptor.Type.Repeated<String>(valueType = pbandk.FieldDescriptor.Type.Primitive.String()),
+                        jsonName = "headings",
+                        value = cl.emilym.gtfs.RouteHeadingsEndpoint::headings
+                    )
+                )
+            }
+        )
+    }
+}
+
+@pbandk.Export
 public data class JourneySearchConfigEndpoint(
     val maximumComputationTime: Int,
     val options: List<cl.emilym.gtfs.JourneySearchOption> = emptyList(),
@@ -654,6 +718,49 @@ public data class JourneySearchOption(
 }
 
 @pbandk.Export
+public data class RealtimeEndpoint(
+    val updates: List<cl.emilym.gtfs.RealtimeUpdate> = emptyList(),
+    val expireTimestamp: String? = null,
+    override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
+) : pbandk.Message {
+    override operator fun plus(other: pbandk.Message?): cl.emilym.gtfs.RealtimeEndpoint = protoMergeImpl(other)
+    override val descriptor: pbandk.MessageDescriptor<cl.emilym.gtfs.RealtimeEndpoint> get() = Companion.descriptor
+    override val protoSize: Int by lazy { super.protoSize }
+    public companion object : pbandk.Message.Companion<cl.emilym.gtfs.RealtimeEndpoint> {
+        public val defaultInstance: cl.emilym.gtfs.RealtimeEndpoint by lazy { cl.emilym.gtfs.RealtimeEndpoint() }
+        override fun decodeWith(u: pbandk.MessageDecoder): cl.emilym.gtfs.RealtimeEndpoint = cl.emilym.gtfs.RealtimeEndpoint.decodeWithImpl(u)
+
+        override val descriptor: pbandk.MessageDescriptor<cl.emilym.gtfs.RealtimeEndpoint> = pbandk.MessageDescriptor(
+            fullName = "proto.RealtimeEndpoint",
+            messageClass = cl.emilym.gtfs.RealtimeEndpoint::class,
+            messageCompanion = this,
+            fields = buildList(2) {
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "updates",
+                        number = 1,
+                        type = pbandk.FieldDescriptor.Type.Repeated<cl.emilym.gtfs.RealtimeUpdate>(valueType = pbandk.FieldDescriptor.Type.Message(messageCompanion = cl.emilym.gtfs.RealtimeUpdate.Companion)),
+                        jsonName = "updates",
+                        value = cl.emilym.gtfs.RealtimeEndpoint::updates
+                    )
+                )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "expireTimestamp",
+                        number = 2,
+                        type = pbandk.FieldDescriptor.Type.Primitive.String(hasPresence = true),
+                        jsonName = "expireTimestamp",
+                        value = cl.emilym.gtfs.RealtimeEndpoint::expireTimestamp
+                    )
+                )
+            }
+        )
+    }
+}
+
+@pbandk.Export
 public data class Stop(
     val id: String,
     val parentStation: String? = null,
@@ -662,6 +769,7 @@ public data class Stop(
     val location: cl.emilym.gtfs.Location,
     val accessibility: cl.emilym.gtfs.StopAccessibility,
     val visibility: cl.emilym.gtfs.StopVisibility? = null,
+    val hasRealtime: Boolean? = null,
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
 ) : pbandk.Message {
     override operator fun plus(other: pbandk.Message?): cl.emilym.gtfs.Stop = protoMergeImpl(other)
@@ -674,7 +782,7 @@ public data class Stop(
             fullName = "proto.Stop",
             messageClass = cl.emilym.gtfs.Stop::class,
             messageCompanion = this,
-            fields = buildList(7) {
+            fields = buildList(8) {
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
@@ -743,6 +851,16 @@ public data class Stop(
                         type = pbandk.FieldDescriptor.Type.Primitive.String(hasPresence = true),
                         jsonName = "simpleName",
                         value = cl.emilym.gtfs.Stop::simpleName
+                    )
+                )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "hasRealtime",
+                        number = 8,
+                        type = pbandk.FieldDescriptor.Type.Primitive.Bool(hasPresence = true),
+                        jsonName = "hasRealtime",
+                        value = cl.emilym.gtfs.Stop::hasRealtime
                     )
                 )
             }
@@ -856,6 +974,11 @@ public data class Route(
     val designation: String? = null,
     val type: cl.emilym.gtfs.RouteType,
     val realTimeUrl: String? = null,
+    val hasRealtime: Boolean? = null,
+    val approximateTimings: Boolean? = null,
+    val eventRoute: Boolean? = null,
+    val description: String? = null,
+    val moreLink: String? = null,
     val routeVisibility: cl.emilym.gtfs.RouteVisibility? = null,
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
 ) : pbandk.Message {
@@ -869,7 +992,7 @@ public data class Route(
             fullName = "proto.Route",
             messageClass = cl.emilym.gtfs.Route::class,
             messageCompanion = this,
-            fields = buildList(9) {
+            fields = buildList(14) {
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
@@ -960,6 +1083,56 @@ public data class Route(
                         value = cl.emilym.gtfs.Route::routeVisibility
                     )
                 )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "hasRealtime",
+                        number = 10,
+                        type = pbandk.FieldDescriptor.Type.Primitive.Bool(hasPresence = true),
+                        jsonName = "hasRealtime",
+                        value = cl.emilym.gtfs.Route::hasRealtime
+                    )
+                )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "approximateTimings",
+                        number = 11,
+                        type = pbandk.FieldDescriptor.Type.Primitive.Bool(hasPresence = true),
+                        jsonName = "approximateTimings",
+                        value = cl.emilym.gtfs.Route::approximateTimings
+                    )
+                )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "eventRoute",
+                        number = 12,
+                        type = pbandk.FieldDescriptor.Type.Primitive.Bool(hasPresence = true),
+                        jsonName = "eventRoute",
+                        value = cl.emilym.gtfs.Route::eventRoute
+                    )
+                )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "description",
+                        number = 13,
+                        type = pbandk.FieldDescriptor.Type.Primitive.String(hasPresence = true),
+                        jsonName = "description",
+                        value = cl.emilym.gtfs.Route::description
+                    )
+                )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "moreLink",
+                        number = 14,
+                        type = pbandk.FieldDescriptor.Type.Primitive.String(hasPresence = true),
+                        jsonName = "moreLink",
+                        value = cl.emilym.gtfs.Route::moreLink
+                    )
+                )
             }
         )
     }
@@ -969,6 +1142,7 @@ public data class Route(
 public data class RouteVisibility(
     val hidden: Boolean? = null,
     val searchWeight: Double? = null,
+    val showOnBrowse: Boolean? = null,
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
 ) : pbandk.Message {
     override operator fun plus(other: pbandk.Message?): cl.emilym.gtfs.RouteVisibility = protoMergeImpl(other)
@@ -982,7 +1156,7 @@ public data class RouteVisibility(
             fullName = "proto.RouteVisibility",
             messageClass = cl.emilym.gtfs.RouteVisibility::class,
             messageCompanion = this,
-            fields = buildList(2) {
+            fields = buildList(3) {
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
@@ -1001,6 +1175,16 @@ public data class RouteVisibility(
                         type = pbandk.FieldDescriptor.Type.Primitive.Double(hasPresence = true),
                         jsonName = "searchWeight",
                         value = cl.emilym.gtfs.RouteVisibility::searchWeight
+                    )
+                )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "showOnBrowse",
+                        number = 3,
+                        type = pbandk.FieldDescriptor.Type.Primitive.Bool(hasPresence = true),
+                        jsonName = "showOnBrowse",
+                        value = cl.emilym.gtfs.RouteVisibility::showOnBrowse
                     )
                 )
             }
@@ -1780,6 +1964,48 @@ public data class ServiceAlert(
 }
 
 @pbandk.Export
+public data class RealtimeUpdate(
+    val tripId: String,
+    val delay: Int? = null,
+    override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
+) : pbandk.Message {
+    override operator fun plus(other: pbandk.Message?): cl.emilym.gtfs.RealtimeUpdate = protoMergeImpl(other)
+    override val descriptor: pbandk.MessageDescriptor<cl.emilym.gtfs.RealtimeUpdate> get() = Companion.descriptor
+    override val protoSize: Int by lazy { super.protoSize }
+    public companion object : pbandk.Message.Companion<cl.emilym.gtfs.RealtimeUpdate> {
+        override fun decodeWith(u: pbandk.MessageDecoder): cl.emilym.gtfs.RealtimeUpdate = cl.emilym.gtfs.RealtimeUpdate.decodeWithImpl(u)
+
+        override val descriptor: pbandk.MessageDescriptor<cl.emilym.gtfs.RealtimeUpdate> = pbandk.MessageDescriptor(
+            fullName = "proto.RealtimeUpdate",
+            messageClass = cl.emilym.gtfs.RealtimeUpdate::class,
+            messageCompanion = this,
+            fields = buildList(2) {
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "tripId",
+                        number = 1,
+                        type = pbandk.FieldDescriptor.Type.Primitive.String(hasPresence = true),
+                        jsonName = "tripId",
+                        value = cl.emilym.gtfs.RealtimeUpdate::tripId
+                    )
+                )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "delay",
+                        number = 2,
+                        type = pbandk.FieldDescriptor.Type.Primitive.Int32(hasPresence = true),
+                        jsonName = "delay",
+                        value = cl.emilym.gtfs.RealtimeUpdate::delay
+                    )
+                )
+            }
+        )
+    }
+}
+
+@pbandk.Export
 @pbandk.JsName("orDefaultForStopEndpoint")
 public fun StopEndpoint?.orDefault(): cl.emilym.gtfs.StopEndpoint = this ?: StopEndpoint.defaultInstance
 
@@ -1851,6 +2077,30 @@ private fun StopDetailEndpoint.Companion.decodeWithImpl(u: pbandk.MessageDecoder
         throw pbandk.InvalidProtocolBufferException.missingRequiredField("stop")
     }
     return StopDetailEndpoint(stop!!, pbandk.ListWithSize.Builder.fixed(children), unknownFields)
+}
+
+@pbandk.Export
+@pbandk.JsName("orDefaultForStopRoutesEndpoint")
+public fun StopRoutesEndpoint?.orDefault(): cl.emilym.gtfs.StopRoutesEndpoint = this ?: StopRoutesEndpoint.defaultInstance
+
+private fun StopRoutesEndpoint.protoMergeImpl(plus: pbandk.Message?): StopRoutesEndpoint = (plus as? StopRoutesEndpoint)?.let {
+    it.copy(
+        routeIds = routeIds + plus.routeIds,
+        unknownFields = unknownFields + plus.unknownFields
+    )
+} ?: this
+
+@Suppress("UNCHECKED_CAST")
+private fun StopRoutesEndpoint.Companion.decodeWithImpl(u: pbandk.MessageDecoder): StopRoutesEndpoint {
+    var routeIds: pbandk.ListWithSize.Builder<String>? = null
+
+    val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
+        when (_fieldNumber) {
+            1 -> routeIds = (routeIds ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as kotlin.sequences.Sequence<String> }
+        }
+    }
+
+    return StopRoutesEndpoint(pbandk.ListWithSize.Builder.fixed(routeIds), unknownFields)
 }
 
 private fun RouteDetailEndpoint.protoMergeImpl(plus: pbandk.Message?): RouteDetailEndpoint = (plus as? RouteDetailEndpoint)?.let {
@@ -2025,6 +2275,30 @@ private fun RouteServicesEndpoint.Companion.decodeWithImpl(u: pbandk.MessageDeco
     return RouteServicesEndpoint(pbandk.ListWithSize.Builder.fixed(serviceIds), unknownFields)
 }
 
+@pbandk.Export
+@pbandk.JsName("orDefaultForRouteHeadingsEndpoint")
+public fun RouteHeadingsEndpoint?.orDefault(): cl.emilym.gtfs.RouteHeadingsEndpoint = this ?: RouteHeadingsEndpoint.defaultInstance
+
+private fun RouteHeadingsEndpoint.protoMergeImpl(plus: pbandk.Message?): RouteHeadingsEndpoint = (plus as? RouteHeadingsEndpoint)?.let {
+    it.copy(
+        headings = headings + plus.headings,
+        unknownFields = unknownFields + plus.unknownFields
+    )
+} ?: this
+
+@Suppress("UNCHECKED_CAST")
+private fun RouteHeadingsEndpoint.Companion.decodeWithImpl(u: pbandk.MessageDecoder): RouteHeadingsEndpoint {
+    var headings: pbandk.ListWithSize.Builder<String>? = null
+
+    val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
+        when (_fieldNumber) {
+            1 -> headings = (headings ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as kotlin.sequences.Sequence<String> }
+        }
+    }
+
+    return RouteHeadingsEndpoint(pbandk.ListWithSize.Builder.fixed(headings), unknownFields)
+}
+
 private fun JourneySearchConfigEndpoint.protoMergeImpl(plus: pbandk.Message?): JourneySearchConfigEndpoint = (plus as? JourneySearchConfigEndpoint)?.let {
     it.copy(
         options = options + plus.options,
@@ -2111,6 +2385,33 @@ private fun JourneySearchOption.Companion.decodeWithImpl(u: pbandk.MessageDecode
         changeOverPenalty, unknownFields)
 }
 
+@pbandk.Export
+@pbandk.JsName("orDefaultForRealtimeEndpoint")
+public fun RealtimeEndpoint?.orDefault(): cl.emilym.gtfs.RealtimeEndpoint = this ?: RealtimeEndpoint.defaultInstance
+
+private fun RealtimeEndpoint.protoMergeImpl(plus: pbandk.Message?): RealtimeEndpoint = (plus as? RealtimeEndpoint)?.let {
+    it.copy(
+        updates = updates + plus.updates,
+        expireTimestamp = plus.expireTimestamp ?: expireTimestamp,
+        unknownFields = unknownFields + plus.unknownFields
+    )
+} ?: this
+
+@Suppress("UNCHECKED_CAST")
+private fun RealtimeEndpoint.Companion.decodeWithImpl(u: pbandk.MessageDecoder): RealtimeEndpoint {
+    var updates: pbandk.ListWithSize.Builder<cl.emilym.gtfs.RealtimeUpdate>? = null
+    var expireTimestamp: String? = null
+
+    val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
+        when (_fieldNumber) {
+            1 -> updates = (updates ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as kotlin.sequences.Sequence<cl.emilym.gtfs.RealtimeUpdate> }
+            2 -> expireTimestamp = _fieldValue as String
+        }
+    }
+
+    return RealtimeEndpoint(pbandk.ListWithSize.Builder.fixed(updates), expireTimestamp, unknownFields)
+}
+
 private fun Stop.protoMergeImpl(plus: pbandk.Message?): Stop = (plus as? Stop)?.let {
     it.copy(
         parentStation = plus.parentStation ?: parentStation,
@@ -2118,6 +2419,7 @@ private fun Stop.protoMergeImpl(plus: pbandk.Message?): Stop = (plus as? Stop)?.
         location = location.plus(plus.location),
         accessibility = accessibility.plus(plus.accessibility),
         visibility = visibility?.plus(plus.visibility) ?: plus.visibility,
+        hasRealtime = plus.hasRealtime ?: hasRealtime,
         unknownFields = unknownFields + plus.unknownFields
     )
 } ?: this
@@ -2131,6 +2433,7 @@ private fun Stop.Companion.decodeWithImpl(u: pbandk.MessageDecoder): Stop {
     var location: cl.emilym.gtfs.Location? = null
     var accessibility: cl.emilym.gtfs.StopAccessibility? = null
     var visibility: cl.emilym.gtfs.StopVisibility? = null
+    var hasRealtime: Boolean? = null
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
@@ -2141,6 +2444,7 @@ private fun Stop.Companion.decodeWithImpl(u: pbandk.MessageDecoder): Stop {
             5 -> parentStation = _fieldValue as String
             6 -> visibility = _fieldValue as cl.emilym.gtfs.StopVisibility
             7 -> simpleName = _fieldValue as String
+            8 -> hasRealtime = _fieldValue as Boolean
         }
     }
 
@@ -2157,7 +2461,7 @@ private fun Stop.Companion.decodeWithImpl(u: pbandk.MessageDecoder): Stop {
         throw pbandk.InvalidProtocolBufferException.missingRequiredField("accessibility")
     }
     return Stop(id!!, parentStation, name!!, simpleName,
-        location!!, accessibility!!, visibility, unknownFields)
+        location!!, accessibility!!, visibility, hasRealtime, unknownFields)
 }
 
 private fun StopAccessibility.protoMergeImpl(plus: pbandk.Message?): StopAccessibility = (plus as? StopAccessibility)?.let {
@@ -2221,6 +2525,11 @@ private fun Route.protoMergeImpl(plus: pbandk.Message?): Route = (plus as? Route
         colors = colors?.plus(plus.colors) ?: plus.colors,
         designation = plus.designation ?: designation,
         realTimeUrl = plus.realTimeUrl ?: realTimeUrl,
+        hasRealtime = plus.hasRealtime ?: hasRealtime,
+        approximateTimings = plus.approximateTimings ?: approximateTimings,
+        eventRoute = plus.eventRoute ?: eventRoute,
+        description = plus.description ?: description,
+        moreLink = plus.moreLink ?: moreLink,
         routeVisibility = routeVisibility?.plus(plus.routeVisibility) ?: plus.routeVisibility,
         unknownFields = unknownFields + plus.unknownFields
     )
@@ -2236,6 +2545,11 @@ private fun Route.Companion.decodeWithImpl(u: pbandk.MessageDecoder): Route {
     var designation: String? = null
     var type: cl.emilym.gtfs.RouteType? = null
     var realTimeUrl: String? = null
+    var hasRealtime: Boolean? = null
+    var approximateTimings: Boolean? = null
+    var eventRoute: Boolean? = null
+    var description: String? = null
+    var moreLink: String? = null
     var routeVisibility: cl.emilym.gtfs.RouteVisibility? = null
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
@@ -2249,6 +2563,11 @@ private fun Route.Companion.decodeWithImpl(u: pbandk.MessageDecoder): Route {
             7 -> designation = _fieldValue as String
             8 -> realTimeUrl = _fieldValue as String
             9 -> routeVisibility = _fieldValue as cl.emilym.gtfs.RouteVisibility
+            10 -> hasRealtime = _fieldValue as Boolean
+            11 -> approximateTimings = _fieldValue as Boolean
+            12 -> eventRoute = _fieldValue as Boolean
+            13 -> description = _fieldValue as String
+            14 -> moreLink = _fieldValue as String
         }
     }
 
@@ -2266,7 +2585,8 @@ private fun Route.Companion.decodeWithImpl(u: pbandk.MessageDecoder): Route {
     }
     return Route(id!!, code!!, displayCode, colors,
         name!!, designation, type!!, realTimeUrl,
-        routeVisibility, unknownFields)
+        hasRealtime, approximateTimings, eventRoute, description,
+        moreLink, routeVisibility, unknownFields)
 }
 
 @pbandk.Export
@@ -2277,6 +2597,7 @@ private fun RouteVisibility.protoMergeImpl(plus: pbandk.Message?): RouteVisibili
     it.copy(
         hidden = plus.hidden ?: hidden,
         searchWeight = plus.searchWeight ?: searchWeight,
+        showOnBrowse = plus.showOnBrowse ?: showOnBrowse,
         unknownFields = unknownFields + plus.unknownFields
     )
 } ?: this
@@ -2285,15 +2606,17 @@ private fun RouteVisibility.protoMergeImpl(plus: pbandk.Message?): RouteVisibili
 private fun RouteVisibility.Companion.decodeWithImpl(u: pbandk.MessageDecoder): RouteVisibility {
     var hidden: Boolean? = null
     var searchWeight: Double? = null
+    var showOnBrowse: Boolean? = null
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
             1 -> hidden = _fieldValue as Boolean
             2 -> searchWeight = _fieldValue as Double
+            3 -> showOnBrowse = _fieldValue as Boolean
         }
     }
 
-    return RouteVisibility(hidden, searchWeight, unknownFields)
+    return RouteVisibility(hidden, searchWeight, showOnBrowse, unknownFields)
 }
 
 private fun ColorPair.protoMergeImpl(plus: pbandk.Message?): ColorPair = (plus as? ColorPair)?.let {
@@ -2707,4 +3030,29 @@ private fun ServiceAlert.Companion.decodeWithImpl(u: pbandk.MessageDecoder): Ser
     }
     return ServiceAlert(id!!, title!!, date, url,
         pbandk.ListWithSize.Builder.fixed(regions), highlightDuration, unknownFields)
+}
+
+private fun RealtimeUpdate.protoMergeImpl(plus: pbandk.Message?): RealtimeUpdate = (plus as? RealtimeUpdate)?.let {
+    it.copy(
+        delay = plus.delay ?: delay,
+        unknownFields = unknownFields + plus.unknownFields
+    )
+} ?: this
+
+@Suppress("UNCHECKED_CAST")
+private fun RealtimeUpdate.Companion.decodeWithImpl(u: pbandk.MessageDecoder): RealtimeUpdate {
+    var tripId: String? = null
+    var delay: Int? = null
+
+    val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
+        when (_fieldNumber) {
+            1 -> tripId = _fieldValue as String
+            2 -> delay = _fieldValue as Int
+        }
+    }
+
+    if (tripId == null) {
+        throw pbandk.InvalidProtocolBufferException.missingRequiredField("tripId")
+    }
+    return RealtimeUpdate(tripId!!, delay, unknownFields)
 }

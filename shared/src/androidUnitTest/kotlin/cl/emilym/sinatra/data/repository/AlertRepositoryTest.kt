@@ -64,7 +64,7 @@ class AlertRepositoryTest {
         coEvery { contentRepository.banner(ContentRepository.HOME_BANNER_ID) } returns null
 
         coEvery { routeRepository.routes() } returns Cachable.live(listOf(
-            Route("ACTO01", "R1", "R1", null, "R1", "https://fake.url", RouteType.BUS, null, RouteVisibility(false, null))
+            Route("ACTO01", "R1", "R1", null, "R1", null, "https://fake.url", false, RouteType.BUS, null, RouteVisibility(false, null, false), false, null)
         ))
 
         val testFeed = mockk<FeedMessage>()
@@ -105,7 +105,7 @@ class AlertRepositoryTest {
         coEvery { contentRepository.banner(ContentRepository.HOME_BANNER_ID) } returns null
 
         coEvery { routeRepository.routes() } returns Cachable.live(listOf(
-            Route("ACTO01", "R1", "R1", null, "R1", "https://fake.url", RouteType.BUS, null, RouteVisibility(false, null))
+            Route("ACTO01", "R1", "R1", null, "R1", null, "https://fake.url", false, RouteType.BUS, null, RouteVisibility(false, null, false), false, null)
         ))
 
         val testFeed = mockk<FeedMessage>()
@@ -156,7 +156,7 @@ class AlertRepositoryTest {
         coEvery { contentRepository.banner(ContentRepository.HOME_BANNER_ID) } returns null
 
         coEvery { routeRepository.route(routeId = routeId) } returns Cachable.live(
-            Route("ACTO01", "R1", "R1", null, "R1", "https://fake.url", RouteType.BUS, null, RouteVisibility(false, null))
+            Route("ACTO01", "R1", "R1", null, "R1", null, "https://fake.url", false, RouteType.BUS, null, RouteVisibility(false, null, false), false, null)
         )
 
         val testFeed = mockk<FeedMessage>()
@@ -206,7 +206,7 @@ class AlertRepositoryTest {
 
         coEvery { contentRepository.banner(ContentRepository.HOME_BANNER_ID) } returns null
         coEvery { routeRepository.routes() } returns Cachable.live(listOf(
-            Route("ACTO01", "R1", "R1", null, "R1", "https://fake.url", RouteType.BUS, null, RouteVisibility(false, null))
+            Route("ACTO01", "R1", "R1", null, "R1", null, "https://fake.url", false, RouteType.BUS, null, RouteVisibility(false, null, false), false, null)
         ))
 
         val testFeed = mockk<FeedMessage>()

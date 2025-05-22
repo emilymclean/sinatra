@@ -59,6 +59,17 @@ class UpcomingRoutesForStopUseCase(
                         val service = services.item.firstOrNull { it.id == time.serviceId } ?: continue
                         if (!service.active(checkTime, scheduleTimeZone)) continue
                         if (time.arrivalTime < now) continue
+                        if (active.any {
+                            it.routeId == time.routeId &&
+                            it.arrivalTime.instant == time.arrivalTime.instant &&
+                            it.sequence < time.sequence
+                        }) continue
+
+                        active.removeAll {
+                            it.routeId == time.routeId &&
+                            it.arrivalTime.instant == time.arrivalTime.instant &&
+                            it.sequence >= time.sequence
+                        }
                         active.add(time)
                         if (active.size == number) break
                     }
