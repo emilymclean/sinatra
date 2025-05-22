@@ -9,7 +9,9 @@ import cl.emilym.sinatra.data.models.RecentVisit
 import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.data.models.StopWithDistance
 import cl.emilym.sinatra.data.models.distance
+import cl.emilym.sinatra.data.repository.AlertDisplayContext
 import cl.emilym.sinatra.data.repository.AlertRepository
+import cl.emilym.sinatra.data.repository.ContentRepository
 import cl.emilym.sinatra.data.repository.RecentVisitRepository
 import cl.emilym.sinatra.data.repository.StopRepository
 import cl.emilym.sinatra.domain.NEARBY_STOPS_LIMIT
@@ -113,7 +115,9 @@ class MapSearchViewModel(
     fun retryAlerts() {
         screenModelScope.launch {
             _alerts.handleFlowProperly {
-                alertRepository.alerts()
+                alertRepository.alerts(
+                    AlertDisplayContext.Page(ContentRepository.HOME_BANNER_ID)
+                )
             }
         }
     }

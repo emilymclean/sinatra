@@ -14,7 +14,8 @@ data class Stop(
     val _simpleName: String?,
     val location: MapLocation,
     val accessibility: StopAccessibility,
-    val visibility: StopVisibility
+    val visibility: StopVisibility,
+    val hasRealtime: Boolean
 ): Serializable, Identifiable<StopId>, NavigationObject {
 
     companion object {
@@ -27,7 +28,8 @@ data class Stop(
                 pb.simpleName,
                 MapLocation.fromPB(pb.location),
                 StopAccessibility.fromPB(pb.accessibility),
-                StopVisibility.fromPB(pb, pb.visibility)
+                StopVisibility.fromPB(pb, pb.visibility),
+                pb.hasRealtime == true
             )
         }
     }

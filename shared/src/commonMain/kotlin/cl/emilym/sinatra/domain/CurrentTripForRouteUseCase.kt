@@ -33,8 +33,7 @@ class CurrentTripForRouteUseCase(
     private val serviceRepository: ServiceRepository,
     private val transportMetadataRepository: TransportMetadataRepository,
     private val clock: Clock,
-    private val liveTripInformationUseCase: LiveTripInformationUseCase,
-    private val metadataRepository: TransportMetadataRepository
+    private val liveTripInformationUseCase: LiveTripInformationUseCase
 ) {
 
     suspend operator fun invoke(
@@ -43,7 +42,7 @@ class CurrentTripForRouteUseCase(
         tripId: TripId? = null,
         referenceTime: Instant? = null
     ): Flow<Cachable<CurrentTripInformation?>> {
-        val now = (referenceTime ?: clock.now()).startOfDay(metadataRepository.timeZone())
+        val now = (referenceTime ?: clock.now()).startOfDay(transportMetadataRepository.timeZone())
 
         val rc = routeRepository.route(routeId)
         val route = rc.item ?: return flowOf(rc.map { null })
@@ -78,19 +77,21 @@ class CurrentTripForRouteUseCase(
                 val timetable = activeServices.flatMap { routeRepository.canonicalServiceTimetable(routeId, it!!.id) }
                 flowOf(timetable.map { CurrentTripInformation(it.trip, route) })
             }
-            route.realTimeUrl == null -> {
+            !route.hasRealtime -> {
                 fallback()
             }
             else -> {
                 try {
-                    liveTripInformationUseCase.invoke(
-                        route.realTimeUrl,
+                    liveTripInformationUseCase(
                         routeId,
                         activeServices.item!!.id,
                         tripId,
                         now
-                    ).map { it.map { CurrentTripInformation(it, route) }
-                        .merge(activeServices, { i1, i2 -> i1 }) }
+                    ).map {
+                        it
+                            .map { CurrentTripInformation(it, route) }
+                            .merge(activeServices) { i1, i2 -> i1 }
+                    }
                 } catch (e: Exception) {
                     Napier.e(e)
                     fallback()

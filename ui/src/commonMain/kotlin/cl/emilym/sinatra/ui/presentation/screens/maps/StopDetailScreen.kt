@@ -46,6 +46,7 @@ import cl.emilym.sinatra.data.models.IStopTimetableTime
 import cl.emilym.sinatra.data.models.ReferencedTime
 import cl.emilym.sinatra.data.models.StopId
 import cl.emilym.sinatra.data.models.StopWithChildren
+import cl.emilym.sinatra.data.repository.AlertDisplayContext
 import cl.emilym.sinatra.data.repository.AlertRepository
 import cl.emilym.sinatra.data.repository.FavouriteRepository
 import cl.emilym.sinatra.data.repository.RecentVisitRepository
@@ -152,7 +153,7 @@ class StopDetailViewModel(
     fun retryAlerts(stopId: StopId) {
         screenModelScope.launch {
             _alerts.handleFlowProperly {
-                alertRepository.alerts(stopId = stopId)
+                alertRepository.alerts(AlertDisplayContext.Stop(stopId))
             }
         }
     }

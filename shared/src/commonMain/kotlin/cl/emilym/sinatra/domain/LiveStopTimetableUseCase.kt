@@ -1,10 +1,13 @@
 package cl.emilym.sinatra.domain
 
+import cl.emilym.sinatra.data.models.DelayInformation
 import cl.emilym.sinatra.data.models.IStopTimetableTime
+import cl.emilym.sinatra.data.models.LiveRouteTripInformation
 import cl.emilym.sinatra.data.models.LiveStopTimetableTime
 import cl.emilym.sinatra.data.models.StopId
 import cl.emilym.sinatra.data.models.TimetableStationTime
 import cl.emilym.sinatra.data.repository.LiveServiceRepository
+import cl.emilym.sinatra.data.repository.StopRepository
 import cl.emilym.sinatra.data.repository.TransportMetadataRepository
 import cl.emilym.sinatra.e
 import io.github.aakira.napier.Napier
@@ -15,66 +18,53 @@ import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
+import kotlinx.datetime.Clock
 import org.koin.core.annotation.Factory
+import kotlin.collections.map
+import kotlin.time.Duration.Companion.minutes
 
 @Factory
 class LiveStopTimetableUseCase(
     private val liveServiceRepository: LiveServiceRepository,
-    private val transportMetadataRepository: TransportMetadataRepository
+    private val stopRepository: StopRepository,
+    private val clock: Clock
 ): LiveUseCase() {
+
+    companion object {
+        val EXPIRE_LEEWAY = 10.minutes
+    }
 
     operator fun invoke(
         stopId: StopId,
         scheduled: List<IStopTimetableTime>
     ): Flow<List<IStopTimetableTime>> {
         return flow {
-            val scheduleStartOfDay = transportMetadataRepository.scheduleStartOfDay()
-            val scheduleTimeZone = transportMetadataRepository.timeZone()
+            if (stopRepository.stop(stopId).item?.hasRealtime != true) return@flow emit(scheduled)
+            val realtime = liveServiceRepository.getStopRealtimeUpdates(stopId)
+            if (realtime.expire + EXPIRE_LEEWAY < clock.now()) return@flow emit(scheduled)
 
-            val out = scheduled.groupBy { it.route }.map { groups ->
-                when {
-                    groups.key?.realTimeUrl == null -> flowOf(groups.value)
-                    else -> liveServiceRepository.getRealtimeUpdates(groups.key!!.realTimeUrl!!).map {
-                        val updates = it.entity
-                            .filterNot { it.isDeleted == true }
-                            .mapNotNull { it.tripUpdate }
-
-                        groups.value.map { stopTimetableTime ->
-                            val update = updates.firstOrNull {
-                                it.trip.tripId == stopTimetableTime.tripId
-                            } ?: return@map stopTimetableTime
-                            val delay = update.delay
-                            val s = update.stopTimeUpdate.firstOrNull { it.stopId == stopId }
-
-                            LiveStopTimetableTime.fromOther(
-                                stopTimetableTime,
-                                TimetableStationTime(
-                                    arrival = decodeTime(
-                                        s?.arrival,
-                                        delay,
-                                        stopTimetableTime.arrivalTime,
-                                        scheduleStartOfDay,
-                                        scheduleTimeZone
-                                    ),
-                                    departure = decodeTime(
-                                        s?.departure,
-                                        delay,
-                                        stopTimetableTime.departureTime,
-                                        scheduleStartOfDay,
-                                        scheduleTimeZone
-                                    )
-                                )
+            emit(
+                scheduled.map { stopTimetableTime ->
+                    val delay = realtime.updates.firstOrNull { it.tripId == stopTimetableTime.tripId }?.delay
+                    if (delay == null || delay is DelayInformation.Unknown) return@map stopTimetableTime
+                    LiveStopTimetableTime.fromOther(
+                        stopTimetableTime,
+                        TimetableStationTime(
+                            arrival = decodeTime(
+                                delay,
+                                stopTimetableTime.arrivalTime,
+                            ),
+                            departure = decodeTime(
+                                delay,
+                                stopTimetableTime.departureTime,
                             )
-                        }
-                    }.catch {
-                        Napier.e(it)
-                        emit(groups.value)
-                    }
-                }
-            }.let { combine(*it.toTypedArray()) { it.toList().flatten() } }.map {
-                it.sortedBy { it.arrivalTime }
-            }
-            emitAll(out)
+                        )
+                    )
+                }.sortedBy { it.arrivalTime }
+            )
+        }.catch {
+            Napier.e(it)
+            emit(scheduled)
         }
     }
 
