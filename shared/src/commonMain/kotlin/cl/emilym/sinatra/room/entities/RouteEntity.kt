@@ -32,13 +32,23 @@ data class RouteEntity(
     val color: String?,
     val onColor: String?,
     val name: String,
+    @ColumnInfo(defaultValue = "NULL")
+    val description: String?,
     val realTimeUrl: String?,
+    @ColumnInfo(defaultValue = "0")
+    val approximateTimings: Boolean,
     val type: String,
     val designation: String?,
     @ColumnInfo(defaultValue = "0")
     val hidden: Boolean = RouteVisibility.HIDDEN_DEFAULT,
     @ColumnInfo(defaultValue = "NULL")
-    val searchWeight: Double? = RouteVisibility.SEARCH_WEIGHT_DEFAULT
+    val searchWeight: Double? = RouteVisibility.SEARCH_WEIGHT_DEFAULT,
+    @ColumnInfo(defaultValue = "0")
+    val showOnBrowse: Boolean,
+    @ColumnInfo(defaultValue = "0")
+    val eventRoute: Boolean,
+    @ColumnInfo(defaultValue = "NULL")
+    val moreLink: String?,
 ) {
 
     fun toModel(): Route {
@@ -50,13 +60,18 @@ data class RouteEntity(
                 ColorPair(color, OnColor.valueOf(onColor))
             else null,
             name,
+            description,
             realTimeUrl,
+            approximateTimings,
             RouteType.valueOf(type),
             designation,
             RouteVisibility(
                 hidden,
-                searchWeight
-            )
+                searchWeight,
+                showOnBrowse
+            ),
+            eventRoute,
+            moreLink
         )
     }
 
@@ -69,11 +84,16 @@ data class RouteEntity(
                 m.colors?.color,
                 m.colors?.onColor?.name,
                 m.name,
+                m.description,
                 m.realTimeUrl,
+                m.approximateTimings,
                 m.type.name,
                 m.designation,
                 m.routeVisibility.hidden,
-                m.routeVisibility.searchWeight
+                m.routeVisibility.searchWeight,
+                m.routeVisibility.showOnBrowse,
+                m.eventRoute,
+                m.moreLink
             )
         }
     }
