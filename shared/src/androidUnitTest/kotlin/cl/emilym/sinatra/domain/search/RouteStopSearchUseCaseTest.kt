@@ -42,7 +42,7 @@ class RouteStopSearchUseCaseTest {
         // Arrange
         val query = "central station"
         val tokens = listOf("central", "station")
-        val route = Route("1", "R1", "R1", null, "Route 1", false, RouteType.BUS, null, RouteVisibility(false, null))
+        val route = Route("1", "R1", "R1", null, "R1", null, false, false, RouteType.BUS, null, RouteVisibility(false, null, false), false, null)
         val stop = Stop("2", null, "Stop 1", null, MapLocation(0.0, 0.0), StopAccessibility(StopWheelchairAccessibility.FULL), StopVisibility(false, true, false, null), false)
         val place = Place("3", "Place 1", "Place 1", MapLocation(0.0, 0.0))
 

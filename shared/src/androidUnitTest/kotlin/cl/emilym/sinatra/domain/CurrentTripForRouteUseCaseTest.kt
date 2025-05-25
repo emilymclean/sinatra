@@ -56,13 +56,18 @@ class CurrentTripForRouteUseCaseTest {
         "R1",
         null,
         "Route 1",
+        null,
+        false,
         false,
         RouteType.LIGHT_RAIL,
         null,
         RouteVisibility(
             false,
-            null
-        )
+            null,
+            false
+        ),
+        false,
+        null
     )
     val tripInformation = RouteTripInformation(
         Time.parse("PT12H"),

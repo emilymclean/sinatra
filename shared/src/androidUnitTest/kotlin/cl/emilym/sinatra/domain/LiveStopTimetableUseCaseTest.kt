@@ -81,13 +81,18 @@ class LiveStopTimetableUseCaseTest {
                     "R1",
                     null,
                     "R1",
-                    true,
-                    RouteType.BUS,
+                    null,
+                    false,
+                    false,
+                    RouteType.LIGHT_RAIL,
                     null,
                     RouteVisibility(
                         false,
-                        null
-                    )
+                        null,
+                        false
+                    ),
+                    false,
+                    null
                 )
             )
         )
@@ -135,13 +140,18 @@ class LiveStopTimetableUseCaseTest {
                     "R1",
                     null,
                     "R1",
+                    null,
+                    false,
                     true,
-                    RouteType.BUS,
+                    RouteType.LIGHT_RAIL,
                     null,
                     RouteVisibility(
                         false,
-                        null
-                    )
+                        null,
+                        false
+                    ),
+                    false,
+                    null
                 )
             )
         )
@@ -185,13 +195,18 @@ class LiveStopTimetableUseCaseTest {
                     "R1",
                     null,
                     "R1",
+                    null,
+                    false,
                     true,
-                    RouteType.BUS,
+                    RouteType.LIGHT_RAIL,
                     null,
                     RouteVisibility(
                         false,
-                        null
-                    )
+                        null,
+                        false
+                    ),
+                    false,
+                    null
                 )
             )
         )
@@ -235,13 +250,18 @@ class LiveStopTimetableUseCaseTest {
                     "R1",
                     null,
                     "R1",
+                    null,
+                    false,
                     true,
-                    RouteType.BUS,
+                    RouteType.LIGHT_RAIL,
                     null,
                     RouteVisibility(
                         false,
-                        null
-                    )
+                        null,
+                        false
+                    ),
+                    false,
+                    null
                 )
             )
         )
@@ -277,13 +297,18 @@ class LiveStopTimetableUseCaseTest {
                     "R1",
                     null,
                     "R1",
+                    null,
+                    false,
                     true,
-                    RouteType.BUS,
+                    RouteType.LIGHT_RAIL,
                     null,
                     RouteVisibility(
                         false,
-                        null
-                    )
+                        null,
+                        false
+                    ),
+                    false,
+                    null
                 )
             )
         )

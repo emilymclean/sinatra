@@ -118,12 +118,17 @@ message Route {
   // Deprecated
   optional string realTimeUrl = 8;
   optional bool hasRealtime = 10;
+  optional bool approximateTimings = 11;
+  optional bool eventRoute = 12;
+  optional string description = 13;
+  optional string moreLink = 14;
   optional RouteVisibility routeVisibility = 9;
 }
 
 message RouteVisibility {
   optional bool hidden = 1;
   optional double searchWeight = 2;
+  optional bool showOnBrowse = 3;
 }
 
 message ColorPair {

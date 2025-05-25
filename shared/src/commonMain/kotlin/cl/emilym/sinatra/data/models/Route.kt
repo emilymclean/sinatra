@@ -6,10 +6,14 @@ data class Route(
     val displayCode: String,
     val colors: ColorPair?,
     val name: String,
+    val description: String?,
+    val approximateTimings: Boolean,
     val hasRealtime: Boolean,
     val type: RouteType,
     val designation: String?,
-    val routeVisibility: RouteVisibility
+    val routeVisibility: RouteVisibility,
+    val eventRoute: Boolean,
+    val moreLink: String?
 ): Identifiable<RouteId>, NavigationObject {
 
     companion object {
@@ -20,10 +24,14 @@ data class Route(
                 pb.displayCode ?: pb.code,
                 pb.colors?.let { ColorPair.fromPB(it) },
                 pb.name,
+                pb.description,
+                pb.approximateTimings == true,
                 pb.hasRealtime == true,
                 RouteType.fromPB(pb.type),
                 pb.designation,
-                RouteVisibility.fromPB(pb.routeVisibility)
+                RouteVisibility.fromPB(pb.routeVisibility),
+                pb.eventRoute == true,
+                pb.moreLink
             )
         }
     }
@@ -46,7 +54,8 @@ enum class RouteType {
 
 data class RouteVisibility(
     val hidden: Boolean,
-    val searchWeight: Double?
+    val searchWeight: Double?,
+    val showOnBrowse: Boolean
 ) {
 
     companion object {
@@ -56,7 +65,8 @@ data class RouteVisibility(
         fun fromPB(pb: cl.emilym.gtfs.RouteVisibility?): RouteVisibility {
             return RouteVisibility(
                 pb?.hidden ?: HIDDEN_DEFAULT,
-                pb?.searchWeight ?: SEARCH_WEIGHT_DEFAULT
+                pb?.searchWeight ?: SEARCH_WEIGHT_DEFAULT,
+                pb?.showOnBrowse == true
             )
         }
     }

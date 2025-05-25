@@ -75,7 +75,7 @@ class ReconstructJourneyUseCaseTest {
 
         coEvery { stopRepository.stops() } returns Cachable.live(stopsList)
         coEvery { routeRepository.routes(any()) } returns Cachable.live(listOf(
-            Route("route1", "R1", "R1", null, "R1", false, RouteType.BUS, null, RouteVisibility(false, null))
+            Route("route1", "R1", "R1", null, "R1", null, false, false, RouteType.BUS, null, RouteVisibility(false, null, false), false, null)
         ))
         coEvery { graph.metadata.assumedWalkingSecondsPerKilometer } returns 25U * 60U
 
@@ -128,7 +128,7 @@ class ReconstructJourneyUseCaseTest {
 
         coEvery { stopRepository.stops() } returns Cachable.live(stopsList)
         coEvery { routeRepository.routes(any()) } returns Cachable.live(listOf(
-            Route("route1", "R1", "R1", null, "R1", false, RouteType.BUS, null, RouteVisibility(false, null))
+            Route("route1", "R1", "R1", null, "R1", null, false, false, RouteType.BUS, null, RouteVisibility(false, null, false), false, null)
         ))
         coEvery { graph.metadata.assumedWalkingSecondsPerKilometer } returns 25U * 60U
 
@@ -208,8 +208,8 @@ class ReconstructJourneyUseCaseTest {
 
         coEvery { stopRepository.stops() } returns Cachable.live(stopsList)
         coEvery { routeRepository.routes(any()) } returns Cachable.live(listOf(
-            Route("route1", "R1", "R1", null, "R1", false, RouteType.BUS, null, RouteVisibility(false, null)),
-            Route("route2", "R2", "R2", null, "R2", false, RouteType.BUS, null, RouteVisibility(false, null))
+            Route("route1", "R1", "R1", null, "R1", null, false, false, RouteType.BUS, null, RouteVisibility(false, null, false), false, null),
+            Route("route2", "R2", "R2", null, "R2", null, false, false, RouteType.BUS, null, RouteVisibility(false, null, false), false, null)
         ))
         coEvery { graph.metadata.assumedWalkingSecondsPerKilometer } returns 25U * 60U
 
@@ -264,7 +264,7 @@ class ReconstructJourneyUseCaseTest {
 
         coEvery { stopRepository.stops() } returns Cachable.live(stopsList)
         coEvery { routeRepository.routes(any()) } returns Cachable.live(listOf(
-            Route("route1", "R1", "R1", null, "R1", false, RouteType.BUS, null, RouteVisibility(false, null))
+            Route("route1", "R1", "R1", null, "R1", null, false, false, RouteType.BUS, null, RouteVisibility(false, null, false), false, null)
         ))
         coEvery { graph.metadata.assumedWalkingSecondsPerKilometer } returns 25U * 60U
 
@@ -305,7 +305,7 @@ class ReconstructJourneyUseCaseTest {
 
         coEvery { stopRepository.stops() } returns Cachable.live(stopsList)
         coEvery { routeRepository.routes(any()) } returns Cachable.live(listOf(
-            Route("route1", "R1", "R1", null, "R1", false, RouteType.BUS, null, RouteVisibility(false, null))
+            Route("route1", "R1", "R1", null, "R1", null, false, false, RouteType.BUS, null, RouteVisibility(false, null, false), false, null)
         ))
         coEvery { graph.metadata.assumedWalkingSecondsPerKilometer } returns 25U * 60U
 
@@ -369,7 +369,7 @@ class ReconstructJourneyUseCaseTest {
 
         coEvery { stopRepository.stops() } returns Cachable.live(stopsList)
         coEvery { routeRepository.routes(any()) } returns Cachable.live(listOf(
-            Route("route1", "R1", "R1", null, "R1", false, RouteType.BUS, null, RouteVisibility(false, null))
+            Route("route1", "R1", "R1", null, "R1", null, false, false, RouteType.BUS, null, RouteVisibility(false, null, false), false, null)
         ))
         coEvery { graph.metadata.assumedWalkingSecondsPerKilometer } returns 25U * 60U
 

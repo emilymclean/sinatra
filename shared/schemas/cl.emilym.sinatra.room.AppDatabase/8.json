@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 8,
-    "identityHash": "0de926ad62705eb8b5dced089e282702",
+    "identityHash": "ba538b1b2930afe9eb73f60fb548f470",
     "entities": [
       {
         "tableName": "ShaEntity",
@@ -209,7 +209,7 @@
       },
       {
         "tableName": "RouteEntity",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `code` TEXT NOT NULL, `displayCode` TEXT NOT NULL, `color` TEXT, `onColor` TEXT, `name` TEXT NOT NULL, `type` TEXT NOT NULL, `designation` TEXT, `hidden` INTEGER NOT NULL DEFAULT 0, `searchWeight` REAL DEFAULT NULL, `hasRealtime` INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `code` TEXT NOT NULL, `displayCode` TEXT NOT NULL, `color` TEXT, `onColor` TEXT, `name` TEXT NOT NULL, `description` TEXT DEFAULT NULL, `approximateTimings` INTEGER NOT NULL DEFAULT 0, `type` TEXT NOT NULL, `designation` TEXT, `hidden` INTEGER NOT NULL DEFAULT 0, `searchWeight` REAL DEFAULT NULL, `showOnBrowse` INTEGER NOT NULL DEFAULT 0, `eventRoute` INTEGER NOT NULL DEFAULT 0, `moreLink` TEXT DEFAULT NULL, `hasRealtime` INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -246,6 +246,19 @@
             "notNull": true
           },
           {
+            "fieldPath": "description",
+            "columnName": "description",
+            "affinity": "TEXT",
+            "defaultValue": "NULL"
+          },
+          {
+            "fieldPath": "approximateTimings",
+            "columnName": "approximateTimings",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
             "fieldPath": "type",
             "columnName": "type",
             "affinity": "TEXT",
@@ -267,6 +280,26 @@
             "fieldPath": "searchWeight",
             "columnName": "searchWeight",
             "affinity": "REAL",
+            "defaultValue": "NULL"
+          },
+          {
+            "fieldPath": "showOnBrowse",
+            "columnName": "showOnBrowse",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "eventRoute",
+            "columnName": "eventRoute",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "moreLink",
+            "columnName": "moreLink",
+            "affinity": "TEXT",
             "defaultValue": "NULL"
           },
           {
@@ -852,7 +885,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '0de926ad62705eb8b5dced089e282702')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'ba538b1b2930afe9eb73f60fb548f470')"
     ]
   }
 }
