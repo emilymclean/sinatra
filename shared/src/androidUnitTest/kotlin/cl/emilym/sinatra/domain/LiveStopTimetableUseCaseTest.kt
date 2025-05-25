@@ -1,95 +1,69 @@
 package cl.emilym.sinatra.domain
 
+import cl.emilym.sinatra.data.models.Cachable
+import cl.emilym.sinatra.data.models.DelayInformation
+import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.data.models.Route
 import cl.emilym.sinatra.data.models.RouteType
 import cl.emilym.sinatra.data.models.RouteVisibility
 import cl.emilym.sinatra.data.models.StationTime
+import cl.emilym.sinatra.data.models.Stop
+import cl.emilym.sinatra.data.models.StopAccessibility
+import cl.emilym.sinatra.data.models.StopRealtimeInformation
+import cl.emilym.sinatra.data.models.StopRealtimeUpdate
 import cl.emilym.sinatra.data.models.StopTimetableTime
+import cl.emilym.sinatra.data.models.StopVisibility
+import cl.emilym.sinatra.data.models.StopWheelchairAccessibility
 import cl.emilym.sinatra.data.models.Time
 import cl.emilym.sinatra.data.repository.LiveServiceRepository
+import cl.emilym.sinatra.data.repository.StopRepository
 import cl.emilym.sinatra.data.repository.TransportMetadataRepository
 import cl.emilym.sinatra.timeZone
 import com.google.transit.realtime.FeedMessage
 import io.github.aakira.napier.Napier
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
+import io.mockk.verify
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
+import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.seconds
 
 class LiveStopTimetableUseCaseTest {
 
     private lateinit var liveServiceRepository: LiveServiceRepository
-    private lateinit var transportMetadataRepository: TransportMetadataRepository
+    private lateinit var stopRepository: StopRepository
     private lateinit var useCase: LiveStopTimetableUseCase
     private val scheduleStartOfDay = Instant.fromEpochMilliseconds(0)
+    private lateinit var clock: Clock
 
     @BeforeTest
     fun setUp() {
         liveServiceRepository = mockk()
-        transportMetadataRepository = mockk()
-        useCase = LiveStopTimetableUseCase(liveServiceRepository, transportMetadataRepository)
+        stopRepository = mockk()
+        clock = mockk()
+        useCase = LiveStopTimetableUseCase(liveServiceRepository, stopRepository, clock)
+
+        every { clock.now() } returns Instant.fromEpochMilliseconds(0) + 20.minutes
 
         mockkStatic(Napier::class)
     }
 
     @Test
-    fun `invoke should return scheduled times without real-time updates`() = runTest {
-        val stopId = "stop-1"
-        val scheduled = listOf(
-            StopTimetableTime(
-                null,
-                "R1",
-                "R1",
-                "S1",
-                "trip-1",
-                Time.parse("PT10H").addReference(scheduleStartOfDay),
-                Time.parse("PT10H1M").addReference(scheduleStartOfDay),
-                "North",
-                0,
-                Route(
-                    "R1",
-                    "R1",
-                    "R1",
-                    null,
-                    "R1",
-                    null,
-                    null,
-                    false,
-                    RouteType.LIGHT_RAIL,
-                    null,
-                    RouteVisibility(
-                        false,
-                        null,
-                        false
-                    ),
-                    false,
-                    null
-                )
-            )
-        )
-        coEvery { transportMetadataRepository.scheduleStartOfDay() } returns mockk()
-        coEvery { transportMetadataRepository.timeZone() } returns timeZone
-
-        val result = useCase(stopId, scheduled).toList()
-
-        assertEquals(1, result.size)
-        assertEquals(scheduled, result[0])
-    }
-
-    @Test
     fun `invoke should merge real-time updates with scheduled times when delay provided`() = runTest {
         val sId = "stop-1"
-        val realTimeUrl = "https://realtime.example.com"
         val scheduled = listOf(
             StopTimetableTime(
                 null,
@@ -108,7 +82,7 @@ class LiveStopTimetableUseCaseTest {
                     null,
                     "R1",
                     null,
-                    realTimeUrl,
+                    false,
                     false,
                     RouteType.LIGHT_RAIL,
                     null,
@@ -122,21 +96,19 @@ class LiveStopTimetableUseCaseTest {
                 )
             )
         )
-        val updates = mockk<FeedMessage> {
-            every { entity } returns listOf(
-                mockk {
-                    every { isDeleted } returns false
-                    every { tripUpdate } returns mockk {
-                        every { trip.tripId } returns "trip-1"
-                        every { delay } returns 10
-                        every { stopTimeUpdate } returns emptyList()
-                    }
-                }
-            )
-        }
-        coEvery { transportMetadataRepository.scheduleStartOfDay() } returns scheduleStartOfDay
-        coEvery { liveServiceRepository.getRealtimeUpdates(realTimeUrl) } returns flowOf(updates)
-        coEvery { transportMetadataRepository.timeZone() } returns timeZone
+        val updates = StopRealtimeInformation(
+            updates = listOf(
+                StopRealtimeUpdate(
+                    "trip-1",
+                    DelayInformation.Fixed(10.seconds)
+                )
+            ),
+            expire = Instant.DISTANT_FUTURE
+        )
+        coEvery { liveServiceRepository.getStopRealtimeUpdates(any()) } returns updates
+        coEvery { stopRepository.stop(sId) } returns Cachable.live(Stop("stop1", null, "Stop 1", "Stop 1",
+            MapLocation(0.0,0.0,), StopAccessibility(StopWheelchairAccessibility.FULL), StopVisibility(false, false, false, null), true
+        ))
 
         val result = useCase(sId, scheduled).toList()
 
@@ -149,9 +121,8 @@ class LiveStopTimetableUseCaseTest {
     }
 
     @Test
-    fun `invoke should merge real-time updates with scheduled times when arrival time provided`() = runTest {
-        val sId = "stop-1"
-        val realTimeUrl = "https://realtime.example.com"
+    fun `invoke should fallback to scheduled times when delay unknown`() = runTest {
+        val stopId = "stop-1"
         val scheduled = listOf(
             StopTimetableTime(
                 null,
@@ -170,8 +141,8 @@ class LiveStopTimetableUseCaseTest {
                     null,
                     "R1",
                     null,
-                    realTimeUrl,
                     false,
+                    true,
                     RouteType.LIGHT_RAIL,
                     null,
                     RouteVisibility(
@@ -184,44 +155,29 @@ class LiveStopTimetableUseCaseTest {
                 )
             )
         )
-        val updates = mockk<FeedMessage> {
-            every { entity } returns listOf(
-                mockk {
-                    every { isDeleted } returns false
-                    every { tripUpdate } returns mockk {
-                        every { trip.tripId } returns "trip-1"
-                        every { delay } returns 10
-                        every { stopTimeUpdate } returns listOf(
-                            mockk {
-                                every { stopId } returns sId
-                                every { arrival } returns mockk {
-                                    every { time } returns (scheduleStartOfDay + Duration.parseIsoString("PT10H20S")).epochSeconds
-                                }
-                                every { departure } returns null
-                            }
-                        )
-                    }
-                }
-            )
-        }
-        coEvery { transportMetadataRepository.scheduleStartOfDay() } returns scheduleStartOfDay
-        coEvery { liveServiceRepository.getRealtimeUpdates(realTimeUrl) } returns flowOf(updates)
-        coEvery { transportMetadataRepository.timeZone() } returns timeZone
+        val updates = StopRealtimeInformation(
+            updates = listOf(
+                StopRealtimeUpdate(
+                    "trip-1",
+                    DelayInformation.Unknown
+                )
+            ),
+            expire = Instant.DISTANT_FUTURE
+        )
+        coEvery { liveServiceRepository.getStopRealtimeUpdates(any()) } returns updates
+        coEvery { stopRepository.stop(stopId) } returns Cachable.live(Stop("stop1", null, "Stop 1", "Stop 1",
+            MapLocation(0.0,0.0,), StopAccessibility(StopWheelchairAccessibility.FULL), StopVisibility(false, false, false, null), true
+        ))
 
-        val result = useCase(sId, scheduled).toList()
+        val result = useCase(stopId, scheduled).toList()
 
         assertEquals(1, result.size)
-        val updatedTimetable = result[0]
-        assertEquals(1, updatedTimetable.size)
-        assertIs<StationTime.Live>(updatedTimetable[0].stationTime.arrival)
-        assertEquals(36020, updatedTimetable[0].stationTime.arrival.time.durationThroughDay.inWholeSeconds)
-        assertEquals(20, (updatedTimetable[0].stationTime.arrival as StationTime.Live).delay.inWholeSeconds)
+        assertEquals(scheduled, result[0])
     }
 
     @Test
-    fun `invoke should merge real-time updates with scheduled times when arrival delay provided`() = runTest {
-        val sId = "stop-1"
-        val realTimeUrl = "https://realtime.example.com"
+    fun `invoke should fallback to scheduled times when feed expired`() = runTest {
+        val stopId = "stop-1"
         val scheduled = listOf(
             StopTimetableTime(
                 null,
@@ -240,8 +196,8 @@ class LiveStopTimetableUseCaseTest {
                     null,
                     "R1",
                     null,
-                    realTimeUrl,
                     false,
+                    true,
                     RouteType.LIGHT_RAIL,
                     null,
                     RouteVisibility(
@@ -254,45 +210,76 @@ class LiveStopTimetableUseCaseTest {
                 )
             )
         )
-        val updates = mockk<FeedMessage> {
-            every { entity } returns listOf(
-                mockk {
-                    every { isDeleted } returns false
-                    every { tripUpdate } returns mockk {
-                        every { trip.tripId } returns "trip-1"
-                        every { delay } returns 10
-                        every { stopTimeUpdate } returns listOf(
-                            mockk {
-                                every { stopId } returns sId
-                                every { arrival } returns mockk {
-                                    every { time } returns null
-                                    every { delay } returns 30
-                                }
-                                every { departure } returns null
-                            }
-                        )
-                    }
-                }
-            )
-        }
-        coEvery { transportMetadataRepository.scheduleStartOfDay() } returns scheduleStartOfDay
-        coEvery { liveServiceRepository.getRealtimeUpdates(realTimeUrl) } returns flowOf(updates)
-        coEvery { transportMetadataRepository.timeZone() } returns timeZone
+        val updates = StopRealtimeInformation(
+            updates = listOf(
+                StopRealtimeUpdate(
+                    "trip-1",
+                    DelayInformation.Fixed(10.seconds)
+                )
+            ),
+            expire = Instant.fromEpochMilliseconds(0)
+        )
+        coEvery { liveServiceRepository.getStopRealtimeUpdates(any()) } returns updates
+        coEvery { stopRepository.stop(stopId) } returns Cachable.live(Stop("stop1", null, "Stop 1", "Stop 1",
+            MapLocation(0.0,0.0,), StopAccessibility(StopWheelchairAccessibility.FULL), StopVisibility(false, false, false, null), true
+        ))
 
-        val result = useCase(sId, scheduled).toList()
+        val result = useCase(stopId, scheduled).toList()
 
         assertEquals(1, result.size)
-        val updatedTimetable = result[0]
-        assertEquals(1, updatedTimetable.size)
-        assertIs<StationTime.Live>(updatedTimetable[0].stationTime.arrival)
-        assertEquals(36030, updatedTimetable[0].stationTime.arrival.time.durationThroughDay.inWholeSeconds)
-        assertEquals(30, (updatedTimetable[0].stationTime.arrival as StationTime.Live).delay.inWholeSeconds)
+        assertEquals(scheduled, result[0])
+    }
+
+    @Test
+    fun `invoke should fallback to scheduled times when stop not live`() = runTest {
+        val stopId = "stop-1"
+        val scheduled = listOf(
+            StopTimetableTime(
+                null,
+                "R1",
+                "R1",
+                "S1",
+                "trip-1",
+                Time.parse("PT10H").addReference(scheduleStartOfDay),
+                Time.parse("PT10H1M").addReference(scheduleStartOfDay),
+                "North",
+                0,
+                Route(
+                    "R1",
+                    "R1",
+                    "R1",
+                    null,
+                    "R1",
+                    null,
+                    false,
+                    true,
+                    RouteType.LIGHT_RAIL,
+                    null,
+                    RouteVisibility(
+                        false,
+                        null,
+                        false
+                    ),
+                    false,
+                    null
+                )
+            )
+        )
+
+        coEvery { stopRepository.stop(stopId) } returns Cachable.live(Stop("stop1", null, "Stop 1", "Stop 1",
+            MapLocation(0.0,0.0,), StopAccessibility(StopWheelchairAccessibility.FULL), StopVisibility(false, false, false, null), false
+        ))
+
+        val result = useCase(stopId, scheduled).toList()
+
+        assertEquals(1, result.size)
+        assertEquals(scheduled, result[0])
+        coVerify(exactly = 0) { liveServiceRepository.getStopRealtimeUpdates(any()) }
     }
 
     @Test
     fun `invoke should handle errors in real-time updates and fallback to scheduled times`() = runTest {
         val stopId = "stop-1"
-        val realTimeUrl = "https://realtime.example.com"
         val scheduled = listOf(
             StopTimetableTime(
                 null,
@@ -311,8 +298,8 @@ class LiveStopTimetableUseCaseTest {
                     null,
                     "R1",
                     null,
-                    null,
                     false,
+                    true,
                     RouteType.LIGHT_RAIL,
                     null,
                     RouteVisibility(
@@ -325,10 +312,10 @@ class LiveStopTimetableUseCaseTest {
                 )
             )
         )
-        coEvery { transportMetadataRepository.scheduleStartOfDay() } returns mockk()
-        coEvery { liveServiceRepository.getRealtimeUpdates(realTimeUrl) } returns flow { throw Exception("Network error") }
-        coEvery { transportMetadataRepository.timeZone() } returns timeZone
-//        every { Napier.e(any(), any<Throwable>(), any()) } just Runs
+        coEvery { liveServiceRepository.getStopRealtimeUpdates(any()) } throws Exception("Network error")
+        coEvery { stopRepository.stop(stopId) } returns Cachable.live(Stop("stop1", null, "Stop 1", "Stop 1",
+            MapLocation(0.0,0.0,), StopAccessibility(StopWheelchairAccessibility.FULL), StopVisibility(false, false, false, null), true
+        ))
 
         val result = useCase(stopId, scheduled).toList()
 

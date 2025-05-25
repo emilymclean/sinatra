@@ -25,7 +25,7 @@ class RouteTypeSearcherTest {
     @Test
     fun `scoreMultiplier should return 1_7 when colors is not null`() {
         // Arrange
-        val route = Route("1", "R1", "R1", ColorPair("", OnColor.LIGHT), "R1", null, "https://fake.url", false, RouteType.BUS, null, RouteVisibility(false, null, false), false, null)
+        val route = Route("1", "R1", "R1", ColorPair("", OnColor.LIGHT), "R1", null, false, false, RouteType.BUS, null, RouteVisibility(false, null, false), false, null)
 
         // Act
         val multiplier = routeTypeSearcher.scoreMultiplier(route)
@@ -37,7 +37,7 @@ class RouteTypeSearcherTest {
     @Test
     fun `scoreMultiplier should return 0_2 when name is NIS`() {
         // Arrange
-        val route = Route("2", "NIS", "NIS", null, "NIS", null, "https://fake.url", false, RouteType.BUS, null, RouteVisibility(false, null, false), false, null)
+        val route = Route("2", "NIS", "NIS", null, "NIS", null, false, false, RouteType.BUS, null, RouteVisibility(false, null, false), false, null)
 
         // Act
         val multiplier = routeTypeSearcher.scoreMultiplier(route)
@@ -49,7 +49,7 @@ class RouteTypeSearcherTest {
     @Test
     fun `scoreMultiplier should return 1_1 for other cases`() {
         // Arrange
-        val route = Route("1", "R1", "R1", null, "R1", null, "https://fake.url", false, RouteType.BUS, null, RouteVisibility(false, null, false), false, null)
+        val route = Route("1", "R1", "R1", null, "R1", null, false, false, RouteType.BUS, null, RouteVisibility(false, null, false), false, null)
 
         // Act
         val multiplier = routeTypeSearcher.scoreMultiplier(route)
@@ -61,7 +61,7 @@ class RouteTypeSearcherTest {
     @Test
     fun `wrap should return SearchResult with PlaceResult`() {
         // Arrange
-        val route = Route("1", "R1", "R1", null, "R1", null, "https://fake.url", false, RouteType.BUS, null, RouteVisibility(false, null, false), false, null)
+        val route = Route("1", "R1", "R1", null, "R1", null, false, false, RouteType.BUS, null, RouteVisibility(false, null, false), false, null)
 
         // Act
         val result = routeTypeSearcher.wrap(route)

@@ -59,6 +59,7 @@ import cl.emilym.sinatra.data.models.StopWithDistance
 import cl.emilym.sinatra.data.models.TripId
 import cl.emilym.sinatra.data.models.distance
 import cl.emilym.sinatra.data.models.startOfDay
+import cl.emilym.sinatra.data.repository.AlertDisplayContext
 import cl.emilym.sinatra.data.repository.AlertRepository
 import cl.emilym.sinatra.data.repository.FavouriteRepository
 import cl.emilym.sinatra.data.repository.RecentVisitRepository
@@ -193,7 +194,9 @@ class RouteDetailViewModel(
     fun retryAlerts(routeId: RouteId, serviceId: ServiceId?, tripId: TripId?) {
         screenModelScope.launch {
             _alerts.handleFlowProperly {
-                alertRepository.alerts(routeId = routeId, tripId = tripId)
+                alertRepository.alerts(AlertDisplayContext.Route(
+                    routeId = routeId, tripId = tripId
+                ))
             }
         }
     }

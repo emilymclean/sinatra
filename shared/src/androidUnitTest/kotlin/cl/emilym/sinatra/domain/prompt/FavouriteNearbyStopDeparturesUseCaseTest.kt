@@ -45,7 +45,8 @@ class FavouriteNearbyStopDeparturesUseCaseTest {
         _simpleName = null,
         location = MapLocation(0.0, 0.0),
         accessibility = StopAccessibility(StopWheelchairAccessibility.UNKNOWN),
-        visibility = StopVisibility(true, true, false, null)
+        visibility = StopVisibility(true, true, false, null),
+        hasRealtime = false
     )
     private val stop2 = Stop(
         id = "stop2",
@@ -54,7 +55,8 @@ class FavouriteNearbyStopDeparturesUseCaseTest {
         _simpleName = null,
         location = MapLocation(0.001, 0.001),
         accessibility = StopAccessibility(StopWheelchairAccessibility.UNKNOWN),
-        visibility = StopVisibility(true, true, false, null)
+        visibility = StopVisibility(true, true, false, null),
+        hasRealtime = false
     )
 
     private val timetableTime = StopTimetableTime(

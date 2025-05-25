@@ -50,10 +50,10 @@ class ReconstructJourneyUseCaseTest {
     @Test
     fun `toJourney handles exact journey starting with a transfer and dayIndex increase`() = runTest {
         val startStop = Stop("stop1", null, "Stop 1", "Stop 1", location, StopAccessibility(
-            StopWheelchairAccessibility.FULL), StopVisibility(false, false, false, null)
+            StopWheelchairAccessibility.FULL), StopVisibility(false, false, false, null), false
         )
         val endStop = Stop("stop2", null, "Stop 2", "Stop 2", location, StopAccessibility(
-            StopWheelchairAccessibility.FULL), StopVisibility(false, false, false, null)
+            StopWheelchairAccessibility.FULL), StopVisibility(false, false, false, null), false
         )
         val stopsList = listOf(startStop, endStop)
 
@@ -75,7 +75,7 @@ class ReconstructJourneyUseCaseTest {
 
         coEvery { stopRepository.stops() } returns Cachable.live(stopsList)
         coEvery { routeRepository.routes(any()) } returns Cachable.live(listOf(
-            Route("route1", "R1", "R1", null, "R1", null, "https://fake.url", false, RouteType.BUS, null, RouteVisibility(false, null, false), false, null)
+            Route("route1", "R1", "R1", null, "R1", null, false, false, RouteType.BUS, null, RouteVisibility(false, null, false), false, null)
         ))
         coEvery { graph.metadata.assumedWalkingSecondsPerKilometer } returns 25U * 60U
 
@@ -103,10 +103,10 @@ class ReconstructJourneyUseCaseTest {
     @Test
     fun `toJourney handles exact journey ending with a transfer`() = runTest {
         val startStop = Stop("stop1", null, "Stop 1", "Stop 1", location, StopAccessibility(
-            StopWheelchairAccessibility.FULL), StopVisibility(false, false, false, null)
+            StopWheelchairAccessibility.FULL), StopVisibility(false, false, false, null), false
         )
         val endStop = Stop("stop2", null, "Stop 2", "Stop 2", location, StopAccessibility(
-            StopWheelchairAccessibility.FULL), StopVisibility(false, false, false, null)
+            StopWheelchairAccessibility.FULL), StopVisibility(false, false, false, null), false
         )
         val stopsList = listOf(startStop, endStop)
 
@@ -128,7 +128,7 @@ class ReconstructJourneyUseCaseTest {
 
         coEvery { stopRepository.stops() } returns Cachable.live(stopsList)
         coEvery { routeRepository.routes(any()) } returns Cachable.live(listOf(
-            Route("route1", "R1", "R1", null, "R1", null, "https://fake.url", false, RouteType.BUS, null, RouteVisibility(false, null, false), false, null)
+            Route("route1", "R1", "R1", null, "R1", null, false, false, RouteType.BUS, null, RouteVisibility(false, null, false), false, null)
         ))
         coEvery { graph.metadata.assumedWalkingSecondsPerKilometer } returns 25U * 60U
 
@@ -156,19 +156,19 @@ class ReconstructJourneyUseCaseTest {
     @Test
     fun `toJourney handles mid-journey dayIndex increase`() = runTest {
         val stop1 = Stop("stop1", null, "Stop 1", "Stop 1", location, StopAccessibility(
-            StopWheelchairAccessibility.FULL), StopVisibility(false, false, false, null)
+            StopWheelchairAccessibility.FULL), StopVisibility(false, false, false, null), false
         )
         val stop2 = Stop("stop2", null, "Stop 2", "Stop 2", location, StopAccessibility(
-            StopWheelchairAccessibility.FULL), StopVisibility(false, false, false, null)
+            StopWheelchairAccessibility.FULL), StopVisibility(false, false, false, null), false
         )
         val stop3 = Stop("stop3", null, "Stop 3", "Stop 3", location, StopAccessibility(
-            StopWheelchairAccessibility.FULL), StopVisibility(false, false, false, null)
+            StopWheelchairAccessibility.FULL), StopVisibility(false, false, false, null), false
         )
         val stop4 = Stop("stop4", null, "Stop 4", "Stop 4", location, StopAccessibility(
-            StopWheelchairAccessibility.FULL), StopVisibility(false, false, false, null)
+            StopWheelchairAccessibility.FULL), StopVisibility(false, false, false, null), false
         )
         val stop5 = Stop("stop5", null, "Stop 5", "Stop 5", location, StopAccessibility(
-            StopWheelchairAccessibility.FULL), StopVisibility(false, false, false, null)
+            StopWheelchairAccessibility.FULL), StopVisibility(false, false, false, null), false
         )
         val stopsList = listOf(stop1, stop2, stop3, stop4, stop5)
 
@@ -208,8 +208,8 @@ class ReconstructJourneyUseCaseTest {
 
         coEvery { stopRepository.stops() } returns Cachable.live(stopsList)
         coEvery { routeRepository.routes(any()) } returns Cachable.live(listOf(
-            Route("route1", "R1", "R1", null, "R1", null, "https://fake.url", false, RouteType.BUS, null, RouteVisibility(false, null, false), false, null),
-            Route("route2", "R2", "R2", null, "R2", null, "https://fake.url", false, RouteType.BUS, null, RouteVisibility(false, null, false), false, null)
+            Route("route1", "R1", "R1", null, "R1", null, false, false, RouteType.BUS, null, RouteVisibility(false, null, false), false, null),
+            Route("route2", "R2", "R2", null, "R2", null, false, false, RouteType.BUS, null, RouteVisibility(false, null, false), false, null)
         ))
         coEvery { graph.metadata.assumedWalkingSecondsPerKilometer } returns 25U * 60U
 
@@ -243,10 +243,10 @@ class ReconstructJourneyUseCaseTest {
     @Test
     fun `toJourney adds transfer points when non-exact departure and arrival`() = runTest {
         val startStop = Stop("stop1", null, "Stop 1", "Stop 1", location, StopAccessibility(
-            StopWheelchairAccessibility.FULL), StopVisibility(false, false, false, null)
+            StopWheelchairAccessibility.FULL), StopVisibility(false, false, false, null), false
         )
         val endStop = Stop("stop2", null, "Stop 2", "Stop 2", location, StopAccessibility(
-            StopWheelchairAccessibility.FULL), StopVisibility(false, false, false, null)
+            StopWheelchairAccessibility.FULL), StopVisibility(false, false, false, null), false
         )
         val stopsList = listOf(startStop, endStop)
 
@@ -264,7 +264,7 @@ class ReconstructJourneyUseCaseTest {
 
         coEvery { stopRepository.stops() } returns Cachable.live(stopsList)
         coEvery { routeRepository.routes(any()) } returns Cachable.live(listOf(
-            Route("route1", "R1", "R1", null, "R1", null, "https://fake.url", false, RouteType.BUS, null, RouteVisibility(false, null, false), false, null)
+            Route("route1", "R1", "R1", null, "R1", null, false, false, RouteType.BUS, null, RouteVisibility(false, null, false), false, null)
         ))
         coEvery { graph.metadata.assumedWalkingSecondsPerKilometer } returns 25U * 60U
 
@@ -284,10 +284,10 @@ class ReconstructJourneyUseCaseTest {
     @Test
     fun `toJourney handles simple case`() = runTest {
         val startStop = Stop("stop1", null, "Stop 1", "Stop 1", location, StopAccessibility(
-            StopWheelchairAccessibility.FULL), StopVisibility(false, false, false, null)
+            StopWheelchairAccessibility.FULL), StopVisibility(false, false, false, null), false
         )
         val endStop = Stop("stop2", null, "Stop 2", "Stop 2", location, StopAccessibility(
-            StopWheelchairAccessibility.FULL), StopVisibility(false, false, false, null)
+            StopWheelchairAccessibility.FULL), StopVisibility(false, false, false, null), false
         )
         val stopsList = listOf(startStop, endStop)
 
@@ -305,7 +305,7 @@ class ReconstructJourneyUseCaseTest {
 
         coEvery { stopRepository.stops() } returns Cachable.live(stopsList)
         coEvery { routeRepository.routes(any()) } returns Cachable.live(listOf(
-            Route("route1", "R1", "R1", null, "R1", null, "https://fake.url", false, RouteType.BUS, null, RouteVisibility(false, null, false), false, null)
+            Route("route1", "R1", "R1", null, "R1", null, false, false, RouteType.BUS, null, RouteVisibility(false, null, false), false, null)
         ))
         coEvery { graph.metadata.assumedWalkingSecondsPerKilometer } returns 25U * 60U
 
@@ -324,10 +324,10 @@ class ReconstructJourneyUseCaseTest {
     @Test
     fun `toJourney correctly translates accessibility information`() = runTest {
         val startStop = Stop("stop1", null, "Stop 1", "Stop 1", location, StopAccessibility(
-            StopWheelchairAccessibility.FULL), StopVisibility(false, false, false, null)
+            StopWheelchairAccessibility.FULL), StopVisibility(false, false, false, null), false
         )
         val endStop = Stop("stop2", null, "Stop 2", "Stop 2", location, StopAccessibility(
-            StopWheelchairAccessibility.FULL), StopVisibility(false, false, false, null)
+            StopWheelchairAccessibility.FULL), StopVisibility(false, false, false, null), false
         )
         val stopsList = listOf(startStop, endStop)
 
@@ -369,7 +369,7 @@ class ReconstructJourneyUseCaseTest {
 
         coEvery { stopRepository.stops() } returns Cachable.live(stopsList)
         coEvery { routeRepository.routes(any()) } returns Cachable.live(listOf(
-            Route("route1", "R1", "R1", null, "R1", null, "https://fake.url", false, RouteType.BUS, null, RouteVisibility(false, null, false), false, null)
+            Route("route1", "R1", "R1", null, "R1", null, false, false, RouteType.BUS, null, RouteVisibility(false, null, false), false, null)
         ))
         coEvery { graph.metadata.assumedWalkingSecondsPerKilometer } returns 25U * 60U
 

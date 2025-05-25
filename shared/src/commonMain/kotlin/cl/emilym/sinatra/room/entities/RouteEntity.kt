@@ -34,7 +34,6 @@ data class RouteEntity(
     val name: String,
     @ColumnInfo(defaultValue = "NULL")
     val description: String?,
-    val realTimeUrl: String?,
     @ColumnInfo(defaultValue = "0")
     val approximateTimings: Boolean,
     val type: String,
@@ -49,6 +48,8 @@ data class RouteEntity(
     val eventRoute: Boolean,
     @ColumnInfo(defaultValue = "NULL")
     val moreLink: String?,
+    @ColumnInfo(defaultValue = "0")
+    val hasRealtime: Boolean
 ) {
 
     fun toModel(): Route {
@@ -61,8 +62,8 @@ data class RouteEntity(
             else null,
             name,
             description,
-            realTimeUrl,
             approximateTimings,
+            hasRealtime,
             RouteType.valueOf(type),
             designation,
             RouteVisibility(
@@ -85,7 +86,6 @@ data class RouteEntity(
                 m.colors?.onColor?.name,
                 m.name,
                 m.description,
-                m.realTimeUrl,
                 m.approximateTimings,
                 m.type.name,
                 m.designation,
@@ -93,7 +93,8 @@ data class RouteEntity(
                 m.routeVisibility.searchWeight,
                 m.routeVisibility.showOnBrowse,
                 m.eventRoute,
-                m.moreLink
+                m.moreLink,
+                m.hasRealtime
             )
         }
     }
