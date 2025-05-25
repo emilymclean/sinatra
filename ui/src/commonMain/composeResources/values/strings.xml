@@ -148,6 +148,7 @@
     <string name="stop_detail_child_stations">Additional stops</string>
     <string name="current_stops_title">Upcoming stops</string>
     <string name="past_stops_title">Past stops</string>
+    <string name="stops_timing_approximate_title">Approximate Timings</string>
     <string name="stops_timing_approximate">This service does not follow a fixed timetable and arrival times may vary.</string>
     <string name="accessibility_title">Accessibility</string>
 

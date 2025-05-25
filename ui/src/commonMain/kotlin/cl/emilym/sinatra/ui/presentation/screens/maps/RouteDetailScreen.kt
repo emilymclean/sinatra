@@ -1,5 +1,6 @@
 package cl.emilym.sinatra.ui.presentation.screens.maps
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,6 +14,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -23,6 +26,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
@@ -41,6 +45,7 @@ import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.FeatureFlags
 import cl.emilym.sinatra.bounds
 import cl.emilym.sinatra.data.models.Alert
+import cl.emilym.sinatra.data.models.AlertSeverity
 import cl.emilym.sinatra.data.models.IRouteTripInformation
 import cl.emilym.sinatra.data.models.IRouteTripStop
 import cl.emilym.sinatra.data.models.MapLocation
@@ -90,6 +95,7 @@ import cl.emilym.sinatra.ui.widgets.SinatraScreenModel
 import cl.emilym.sinatra.ui.widgets.SpecificRecomposeOnInstants
 import cl.emilym.sinatra.ui.widgets.StopCard
 import cl.emilym.sinatra.ui.widgets.Subheading
+import cl.emilym.sinatra.ui.widgets.WarningIcon
 import cl.emilym.sinatra.ui.widgets.WheelchairAccessibleIcon
 import cl.emilym.sinatra.ui.widgets.collectAsStateWithLifecycle
 import cl.emilym.sinatra.ui.widgets.createRequestStateFlowFlow
@@ -122,6 +128,7 @@ import sinatra.ui.generated.resources.semantics_favourite_route
 import sinatra.ui.generated.resources.stop_detail_distance
 import sinatra.ui.generated.resources.stop_detail_nearest_stop
 import sinatra.ui.generated.resources.stops_timing_approximate
+import sinatra.ui.generated.resources.stops_timing_approximate_title
 import sinatra.ui.generated.resources.stops_title
 import sinatra.ui.generated.resources.trip_not_found
 
@@ -353,6 +360,37 @@ class RouteDetailScreen(
                 item {
                     AlertScaffold((alerts as? RequestState.Success)?.value)
                 }
+                if (route.approximateTimings) {
+                    item {
+                        Column(
+                            Modifier.padding(horizontal = 1.rdp)
+                        ) {
+                            Card(
+                                Modifier.fillMaxWidth(),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.secondaryContainer
+                                )
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(1.rdp),
+                                    horizontalArrangement = Arrangement.spacedBy(0.5.rdp)
+                                ) {
+                                    WarningIcon()
+                                    Column {
+                                        Text(
+                                            stringResource(Res.string.stops_timing_approximate_title),
+                                            style = MaterialTheme.typography.titleMedium
+                                        )
+                                        Text(
+                                            stringResource(Res.string.stops_timing_approximate),
+                                        )
+                                    }
+                                }
+                            }
+                            Box(Modifier.height(2.rdp))
+                        }
+                    }
+                }
                 if (route.description != null && trigger == null) {
                     item {
                         Column(
@@ -422,7 +460,7 @@ class RouteDetailScreen(
                                 },
                                 subtitle = stringResource(Res.string.stop_detail_distance, nearestStop.distance.text)
                             )
-                            Box(Modifier.height(2.rdp))
+                            Box(Modifier.height(1.rdp))
                         }
                     }
                 }
@@ -436,31 +474,11 @@ class RouteDetailScreen(
                             item {
                                 Subheading(stringResource(Res.string.current_stops_title))
                             }
-                            if (route.approximateTimings) {
-                                item {
-                                    Column(Modifier.padding(horizontal = 1.rdp)) {
-                                        Text(
-                                            stringResource(Res.string.stops_timing_approximate),
-                                            style = MaterialTheme.typography.bodySmall
-                                        )
-                                    }
-                                }
-                            }
                             Cards(navigator, current ?: listOf(), route)
                         }
                         if (past != null) {
                             item {
                                 Subheading(stringResource(Res.string.past_stops_title))
-                            }
-                            if (current == null && route.approximateTimings) {
-                                item {
-                                    Column(Modifier.padding(horizontal = 1.rdp)) {
-                                        Text(
-                                            stringResource(Res.string.stops_timing_approximate),
-                                            style = MaterialTheme.typography.bodySmall
-                                        )
-                                    }
-                                }
                             }
                             Cards(navigator, past ?: listOf(), route)
                         }
