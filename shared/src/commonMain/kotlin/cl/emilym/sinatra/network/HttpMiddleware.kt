@@ -83,7 +83,7 @@ fun protobufResponseConverterFactory(): ProtobufResponseConverterFactory {
             Pages::class to Pages::decodeFromByteArray,
             FeedMessage::class to FeedMessage::decodeFromByteArray,
             ServiceAlertEndpoint::class to ServiceAlertEndpoint::decodeFromByteArray,
-            RealtimeEndpoint::class to RouteEndpoint::decodeFromByteArray
+            RealtimeEndpoint::class to RealtimeEndpoint::decodeFromByteArray
         )
     )
 }
