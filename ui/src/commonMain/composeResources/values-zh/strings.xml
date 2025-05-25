@@ -199,7 +199,7 @@
       
   <string name="past_stops_title">过去的站点</string>
 
-  <string name="stops_timing_approximate">到达时间仅为预估，实际时间可能有所变动</string>
+  <string name="stops_timing_approximate">本服务无固定时刻表，车辆到达时间可能会有所变化。</string>
       
   <string name="accessibility_title">无障碍设施</string>
       

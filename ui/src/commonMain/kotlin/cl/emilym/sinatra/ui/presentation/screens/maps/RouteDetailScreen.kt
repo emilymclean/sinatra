@@ -436,12 +436,14 @@ class RouteDetailScreen(
                             item {
                                 Subheading(stringResource(Res.string.current_stops_title))
                             }
-                            item {
-                                Column(Modifier.padding(horizontal = 1.rdp)) {
-                                    Text(
-                                        stringResource(Res.string.stops_timing_approximate),
-                                        style = MaterialTheme.typography.bodySmall
-                                    )
+                            if (route.approximateTimings) {
+                                item {
+                                    Column(Modifier.padding(horizontal = 1.rdp)) {
+                                        Text(
+                                            stringResource(Res.string.stops_timing_approximate),
+                                            style = MaterialTheme.typography.bodySmall
+                                        )
+                                    }
                                 }
                             }
                             Cards(navigator, current ?: listOf(), route)
@@ -450,7 +452,7 @@ class RouteDetailScreen(
                             item {
                                 Subheading(stringResource(Res.string.past_stops_title))
                             }
-                            if (current == null) {
+                            if (current == null && route.approximateTimings) {
                                 item {
                                     Column(Modifier.padding(horizontal = 1.rdp)) {
                                         Text(
