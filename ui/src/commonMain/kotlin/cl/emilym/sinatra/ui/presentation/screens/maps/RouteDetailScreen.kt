@@ -200,8 +200,8 @@ class RouteDetailViewModel(
     }
 
     fun retry() {
-        screenModelScope.launch { _tripInformation.retryIfNeeded() }
-        screenModelScope.launch { _alerts.retryIfNeeded() }
+        screenModelScope.launch { _tripInformation.retryIfNeeded(tripInformation.value) }
+        screenModelScope.launch { _alerts.retryIfNeeded(alerts.value) }
     }
 
     fun updateLocation(location: MapLocation) {

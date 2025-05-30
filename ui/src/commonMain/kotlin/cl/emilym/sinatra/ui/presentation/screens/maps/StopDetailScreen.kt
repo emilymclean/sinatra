@@ -140,9 +140,9 @@ class StopDetailViewModel(
     }
 
     fun retry() {
-        screenModelScope.launch { _alerts.retryIfNeeded() }
-        screenModelScope.launch { stopWithChildren.retryIfNeeded() }
-        screenModelScope.launch { _upcoming.retryIfNeeded() }
+        screenModelScope.launch { _alerts.retryIfNeeded(alerts.value) }
+        screenModelScope.launch { stopWithChildren.retryIfNeeded(stop.value) }
+        screenModelScope.launch { _upcoming.retryIfNeeded(upcoming.value) }
     }
 
     fun favourite(stopId: StopId, favourited: Boolean) {
