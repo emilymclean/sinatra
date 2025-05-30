@@ -1,6 +1,5 @@
 package cl.emilym.sinatra.ui.presentation.screens.maps
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,7 +25,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
@@ -41,11 +39,10 @@ import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import cl.emilym.compose.requeststate.RequestState
 import cl.emilym.compose.requeststate.RequestStateWidget
+import cl.emilym.compose.requeststate.flatRequestStateFlow
 import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.FeatureFlags
 import cl.emilym.sinatra.bounds
-import cl.emilym.sinatra.data.models.Alert
-import cl.emilym.sinatra.data.models.AlertSeverity
 import cl.emilym.sinatra.data.models.IRouteTripInformation
 import cl.emilym.sinatra.data.models.IRouteTripStop
 import cl.emilym.sinatra.data.models.MapLocation
@@ -64,7 +61,6 @@ import cl.emilym.sinatra.data.repository.AlertRepository
 import cl.emilym.sinatra.data.repository.FavouriteRepository
 import cl.emilym.sinatra.data.repository.RecentVisitRepository
 import cl.emilym.sinatra.domain.CurrentTripForRouteUseCase
-import cl.emilym.sinatra.domain.CurrentTripInformation
 import cl.emilym.sinatra.domain.NEAREST_STOP_RADIUS
 import cl.emilym.sinatra.nullIfEmpty
 import cl.emilym.sinatra.ui.asInstants
@@ -79,8 +75,8 @@ import cl.emilym.sinatra.ui.maps.highlightedRouteStopMarkerIcon
 import cl.emilym.sinatra.ui.maps.routeStopMarkerIcon
 import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
 import cl.emilym.sinatra.ui.navigation.MapScreen
-import cl.emilym.sinatra.ui.open_maps
 import cl.emilym.sinatra.ui.past
+import cl.emilym.sinatra.ui.retryIfNeeded
 import cl.emilym.sinatra.ui.text
 import cl.emilym.sinatra.ui.widgets.AccessibilityIconLockup
 import cl.emilym.sinatra.ui.widgets.AlertScaffold
@@ -88,7 +84,6 @@ import cl.emilym.sinatra.ui.widgets.BikeIcon
 import cl.emilym.sinatra.ui.widgets.ExternalLinkIcon
 import cl.emilym.sinatra.ui.widgets.FavouriteButton
 import cl.emilym.sinatra.ui.widgets.LocalMapControl
-import cl.emilym.sinatra.ui.widgets.MapIcon
 import cl.emilym.sinatra.ui.widgets.RouteLine
 import cl.emilym.sinatra.ui.widgets.RouteRandle
 import cl.emilym.sinatra.ui.widgets.SheetIosBackButton
@@ -99,15 +94,13 @@ import cl.emilym.sinatra.ui.widgets.Subheading
 import cl.emilym.sinatra.ui.widgets.WarningIcon
 import cl.emilym.sinatra.ui.widgets.WheelchairAccessibleIcon
 import cl.emilym.sinatra.ui.widgets.collectAsStateWithLifecycle
-import cl.emilym.sinatra.ui.widgets.createRequestStateFlowFlow
 import cl.emilym.sinatra.ui.widgets.currentLocation
-import cl.emilym.sinatra.ui.widgets.handleFlowProperly
-import cl.emilym.sinatra.ui.widgets.openMaps
 import cl.emilym.sinatra.ui.widgets.pick
 import com.mikepenz.markdown.m3.Markdown
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
@@ -146,10 +139,29 @@ class RouteDetailViewModel(
     private val clock: Clock
 ): SinatraScreenModel {
 
+    private data class Params(
+        val routeId: RouteId,
+        val serviceId: ServiceId? = null,
+        val tripId: TripId? = null,
+        val referenceTime: Instant? = null
+    )
+
+    private val params = MutableStateFlow<Params?>(null)
+
     private var lastLocation = MutableStateFlow<MapLocation?>(null)
-    private val _tripInformation = createRequestStateFlowFlow<CurrentTripInformation?>()
-    val tripInformation = _tripInformation.presentable()
+
     val favourited = MutableStateFlow(false)
+
+    private val _tripInformation = params.filterNotNull().flatRequestStateFlow { params ->
+        currentTripForRouteUseCase(
+            params.routeId,
+            params.serviceId,
+            params.tripId,
+            params.referenceTime ?: clock.now()
+        ).map { it.item }
+    }
+    val tripInformation = _tripInformation.state()
+
     val nearestStop = tripInformation.combine(lastLocation) { tripInformation, lastLocation ->
         if (tripInformation !is RequestState.Success || lastLocation == null) return@combine null
         val stops = tripInformation.value?.tripInformation?.stops?.mapNotNull { it.stop }?.nullIfEmpty() ?: return@combine null
@@ -159,8 +171,13 @@ class RouteDetailViewModel(
             ?.minBy { it.distance }
     }.state(null)
 
-    private val _alerts = createRequestStateFlowFlow<List<Alert>>()
-    val alerts = _alerts.presentable()
+    private val _alerts = params.filterNotNull().flatRequestStateFlow { params ->
+        alertRepository.alerts(AlertDisplayContext.Route(
+            routeId = params.routeId,
+            tripId = params.tripId
+        ))
+    }
+    val alerts = _alerts.state()
 
     fun init(
         routeId: RouteId,
@@ -168,37 +185,23 @@ class RouteDetailViewModel(
         tripId: TripId?,
         referenceTime: Instant?
     ) {
+        params.value = Params(
+            routeId,
+            serviceId,
+            tripId,
+            referenceTime
+        )
         screenModelScope.launch {
             favourited.emitAll(favouriteRepository.routeIsFavourited(routeId))
         }
         screenModelScope.launch {
             recentVisitRepository.addRouteVisit(routeId)
         }
-        retry(routeId, serviceId, tripId, referenceTime)
-        retryAlerts(routeId, serviceId, tripId)
     }
 
-    fun retry(routeId: RouteId, serviceId: ServiceId?, tripId: TripId?, referenceTime: Instant?) {
-        screenModelScope.launch {
-            _tripInformation.handleFlowProperly {
-                currentTripForRouteUseCase(
-                    routeId,
-                    serviceId,
-                    tripId,
-                    referenceTime ?: clock.now()
-                ).map { it.item }
-            }
-        }
-    }
-
-    fun retryAlerts(routeId: RouteId, serviceId: ServiceId?, tripId: TripId?) {
-        screenModelScope.launch {
-            _alerts.handleFlowProperly {
-                alertRepository.alerts(AlertDisplayContext.Route(
-                    routeId = routeId, tripId = tripId
-                ))
-            }
-        }
+    fun retry() {
+        screenModelScope.launch { _tripInformation.retryIfNeeded(tripInformation.value) }
+        screenModelScope.launch { _alerts.retryIfNeeded(alerts.value) }
     }
 
     fun updateLocation(location: MapLocation) {
@@ -253,7 +256,7 @@ class RouteDetailScreen(
             Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
-            RequestStateWidget(tripInformation, { viewModel.retry(routeId, serviceId, tripId, startOfDay) }) { tripInformation ->
+            RequestStateWidget(tripInformation, { viewModel.retry() }) { tripInformation ->
                 when {
                     tripInformation == null -> { Text(stringResource(Res.string.route_not_found)) }
                     tripInformation.tripInformation == null -> { Text(stringResource(Res.string.trip_not_found)) }

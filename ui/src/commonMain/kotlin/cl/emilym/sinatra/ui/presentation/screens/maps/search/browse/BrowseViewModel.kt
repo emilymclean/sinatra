@@ -134,13 +134,11 @@ class BrowseViewModel(
     }
 
     fun retry() {
-        screenModelScope.launch {
-            _routes.retryIfNeeded()
-            newServices.retryIfNeeded()
-            specialAdd.retryIfNeeded()
-            quickNavigation.retryIfNeeded()
-            nearbyStopDepartures.retryIfNeeded()
-        }
+        screenModelScope.launch { _routes.retryIfNeeded(routes.value) }
+        screenModelScope.launch { newServices.retry() }
+        screenModelScope.launch { specialAdd.retry() }
+        screenModelScope.launch { quickNavigation.retry() }
+        screenModelScope.launch { nearbyStopDepartures.retry() }
     }
 
     fun refreshNearby() {

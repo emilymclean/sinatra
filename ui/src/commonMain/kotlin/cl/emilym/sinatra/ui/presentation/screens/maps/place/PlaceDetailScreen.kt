@@ -26,6 +26,7 @@ import cl.emilym.sinatra.data.repository.RecentVisitRepository
 import cl.emilym.sinatra.domain.NearbyStopsUseCase
 import cl.emilym.sinatra.nullIfEmpty
 import cl.emilym.sinatra.ui.placeJourneyNavigation
+import cl.emilym.sinatra.ui.retryIfNeeded
 import cl.emilym.sinatra.ui.widgets.NavigateIcon
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -66,7 +67,7 @@ class PlaceDetailViewModel(
 
     override fun retryPlace() {
         screenModelScope.launch {
-            _place.retry()
+            _place.retryIfNeeded(place.value)
         }
     }
 }
