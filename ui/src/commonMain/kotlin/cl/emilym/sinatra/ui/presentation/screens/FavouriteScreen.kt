@@ -56,6 +56,7 @@ import cl.emilym.sinatra.ui.label
 import cl.emilym.sinatra.ui.placeCardDefaultNavigation
 import cl.emilym.sinatra.ui.presentation.screens.maps.RouteDetailScreen
 import cl.emilym.sinatra.ui.presentation.screens.maps.StopDetailScreen
+import cl.emilym.sinatra.ui.retryIfNeeded
 import cl.emilym.sinatra.ui.widgets.ClearIcon
 import cl.emilym.sinatra.ui.widgets.HomeIcon
 import cl.emilym.sinatra.ui.widgets.ListCard
@@ -150,9 +151,7 @@ class FavouriteViewModel(
     }.state(FavouriteState.Favourite)
 
     fun retry() {
-        screenModelScope.launch {
-            allFavourites.retry()
-        }
+        screenModelScope.launch { allFavourites.retryIfNeeded(favourites.value) }
     }
 
     fun openSearch(type: SpecialFavouriteType) {
