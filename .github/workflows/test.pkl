@@ -1,4 +1,4 @@
-amends "package://components.emilym.cl/actions/actions@0.1.12#/common/simple-gradle.pkl"
+amends "package://components.emilym.cl/actions/actions@0.1.16#/common/simple-gradle.pkl"
 
 jobName = "test"
 gradleTask = "testDebugUnitTest"
