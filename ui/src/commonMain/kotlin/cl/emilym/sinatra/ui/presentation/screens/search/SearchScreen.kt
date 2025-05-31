@@ -81,7 +81,7 @@ fun SearchScreen(
         onBackPressed()
     }
 
-    val query by viewModel.query.collectAsStateWithLifecycle()
+    val query = viewModel.query
     Scaffold { innerPadding ->
         LazyColumn(
             Modifier.fillMaxWidth().heightIn(min = viewportHeight()),
@@ -93,7 +93,7 @@ fun SearchScreen(
                 nearbyStops,
                 recentlyViewed,
                 searchTypes,
-                onSearch = { viewModel.search(it) },
+                onSearch = { viewModel.query = it },
                 onBackPressed,
                 onStopPressed,
                 onRoutePressed,

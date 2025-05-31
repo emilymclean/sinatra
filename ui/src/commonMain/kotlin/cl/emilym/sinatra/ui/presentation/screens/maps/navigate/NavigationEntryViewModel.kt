@@ -1,5 +1,8 @@
 package cl.emilym.sinatra.ui.presentation.screens.maps.navigate
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import cafe.adriel.voyager.core.model.screenModelScope
 import cl.emilym.compose.requeststate.RequestState
 import cl.emilym.compose.requeststate.flatRequestStateFlow
@@ -257,7 +260,7 @@ class NavigationEntryViewModel(
     val timeDialogVisible = MutableStateFlow<Boolean>(false)
 
     // Search
-    override val query = MutableStateFlow<String?>(null)
+    override var query by mutableStateOf("")
 
     private val _recentVisits = createRequestStateFlowFlow<List<RecentVisit>>()
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -370,7 +373,7 @@ class NavigationEntryViewModel(
     }
 
     private fun onOpenSearch() {
-        query.value = null
+        query = ""
     }
 
     fun onSearchItemClicked(item: NavigationLocation) {

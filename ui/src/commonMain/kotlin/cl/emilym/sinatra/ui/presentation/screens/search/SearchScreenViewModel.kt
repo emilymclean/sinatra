@@ -1,5 +1,6 @@
 package cl.emilym.sinatra.ui.presentation.screens.search
 
+import androidx.compose.runtime.snapshotFlow
 import cl.emilym.compose.requeststate.RequestState
 import cl.emilym.sinatra.data.models.RecentVisit
 import cl.emilym.sinatra.data.models.StopWithDistance
@@ -18,17 +19,14 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
 import kotlin.time.Duration.Companion.seconds
 
 interface SearchScreenViewModel {
-    val query: MutableStateFlow<String?>
+    var query: String
     val results: StateFlow<RequestState<List<SearchResult>>>
     val nearbyStops: StateFlow<List<StopWithDistance>?>
     val recentVisits: StateFlow<RequestState<List<RecentVisit>>>
-
-    fun search(query: String) {
-        this.query.value = query
-    }
 }
 
 @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
@@ -40,11 +38,11 @@ fun <T> SearchScreenViewModel.searchHandler(
     return flow {
         emit(toState(RequestState.Initial()))
         emitAll(
-            query.flatMapLatest {
+            snapshotFlow { query }.flatMapLatest { query ->
                 flow {
                     emit(toState(RequestState.Loading()))
                     emitAll(
-                        query.debounce(1.seconds).flatMapLatest { query ->
+                        snapshotFlow { query }.debounce(1.seconds).flatMapLatest { query ->
                             when (query) {
                                 null, "" -> flowOf(toState(RequestState.Initial()))
                                 else -> handleFlow {
