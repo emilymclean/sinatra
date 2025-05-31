@@ -83,7 +83,6 @@ import cl.emilym.sinatra.ui.widgets.LocalMapControl
 import cl.emilym.sinatra.ui.widgets.MapIcon
 import cl.emilym.sinatra.ui.widgets.RouteRandle
 import cl.emilym.sinatra.ui.widgets.SinatraBackHandler
-import cl.emilym.sinatra.ui.widgets.StopCard
 import cl.emilym.sinatra.ui.widgets.Subheading
 import cl.emilym.sinatra.ui.widgets.SwapIcon
 import cl.emilym.sinatra.ui.widgets.WalkIcon
@@ -96,7 +95,7 @@ import cl.emilym.sinatra.ui.widgets.routeRandleSize
 import com.mikepenz.markdown.m3.Markdown
 import org.jetbrains.compose.resources.stringResource
 import sinatra.ui.generated.resources.Res
-import sinatra.ui.generated.resources.map_search_nearby_stops
+import sinatra.ui.generated.resources.map_search_favourites
 import sinatra.ui.generated.resources.navigate_calculating_journey
 import sinatra.ui.generated.resources.navigate_calculating_journey_failed
 import sinatra.ui.generated.resources.navigate_chip_anchor_arrive
@@ -111,6 +110,7 @@ import sinatra.ui.generated.resources.navigate_entry_no_starting_point_destinati
 import sinatra.ui.generated.resources.navigate_entry_select_destination
 import sinatra.ui.generated.resources.navigate_entry_select_origin
 import sinatra.ui.generated.resources.navigate_entry_swap_origin_destination
+import sinatra.ui.generated.resources.navigate_start_stop_same
 import sinatra.ui.generated.resources.navigate_travel
 import sinatra.ui.generated.resources.navigate_travel_arrive
 import sinatra.ui.generated.resources.navigate_travel_depart
@@ -119,9 +119,6 @@ import sinatra.ui.generated.resources.navigate_travel_journey_depart
 import sinatra.ui.generated.resources.navigate_walk
 import sinatra.ui.generated.resources.route_accessibility_bikes_allowed
 import sinatra.ui.generated.resources.route_accessibility_wheelchair_accessible
-import sinatra.ui.generated.resources.navigate_start_stop_same
-import sinatra.ui.generated.resources.stop_detail_distance
-import sinatra.ui.generated.resources.map_search_favourites
 
 
 class NavigateEntryScreen(

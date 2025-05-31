@@ -1,5 +1,8 @@
 package cl.emilym.sinatra.ui.presentation.screens.maps.search
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import cafe.adriel.voyager.core.model.screenModelScope
 import cl.emilym.compose.requeststate.RequestState
 import cl.emilym.compose.requeststate.handle
@@ -54,7 +57,7 @@ class MapSearchViewModel(
 ): SinatraScreenModel, SearchScreenViewModel {
 
     private val _state = MutableStateFlow(State.BROWSE)
-    override val query = MutableStateFlow<String?>(null)
+    override var query by mutableStateOf("")
 
     @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
     val state = _state.flatMapLatest {
@@ -122,17 +125,13 @@ class MapSearchViewModel(
         }
     }
 
-    override fun search(query: String) {
-        this.query.value = query
-    }
-
     fun openSearch() {
-        query.value = null
+        query = ""
         _state.value = State.SEARCH
     }
 
     fun openBrowse() {
-        query.value = null
+        query = ""
         _state.value = State.BROWSE
     }
 
