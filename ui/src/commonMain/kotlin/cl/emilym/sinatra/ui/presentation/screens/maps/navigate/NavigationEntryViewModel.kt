@@ -2,7 +2,9 @@ package cl.emilym.sinatra.ui.presentation.screens.maps.navigate
 
 import cafe.adriel.voyager.core.model.screenModelScope
 import cl.emilym.compose.requeststate.RequestState
+import cl.emilym.compose.requeststate.flatRequestStateFlow
 import cl.emilym.compose.requeststate.handle
+import cl.emilym.compose.requeststate.requestStateFlow
 import cl.emilym.sinatra.data.models.Journey
 import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.data.models.RecentVisit
@@ -13,6 +15,7 @@ import cl.emilym.sinatra.data.repository.PreferencesRepository
 import cl.emilym.sinatra.data.repository.RecentVisitRepository
 import cl.emilym.sinatra.data.repository.RoutingPreferencesRepository
 import cl.emilym.sinatra.data.repository.StopRepository
+import cl.emilym.sinatra.domain.NavigableFavouritesUseCase
 import cl.emilym.sinatra.domain.navigation.CalculateJourneyUseCase
 import cl.emilym.sinatra.domain.navigation.JourneyCalculationTime
 import cl.emilym.sinatra.domain.navigation.JourneyLocation
@@ -22,6 +25,7 @@ import cl.emilym.sinatra.domain.search.SearchResult
 import cl.emilym.sinatra.nullIfEmpty
 import cl.emilym.sinatra.ui.presentation.screens.search.SearchScreenViewModel
 import cl.emilym.sinatra.ui.presentation.screens.search.searchHandler
+import cl.emilym.sinatra.ui.retryIfNeeded
 import cl.emilym.sinatra.ui.widgets.SinatraScreenModel
 import cl.emilym.sinatra.ui.widgets.createRequestStateFlowFlow
 import cl.emilym.sinatra.ui.widgets.handleFlowProperly
@@ -96,9 +100,9 @@ class NavigationEntryViewModel(
     private val routeStopSearchUseCase: RouteStopSearchUseCase,
     private val networkGraphRepository: NetworkGraphRepository,
     private val recentVisitRepository: RecentVisitRepository,
-    private val stopRepository: StopRepository,
     private val routingPreferencesRepository: RoutingPreferencesRepository,
     private val preferencesRepository: PreferencesRepository,
+    private val navigableFavouritesUseCase: NavigableFavouritesUseCase,
     private val clock: Clock
 ): SinatraScreenModel, SearchScreenViewModel {
 
@@ -268,6 +272,9 @@ class NavigationEntryViewModel(
         emptyList()
     )
 
+    private val _favourites = flatRequestStateFlow { navigableFavouritesUseCase() }
+    val favourites = _favourites.state()
+
     @OptIn(ExperimentalCoroutinesApi::class)
     override val results = state.mapLatest {
         when (it) {
@@ -321,6 +328,9 @@ class NavigationEntryViewModel(
             _recentVisits.handleFlowProperly {
                 recentVisitRepository.all()
             }
+        }
+        screenModelScope.launch {
+            _favourites.retryIfNeeded(favourites.value)
         }
     }
 
