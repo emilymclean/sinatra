@@ -336,7 +336,7 @@ class StopDetailScreen(
                     upcoming.value.isNotEmpty() -> items(upcoming.value) {
                         UpcomingRouteCard(
                             it,
-                            it.stationTime.pick(it.route),
+                            it.stationTime.pick(it.route, it.sequence <= 1),
                             modifier = Modifier.fillMaxWidth(),
                             onClick = { navigator.push(RouteDetailScreen(
                                 it.routeId,

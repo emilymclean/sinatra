@@ -20,6 +20,7 @@ import cl.emilym.sinatra.data.models.ServiceWheelchairAccessible
 import cl.emilym.sinatra.data.models.StationTime
 import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.data.models.StopAccessibility
+import cl.emilym.sinatra.data.models.StopTime
 import cl.emilym.sinatra.data.models.StopWheelchairAccessibility
 import cl.emilym.sinatra.data.models.TimetableStationTime
 import cl.emilym.sinatra.data.models.merge
@@ -57,10 +58,14 @@ sealed interface StopStationTime {
 }
 
 @Composable
-fun TimetableStationTime.pick(route: Route? = null): StopStationTime {
-    return when (arrival.time.isInPast()) {
-        true -> StopStationTime.Departure(route?.let { departure.merge(route) } ?: departure)
-        false -> StopStationTime.Arrival(route?.let { arrival.merge(route) } ?: arrival)
+fun TimetableStationTime.pick(
+    route: Route? = null,
+    isFirst: Boolean = false
+): StopStationTime {
+    return if (isFirst || arrival.time.isInPast()) {
+        StopStationTime.Departure(route?.let { departure.merge(route) } ?: departure)
+    } else {
+        StopStationTime.Arrival(route?.let { arrival.merge(route) } ?: arrival)
     }
 }
 

@@ -10,6 +10,7 @@ interface StopTime {
                 StationTime.Scheduled(departureTime),
             )
         } }
+    val sequence: Int
 }
 
 enum class OnColor {

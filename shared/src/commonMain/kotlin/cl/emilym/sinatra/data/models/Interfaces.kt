@@ -30,7 +30,6 @@ interface IRouteTripInformation {
 
 interface IRouteTripStop: StopTime {
     val stopId: StopId
-    val sequence: Int
     val stop: Stop?
 }
 
@@ -53,7 +52,6 @@ interface IStopTimetableTime: StopTime {
     override val arrivalTime: Time
     override val departureTime: Time
     val heading: String
-    val sequence: Int
     val route: Route?
 
     override val stationTime: TimetableStationTime
