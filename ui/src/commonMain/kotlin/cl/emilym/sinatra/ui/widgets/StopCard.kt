@@ -70,23 +70,24 @@ fun TimetableStationTime.pick(
 }
 
 @Composable
-fun StopCard(
+fun DefaultStopCardIcon(stop: Stop) {
+    BusIcon()
+}
+
+@Composable
+fun IconStopCard(
     stop: Stop,
     modifier: Modifier = Modifier,
     stopStationTime: StopStationTime? = null,
     onClick: () -> Unit,
     subtitle: String? = null,
-    showStopIcon: Boolean = false,
+    icon: (@Composable () -> Unit)?
 ) {
     val stopListingSemantics = stringResource(Res.string.semantics_stop_listing, stop.name)
     ListCard(
-        if (showStopIcon) {
-            {
-                RandleScaffold {
-                    BusIcon()
-                }
-            }
-        } else null,
+        icon?.let {
+            { RandleScaffold { it() } }
+        },
         Modifier
             .semantics {
                 contentDescription = stopListingSemantics
@@ -127,6 +128,28 @@ fun StopCard(
             )
         }
     }
+}
+
+@Composable
+fun StopCard(
+    stop: Stop,
+    modifier: Modifier = Modifier,
+    stopStationTime: StopStationTime? = null,
+    onClick: () -> Unit,
+    subtitle: String? = null,
+    showStopIcon: Boolean = false,
+) {
+    IconStopCard(
+        stop,
+        modifier,
+        stopStationTime,
+        onClick,
+        subtitle,
+        when (showStopIcon) {
+            true -> { { DefaultStopCardIcon(stop) } }
+            else -> null
+        }
+    )
 }
 
 
