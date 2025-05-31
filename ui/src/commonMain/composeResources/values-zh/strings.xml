@@ -176,7 +176,9 @@
   <string name="time_select_button_cancel">取消</string>
 
   <string name="map_search_nearby_stops">附近站点</string>
-      
+
+  <string name="map_search_favourites">收藏夹</string>
+
   <string name="search_recently_viewed">最近浏览</string>
       
   <string name="search_hint">搜索站点或路线。</string>

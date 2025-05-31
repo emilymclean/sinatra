@@ -131,6 +131,7 @@
     <string name="journey_card_period">%1$s — %2$s</string>
 
     <string name="map_search_nearby_stops">Nearby Stops</string>
+    <string name="map_search_favourites">Favourites</string>
 
     <string name="search_recently_viewed">Recently viewed</string>
     <string name="search_hint">Search for a stop or route.</string>
