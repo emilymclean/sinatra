@@ -86,7 +86,7 @@ jobs:
         printf "MAPS_API_KEY=${MAPS_API_KEY}" >> secrets.properties
         printf "${GOOGLE_SERVICES_JSON}" >> androidApp/google-services.json
     - name: Setup gradle
-      uses: gradle/actions/setup-gradle@v3
+      uses: gradle/actions/setup-gradle@v4
     - name: Build with Gradle
       env:
         ORG_GRADLE_PROJECT_appVersionName: ${{ needs.version.outputs.version }}
@@ -210,7 +210,7 @@ jobs:
         printf "MAPS_API_KEY=${MAPS_API_KEY}" >> secrets.properties
         printf "${GOOGLE_SERVICES_JSON}" >> androidApp/google-services.json
     - name: Setup gradle
-      uses: gradle/actions/setup-gradle@v3
+      uses: gradle/actions/setup-gradle@v4
     - name: Build with Gradle
       env:
         ORG_GRADLE_PROJECT_appVersionName: ${{ needs.version.outputs.version }}

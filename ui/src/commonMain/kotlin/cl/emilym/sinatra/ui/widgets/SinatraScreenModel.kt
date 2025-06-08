@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.stateIn
 interface SinatraScreenModel: ScreenModel {
     fun <T> Flow<T>.state(initial: T): StateFlow<T> =
         stateIn(screenModelScope, SharingStarted.WhileSubscribed(5000), initial)
+    fun <T> Flow<RequestState<T>>.state(): StateFlow<RequestState<T>> = state(RequestState.Initial())
 
     @OptIn(ExperimentalCoroutinesApi::class)
     fun <T> MutableStateFlow<Flow<RequestState<T>>>.presentable(): StateFlow<RequestState<T>> {

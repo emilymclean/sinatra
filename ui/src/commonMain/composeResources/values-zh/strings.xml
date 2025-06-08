@@ -137,8 +137,10 @@
       
   <string name="navigate_calculating_journey">正在计算旅程...</string>
       
-  <string name="navigate_calculating_journey_failed">我们找不到合适的路线</string>
-      
+  <string name="navigate_calculating_journey_failed">我们找不到合适的路线。</string>
+
+  <string name="navigate_start_stop_same">出发点和目的地必须不同。</string>
+
   <string name="navigate_walk">步行%1$s</string>
       
   <string name="navigate_walk_to_stop">步行%1$s到 %2$s</string>
@@ -174,7 +176,9 @@
   <string name="time_select_button_cancel">取消</string>
 
   <string name="map_search_nearby_stops">附近站点</string>
-      
+
+  <string name="map_search_favourites">收藏夹</string>
+
   <string name="search_recently_viewed">最近浏览</string>
       
   <string name="search_hint">搜索站点或路线。</string>
@@ -196,18 +200,26 @@
   <string name="current_stops_title">即将停靠的站点</string>
       
   <string name="past_stops_title">过去的站点</string>
+
+  <string name="stops_timing_approximate_title">大致时间</string>
+
+  <string name="stops_timing_approximate">本服务无固定时刻表，车辆到达时间可能会有所变化。</string>
       
   <string name="accessibility_title">无障碍设施</string>
       
   <string name="scheduled_arrival">计划到达%1$s</string>
       
   <string name="estimated_arrival">预计到达%1$s</string>
+
+  <string name="approximate_arrival">约%1$s到达</string>
       
   <string name="estimated_arrival_late">预计到达时间为%1$s（晚点%2$s）</string>
       
   <string name="estimated_arrival_early">预计到达时间为%1$s（早%2$s）</string>
       
   <string name="past_departure">于 %1$s 出发</string>
+
+  <string name="past_departure_approximate">大约在 %1$s 出发</string>
       
   <string name="past_departure_late">于%1$s出发（晚点 %2$s）</string>
       
@@ -216,6 +228,8 @@
   <string name="future_scheduled_departure">预计于%1$s出发</string>
       
   <string name="future_estimated_departure">预计于%1$s出发</string>
+
+  <string name="future_approximate_departure">预计于%1$s出发</string>
       
   <string name="future_estimated_departure_late">预计于%1$s出发（晚点%2$s）</string>
       
@@ -230,6 +244,8 @@
   <string name="upcoming_vehicles">即将开通的航线</string>
       
   <string name="no_upcoming_vehicles">今天剩余时间没有安排航线。</string>
+
+  <string name="route_see_more">查看更多</string>
       
   <string name="accessibility_wheelchair_accessible">轮椅无障碍</string>
       

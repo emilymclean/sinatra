@@ -27,7 +27,9 @@ class StopEntity(
     @ColumnInfo(defaultValue = "0")
     val showChildren: Boolean = StopVisibility.SHOW_CHILDREN_DEFAULT,
     @ColumnInfo(defaultValue = "NULL")
-    val searchWeight: Double? = StopVisibility.SEARCH_WEIGHT_DEFAULT
+    val searchWeight: Double? = StopVisibility.SEARCH_WEIGHT_DEFAULT,
+    @ColumnInfo(defaultValue = "0")
+    val hasRealtime: Boolean
 ) {
 
     fun toModel(): Stop {
@@ -45,7 +47,8 @@ class StopEntity(
                 visibleZoomedIn ?: (parentStation == null),
                 showChildren,
                 searchWeight,
-            )
+            ),
+            hasRealtime
         )
     }
 
@@ -62,7 +65,8 @@ class StopEntity(
                 stop.visibility.visibleZoomedOut,
                 stop.visibility.visibleZoomedIn,
                 stop.visibility.showChildren,
-                stop.visibility.searchWeight
+                stop.visibility.searchWeight,
+                stop.hasRealtime
             )
         }
     }

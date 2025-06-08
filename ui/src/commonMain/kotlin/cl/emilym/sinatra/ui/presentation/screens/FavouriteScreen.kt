@@ -56,7 +56,9 @@ import cl.emilym.sinatra.ui.label
 import cl.emilym.sinatra.ui.placeCardDefaultNavigation
 import cl.emilym.sinatra.ui.presentation.screens.maps.RouteDetailScreen
 import cl.emilym.sinatra.ui.presentation.screens.maps.StopDetailScreen
+import cl.emilym.sinatra.ui.retryIfNeeded
 import cl.emilym.sinatra.ui.widgets.ClearIcon
+import cl.emilym.sinatra.ui.widgets.FavouriteCard
 import cl.emilym.sinatra.ui.widgets.HomeIcon
 import cl.emilym.sinatra.ui.widgets.ListCard
 import cl.emilym.sinatra.ui.widgets.ListHint
@@ -150,9 +152,7 @@ class FavouriteViewModel(
     }.state(FavouriteState.Favourite)
 
     fun retry() {
-        screenModelScope.launch {
-            allFavourites.retry()
-        }
+        screenModelScope.launch { allFavourites.retryIfNeeded(favourites.value) }
     }
 
     fun openSearch(type: SpecialFavouriteType) {
@@ -276,31 +276,11 @@ class FavouriteScreen: Screen {
                         }
                         if (anyFavourites) {
                             items(favourites) {
-                                when (it) {
-                                    is Favourite.Stop -> StopCard(
-                                        it.stop,
-                                        onClick = { it.navigate(navigator) },
-                                        showStopIcon = true
-                                    )
-
-                                    is Favourite.Route -> RouteCard(
-                                        it.route,
-                                        onClick = { it.navigate(navigator) }
-                                    )
-
-                                    is Favourite.StopOnRoute -> StopCard(
-                                        it.stop,
-                                        onClick = { it.navigate(navigator) },
-                                        showStopIcon = true
-                                    )
-
-                                    is Favourite.Place -> PlaceCard(
-                                        it.place,
-                                        modifier = Modifier.fillMaxWidth(),
-                                        showPlaceIcon = true,
-                                        onClick = { it.navigate(navigator) }
-                                    )
-                                }
+                                FavouriteCard(
+                                    it,
+                                    onClick = { it.navigate(navigator) },
+                                    modifier = Modifier.fillMaxWidth()
+                                )
                             }
                         } else {
                             item {

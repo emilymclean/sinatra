@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.IconButton
@@ -38,9 +39,11 @@ import cafe.adriel.voyager.koin.koinScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import cl.emilym.compose.errorwidget.ErrorWidget
+import cl.emilym.compose.requeststate.unwrap
 import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.FeatureFlags
 import cl.emilym.sinatra.bounds
+import cl.emilym.sinatra.data.models.Favourite
 import cl.emilym.sinatra.data.models.Journey
 import cl.emilym.sinatra.data.models.JourneyLeg
 import cl.emilym.sinatra.data.models.MapLocation
@@ -63,7 +66,6 @@ import cl.emilym.sinatra.ui.presentation.theme.Container
 import cl.emilym.sinatra.ui.presentation.theme.walkingColor
 import cl.emilym.sinatra.ui.routeCardDefaultNavigation
 import cl.emilym.sinatra.ui.stopCardDefaultNavigation
-import cl.emilym.sinatra.ui.stopJourneyNavigation
 import cl.emilym.sinatra.ui.text
 import cl.emilym.sinatra.ui.widgets.AccessibleIcon
 import cl.emilym.sinatra.ui.widgets.BackButton
@@ -71,6 +73,7 @@ import cl.emilym.sinatra.ui.widgets.BikeIcon
 import cl.emilym.sinatra.ui.widgets.Chip
 import cl.emilym.sinatra.ui.widgets.ClockIcon
 import cl.emilym.sinatra.ui.widgets.CurrentLocationCard
+import cl.emilym.sinatra.ui.widgets.FavouriteCard
 import cl.emilym.sinatra.ui.widgets.GenericMarkerIcon
 import cl.emilym.sinatra.ui.widgets.JourneyIcon
 import cl.emilym.sinatra.ui.widgets.JourneyOptionCard
@@ -80,6 +83,7 @@ import cl.emilym.sinatra.ui.widgets.LocalMapControl
 import cl.emilym.sinatra.ui.widgets.MapIcon
 import cl.emilym.sinatra.ui.widgets.RouteRandle
 import cl.emilym.sinatra.ui.widgets.SinatraBackHandler
+import cl.emilym.sinatra.ui.widgets.Subheading
 import cl.emilym.sinatra.ui.widgets.SwapIcon
 import cl.emilym.sinatra.ui.widgets.WalkIcon
 import cl.emilym.sinatra.ui.widgets.WheelchairAccessibleIcon
@@ -91,6 +95,7 @@ import cl.emilym.sinatra.ui.widgets.routeRandleSize
 import com.mikepenz.markdown.m3.Markdown
 import org.jetbrains.compose.resources.stringResource
 import sinatra.ui.generated.resources.Res
+import sinatra.ui.generated.resources.map_search_favourites
 import sinatra.ui.generated.resources.navigate_calculating_journey
 import sinatra.ui.generated.resources.navigate_calculating_journey_failed
 import sinatra.ui.generated.resources.navigate_chip_anchor_arrive
@@ -105,6 +110,7 @@ import sinatra.ui.generated.resources.navigate_entry_no_starting_point_destinati
 import sinatra.ui.generated.resources.navigate_entry_select_destination
 import sinatra.ui.generated.resources.navigate_entry_select_origin
 import sinatra.ui.generated.resources.navigate_entry_swap_origin_destination
+import sinatra.ui.generated.resources.navigate_start_stop_same
 import sinatra.ui.generated.resources.navigate_travel
 import sinatra.ui.generated.resources.navigate_travel_arrive
 import sinatra.ui.generated.resources.navigate_travel_depart
@@ -293,6 +299,7 @@ class NavigateEntryScreen(
         viewModel: NavigationEntryViewModel,
     ) {
         val hasLocationPermission = hasLocationPermission()
+        val favourites by viewModel.favourites.collectAsStateWithLifecycle()
         Box(Modifier.fillMaxSize()) {
             SearchScreen(
                 viewModel,
@@ -307,6 +314,33 @@ class NavigateEntryScreen(
                         CurrentLocationCard(
                             onClick = { viewModel.onSearchItemClicked(NavigationLocation.CurrentLocation) },
                             showCurrentLocationIcon = true
+                        )
+                    }
+                    item {
+                        Box(Modifier.height(1.rdp))
+                    }
+                }
+                favourites.unwrap()?.let { favourites ->
+                    if (!FeatureFlags.NAVIGATE_ENTRY_SCREEN_FAVOURITE_SEARCH) return@let
+                    item {
+                        Subheading(stringResource(Res.string.map_search_favourites))
+                    }
+                    items(favourites) {
+                        FavouriteCard(
+                            it,
+                            onClick = {
+                                it.let {
+                                    viewModel.onSearchItemClicked(
+                                        when (it) {
+                                            is Favourite.Stop -> NavigationLocation.Stop(it.stop)
+                                            is Favourite.Place -> NavigationLocation.Place(it.place)
+                                            is Favourite.StopOnRoute -> NavigationLocation.Stop(it.stop)
+                                            else -> return@let
+                                        }
+                                    )
+                                }
+                            },
+                            modifier = Modifier.fillMaxWidth()
                         )
                     }
                     item {
@@ -515,6 +549,19 @@ class NavigateEntryScreen(
                         ErrorWidget(
                             state.exception,
                             retry = { viewModel.retryLoadingGraph() }
+                        )
+                    }
+                }
+            }
+            is NavigationState.JourneyStartStopSame -> {
+                item {
+                    Box(
+                        Modifier.padding(1.rdp).fillMaxWidth(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        ListHint(
+                            stringResource(Res.string.navigate_start_stop_same),
+                            icon = { MapIcon(tint = MaterialTheme.colorScheme.primary) }
                         )
                     }
                 }

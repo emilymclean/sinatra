@@ -1,5 +1,6 @@
 package cl.emilym.sinatra.network
 
+import cl.emilym.gtfs.RealtimeEndpoint
 import cl.emilym.gtfs.RouteCanonicalTimetableEndpoint
 import cl.emilym.gtfs.RouteDetailEndpoint
 import cl.emilym.gtfs.RouteEndpoint
@@ -81,7 +82,8 @@ fun protobufResponseConverterFactory(): ProtobufResponseConverterFactory {
             RouteTripTimetableEndpoint::class to RouteTripTimetableEndpoint::decodeFromByteArray,
             Pages::class to Pages::decodeFromByteArray,
             FeedMessage::class to FeedMessage::decodeFromByteArray,
-            ServiceAlertEndpoint::class to ServiceAlertEndpoint::decodeFromByteArray
+            ServiceAlertEndpoint::class to ServiceAlertEndpoint::decodeFromByteArray,
+            RealtimeEndpoint::class to RealtimeEndpoint::decodeFromByteArray
         )
     )
 }

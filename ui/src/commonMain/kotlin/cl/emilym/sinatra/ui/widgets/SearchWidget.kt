@@ -17,7 +17,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -76,10 +79,10 @@ internal class DefaultSearchScreenViewModel(
     val lastLocation = MutableStateFlow<MapLocation?>(null)
     private val stops = requestStateFlow { stopRepository.stops() }
 
-    override val query = MutableStateFlow<String?>(null)
+    override var query by mutableStateOf("")
     private val searchTypes = MutableStateFlow<List<SearchType>>(listOf())
     override val results = combine(
-        query, searchTypes
+        snapshotFlow { query }, searchTypes
     ) { it, it1 -> it to it1 }.flatMapLatest {
         searchHandler(routeStopSearchUseCase, it.second) { it }
     }.state(RequestState.Initial())
@@ -135,19 +138,19 @@ fun Screen.SearchWidget(
         viewModel,
         searchTypes,
         {
-            viewModel.search("")
+            viewModel.query = ""
             onBackPressed()
         },
         {
-            if (clearSearchOnSelect) viewModel.search("")
+            if (clearSearchOnSelect) viewModel.query = ""
             onStopPressed(it)
         },
         {
-            if (clearSearchOnSelect) viewModel.search("")
+            if (clearSearchOnSelect) viewModel.query = ""
             onRoutePressed(it)
         },
         {
-            if (clearSearchOnSelect) viewModel.search("")
+            if (clearSearchOnSelect) viewModel.query = ""
             onPlacePressed(it)
         },
         extraPlaceholderContent

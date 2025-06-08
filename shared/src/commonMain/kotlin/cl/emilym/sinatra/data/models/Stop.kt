@@ -14,7 +14,8 @@ data class Stop(
     val _simpleName: String?,
     val location: MapLocation,
     val accessibility: StopAccessibility,
-    val visibility: StopVisibility
+    val visibility: StopVisibility,
+    val hasRealtime: Boolean
 ): Serializable, Identifiable<StopId>, NavigationObject {
 
     companion object {
@@ -27,7 +28,8 @@ data class Stop(
                 pb.simpleName,
                 MapLocation.fromPB(pb.location),
                 StopAccessibility.fromPB(pb.accessibility),
-                StopVisibility.fromPB(pb, pb.visibility)
+                StopVisibility.fromPB(pb, pb.visibility),
+                pb.hasRealtime == true
             )
         }
     }
@@ -173,7 +175,8 @@ sealed interface StationTime {
     val time: Time
 
     data class Scheduled(
-        override val time: Time
+        override val time: Time,
+        val approximate: Boolean = false
     ): StationTime
     data class Live(
         override val time: Time,
@@ -188,4 +191,14 @@ data class TimetableStationTime(
 
     val times: List<StationTime> get() = listOf(arrival, departure)
 
+}
+
+fun StationTime.merge(route: Route): StationTime {
+    return when (this) {
+        is StationTime.Scheduled -> StationTime.Scheduled(
+            time,
+            route.approximateTimings
+        )
+        else -> this
+    }
 }
