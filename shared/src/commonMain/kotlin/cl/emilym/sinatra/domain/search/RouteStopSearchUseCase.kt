@@ -90,6 +90,8 @@ interface TypeSearcher<T> {
 
 abstract class AbstractTypeSearcher<T>: TypeSearcher<T> {
 
+    protected open val permitIncompleteMatches: Boolean = false
+
     protected abstract fun fields(t: T): List<String>
 
     open fun scoreMultiplier(item: T): Double { return 1.0 }
@@ -132,8 +134,8 @@ abstract class AbstractTypeSearcher<T>: TypeSearcher<T> {
         }
 
         return when {
-            matchedTokens.size != tokens.size -> null
-            highestScore == 0.0 -> null
+            matchedTokens.size != tokens.size && !permitIncompleteMatches -> null
+            highestScore == 0.0 && !permitIncompleteMatches -> null
             else -> RankableResult(item, scoreMultiplier(item) * highestScore)
         }
     }
