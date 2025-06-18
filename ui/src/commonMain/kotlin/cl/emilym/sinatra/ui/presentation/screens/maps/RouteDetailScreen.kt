@@ -95,6 +95,7 @@ import cl.emilym.sinatra.ui.widgets.WarningIcon
 import cl.emilym.sinatra.ui.widgets.WheelchairAccessibleIcon
 import cl.emilym.sinatra.ui.widgets.collectAsStateWithLifecycle
 import cl.emilym.sinatra.ui.widgets.currentLocation
+import cl.emilym.sinatra.ui.widgets.defaultConfig
 import cl.emilym.sinatra.ui.widgets.pick
 import com.mikepenz.markdown.m3.Markdown
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -152,7 +153,7 @@ class RouteDetailViewModel(
 
     val favourited = MutableStateFlow(false)
 
-    private val _tripInformation = params.filterNotNull().flatRequestStateFlow { params ->
+    private val _tripInformation = params.filterNotNull().flatRequestStateFlow(defaultConfig) { params ->
         currentTripForRouteUseCase(
             params.routeId,
             params.serviceId,
@@ -171,7 +172,7 @@ class RouteDetailViewModel(
             ?.minBy { it.distance }
     }.state(null)
 
-    private val _alerts = params.filterNotNull().flatRequestStateFlow { params ->
+    private val _alerts = params.filterNotNull().flatRequestStateFlow(defaultConfig) { params ->
         alertRepository.alerts(AlertDisplayContext.Route(
             routeId = params.routeId,
             tripId = params.tripId

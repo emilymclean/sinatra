@@ -73,6 +73,7 @@ import cl.emilym.sinatra.ui.widgets.StarOutlineIcon
 import cl.emilym.sinatra.ui.widgets.StopCard
 import cl.emilym.sinatra.ui.widgets.WorkIcon
 import cl.emilym.sinatra.ui.widgets.collectAsStateWithLifecycle
+import cl.emilym.sinatra.ui.widgets.defaultConfig
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -118,7 +119,7 @@ class FavouriteViewModel(
         private val SPECIAL_ORDER_EMPTY = SPECIAL_ORDER.map { SpecialFavourite(it, null) }
     }
 
-    private val allFavourites = flatRequestStateFlow { favouriteRepository.all() }
+    private val allFavourites = flatRequestStateFlow(defaultConfig) { favouriteRepository.all() }
     private val searchType = MutableStateFlow<SpecialFavouriteType?>(null)
 
     val anyFavourites = allFavourites.mapLatest {
