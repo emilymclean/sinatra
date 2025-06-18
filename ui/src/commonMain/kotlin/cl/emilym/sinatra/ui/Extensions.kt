@@ -234,8 +234,8 @@ val Favourite.label: String
         is Favourite.StopOnRoute -> stop.name
     }
 
-suspend fun <T> RequestStateFlow<T>.retryIfNeeded() {
-    if (this is RequestState.Failure<*>) retry()
+suspend fun <T> RequestStateFlow<T>.retryIfNeeded(state: RequestState<*>) {
+    if (state is RequestState.Failure<*>) retry()
 }
 
 fun NavigationObject.toNavigationLocation(): NavigationLocation? {

@@ -15,21 +15,26 @@ import sinatra.ui.generated.resources.Res
 import sinatra.ui.generated.resources.semantics_place_listing
 
 @Composable
-fun PlaceCard(
+fun DefaultPlaceCardIcon(place: Place) {
+    GenericMarkerIcon()
+}
+
+@Composable
+fun IconPlaceCard(
     place: Place,
     modifier: Modifier = Modifier,
     onClick: (() -> Unit)? = null,
-    showPlaceIcon: Boolean = false,
+    icon: (@Composable () -> Unit)?,
 ) {
     val placeListingSemantics = stringResource(Res.string.semantics_place_listing, place.displayName)
     ListCard(
-        if (showPlaceIcon) {
+        icon?.let {
             {
                 RandleScaffold {
-                    GenericMarkerIcon()
+                    it()
                 }
             }
-        } else null,
+        },
         Modifier
             .semantics {
                 contentDescription = placeListingSemantics
@@ -47,4 +52,22 @@ fun PlaceCard(
             )
         }
     }
+}
+
+@Composable
+fun PlaceCard(
+    place: Place,
+    modifier: Modifier = Modifier,
+    onClick: (() -> Unit)? = null,
+    showPlaceIcon: Boolean = false,
+) {
+    IconPlaceCard(
+        place,
+        modifier,
+        onClick,
+        when (showPlaceIcon) {
+            true -> { { DefaultPlaceCardIcon(place) } }
+            else -> null
+        }
+    )
 }

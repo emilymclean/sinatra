@@ -1,5 +1,5 @@
-extends "package://components.emilym.cl/actions/actions@0.1.12#/common/build-app-support.pkl"
-import "package://components.emilym.cl/actions/actions@0.1.12#/common/common.pkl" as common
+extends "package://components.emilym.cl/actions/actions@0.1.16#/common/build-app-support.pkl"
+import "package://components.emilym.cl/actions/actions@0.1.16#/common/common.pkl" as common
 
 hidden modules: List<String>(length == 0) = List()
 hidden extraBuildSteps: Listing<Step>

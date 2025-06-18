@@ -186,9 +186,10 @@ abstract class Router {
                 options.filter {
                     prevEdge[it.first]?.type != EdgeType.TRANSFER ||
                             (prevEdge[it.first]?.type == EdgeType.TRANSFER &&
-                                    (dist[it.first] + it.second.addedTime) >= config.maximumWalkingTime)
+                            (dist[it.first] + it.second.addedTime) >= config.maximumWalkingTime)
                 }.nullIfEmpty()
-        )?.firstOrNull()?.first ?: throw RouterException.noJourneyFound()
+        )?.minByOrNull { dist[it.first] + ((dayIndex[it.first] ?: 0) * 86400) + it.second.addedTime}
+            ?.first ?: throw RouterException.noJourneyFound()
 
         val chain = mutableListOf<GroupedGraphEdges>()
         val stops = mutableListOf<StopId>()

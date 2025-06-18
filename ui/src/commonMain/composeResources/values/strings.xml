@@ -108,6 +108,7 @@
     <string name="navigate_downloading_graph">Loading navigation information…</string>
     <string name="navigate_calculating_journey">Calculating a journey…</string>
     <string name="navigate_calculating_journey_failed">We couldn't find a journey</string>
+    <string name="navigate_start_stop_same">Starting point and destination must be different.</string>
     <string name="navigate_walk">**Walk** %1$s</string>
     <string name="navigate_walk_to_stop">**Walk** %1$s to %2$s</string>
     <string name="navigate_travel_depart">**Depart** from %1$s at %2$s</string>
@@ -130,6 +131,7 @@
     <string name="journey_card_period">%1$s — %2$s</string>
 
     <string name="map_search_nearby_stops">Nearby Stops</string>
+    <string name="map_search_favourites">Favourites</string>
 
     <string name="search_recently_viewed">Recently viewed</string>
     <string name="search_hint">Search for a stop or route.</string>
@@ -147,18 +149,23 @@
     <string name="stop_detail_child_stations">Additional stops</string>
     <string name="current_stops_title">Upcoming stops</string>
     <string name="past_stops_title">Past stops</string>
+    <string name="stops_timing_approximate_title">Approximate Timings</string>
+    <string name="stops_timing_approximate">This service does not follow a fixed timetable and arrival times may vary.</string>
     <string name="accessibility_title">Accessibility</string>
 
     <string name="scheduled_arrival">Scheduled to arrive at %1$s</string>
     <string name="estimated_arrival">Expected to arrive at %1$s</string>
+    <string name="approximate_arrival">Arriving at approximately %1$s</string>
     <string name="estimated_arrival_late">Expected to arrive at %1$s (%2$s late)</string>
     <string name="estimated_arrival_early">Expected to arrive at %1$s (%2$s early)</string>
 
     <string name="past_departure">Departed at %1$s</string>
+    <string name="past_departure_approximate">Departed at approximately %1$s</string>
     <string name="past_departure_late">Departed at %1$s (%2$s late)</string>
     <string name="past_departure_early">Departed at %1$s (%2$s early)</string>
     <string name="future_scheduled_departure">Scheduled to depart at %1$s</string>
     <string name="future_estimated_departure">Expected to depart at %1$s</string>
+    <string name="future_approximate_departure">Expected to depart at approximately %1$s</string>
     <string name="future_estimated_departure_late">Expected to depart at %1$s (%2$s late)</string>
     <string name="future_estimated_departure_early">Expected to depart at %1$s (%2$s early)</string>
 
@@ -167,6 +174,7 @@
     <string name="route_code_name">Route %1$s</string>
     <string name="upcoming_vehicles">Upcoming routes</string>
     <string name="no_upcoming_vehicles">There are no routes scheduled for the rest of today.</string>
+    <string name="route_see_more">See more</string>
 
     <string name="accessibility_wheelchair_accessible">Wheelchair accessible</string>
     <string name="accessibility_not_wheelchair_accessible">Not wheelchair accessible</string>

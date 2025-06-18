@@ -11,15 +11,26 @@ import io.github.aakira.napier.Napier
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import org.koin.core.annotation.Factory
 
+sealed interface AlertDisplayContext {
+    data class Page(
+        val pageId: String
+    ): AlertDisplayContext
+    data class Route(
+        val routeId: RouteId,
+        val tripId: TripId?
+    ): AlertDisplayContext
+    data class Stop(
+        val stopId: StopId
+    ): AlertDisplayContext
+}
+
 @Factory
 class AlertRepository(
-    private val liveServiceRepository: LiveServiceRepository,
-    private val routeRepository: RouteRepository,
     private val contentRepository: ContentRepository,
-    private val remoteConfigRepository: RemoteConfigRepository,
 ) {
 
     companion object {
@@ -27,60 +38,45 @@ class AlertRepository(
     }
 
     fun alerts(
+        context: AlertDisplayContext
+    ): Flow<List<Alert>> {
+        return when (context) {
+            is AlertDisplayContext.Page -> {
+                val id = when (context.pageId) {
+                    ContentRepository.NATIVE_BROWSE_ID -> ContentRepository.HOME_BANNER_ID
+                    else -> context.pageId
+                }
+
+                flow {
+                    emit(listOfNotNull(contentRepository.banner(
+                        id
+                    )))
+                }
+            }
+            else -> flowOf(emptyList())
+        }
+    }
+
+    @Deprecated("Use new AlertDisplayContext")
+    fun alerts(
         routeId: RouteId? = null,
         tripId: TripId? = null,
         stopId: StopId? = null
     ): Flow<List<Alert>> {
-        return flow {
-            val banner = listOfNotNull(when {
-                routeId == null && tripId == null && stopId == null -> try {
-                    contentRepository.banner(
-                        ContentRepository.HOME_BANNER_ID
-                    )
-                } catch (e: Exception) {
-                    Napier.e(e)
-                    null
-                }
-                else -> null
-            })
-
-            val routeFeeds = when {
-                !remoteConfigRepository.feature(GTFS_ALERTS_ENABLED, false) -> emptyArray()
-                routeId == null -> routeRepository.routes().item.mapNotNull { it.realTimeUrl }.distinct().toTypedArray()
-                else -> routeRepository.route(routeId).item?.realTimeUrl?.let { arrayOf(it) } ?: emptyArray()
+        return alerts(
+            when {
+                routeId != null -> AlertDisplayContext.Route(
+                    routeId,
+                    tripId
+                )
+                stopId != null -> AlertDisplayContext.Stop(
+                    stopId
+                )
+                else -> AlertDisplayContext.Page(
+                    ContentRepository.HOME_BANNER_ID
+                )
             }
-            if (routeFeeds.isEmpty()) return@flow emit(banner)
-
-            val out = liveServiceRepository.getMultipleRealtimeUpdates(
-                *routeFeeds
-            ).map {
-                banner + it.asSequence().flatMap { it.entity }
-                    .filter { it.isDeleted != true && it.alert != null }
-                    .map { it.alert!! }
-                    .filter {
-                        when {
-                            tripId != null -> it.informedEntity.any { it.trip?.tripId == tripId }
-                            routeId != null || stopId != null ->
-                                it.informedEntity.any {
-                                    (it.routeId == routeId && routeId != null) ||
-                                            (it.stopId == stopId && stopId != null)
-                                }
-                            else -> it.informedEntity.any { it.agencyId != null && it.stopId == null && it.trip == null && it.routeId == null }
-                        }
-                    }
-                    .map {
-                        Alert.Realtime(
-                            it.effect,
-                            it.cause,
-                            it.headerText?.let { TranslatedStringLocalizableString(it) },
-                            it.url?.let { TranslatedStringLocalizableString(it) },
-                            AlertSeverity.fromPB(it.severityLevel)
-                        )
-                    }.toList()
-            }
-
-            emitAll(out)
-        }
+        )
     }
 
 }

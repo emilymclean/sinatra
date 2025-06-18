@@ -38,14 +38,14 @@ import cl.emilym.compose.errorwidget.ErrorWidget
 import cl.emilym.compose.requeststate.RequestState
 import cl.emilym.compose.requeststate.RequestStateWidget
 import cl.emilym.compose.requeststate.child
-import cl.emilym.compose.requeststate.handle
+import cl.emilym.compose.requeststate.flatRequestStateFlow
+import cl.emilym.compose.requeststate.requestStateFlow
 import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.FeatureFlags
-import cl.emilym.sinatra.data.models.Alert
 import cl.emilym.sinatra.data.models.IStopTimetableTime
 import cl.emilym.sinatra.data.models.ReferencedTime
 import cl.emilym.sinatra.data.models.StopId
-import cl.emilym.sinatra.data.models.StopWithChildren
+import cl.emilym.sinatra.data.repository.AlertDisplayContext
 import cl.emilym.sinatra.data.repository.AlertRepository
 import cl.emilym.sinatra.data.repository.FavouriteRepository
 import cl.emilym.sinatra.data.repository.RecentVisitRepository
@@ -59,6 +59,7 @@ import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
 import cl.emilym.sinatra.ui.navigation.MapScreen
 import cl.emilym.sinatra.ui.open_maps
 import cl.emilym.sinatra.ui.presentation.screens.maps.search.zoomThreshold
+import cl.emilym.sinatra.ui.retryIfNeeded
 import cl.emilym.sinatra.ui.stopJourneyNavigation
 import cl.emilym.sinatra.ui.widgets.AccessibilityIconLockup
 import cl.emilym.sinatra.ui.widgets.AlertScaffold
@@ -75,13 +76,11 @@ import cl.emilym.sinatra.ui.widgets.Subheading
 import cl.emilym.sinatra.ui.widgets.UpcomingRouteCard
 import cl.emilym.sinatra.ui.widgets.WheelchairAccessibleIcon
 import cl.emilym.sinatra.ui.widgets.collectAsStateWithLifecycle
-import cl.emilym.sinatra.ui.widgets.createRequestStateFlow
-import cl.emilym.sinatra.ui.widgets.createRequestStateFlowFlow
-import cl.emilym.sinatra.ui.widgets.handleFlowProperly
 import cl.emilym.sinatra.ui.widgets.openMaps
 import cl.emilym.sinatra.ui.widgets.pick
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
@@ -105,11 +104,18 @@ class StopDetailViewModel(
     private val alertRepository: AlertRepository
 ): SinatraScreenModel {
 
-    private val _alerts = createRequestStateFlowFlow<List<Alert>>()
-    val alerts = _alerts.presentable()
+    private val stopId = MutableStateFlow<StopId?>(null)
 
     val favourited = MutableStateFlow(false)
-    private val stopWithChildren = createRequestStateFlow<StopWithChildren?>()
+
+    private val _alerts = stopId.filterNotNull().flatRequestStateFlow { stopId ->
+        alertRepository.alerts(AlertDisplayContext.Stop(stopId))
+    }
+    val alerts = _alerts.state()
+
+    private val stopWithChildren = stopId.filterNotNull().requestStateFlow { stopId ->
+        stopRepository.stopWithChildren(stopId).item
+    }
     val stop = stopWithChildren.child { it?.stop }.state(RequestState.Initial())
     val children = stopWithChildren
         .child {
@@ -117,13 +123,13 @@ class StopDetailViewModel(
         }
         .state(RequestState.Initial())
 
-    val _upcoming = createRequestStateFlowFlow<List<IStopTimetableTime>>()
-    val upcoming = _upcoming.presentable()
+    private val _upcoming = stopId.filterNotNull().flatRequestStateFlow { stopId ->
+        upcomingRoutesForStopUseCase(stopId).map { it.item }
+    }
+    val upcoming = _upcoming.state()
 
     fun init(stopId: StopId) {
-        retryStop(stopId)
-        retryUpcoming(stopId)
-        retryAlerts(stopId)
+        this.stopId.value = stopId
 
         screenModelScope.launch {
             favourited.emitAll(favouriteRepository.stopIsFavourited(stopId))
@@ -133,28 +139,10 @@ class StopDetailViewModel(
         }
     }
 
-    fun retryStop(stopId: StopId) {
-        screenModelScope.launch {
-            stopWithChildren.handle {
-                stopRepository.stopWithChildren(stopId).item
-            }
-        }
-    }
-
-    fun retryUpcoming(stopId: StopId) {
-        screenModelScope.launch {
-            _upcoming.handleFlowProperly {
-                upcomingRoutesForStopUseCase(stopId).map { it.item }
-            }
-        }
-    }
-
-    fun retryAlerts(stopId: StopId) {
-        screenModelScope.launch {
-            _alerts.handleFlowProperly {
-                alertRepository.alerts(stopId = stopId)
-            }
-        }
+    fun retry() {
+        screenModelScope.launch { _alerts.retryIfNeeded(alerts.value) }
+        screenModelScope.launch { stopWithChildren.retryIfNeeded(stop.value) }
+        screenModelScope.launch { _upcoming.retryIfNeeded(upcoming.value) }
     }
 
     fun favourite(stopId: StopId, favourited: Boolean) {
@@ -195,7 +183,7 @@ class StopDetailScreen(
             Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center,
         ) {
-            RequestStateWidget(stop, { viewModel.retryStop(stopId) }) { stop ->
+            RequestStateWidget(stop, { viewModel.retry() }) { stop ->
                 when {
                     stop == null -> {
                         Text(stringResource(Res.string.stop_not_found))
@@ -334,7 +322,7 @@ class StopDetailScreen(
                     ) {
                         ErrorWidget(
                             (upcoming.exception as? Exception) ?: Exception(upcoming.exception),
-                            retry = { viewModel.retryUpcoming(stopId) }
+                            retry = { viewModel.retry() }
                         )
                     }
                 }
@@ -348,7 +336,7 @@ class StopDetailScreen(
                     upcoming.value.isNotEmpty() -> items(upcoming.value) {
                         UpcomingRouteCard(
                             it,
-                            it.stationTime.pick(),
+                            it.stationTime.pick(it.route, it.sequence <= 1),
                             modifier = Modifier.fillMaxWidth(),
                             onClick = { navigator.push(RouteDetailScreen(
                                 it.routeId,

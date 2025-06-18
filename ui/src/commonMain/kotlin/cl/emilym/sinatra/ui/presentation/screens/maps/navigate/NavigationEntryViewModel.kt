@@ -1,8 +1,13 @@
 package cl.emilym.sinatra.ui.presentation.screens.maps.navigate
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import cafe.adriel.voyager.core.model.screenModelScope
 import cl.emilym.compose.requeststate.RequestState
+import cl.emilym.compose.requeststate.flatRequestStateFlow
 import cl.emilym.compose.requeststate.handle
+import cl.emilym.compose.requeststate.requestStateFlow
 import cl.emilym.sinatra.data.models.Journey
 import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.data.models.RecentVisit
@@ -13,6 +18,7 @@ import cl.emilym.sinatra.data.repository.PreferencesRepository
 import cl.emilym.sinatra.data.repository.RecentVisitRepository
 import cl.emilym.sinatra.data.repository.RoutingPreferencesRepository
 import cl.emilym.sinatra.data.repository.StopRepository
+import cl.emilym.sinatra.domain.NavigableFavouritesUseCase
 import cl.emilym.sinatra.domain.navigation.CalculateJourneyUseCase
 import cl.emilym.sinatra.domain.navigation.JourneyCalculationTime
 import cl.emilym.sinatra.domain.navigation.JourneyLocation
@@ -22,6 +28,7 @@ import cl.emilym.sinatra.domain.search.SearchResult
 import cl.emilym.sinatra.nullIfEmpty
 import cl.emilym.sinatra.ui.presentation.screens.search.SearchScreenViewModel
 import cl.emilym.sinatra.ui.presentation.screens.search.searchHandler
+import cl.emilym.sinatra.ui.retryIfNeeded
 import cl.emilym.sinatra.ui.widgets.SinatraScreenModel
 import cl.emilym.sinatra.ui.widgets.createRequestStateFlowFlow
 import cl.emilym.sinatra.ui.widgets.handleFlowProperly
@@ -96,10 +103,9 @@ class NavigationEntryViewModel(
     private val routeStopSearchUseCase: RouteStopSearchUseCase,
     private val networkGraphRepository: NetworkGraphRepository,
     private val recentVisitRepository: RecentVisitRepository,
-    private val nearbyStopsUseCase: NearbyStopsUseCase,
-    private val stopRepository: StopRepository,
     private val routingPreferencesRepository: RoutingPreferencesRepository,
     private val preferencesRepository: PreferencesRepository,
+    private val navigableFavouritesUseCase: NavigableFavouritesUseCase,
     private val clock: Clock
 ): SinatraScreenModel, SearchScreenViewModel {
 
@@ -161,6 +167,12 @@ class NavigationEntryViewModel(
                                     it.bikesAllowed == null ||
                                     it.wheelchairAccessible == null
                                 ) return@flow
+
+                                if (it.destinationLocation == it.originLocation) {
+                                    emit(NavigationState.JourneyStartStopSame)
+                                    return@flow
+                                }
+
                                 emit(NavigationState.JourneyCalculating)
                                 try {
                                     emit(NavigationState.JourneysFound(
@@ -248,9 +260,8 @@ class NavigationEntryViewModel(
     val timeDialogVisible = MutableStateFlow<Boolean>(false)
 
     // Search
-    override val query = MutableStateFlow<String?>(null)
+    override var query by mutableStateOf("")
 
-    private val stops = MutableStateFlow<RequestState<List<Stop>>>(RequestState.Initial())
     private val _recentVisits = createRequestStateFlowFlow<List<RecentVisit>>()
     @OptIn(ExperimentalCoroutinesApi::class)
     override val recentVisits = _recentVisits.presentable().mapLatest {
@@ -260,11 +271,12 @@ class NavigationEntryViewModel(
         }
     }.state(RequestState.Initial())
 
-    override val nearbyStops: StateFlow<List<StopWithDistance>?> = stops.combine(currentLocation) { stops, lastLocation ->
-        if (stops !is RequestState.Success || lastLocation == null) return@combine null
-        val stops = stops.value.nullIfEmpty() ?: return@combine null
-        with(nearbyStopsUseCase) { stops.filter(lastLocation).nullIfEmpty() }
-    }.state(null)
+    override val nearbyStops: StateFlow<List<StopWithDistance>?> = flowOf(emptyList<StopWithDistance>()).state(
+        emptyList()
+    )
+
+    private val _favourites = flatRequestStateFlow { navigableFavouritesUseCase() }
+    val favourites = _favourites.state()
 
     @OptIn(ExperimentalCoroutinesApi::class)
     override val results = state.mapLatest {
@@ -290,7 +302,6 @@ class NavigationEntryViewModel(
     fun init(destination: NavigationLocation, origin: NavigationLocation) {
         retryLoadingGraph()
         retryRecentVisits()
-        retryStops()
         setDestination(destination)
         setOrigin(origin)
     }
@@ -321,13 +332,8 @@ class NavigationEntryViewModel(
                 recentVisitRepository.all()
             }
         }
-    }
-
-    fun retryStops() {
         screenModelScope.launch {
-            stops.handle {
-                stopRepository.stops().item
-            }
+            _favourites.retryIfNeeded(favourites.value)
         }
     }
 
@@ -367,7 +373,7 @@ class NavigationEntryViewModel(
     }
 
     private fun onOpenSearch() {
-        query.value = null
+        query = ""
     }
 
     fun onSearchItemClicked(item: NavigationLocation) {

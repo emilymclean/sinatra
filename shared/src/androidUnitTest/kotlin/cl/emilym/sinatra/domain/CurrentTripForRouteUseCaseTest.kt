@@ -43,7 +43,6 @@ class CurrentTripForRouteUseCaseTest {
     private lateinit var serviceRepository: ServiceRepository
     private lateinit var transportMetadataRepository: TransportMetadataRepository
     private lateinit var liveTripInformationUseCase: LiveTripInformationUseCase
-    private lateinit var metadataRepository: TransportMetadataRepository
     private lateinit var clock: Clock
     private lateinit var useCase: CurrentTripForRouteUseCase
 
@@ -58,12 +57,17 @@ class CurrentTripForRouteUseCaseTest {
         null,
         "Route 1",
         null,
+        false,
+        false,
         RouteType.LIGHT_RAIL,
         null,
         RouteVisibility(
             false,
-            null
-        )
+            null,
+            false
+        ),
+        false,
+        null
     )
     val tripInformation = RouteTripInformation(
         Time.parse("PT12H"),
@@ -82,15 +86,13 @@ class CurrentTripForRouteUseCaseTest {
         serviceRepository = mockk()
         transportMetadataRepository = mockk()
         liveTripInformationUseCase = mockk()
-        metadataRepository = mockk()
         clock = mockk()
         useCase = CurrentTripForRouteUseCase(
             routeRepository,
             serviceRepository,
             transportMetadataRepository,
             clock,
-            liveTripInformationUseCase,
-            metadataRepository
+            liveTripInformationUseCase
         )
         mockkObject(Napier) // Mock Napier logging
     }
@@ -101,7 +103,7 @@ class CurrentTripForRouteUseCaseTest {
         every { clock.now() } returns instant
 
         coEvery { routeRepository.route(any()) } returns Cachable(null, CacheState.LIVE)
-        coEvery { metadataRepository.timeZone() } returns timeZone
+        coEvery { transportMetadataRepository.timeZone() } returns timeZone
 
         val result = useCase.invoke("route1").first()
 
@@ -121,7 +123,7 @@ class CurrentTripForRouteUseCaseTest {
             CacheState.LIVE
         )
         coEvery { serviceRepository.services(any()) } returns Cachable(listOf(), CacheState.LIVE)
-        coEvery { metadataRepository.timeZone() } returns timeZone
+        coEvery { transportMetadataRepository.timeZone() } returns timeZone
 
         val result = useCase.invoke("route1").first()
 
@@ -154,7 +156,7 @@ class CurrentTripForRouteUseCaseTest {
             coEvery {
                 routeRepository.tripTimetable(any(), any(), any(), any())
             } returns Cachable(tripTimetable, CacheState.LIVE)
-            coEvery { metadataRepository.timeZone() } returns timeZone
+            coEvery { transportMetadataRepository.timeZone() } returns timeZone
 
             val result = useCase.invoke("route1", serviceId, tripId).first()
 
@@ -173,7 +175,7 @@ class CurrentTripForRouteUseCaseTest {
         every { clock.now() } returns instant
 
         val route = route.copy(
-            realTimeUrl = "http://realtime.url"
+            hasRealtime = true
         )
         val serviceId = "service1"
         val tripId = "trip1"
@@ -187,9 +189,9 @@ class CurrentTripForRouteUseCaseTest {
             CacheState.LIVE
         )
         coEvery {
-            liveTripInformationUseCase.invoke(any(), any(), any(), any(), any())
+            liveTripInformationUseCase.invoke(any(), any(), any(), any())
         } returns flowOf(Cachable(tripInformation, CacheState.LIVE))
-        coEvery { metadataRepository.timeZone() } returns timeZone
+        coEvery { transportMetadataRepository.timeZone() } returns timeZone
 
         val result = useCase.invoke("route1", serviceId, tripId).first()
 
@@ -199,7 +201,6 @@ class CurrentTripForRouteUseCaseTest {
             routeRepository.route("route1")
             serviceRepository.services(listOf(serviceId))
             liveTripInformationUseCase.invoke(
-                "http://realtime.url",
                 "route1",
                 serviceId,
                 tripId,
@@ -209,12 +210,12 @@ class CurrentTripForRouteUseCaseTest {
     }
 
     @Test
-    fun `invoke should handle exception and fallback to timetable`() = runBlocking {
+    fun `invoke should handle exception and fallback to timetable`() = runTest {
         val instant = Instant.parse("2024-01-05T12:00:00Z")
         every { clock.now() } returns instant
 
         val route = route.copy(
-            realTimeUrl = "http://realtime.url"
+            hasRealtime = true
         )
         val serviceId = "service1"
         val tripId = "trip1"
@@ -228,12 +229,12 @@ class CurrentTripForRouteUseCaseTest {
             CacheState.LIVE
         )
         coEvery {
-            liveTripInformationUseCase.invoke(any(), any(), any(), any(), any())
+            liveTripInformationUseCase.invoke(any(), any(), any(), any())
         } throws RuntimeException("Real-time service error")
         coEvery {
             routeRepository.tripTimetable(any(), any(), any(), any())
         } returns Cachable(tripTimetable, CacheState.LIVE)
-        coEvery { metadataRepository.timeZone() } returns timeZone
+        coEvery { transportMetadataRepository.timeZone() } returns timeZone
 
         val result = useCase.invoke("route1", serviceId, tripId).first()
 
@@ -243,7 +244,6 @@ class CurrentTripForRouteUseCaseTest {
             routeRepository.route("route1")
             serviceRepository.services(listOf(serviceId))
             liveTripInformationUseCase.invoke(
-                "http://realtime.url",
                 "route1",
                 serviceId,
                 tripId,

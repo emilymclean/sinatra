@@ -8,9 +8,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -21,6 +25,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
@@ -34,10 +39,10 @@ import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import cl.emilym.compose.requeststate.RequestState
 import cl.emilym.compose.requeststate.RequestStateWidget
+import cl.emilym.compose.requeststate.flatRequestStateFlow
 import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.FeatureFlags
 import cl.emilym.sinatra.bounds
-import cl.emilym.sinatra.data.models.Alert
 import cl.emilym.sinatra.data.models.IRouteTripInformation
 import cl.emilym.sinatra.data.models.IRouteTripStop
 import cl.emilym.sinatra.data.models.MapLocation
@@ -51,11 +56,11 @@ import cl.emilym.sinatra.data.models.StopWithDistance
 import cl.emilym.sinatra.data.models.TripId
 import cl.emilym.sinatra.data.models.distance
 import cl.emilym.sinatra.data.models.startOfDay
+import cl.emilym.sinatra.data.repository.AlertDisplayContext
 import cl.emilym.sinatra.data.repository.AlertRepository
 import cl.emilym.sinatra.data.repository.FavouriteRepository
 import cl.emilym.sinatra.data.repository.RecentVisitRepository
 import cl.emilym.sinatra.domain.CurrentTripForRouteUseCase
-import cl.emilym.sinatra.domain.CurrentTripInformation
 import cl.emilym.sinatra.domain.NEAREST_STOP_RADIUS
 import cl.emilym.sinatra.nullIfEmpty
 import cl.emilym.sinatra.ui.asInstants
@@ -71,10 +76,12 @@ import cl.emilym.sinatra.ui.maps.routeStopMarkerIcon
 import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
 import cl.emilym.sinatra.ui.navigation.MapScreen
 import cl.emilym.sinatra.ui.past
+import cl.emilym.sinatra.ui.retryIfNeeded
 import cl.emilym.sinatra.ui.text
 import cl.emilym.sinatra.ui.widgets.AccessibilityIconLockup
 import cl.emilym.sinatra.ui.widgets.AlertScaffold
 import cl.emilym.sinatra.ui.widgets.BikeIcon
+import cl.emilym.sinatra.ui.widgets.ExternalLinkIcon
 import cl.emilym.sinatra.ui.widgets.FavouriteButton
 import cl.emilym.sinatra.ui.widgets.LocalMapControl
 import cl.emilym.sinatra.ui.widgets.RouteLine
@@ -84,15 +91,16 @@ import cl.emilym.sinatra.ui.widgets.SinatraScreenModel
 import cl.emilym.sinatra.ui.widgets.SpecificRecomposeOnInstants
 import cl.emilym.sinatra.ui.widgets.StopCard
 import cl.emilym.sinatra.ui.widgets.Subheading
+import cl.emilym.sinatra.ui.widgets.WarningIcon
 import cl.emilym.sinatra.ui.widgets.WheelchairAccessibleIcon
 import cl.emilym.sinatra.ui.widgets.collectAsStateWithLifecycle
-import cl.emilym.sinatra.ui.widgets.createRequestStateFlowFlow
 import cl.emilym.sinatra.ui.widgets.currentLocation
-import cl.emilym.sinatra.ui.widgets.handleFlowProperly
 import cl.emilym.sinatra.ui.widgets.pick
+import com.mikepenz.markdown.m3.Markdown
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
@@ -109,9 +117,12 @@ import sinatra.ui.generated.resources.route_accessibility_not_wheelchair_accessi
 import sinatra.ui.generated.resources.route_accessibility_wheelchair_accessible
 import sinatra.ui.generated.resources.route_heading
 import sinatra.ui.generated.resources.route_not_found
+import sinatra.ui.generated.resources.route_see_more
 import sinatra.ui.generated.resources.semantics_favourite_route
 import sinatra.ui.generated.resources.stop_detail_distance
 import sinatra.ui.generated.resources.stop_detail_nearest_stop
+import sinatra.ui.generated.resources.stops_timing_approximate
+import sinatra.ui.generated.resources.stops_timing_approximate_title
 import sinatra.ui.generated.resources.stops_title
 import sinatra.ui.generated.resources.trip_not_found
 
@@ -128,10 +139,29 @@ class RouteDetailViewModel(
     private val clock: Clock
 ): SinatraScreenModel {
 
+    private data class Params(
+        val routeId: RouteId,
+        val serviceId: ServiceId? = null,
+        val tripId: TripId? = null,
+        val referenceTime: Instant? = null
+    )
+
+    private val params = MutableStateFlow<Params?>(null)
+
     private var lastLocation = MutableStateFlow<MapLocation?>(null)
-    private val _tripInformation = createRequestStateFlowFlow<CurrentTripInformation?>()
-    val tripInformation = _tripInformation.presentable()
+
     val favourited = MutableStateFlow(false)
+
+    private val _tripInformation = params.filterNotNull().flatRequestStateFlow { params ->
+        currentTripForRouteUseCase(
+            params.routeId,
+            params.serviceId,
+            params.tripId,
+            params.referenceTime ?: clock.now()
+        ).map { it.item }
+    }
+    val tripInformation = _tripInformation.state()
+
     val nearestStop = tripInformation.combine(lastLocation) { tripInformation, lastLocation ->
         if (tripInformation !is RequestState.Success || lastLocation == null) return@combine null
         val stops = tripInformation.value?.tripInformation?.stops?.mapNotNull { it.stop }?.nullIfEmpty() ?: return@combine null
@@ -141,8 +171,13 @@ class RouteDetailViewModel(
             ?.minBy { it.distance }
     }.state(null)
 
-    private val _alerts = createRequestStateFlowFlow<List<Alert>>()
-    val alerts = _alerts.presentable()
+    private val _alerts = params.filterNotNull().flatRequestStateFlow { params ->
+        alertRepository.alerts(AlertDisplayContext.Route(
+            routeId = params.routeId,
+            tripId = params.tripId
+        ))
+    }
+    val alerts = _alerts.state()
 
     fun init(
         routeId: RouteId,
@@ -150,35 +185,23 @@ class RouteDetailViewModel(
         tripId: TripId?,
         referenceTime: Instant?
     ) {
+        params.value = Params(
+            routeId,
+            serviceId,
+            tripId,
+            referenceTime
+        )
         screenModelScope.launch {
             favourited.emitAll(favouriteRepository.routeIsFavourited(routeId))
         }
         screenModelScope.launch {
             recentVisitRepository.addRouteVisit(routeId)
         }
-        retry(routeId, serviceId, tripId, referenceTime)
-        retryAlerts(routeId, serviceId, tripId)
     }
 
-    fun retry(routeId: RouteId, serviceId: ServiceId?, tripId: TripId?, referenceTime: Instant?) {
-        screenModelScope.launch {
-            _tripInformation.handleFlowProperly {
-                currentTripForRouteUseCase(
-                    routeId,
-                    serviceId,
-                    tripId,
-                    referenceTime ?: clock.now()
-                ).map { it.item }
-            }
-        }
-    }
-
-    fun retryAlerts(routeId: RouteId, serviceId: ServiceId?, tripId: TripId?) {
-        screenModelScope.launch {
-            _alerts.handleFlowProperly {
-                alertRepository.alerts(routeId = routeId, tripId = tripId)
-            }
-        }
+    fun retry() {
+        screenModelScope.launch { _tripInformation.retryIfNeeded(tripInformation.value) }
+        screenModelScope.launch { _alerts.retryIfNeeded(alerts.value) }
     }
 
     fun updateLocation(location: MapLocation) {
@@ -233,7 +256,7 @@ class RouteDetailScreen(
             Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
-            RequestStateWidget(tripInformation, { viewModel.retry(routeId, serviceId, tripId, startOfDay) }) { tripInformation ->
+            RequestStateWidget(tripInformation, { viewModel.retry() }) { tripInformation ->
                 when {
                     tripInformation == null -> { Text(stringResource(Res.string.route_not_found)) }
                     tripInformation.tripInformation == null -> { Text(stringResource(Res.string.trip_not_found)) }
@@ -343,6 +366,64 @@ class RouteDetailScreen(
                 item {
                     AlertScaffold((alerts as? RequestState.Success)?.value)
                 }
+                if (route.approximateTimings) {
+                    item {
+                        Column(
+                            Modifier.padding(horizontal = 1.rdp)
+                        ) {
+                            Card(
+                                Modifier.fillMaxWidth(),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.secondaryContainer
+                                )
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(1.rdp),
+                                    horizontalArrangement = Arrangement.spacedBy(0.5.rdp)
+                                ) {
+                                    WarningIcon()
+                                    Column {
+                                        Text(
+                                            stringResource(Res.string.stops_timing_approximate_title),
+                                            style = MaterialTheme.typography.titleMedium
+                                        )
+                                        Text(
+                                            stringResource(Res.string.stops_timing_approximate),
+                                        )
+                                    }
+                                }
+                            }
+                            Box(Modifier.height(2.rdp))
+                        }
+                    }
+                }
+                if (route.description != null && trigger == null) {
+                    item {
+                        Column(
+                            Modifier.fillMaxWidth().padding(1.rdp),
+                            verticalArrangement = Arrangement.spacedBy(1.rdp)
+                        ) {
+                            Markdown(route.description ?: "")
+                        }
+                    }
+                    if (route.moreLink == null) {
+                        item { Box(Modifier.height(1.rdp)) }
+                    }
+                }
+                if (route.moreLink != null && trigger == null) {
+                    item {
+                        val uriHandler = LocalUriHandler.current
+                        Button(
+                            onClick = { uriHandler.openUri(route.moreLink ?: "") },
+                            modifier = Modifier.fillMaxWidth().padding(horizontal = 1.rdp)
+                        ) {
+                            Text(stringResource(Res.string.route_see_more))
+                            Box(Modifier.width(0.5.rdp))
+                            ExternalLinkIcon()
+                        }
+                    }
+                    item { Box(Modifier.height(2.rdp)) }
+                }
                 item {
                     Subheading(stringResource(Res.string.accessibility_title))
                 }
@@ -369,7 +450,7 @@ class RouteDetailScreen(
                         }
                     }
                 }
-                item { Box(Modifier.height(1.rdp)) }
+                item { Box(Modifier.height(2.rdp)) }
                 nearestStop?.let { nearestStop ->
                     if (!FeatureFlags.ROUTE_DETAIL_NEAREST_STOP) return@let
                     item {
@@ -385,22 +466,27 @@ class RouteDetailScreen(
                                 },
                                 subtitle = stringResource(Res.string.stop_detail_distance, nearestStop.distance.text)
                             )
+                            Box(Modifier.height(1.rdp))
                         }
                     }
                 }
                 when {
                     trigger == null -> {
                         item { Subheading(stringResource(Res.string.stops_title)) }
-                        Cards(navigator, current ?: listOf())
+                        Cards(navigator, current ?: listOf(), route)
                     }
                     else -> {
                         if (current != null) {
-                            item { Subheading(stringResource(Res.string.current_stops_title)) }
-                            Cards(navigator, current ?: listOf())
+                            item {
+                                Subheading(stringResource(Res.string.current_stops_title))
+                            }
+                            Cards(navigator, current ?: listOf(), route)
                         }
                         if (past != null) {
-                            item { Subheading(stringResource(Res.string.past_stops_title)) }
-                            Cards(navigator, past ?: listOf())
+                            item {
+                                Subheading(stringResource(Res.string.past_stops_title))
+                            }
+                            Cards(navigator, past ?: listOf(), route)
                         }
                     }
                 }
@@ -411,14 +497,15 @@ class RouteDetailScreen(
 
     private fun LazyListScope.Cards(
         navigator: Navigator,
-        stops: List<IRouteTripStop>
+        stops: List<IRouteTripStop>,
+        route: Route
     ) {
         items(stops) {
             if (it.stop == null) return@items
             StopCard(
                 it.stop!!,
                 Modifier.fillMaxWidth(),
-                it.stationTime?.pick(),
+                it.stationTime?.pick(route, it.sequence <= 1),
                 onClick = {
                     navigator.push(StopDetailScreen(
                         it.stopId

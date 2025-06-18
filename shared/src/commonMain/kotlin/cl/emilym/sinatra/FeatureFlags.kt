@@ -26,6 +26,7 @@ object FeatureFlags {
     val STOP_DETAIL_SHOW_ACCESSIBILITY by FeatureFlagDelegate(true)
     val STOP_CARD_SHOW_ACCESSIBILITY by FeatureFlagDelegate(false)
     val MAP_SEARCH_SCREEN_NEARBY_STOPS_SEARCH by FeatureFlagDelegate(true)
+    val NAVIGATE_ENTRY_SCREEN_FAVOURITE_SEARCH by FeatureFlagDelegate(true)
     val IOS_APPLE_MAP_LOGO_FOLLOW_BOTTOM_SHEET by FeatureFlagDelegate(false)
     val RAPTOR_ARRIVAL_BASED_ROUTING by FeatureFlagDelegate(true)
     val RAPTOR_SWAP_BUTTON by FeatureFlagDelegate(true)

@@ -1,5 +1,8 @@
 package cl.emilym.sinatra.ui.presentation.screens.maps.search
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import cafe.adriel.voyager.core.model.screenModelScope
 import cl.emilym.compose.requeststate.RequestState
 import cl.emilym.compose.requeststate.handle
@@ -9,7 +12,9 @@ import cl.emilym.sinatra.data.models.RecentVisit
 import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.data.models.StopWithDistance
 import cl.emilym.sinatra.data.models.distance
+import cl.emilym.sinatra.data.repository.AlertDisplayContext
 import cl.emilym.sinatra.data.repository.AlertRepository
+import cl.emilym.sinatra.data.repository.ContentRepository
 import cl.emilym.sinatra.data.repository.RecentVisitRepository
 import cl.emilym.sinatra.data.repository.StopRepository
 import cl.emilym.sinatra.domain.NEARBY_STOPS_LIMIT
@@ -52,7 +57,7 @@ class MapSearchViewModel(
 ): SinatraScreenModel, SearchScreenViewModel {
 
     private val _state = MutableStateFlow(State.BROWSE)
-    override val query = MutableStateFlow<String?>(null)
+    override var query by mutableStateOf("")
 
     @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
     val state = _state.flatMapLatest {
@@ -113,22 +118,20 @@ class MapSearchViewModel(
     fun retryAlerts() {
         screenModelScope.launch {
             _alerts.handleFlowProperly {
-                alertRepository.alerts()
+                alertRepository.alerts(
+                    AlertDisplayContext.Page(ContentRepository.HOME_BANNER_ID)
+                )
             }
         }
     }
 
-    override fun search(query: String) {
-        this.query.value = query
-    }
-
     fun openSearch() {
-        query.value = null
+        query = ""
         _state.value = State.SEARCH
     }
 
     fun openBrowse() {
-        query.value = null
+        query = ""
         _state.value = State.BROWSE
     }
 

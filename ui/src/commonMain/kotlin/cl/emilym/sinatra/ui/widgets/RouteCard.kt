@@ -68,14 +68,22 @@ fun RouteRandle(
 }
 
 @Composable
-fun RouteCard(
+fun DefaultRouteCardIcon(route: Route) {
+    RouteRandle(route)
+}
+
+@Composable
+fun IconRouteCard(
     route: Route,
     modifier: Modifier = Modifier,
-    onClick: (() -> Unit)? = null
+    onClick: (() -> Unit)? = null,
+    icon: (@Composable () -> Unit)?
 ) {
     val routeListingSemantics = stringResource(Res.string.semantics_route_listing, route.displayCode)
     ListCard(
-        { RouteRandle(route) },
+        icon?.let {
+            { RandleScaffold { icon() } }
+        },
         Modifier
             .semantics {
                 contentDescription = routeListingSemantics
@@ -84,5 +92,20 @@ fun RouteCard(
         onClick
     ) {
         Text(route.name)
+    }
+}
+
+@Composable
+fun RouteCard(
+    route: Route,
+    modifier: Modifier = Modifier,
+    onClick: (() -> Unit)? = null
+) {
+    IconRouteCard(
+        route,
+        modifier,
+        onClick
+    ) {
+        DefaultRouteCardIcon(route)
     }
 }

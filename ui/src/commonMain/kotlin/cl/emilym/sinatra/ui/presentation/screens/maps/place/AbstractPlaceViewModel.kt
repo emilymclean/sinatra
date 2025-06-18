@@ -12,6 +12,7 @@ import cl.emilym.sinatra.data.repository.FavouriteRepository
 import cl.emilym.sinatra.data.repository.RecentVisitRepository
 import cl.emilym.sinatra.domain.NearbyStopsUseCase
 import cl.emilym.sinatra.nullIfEmpty
+import cl.emilym.sinatra.ui.retryIfNeeded
 import cl.emilym.sinatra.ui.widgets.SinatraScreenModel
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -68,7 +69,7 @@ abstract class AbstractPlaceViewModel : SinatraScreenModel {
 
     fun retryNearby() {
         screenModelScope.launch {
-            _nearbyStops.retry()
+            _nearbyStops.retryIfNeeded(nearbyStops.value)
         }
     }
 }

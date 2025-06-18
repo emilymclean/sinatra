@@ -13,27 +13,33 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.FeatureFlags
+import cl.emilym.sinatra.data.models.Route
 import cl.emilym.sinatra.data.models.ServiceAccessibility
 import cl.emilym.sinatra.data.models.ServiceBikesAllowed
 import cl.emilym.sinatra.data.models.ServiceWheelchairAccessible
 import cl.emilym.sinatra.data.models.StationTime
 import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.data.models.StopAccessibility
+import cl.emilym.sinatra.data.models.StopTime
 import cl.emilym.sinatra.data.models.StopWheelchairAccessibility
 import cl.emilym.sinatra.data.models.TimetableStationTime
+import cl.emilym.sinatra.data.models.merge
 import cl.emilym.sinatra.ui.localization.format
 import cl.emilym.sinatra.ui.localization.isInPast
 import cl.emilym.sinatra.ui.text
 import org.jetbrains.compose.resources.stringResource
 import sinatra.ui.generated.resources.Res
+import sinatra.ui.generated.resources.approximate_arrival
 import sinatra.ui.generated.resources.estimated_arrival
 import sinatra.ui.generated.resources.estimated_arrival_early
 import sinatra.ui.generated.resources.estimated_arrival_late
+import sinatra.ui.generated.resources.future_approximate_departure
 import sinatra.ui.generated.resources.future_estimated_departure
 import sinatra.ui.generated.resources.future_estimated_departure_early
 import sinatra.ui.generated.resources.future_estimated_departure_late
 import sinatra.ui.generated.resources.future_scheduled_departure
 import sinatra.ui.generated.resources.past_departure
+import sinatra.ui.generated.resources.past_departure_approximate
 import sinatra.ui.generated.resources.past_departure_early
 import sinatra.ui.generated.resources.past_departure_late
 import sinatra.ui.generated.resources.scheduled_arrival
@@ -52,31 +58,36 @@ sealed interface StopStationTime {
 }
 
 @Composable
-fun TimetableStationTime.pick(): StopStationTime {
-    return when (arrival.time.isInPast()) {
-        true -> StopStationTime.Departure(departure)
-        false -> StopStationTime.Arrival(arrival)
+fun TimetableStationTime.pick(
+    route: Route? = null,
+    isFirst: Boolean = false
+): StopStationTime {
+    return if (isFirst || arrival.time.isInPast()) {
+        StopStationTime.Departure(route?.let { departure.merge(route) } ?: departure)
+    } else {
+        StopStationTime.Arrival(route?.let { arrival.merge(route) } ?: arrival)
     }
 }
 
 @Composable
-fun StopCard(
+fun DefaultStopCardIcon(stop: Stop) {
+    BusIcon()
+}
+
+@Composable
+fun IconStopCard(
     stop: Stop,
     modifier: Modifier = Modifier,
     stopStationTime: StopStationTime? = null,
     onClick: () -> Unit,
     subtitle: String? = null,
-    showStopIcon: Boolean = false,
+    icon: (@Composable () -> Unit)?
 ) {
     val stopListingSemantics = stringResource(Res.string.semantics_stop_listing, stop.name)
     ListCard(
-        if (showStopIcon) {
-            {
-                RandleScaffold {
-                    BusIcon()
-                }
-            }
-        } else null,
+        icon?.let {
+            { RandleScaffold { it() } }
+        },
         Modifier
             .semantics {
                 contentDescription = stopListingSemantics
@@ -119,6 +130,28 @@ fun StopCard(
     }
 }
 
+@Composable
+fun StopCard(
+    stop: Stop,
+    modifier: Modifier = Modifier,
+    stopStationTime: StopStationTime? = null,
+    onClick: () -> Unit,
+    subtitle: String? = null,
+    showStopIcon: Boolean = false,
+) {
+    IconStopCard(
+        stop,
+        modifier,
+        stopStationTime,
+        onClick,
+        subtitle,
+        when (showStopIcon) {
+            true -> { { DefaultStopCardIcon(stop) } }
+            else -> null
+        }
+    )
+}
+
 
 val StopStationTime.text: String
     @Composable
@@ -128,10 +161,19 @@ val StopStationTime.text: String
         val isInPast = stationTime.time.isInPast()
         return when (stationTime) {
             is StationTime.Scheduled -> stringResource(when (this) {
-                is StopStationTime.Arrival -> Res.string.scheduled_arrival
+                is StopStationTime.Arrival -> when (stationTime.approximate) {
+                    true -> Res.string.approximate_arrival
+                    false -> Res.string.scheduled_arrival
+                }
                 is StopStationTime.Departure -> when (isInPast) {
-                    true -> Res.string.past_departure
-                    false -> Res.string.future_scheduled_departure
+                    true -> when(stationTime.approximate) {
+                        true -> Res.string.past_departure_approximate
+                        false -> Res.string.past_departure
+                    }
+                    false -> when(stationTime.approximate) {
+                        true -> Res.string.future_approximate_departure
+                        false -> Res.string.future_scheduled_departure
+                    }
                 }
             }, time)
             is StationTime.Live -> when {

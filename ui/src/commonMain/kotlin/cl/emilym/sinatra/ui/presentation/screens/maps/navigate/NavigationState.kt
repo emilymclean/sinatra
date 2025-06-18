@@ -11,6 +11,7 @@ sealed interface NavigationState {
     ): NavigationState
 
     data object JourneyCalculating: NavigationState
+    data object JourneyStartStopSame: NavigationState
     data class JourneysFound(
         val journeys: List<Journey>
     ): NavigationState

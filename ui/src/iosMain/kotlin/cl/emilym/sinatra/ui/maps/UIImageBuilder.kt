@@ -32,10 +32,12 @@ import platform.Foundation.CFBridgingRetain
 import platform.Foundation.NSData
 import platform.Foundation.dataWithBytes
 import platform.UIKit.UIGraphicsBeginImageContext
+import platform.UIKit.UIGraphicsBeginImageContextWithOptions
 import platform.UIKit.UIGraphicsEndImageContext
 import platform.UIKit.UIGraphicsGetCurrentContext
 import platform.UIKit.UIGraphicsGetImageFromCurrentImageContext
 import platform.UIKit.UIImage
+import platform.UIKit.UIScreen
 
 class UIImageScope @OptIn(ExperimentalForeignApi::class) private constructor(
     val context: CGContextRef?
@@ -44,7 +46,7 @@ class UIImageScope @OptIn(ExperimentalForeignApi::class) private constructor(
         @OptIn(ExperimentalForeignApi::class)
         fun builder(width: Double, height: Double, init: UIImageScope.() -> Unit): UIImage? {
             val size = CGSizeMake(width, height)
-            UIGraphicsBeginImageContext(size)
+            UIGraphicsBeginImageContextWithOptions(size, false, UIScreen.mainScreen.scale)
 
             val context = UIGraphicsGetCurrentContext()
             UIImageScope(context).init()
