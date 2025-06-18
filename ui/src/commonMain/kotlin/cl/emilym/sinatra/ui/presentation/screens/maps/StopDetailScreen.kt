@@ -76,6 +76,7 @@ import cl.emilym.sinatra.ui.widgets.Subheading
 import cl.emilym.sinatra.ui.widgets.UpcomingRouteCard
 import cl.emilym.sinatra.ui.widgets.WheelchairAccessibleIcon
 import cl.emilym.sinatra.ui.widgets.collectAsStateWithLifecycle
+import cl.emilym.sinatra.ui.widgets.defaultConfig
 import cl.emilym.sinatra.ui.widgets.openMaps
 import cl.emilym.sinatra.ui.widgets.pick
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -108,22 +109,22 @@ class StopDetailViewModel(
 
     val favourited = MutableStateFlow(false)
 
-    private val _alerts = stopId.filterNotNull().flatRequestStateFlow { stopId ->
+    private val _alerts = stopId.filterNotNull().flatRequestStateFlow(defaultConfig) { stopId ->
         alertRepository.alerts(AlertDisplayContext.Stop(stopId))
     }
     val alerts = _alerts.state()
 
-    private val stopWithChildren = stopId.filterNotNull().requestStateFlow { stopId ->
+    private val stopWithChildren = stopId.filterNotNull().requestStateFlow(defaultConfig) { stopId ->
         stopRepository.stopWithChildren(stopId).item
     }
-    val stop = stopWithChildren.child { it?.stop }.state(RequestState.Initial())
+    val stop = stopWithChildren.child { it?.stop }.state()
     val children = stopWithChildren
         .child {
             it?.children?.sortedWith(compareBy(naturalComparator()) { it.name })
         }
-        .state(RequestState.Initial())
+        .state()
 
-    private val _upcoming = stopId.filterNotNull().flatRequestStateFlow { stopId ->
+    private val _upcoming = stopId.filterNotNull().flatRequestStateFlow(defaultConfig) { stopId ->
         upcomingRoutesForStopUseCase(stopId).map { it.item }
     }
     val upcoming = _upcoming.state()
