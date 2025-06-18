@@ -36,7 +36,7 @@ abstract class AbstractPlaceViewModel : SinatraScreenModel {
     protected abstract val placeId: StateFlow<PlaceId?>
 
     protected abstract val _place: Flow<RequestState<Place?>>
-    val place: StateFlow<RequestState<Place?>> by lazy { _place.stateIn(screenModelScope, SharingStarted.Lazily, RequestState.Initial()) }
+    val place: StateFlow<RequestState<Place?>> by lazy { _place.state() }
     abstract val location: StateFlow<MapLocation?>
 
     open val outsideServiceArea: StateFlow<Boolean> = MutableStateFlow(false).asStateFlow()
