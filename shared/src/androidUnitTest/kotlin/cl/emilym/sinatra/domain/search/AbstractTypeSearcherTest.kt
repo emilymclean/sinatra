@@ -1,13 +1,17 @@
 package cl.emilym.sinatra.domain.search
 
+import kotlin.jvm.java
 import kotlin.reflect.full.functions
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
 class AbstractTypeSearcherTest {
 
-    private open class TestTypeSearcher : AbstractTypeSearcher<String>() {
+    private open class TestTypeSearcher(
+        override val permitIncompleteMatches: Boolean = false
+    ) : AbstractTypeSearcher<String>() {
         override fun fields(t: String): List<String> {
             return listOf(t)
         }
@@ -18,6 +22,7 @@ class AbstractTypeSearcherTest {
     }
 
     private val typeSearcher = TestTypeSearcher()
+    private val typeSearcherPermitIncomplete = TestTypeSearcher(true)
 
     @Test
     fun `match should return RankableResult when all tokens are matched`() {
@@ -45,6 +50,19 @@ class AbstractTypeSearcherTest {
         val result = matchMethod.invoke(typeSearcher, tokens, item) as RankableResult<String>?
 
         assertNull(result)
+    }
+
+    @Test
+    fun `match should return when not all tokens are matched and permitIncompleteMatches true`() {
+        val tokens = listOf("test", "example", "missing")
+        val item = "This is a test example"
+
+        val matchMethod = typeSearcherPermitIncomplete::class.java.superclass.declaredMethods.first { it.name == "match" }
+        matchMethod.isAccessible = true
+
+        val result = matchMethod.invoke(typeSearcherPermitIncomplete, tokens, item) as RankableResult<String>?
+
+        assertNotNull(result)
     }
 
     @Test
