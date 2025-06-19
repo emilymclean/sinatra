@@ -36,7 +36,6 @@ import androidx.compose.ui.unit.times
 import cl.emilym.compose.units.px
 import cl.emilym.sinatra.ui.widgets.viewportHeight
 import kotlinx.coroutines.launch
-import kotlin.math.abs
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -61,7 +60,8 @@ fun SinatraBottomSheet(
     // Tween corner radius to 0 during swipe between halfHeight and expanded
     val viewportHeight = viewportHeight()
     val halfHeight = remember(viewportHeight, sheetHalfHeight) { sheetHalfHeight * viewportHeight }
-    val offsetPx = state.offset?.px ?: 0.dp
+    val offset = state.offset
+    val offsetPx = if (state.offset.isNaN()) 0.dp else offset.px
     val corner = remember(halfHeight, offsetPx, viewportHeight) {
         val adjustedHeight = viewportHeight - halfHeight
         (1f - ((viewportHeight - offsetPx - halfHeight) / adjustedHeight)).coerceIn(0f, 1f) * 28.dp
@@ -89,7 +89,7 @@ fun SinatraBottomSheet(
                     )
                 }
             )
-            .anchoredDraggable(
+            .sinatraAnchoredDraggable(
                 state = state.anchoredDraggableState,
                 orientation = orientation,
                 enabled = sheetSwipeEnabled
@@ -99,10 +99,10 @@ fun SinatraBottomSheet(
                 val newTarget = when (state.anchoredDraggableState.targetValue) {
                     SinatraSheetValue.Hidden, SinatraSheetValue.PartiallyExpanded -> SinatraSheetValue.PartiallyExpanded
                     SinatraSheetValue.Expanded -> {
-                        if (newAnchors.hasAnchorFor(SinatraSheetValue.Expanded)) SinatraSheetValue.Expanded else SinatraSheetValue.PartiallyExpanded
+                        if (newAnchors.hasPositionFor(SinatraSheetValue.Expanded)) SinatraSheetValue.Expanded else SinatraSheetValue.PartiallyExpanded
                     }
                     SinatraSheetValue.HalfExpanded -> {
-                        if (newAnchors.hasAnchorFor(SinatraSheetValue.HalfExpanded)) SinatraSheetValue.HalfExpanded else SinatraSheetValue.PartiallyExpanded
+                        if (newAnchors.hasPositionFor(SinatraSheetValue.HalfExpanded)) SinatraSheetValue.HalfExpanded else SinatraSheetValue.PartiallyExpanded
                     }
                 }
                 state.anchoredDraggableState.updateAnchors(newAnchors, newTarget)
@@ -136,69 +136,3 @@ fun SinatraBottomSheet(
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
-fun <T : Any> sinatraDraggableAnchors(
-    builder: SinatraDraggableAnchorsConfig<T>.() -> Unit
-): DraggableAnchors<T> = SinatraDraggableAnchors(
-    SinatraDraggableAnchorsConfig<T>().apply(builder).anchors
-)
-
-@OptIn(ExperimentalFoundationApi::class)
-class SinatraDraggableAnchors<T>(private val anchors: Map<T, Float>) : DraggableAnchors<T> {
-
-    override fun positionOf(value: T): Float = anchors[value] ?: Float.NaN
-    override fun hasAnchorFor(value: T) = anchors.containsKey(value)
-
-    override fun closestAnchor(position: Float): T? = anchors.minByOrNull {
-        abs(position - it.value)
-    }?.key
-
-    override fun closestAnchor(
-        position: Float,
-        searchUpwards: Boolean
-    ): T? {
-        return anchors.minByOrNull { (_, anchor) ->
-            val delta = if (searchUpwards) anchor - position else position - anchor
-            if (delta < 0) Float.POSITIVE_INFINITY else delta
-        }?.key
-    }
-
-    override fun minAnchor() = anchors.values.minOrNull() ?: Float.NaN
-
-    override fun maxAnchor() = anchors.values.maxOrNull() ?: Float.NaN
-
-    override val size: Int
-        get() = anchors.size
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other !is SinatraDraggableAnchors<*>) return false
-
-        return anchors == other.anchors
-    }
-
-    override fun forEach(block: (anchor: T, position: Float) -> Unit) {
-        for (i in anchors.entries) {
-            block(i.key, i.value)
-        }
-    }
-
-    override fun hashCode() = 31 * anchors.hashCode()
-
-    override fun toString() = "FuckJetpackDraggableAnchors($anchors)"
-}
-
-class SinatraDraggableAnchorsConfig<T> {
-
-    val anchors = mutableMapOf<T, Float>()
-
-    /**
-     * Set the anchor position for [this] anchor.
-     *
-     * @param position The anchor position.
-     */
-    @Suppress("BuilderSetStyle")
-    infix fun T.at(position: Float) {
-        anchors[this] = position
-    }
-}
