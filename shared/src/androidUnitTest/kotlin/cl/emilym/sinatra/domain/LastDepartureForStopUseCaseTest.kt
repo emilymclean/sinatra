@@ -1,6 +1,5 @@
 package cl.emilym.sinatra.domain
 
-import cl.emilym.sinatra.DefaultRoute
 import cl.emilym.sinatra.DefaultService
 import cl.emilym.sinatra.DefaultStopTimetableTime
 import cl.emilym.sinatra.data.models.Cachable
@@ -388,6 +387,44 @@ class LastDepartureForStopUseCaseTest {
         assertEquals(1, result.size)
         assertEquals("today-service", result.first().serviceId)
         assertEquals((-1).hours, result.first().departureTime.durationThroughDay)
+    }
+
+    @Test
+    fun `invoke returns future departures for specified route when available`() = runTest {
+        // Given
+        val activeService = mockk<Service>()
+
+        val futureTime = 2.hours
+        val timetableTime = DefaultStopTimetableTime.copy(
+            serviceId = "service1",
+            routeId = "route1",
+            heading = "City",
+            departureTime = Time.create(futureTime)
+        )
+        val otherTimetableTime = DefaultStopTimetableTime.copy(
+            serviceId = "service1",
+            routeId = "route2",
+            heading = "City",
+            departureTime = Time.create(futureTime)
+        )
+
+        val servicesAndTimes = createServicesAndTimes(
+            services = listOf(activeService),
+            times = listOf(otherTimetableTime, timetableTime)
+        )
+
+        every { activeService.id } returns "service1"
+        every { activeService.active(any(), any()) } returns true
+
+        coEvery { servicesAndTimesForStopUseCase(testStopId) } returns servicesAndTimes
+
+        // When
+        val result = useCase(testStopId, routeId = "route1").first()
+
+        // Then
+        assertEquals(1, result.size)
+        assertEquals(futureTime, result.first().departureTime.durationThroughDay)
+        assertEquals("route1", result.first().routeId)
     }
 
     // Helper functions
