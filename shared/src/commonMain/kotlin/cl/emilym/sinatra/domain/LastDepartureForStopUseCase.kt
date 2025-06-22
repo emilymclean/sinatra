@@ -51,7 +51,10 @@ class LastDepartureForStopUseCase(
                 .groupBy { it.routeId to it.heading }
                 .values
                 .mapNotNull {
-                    it.firstOrNull { it.departureTime >= now }
+                    it.firstOrNull { it.departureTime >= now } ?: when {
+                        it.size > 1 -> it[1]
+                        else -> null
+                    }
                 }
                 .sortedWith(compareBy(
                     { it.route?.eventRoute == false },
