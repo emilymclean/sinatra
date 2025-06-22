@@ -44,6 +44,7 @@ import cl.emilym.sinatra.FeatureFlags
 import cl.emilym.sinatra.data.models.IStopTimetableTime
 import cl.emilym.sinatra.data.models.ReferencedTime
 import cl.emilym.sinatra.data.models.StopId
+import cl.emilym.sinatra.data.models.merge
 import cl.emilym.sinatra.data.repository.AlertDisplayContext
 import cl.emilym.sinatra.data.repository.AlertRepository
 import cl.emilym.sinatra.data.repository.FavouriteRepository
@@ -72,6 +73,7 @@ import cl.emilym.sinatra.ui.widgets.NoBusIcon
 import cl.emilym.sinatra.ui.widgets.SheetIosBackButton
 import cl.emilym.sinatra.ui.widgets.SinatraScreenModel
 import cl.emilym.sinatra.ui.widgets.StopCard
+import cl.emilym.sinatra.ui.widgets.StopStationTime
 import cl.emilym.sinatra.ui.widgets.Subheading
 import cl.emilym.sinatra.ui.widgets.UpcomingRouteCard
 import cl.emilym.sinatra.ui.widgets.WheelchairAccessibleIcon
@@ -312,10 +314,12 @@ class StopDetailScreen(
                                 item { Box(Modifier.height(1.rdp)) }
                                 Departures(
                                     lastDepartures,
+                                    forceShowDepartures = true,
                                     empty = {}
                                 ) {
                                     Subheading(stringResource(Res.string.stop_detail_last_departure))
                                 }
+                                item { Box(Modifier.height(1.rdp)) }
                             }
                         }
                     }
@@ -326,9 +330,13 @@ class StopDetailScreen(
 
     fun LazyListScope.Departures(
         upcoming: RequestState<List<IStopTimetableTime>>,
+        forceShowDepartures: Boolean = false,
         empty: @Composable () -> Unit,
         title: @Composable () -> Unit,
     ) {
+        item {
+            title()
+        }
         when (upcoming) {
             is RequestState.Initial, is RequestState.Loading -> {
                 item {
@@ -357,15 +365,15 @@ class StopDetailScreen(
             }
 
             is RequestState.Success -> {
-                item {
-                    title()
-                }
                 when {
                     upcoming.value.isNotEmpty() -> items(upcoming.value) {
                         val navigator = LocalNavigator.currentOrThrow
                         UpcomingRouteCard(
                             it,
-                            it.stationTime.pick(it.route, it.sequence <= 1),
+                            when {
+                                forceShowDepartures -> StopStationTime.Departure(it.stationTime.departure)
+                                else -> it.stationTime.pick(it.route, it.sequence <= 1)
+                            },
                             modifier = Modifier.fillMaxWidth(),
                             onClick = { navigator.push(RouteDetailScreen(
                                 it.routeId,

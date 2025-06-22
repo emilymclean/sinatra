@@ -24,7 +24,7 @@ class LastDepartureForStopUseCase(
     ): Flow<List<IStopTimetableTime>> = flow {
         val scheduleTimeZone = metadataRepository.timeZone()
         val now = clock.now()
-        val days = listOf(now - 1.days, now, now + 1.days)
+        val days = listOf(now - 1.days, now)
 
         val timesAndServices = servicesAndTimesForStopUseCase(stopId)
         val activeServices = days.map { now ->
@@ -53,7 +53,12 @@ class LastDepartureForStopUseCase(
                 .mapNotNull {
                     it.firstOrNull { it.departureTime >= now }
                 }
-                .sortedBy { it.arrivalTime }
+                .sortedWith(compareBy(
+                    { it.route?.eventRoute == false },
+                    { it.route?.designation == null },
+                    { it.routeCode.toIntOrNull() },
+                    { it.heading }
+                ))
         )
     }
 
