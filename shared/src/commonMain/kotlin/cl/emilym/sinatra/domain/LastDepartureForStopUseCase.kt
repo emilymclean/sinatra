@@ -28,22 +28,22 @@ class LastDepartureForStopUseCase(
 
         val timesAndServices = servicesAndTimesForStopUseCase(stopId)
         val activeServices = days.map { now ->
-            timesAndServices.item.services.firstOrNull { it.active(
+            timesAndServices.item.services.filter { it.active(
                 now,
                 scheduleTimeZone
             ) }
         }
 
-        if (activeServices.all { it == null }) return@flow emit(emptyList())
+        if (activeServices.all { it.isEmpty() }) return@flow emit(emptyList())
 
-        val lastByDay = activeServices.mapIndexed { i, activeService ->
-            activeService?.let {
+        val lastByDay = activeServices.mapIndexed { i, activeServices ->
+            activeServices.map { activeService ->
                 timesAndServices.item.times
                     .filter { it.serviceId == activeService.id }
                     .groupBy { it.routeId to it.heading }
                     .values
                     .map { it.last().withTimeReference(days[i].startOfDay(scheduleTimeZone)) }
-            } ?: emptyList()
+            }.flatten()
         }.flatten()
 
         emit(
