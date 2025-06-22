@@ -1,6 +1,7 @@
 package cl.emilym.sinatra.domain
 
 import cl.emilym.sinatra.data.models.Cachable
+import cl.emilym.sinatra.data.models.Cachable.Companion.live
 import cl.emilym.sinatra.data.models.IStopTimetableTime
 import cl.emilym.sinatra.data.models.StopId
 import cl.emilym.sinatra.data.models.StopTimetableTime
@@ -22,14 +23,14 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.datetime.Clock
 import org.koin.core.annotation.Factory
+import kotlin.text.Typography.times
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.minutes
 
 @Factory
 class UpcomingRoutesForStopUseCase(
     private val liveStopTimetableUseCase: LiveStopTimetableUseCase,
-    private val stopRepository: StopRepository,
-    private val serviceRepository: ServiceRepository,
+    private val servicesAndTimesForStopUseCase: ServicesAndTimesForStopUseCase,
     private val clock: Clock,
     private val metadataRepository: TransportMetadataRepository
 ) {
@@ -42,9 +43,9 @@ class UpcomingRoutesForStopUseCase(
     ): Flow<Cachable<List<IStopTimetableTime>>> {
         return flow {
             val scheduleTimeZone = metadataRepository.timeZone()
-            val timetable = stopRepository.timetable(stopId)
-            val times = timetable.item.times.sortedBy { it.arrivalTime }
-            val services = serviceRepository.services(timetable.item.times.map { it.serviceId }.distinct())
+            val timesAndServices = servicesAndTimesForStopUseCase(stopId)
+            val times = timesAndServices.item.times
+            val services = timesAndServices.item.services
 
             while (true) {
                 val now = clock.now()
@@ -56,7 +57,7 @@ class UpcomingRoutesForStopUseCase(
                     for (time in times) {
                         val time = time.withTimeReference(checkTime.startOfDay(metadataRepository.timeZone()))
 
-                        val service = services.item.firstOrNull { it.id == time.serviceId } ?: continue
+                        val service = services.firstOrNull { it.id == time.serviceId } ?: continue
                         if (!service.active(checkTime, scheduleTimeZone)) continue
                         if (time.arrivalTime < now) continue
                         if (active.any {
@@ -76,7 +77,7 @@ class UpcomingRoutesForStopUseCase(
                     if (active.size == number) break
                 }
 
-                emit(timetable.flatMap { services.map { active.toList() } })
+                emit(timesAndServices.map { active.toList() })
                 delay(1.minutes)
             }
         }

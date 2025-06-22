@@ -26,6 +26,7 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
+import androidx.lifecycle.viewmodel.compose.viewModel
 import cafe.adriel.voyager.core.annotation.ExperimentalVoyagerApi
 import cafe.adriel.voyager.core.lifecycle.LifecycleEffectOnce
 import cafe.adriel.voyager.core.model.screenModelScope
@@ -50,6 +51,7 @@ import cl.emilym.sinatra.data.repository.AlertRepository
 import cl.emilym.sinatra.data.repository.FavouriteRepository
 import cl.emilym.sinatra.data.repository.RecentVisitRepository
 import cl.emilym.sinatra.data.repository.StopRepository
+import cl.emilym.sinatra.domain.LastDepartureForStopUseCase
 import cl.emilym.sinatra.domain.UpcomingRoutesForStopUseCase
 import cl.emilym.sinatra.lib.naturalComparator
 import cl.emilym.sinatra.ui.maps.MapItem
@@ -82,6 +84,7 @@ import cl.emilym.sinatra.ui.widgets.pick
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
@@ -95,11 +98,13 @@ import sinatra.ui.generated.resources.stop_detail_child_stations
 import sinatra.ui.generated.resources.stop_detail_navigate
 import sinatra.ui.generated.resources.stop_not_found
 import sinatra.ui.generated.resources.upcoming_vehicles
+import sinatra.ui.generated.resources.stop_detail_last_departure
 
 @Factory
 class StopDetailViewModel(
     private val stopRepository: StopRepository,
     private val upcomingRoutesForStopUseCase: UpcomingRoutesForStopUseCase,
+    private val lastDepartureForStopUseCase: LastDepartureForStopUseCase,
     private val favouriteRepository: FavouriteRepository,
     private val recentVisitRepository: RecentVisitRepository,
     private val alertRepository: AlertRepository
@@ -107,7 +112,9 @@ class StopDetailViewModel(
 
     private val stopId = MutableStateFlow<StopId?>(null)
 
-    val favourited = MutableStateFlow(false)
+    val favourited = stopId.filterNotNull().flatMapLatest { stopId ->
+        favouriteRepository.stopIsFavourited(stopId)
+    }.state(false)
 
     private val _alerts = stopId.filterNotNull().flatRequestStateFlow(defaultConfig) { stopId ->
         alertRepository.alerts(AlertDisplayContext.Stop(stopId))
@@ -129,12 +136,14 @@ class StopDetailViewModel(
     }
     val upcoming = _upcoming.state()
 
+    private val _lastDeparture = stopId.filterNotNull().flatRequestStateFlow(defaultConfig) { stopId ->
+        lastDepartureForStopUseCase(stopId)
+    }
+    val lastDeparture = _lastDeparture.state()
+
     fun init(stopId: StopId) {
         this.stopId.value = stopId
 
-        screenModelScope.launch {
-            favourited.emitAll(favouriteRepository.stopIsFavourited(stopId))
-        }
         screenModelScope.launch {
             recentVisitRepository.addStopVisit(stopId)
         }
@@ -144,10 +153,10 @@ class StopDetailViewModel(
         screenModelScope.launch { _alerts.retryIfNeeded(alerts.value) }
         screenModelScope.launch { stopWithChildren.retryIfNeeded(stop.value) }
         screenModelScope.launch { _upcoming.retryIfNeeded(upcoming.value) }
+        screenModelScope.launch { _lastDeparture.retryIfNeeded(lastDeparture.value) }
     }
 
     fun favourite(stopId: StopId, favourited: Boolean) {
-        this.favourited.value = favourited
         screenModelScope.launch {
             favouriteRepository.setStopFavourite(stopId, favourited)
         }
@@ -179,6 +188,7 @@ class StopDetailScreen(
         val stop by viewModel.stop.collectAsStateWithLifecycle()
         val children by viewModel.children.collectAsStateWithLifecycle()
         val upcoming by viewModel.upcoming.collectAsStateWithLifecycle()
+        val lastDepartures by viewModel.lastDeparture.collectAsStateWithLifecycle()
         val alerts by viewModel.alerts.collectAsStateWithLifecycle()
         Box(
             Modifier.fillMaxSize(),
@@ -288,8 +298,27 @@ class StopDetailScreen(
                                         item { Box(Modifier.height(1.rdp)) }
                                     }
                                 }
-                                Upcoming(viewModel, upcoming, navigator)
+                                Departures(
+                                    upcoming,
+                                    empty = {
+                                        ListHint(
+                                            stringResource(Res.string.no_upcoming_vehicles)
+                                        ) {
+                                            NoBusIcon(
+                                                tint = MaterialTheme.colorScheme.primary
+                                            )
+                                        }
+                                    }
+                                ) {
+                                    Subheading(stringResource(Res.string.upcoming_vehicles))
+                                }
                                 item { Box(Modifier.height(1.rdp)) }
+                                Departures(
+                                    lastDepartures,
+                                    empty = {}
+                                ) {
+                                    Subheading(stringResource(Res.string.stop_detail_last_departure))
+                                }
                             }
                         }
                     }
@@ -298,10 +327,10 @@ class StopDetailScreen(
         }
     }
 
-    fun LazyListScope.Upcoming(
-        viewModel: StopDetailViewModel,
+    fun LazyListScope.Departures(
         upcoming: RequestState<List<IStopTimetableTime>>,
-        navigator: Navigator
+        empty: @Composable () -> Unit,
+        title: @Composable () -> Unit,
     ) {
         when (upcoming) {
             is RequestState.Initial, is RequestState.Loading -> {
@@ -317,6 +346,7 @@ class StopDetailScreen(
 
             is RequestState.Failure -> {
                 item {
+                    val viewModel = koinScreenModel<StopDetailViewModel>()
                     Column(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalAlignment = Alignment.CenterHorizontally
@@ -331,10 +361,11 @@ class StopDetailScreen(
 
             is RequestState.Success -> {
                 item {
-                    Subheading(stringResource(Res.string.upcoming_vehicles))
+                    title()
                 }
                 when {
                     upcoming.value.isNotEmpty() -> items(upcoming.value) {
+                        val navigator = LocalNavigator.currentOrThrow
                         UpcomingRouteCard(
                             it,
                             it.stationTime.pick(it.route, it.sequence <= 1),
@@ -350,13 +381,7 @@ class StopDetailScreen(
                     }
                     else -> item {
                         Box(Modifier.height(1.rdp))
-                        ListHint(
-                            stringResource(Res.string.no_upcoming_vehicles)
-                        ) {
-                            NoBusIcon(
-                                tint = MaterialTheme.colorScheme.primary
-                            )
-                        }
+                        empty()
                     }
                 }
             }
