@@ -1,5 +1,6 @@
 package cl.emilym.sinatra.domain
 
+import cl.emilym.sinatra.DefaultRoute
 import cl.emilym.sinatra.DefaultService
 import cl.emilym.sinatra.DefaultStopTimetableTime
 import cl.emilym.sinatra.data.models.Cachable
@@ -138,7 +139,7 @@ class LastDepartureForStopUseCaseTest {
             serviceId = "yesterday-service",
             routeId = "route1",
             heading = "City",
-            departureTime = Time.create((-2).hours) // 2 hours ago
+            departureTime = Time.create(23.hours) // 2 hours ago
         )
 
         // Today's departure that has also passed
@@ -266,6 +267,127 @@ class LastDepartureForStopUseCaseTest {
         assertEquals(1, result.size)
         val actualResult = result.first()
         assertNotNull(actualResult)
+    }
+
+    @Test
+    fun `invoke handles single service across both days`() = runTest {
+        // Given
+        val service = mockk<Service>()
+
+        val timetableTime = DefaultStopTimetableTime.copy(
+            serviceId = "service1",
+            routeId = "route1",
+            heading = "City",
+            departureTime = Time.create(1.hours)
+        )
+
+        val servicesAndTimes = createServicesAndTimes(
+            services = listOf(service),
+            times = listOf(timetableTime)
+        )
+
+        every { service.id } returns "service1"
+        every { service.active(yesterday, testTimeZone) } returns true
+        every { service.active(today, testTimeZone) } returns true
+
+        coEvery { servicesAndTimesForStopUseCase(testStopId) } returns servicesAndTimes
+
+        // When
+        val result = useCase(testStopId).first()
+
+        // Then
+        assertEquals(1, result.size)
+        assertEquals("service1", result.first().serviceId)
+    }
+
+    @Test
+    fun `invoke prefers future departure over past departure from yesterday`() = runTest {
+        // Given
+        val yesterdayService = mockk<Service>()
+        val todayService = mockk<Service>()
+
+        // Yesterday's departure that has passed
+        val yesterdayDeparture = DefaultStopTimetableTime.copy(
+            serviceId = "yesterday-service",
+            routeId = "route1",
+            heading = "City",
+            departureTime = Time.create(23.hours) // 1 hour ago
+        )
+
+        // Today's future departure
+        val todayFutureDeparture = DefaultStopTimetableTime.copy(
+            serviceId = "today-service",
+            routeId = "route1",
+            heading = "City",
+            departureTime = Time.create(2.hours)
+        )
+
+        val servicesAndTimes = createServicesAndTimes(
+            services = listOf(yesterdayService, todayService),
+            times = listOf(yesterdayDeparture, todayFutureDeparture)
+        )
+
+        every { yesterdayService.id } returns "yesterday-service"
+        every { yesterdayService.active(yesterday, testTimeZone) } returns true
+        every { yesterdayService.active(today, testTimeZone) } returns false
+        every { todayService.id } returns "today-service"
+        every { todayService.active(yesterday, testTimeZone) } returns false
+        every { todayService.active(today, testTimeZone) } returns true
+
+        coEvery { servicesAndTimesForStopUseCase(testStopId) } returns servicesAndTimes
+
+        // When
+        val result = useCase(testStopId).first()
+
+        // Then
+        assertEquals(1, result.size)
+        assertEquals("today-service", result.first().serviceId)
+        assertEquals(2.hours, result.first().departureTime.durationThroughDay)
+    }
+
+    @Test
+    fun `invoke falls back to today's past departure when no future departures available`() = runTest {
+        // Given
+        val yesterdayService = mockk<Service>()
+        val todayService = mockk<Service>()
+
+        // Yesterday's departure that has passed
+        val yesterdayDeparture = DefaultStopTimetableTime.copy(
+            serviceId = "yesterday-service",
+            routeId = "route1",
+            heading = "City",
+            departureTime = Time.create(20.hours)
+        )
+
+        // Today's departure that has also passed
+        val todayPastDeparture = DefaultStopTimetableTime.copy(
+            serviceId = "today-service",
+            routeId = "route1",
+            heading = "City",
+            departureTime = Time.create((-1).hours)
+        )
+
+        val servicesAndTimes = createServicesAndTimes(
+            services = listOf(yesterdayService, todayService),
+            times = listOf(yesterdayDeparture, todayPastDeparture)
+        )
+
+        every { yesterdayService.id } returns "yesterday-service"
+        every { yesterdayService.active(yesterday, testTimeZone) } returns true
+        every { yesterdayService.active(today, testTimeZone) } returns false
+        every { todayService.id } returns "today-service"
+        every { todayService.active(yesterday, testTimeZone) } returns false
+        every { todayService.active(today, testTimeZone) } returns true
+
+        coEvery { servicesAndTimesForStopUseCase(testStopId) } returns servicesAndTimes
+
+        // When
+        val result = useCase(testStopId).first()
+
+        // Then
+        assertEquals(1, result.size)
+        assertEquals("today-service", result.first().serviceId)
+        assertEquals((-1).hours, result.first().departureTime.durationThroughDay)
     }
 
     // Helper functions
