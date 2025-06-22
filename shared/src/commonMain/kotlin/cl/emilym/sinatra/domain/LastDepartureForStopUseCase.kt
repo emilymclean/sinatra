@@ -2,11 +2,15 @@ package cl.emilym.sinatra.domain
 
 import cl.emilym.sinatra.data.models.IStopTimetableTime
 import cl.emilym.sinatra.data.models.StopId
+import cl.emilym.sinatra.data.models.startOfDay
 import cl.emilym.sinatra.data.repository.TransportMetadataRepository
+import io.github.aakira.napier.Napier.i
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.datetime.Clock
 import org.koin.core.annotation.Factory
+import kotlin.text.Typography.times
+import kotlin.time.Duration.Companion.days
 
 @Factory
 class LastDepartureForStopUseCase(
@@ -20,19 +24,36 @@ class LastDepartureForStopUseCase(
     ): Flow<List<IStopTimetableTime>> = flow {
         val scheduleTimeZone = metadataRepository.timeZone()
         val now = clock.now()
+        val days = listOf(now - 1.days, now, now + 1.days)
 
         val timesAndServices = servicesAndTimesForStopUseCase(stopId)
-        val activeService = timesAndServices.item.services.firstOrNull { it.active(
-            now,
-            scheduleTimeZone
-        ) } ?: return@flow emit(emptyList())
+        val activeServices = days.map { now ->
+            timesAndServices.item.services.firstOrNull { it.active(
+                now,
+                scheduleTimeZone
+            ) }
+        }
+
+        if (activeServices.all { it == null }) return@flow emit(emptyList())
+
+        val lastByDay = activeServices.mapIndexed { i, activeService ->
+            activeService?.let {
+                timesAndServices.item.times
+                    .filter { it.serviceId == activeService.id }
+                    .groupBy { it.routeId to it.heading }
+                    .values
+                    .map { it.last().withTimeReference(days[i].startOfDay(scheduleTimeZone)) }
+            } ?: emptyList()
+        }.flatten()
 
         emit(
-            timesAndServices.item.times
-                .filter { it.serviceId == activeService.id }
+            lastByDay
                 .groupBy { it.routeId to it.heading }
                 .values
-                .map { it.last() }
+                .mapNotNull {
+                    it.firstOrNull { it.departureTime >= now }
+                }
+                .sortedBy { it.arrivalTime }
         )
     }
 
