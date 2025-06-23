@@ -1,0 +1,195 @@
+package cl.emilym.sinatra.ui.presentation.screens.maps.stop
+
+import cafe.adriel.voyager.core.model.screenModelScope
+import cl.emilym.compose.requeststate.RequestState
+import cl.emilym.compose.requeststate.child
+import cl.emilym.compose.requeststate.flatRequestStateFlow
+import cl.emilym.compose.requeststate.requestStateFlow
+import cl.emilym.compose.requeststate.unwrap
+import cl.emilym.sinatra.data.models.IStopTimetableTime
+import cl.emilym.sinatra.data.models.RouteId
+import cl.emilym.sinatra.data.models.Stop
+import cl.emilym.sinatra.data.models.StopId
+import cl.emilym.sinatra.data.repository.AlertDisplayContext
+import cl.emilym.sinatra.data.repository.AlertRepository
+import cl.emilym.sinatra.data.repository.FavouriteRepository
+import cl.emilym.sinatra.data.repository.RecentVisitRepository
+import cl.emilym.sinatra.data.repository.StopRepository
+import cl.emilym.sinatra.domain.LastDepartureForStopUseCase
+import cl.emilym.sinatra.domain.RoutesVisitingStopUseCase
+import cl.emilym.sinatra.domain.UpcomingRoutesForStopUseCase
+import cl.emilym.sinatra.lib.naturalComparator
+import cl.emilym.sinatra.ui.retryIfNeeded
+import cl.emilym.sinatra.ui.widgets.SinatraScreenModel
+import cl.emilym.sinatra.ui.widgets.defaultConfig
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.launch
+import org.koin.core.annotation.Factory
+
+private data class StopRoute(
+    val stopId: StopId,
+    val routeId: RouteId?
+)
+
+enum class StopDetailPage {
+    UPCOMING, LAST_DEPARTURES, CHILDREN
+}
+
+sealed interface StopDetailState {
+    data class Upcoming(
+        val upcoming: RequestState<List<IStopTimetableTime>>
+    ): StopDetailState
+
+    data class LastDepartures(
+        val lastDepartures: RequestState<List<IStopTimetableTime>>
+    ): StopDetailState
+
+    data class Children(
+        val children: RequestState<List<Stop>>
+    ): StopDetailState
+}
+
+sealed interface StopDetailAction {
+    val highlighted: Boolean
+
+    data object Navigate: StopDetailAction {
+        override val highlighted: Boolean = false
+    }
+    data class LastDepartures(
+        override val highlighted: Boolean = false
+    ): StopDetailAction
+    data class Children(
+        override val highlighted: Boolean = false
+    ): StopDetailAction
+}
+
+@Factory
+class StopDetailViewModel(
+    private val stopRepository: StopRepository,
+    private val upcomingRoutesForStopUseCase: UpcomingRoutesForStopUseCase,
+    private val lastDepartureForStopUseCase: LastDepartureForStopUseCase,
+    private val routesForStopUseCase: RoutesVisitingStopUseCase,
+    private val favouriteRepository: FavouriteRepository,
+    private val recentVisitRepository: RecentVisitRepository,
+    private val alertRepository: AlertRepository
+): SinatraScreenModel {
+
+    private val stopId = MutableStateFlow<StopId?>(null)
+    private val routeId = MutableStateFlow<RouteId?>(null)
+    private val page = MutableStateFlow(StopDetailPage.UPCOMING)
+
+    private val stopRoute = combine(
+        stopId.filterNotNull(),
+        routeId
+    ) { stopId, routeId ->
+        StopRoute(stopId, routeId)
+    }
+
+    val favourited = stopId.filterNotNull().flatMapLatest { stopId ->
+        favouriteRepository.stopIsFavourited(stopId)
+    }.state(false)
+
+    private val _alerts = stopId.filterNotNull().flatRequestStateFlow(defaultConfig) { stopId ->
+        alertRepository.alerts(AlertDisplayContext.Stop(stopId))
+    }
+    val alerts = _alerts.state()
+
+    private val stopWithChildren = stopId.filterNotNull().requestStateFlow(defaultConfig) { stopId ->
+        stopRepository.stopWithChildren(stopId).item
+    }
+    val stop = stopWithChildren.child { it?.stop }.state()
+    private val children: StateFlow<RequestState<List<Stop>>> = stopWithChildren
+        .child {
+            it?.children?.sortedWith(compareBy(naturalComparator()) { it.name }) ?: emptyList()
+        }
+        .state()
+
+    private val _upcoming = stopRoute.flatRequestStateFlow(defaultConfig) { stopRoute ->
+        upcomingRoutesForStopUseCase(
+            stopId = stopRoute.stopId,
+            routeId = stopRoute.routeId
+        ).map { it.item }
+    }
+    private val upcoming = _upcoming.state()
+
+    private val _lastDeparture = stopRoute.flatRequestStateFlow(defaultConfig) { stopRoute ->
+        lastDepartureForStopUseCase(
+            stopId = stopRoute.stopId,
+            routeId = stopRoute.routeId
+        )
+    }
+    private val lastDeparture = _lastDeparture.state()
+
+    private val _routes = stopId.filterNotNull().requestStateFlow { stopId ->
+        routesForStopUseCase(stopId).item
+    }
+    val routes = _routes.state()
+
+    val actions = combine(
+        stop,
+        page
+    ) { stop, page ->
+        listOfNotNull(
+            StopDetailAction.Navigate,
+            StopDetailAction.LastDepartures(page == StopDetailPage.LAST_DEPARTURES),
+            if (stop.unwrap()?.visibility?.showChildren == true) StopDetailAction.Children(page == StopDetailPage.CHILDREN) else null
+        )
+    }.state(emptyList())
+
+    val state = page.flatMapLatest { page ->
+        when (page) {
+            StopDetailPage.UPCOMING -> upcoming.mapLatest { upcoming ->
+                StopDetailState.Upcoming(upcoming)
+            }
+            StopDetailPage.LAST_DEPARTURES -> lastDeparture.mapLatest { lastDeparture ->
+                StopDetailState.LastDepartures(lastDeparture)
+            }
+            StopDetailPage.CHILDREN -> children.mapLatest { children ->
+                StopDetailState.Children(children)
+            }
+        }
+    }.state(StopDetailState.Upcoming(RequestState.Initial()))
+
+    fun init(
+        stopId: StopId
+    ) {
+        this.stopId.value = stopId
+
+        screenModelScope.launch {
+            recentVisitRepository.addStopVisit(stopId)
+        }
+    }
+
+    fun filter(routeId: RouteId?) {
+        this.routeId.value = routeId
+    }
+
+    fun option(page: StopDetailPage) {
+        val currentPage = this.page.value
+        this.page.value = when (page) {
+            currentPage -> StopDetailPage.UPCOMING
+            else -> page
+        }
+    }
+
+    fun retry() {
+        screenModelScope.launch { _alerts.retryIfNeeded(alerts.value) }
+        screenModelScope.launch { stopWithChildren.retryIfNeeded(stop.value) }
+        screenModelScope.launch { _upcoming.retryIfNeeded(upcoming.value) }
+        screenModelScope.launch { _lastDeparture.retryIfNeeded(lastDeparture.value) }
+        screenModelScope.launch { _routes.retryIfNeeded(routes.value) }
+    }
+
+    fun favourite(stopId: StopId, favourited: Boolean) {
+        screenModelScope.launch {
+            favouriteRepository.setStopFavourite(stopId, favourited)
+        }
+    }
+
+}

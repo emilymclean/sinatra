@@ -43,7 +43,7 @@ import cl.emilym.sinatra.data.repository.FavouriteRepository
 import cl.emilym.sinatra.domain.search.SearchType
 import cl.emilym.sinatra.ui.label
 import cl.emilym.sinatra.ui.placeCardDefaultNavigation
-import cl.emilym.sinatra.ui.presentation.screens.maps.RouteDetailScreen
+import cl.emilym.sinatra.ui.presentation.screens.maps.route.RouteDetailScreen
 import cl.emilym.sinatra.ui.presentation.screens.maps.stop.StopDetailScreen
 import cl.emilym.sinatra.ui.retryIfNeeded
 import cl.emilym.sinatra.ui.widgets.ClearIcon

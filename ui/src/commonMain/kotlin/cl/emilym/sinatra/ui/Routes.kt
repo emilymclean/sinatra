@@ -9,7 +9,7 @@ import cl.emilym.sinatra.data.models.Place
 import cl.emilym.sinatra.data.models.Route
 import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.ui.presentation.screens.maps.place.PlaceDetailScreen
-import cl.emilym.sinatra.ui.presentation.screens.maps.RouteDetailScreen
+import cl.emilym.sinatra.ui.presentation.screens.maps.route.RouteDetailScreen
 import cl.emilym.sinatra.ui.presentation.screens.maps.stop.StopDetailScreen
 import cl.emilym.sinatra.ui.presentation.screens.maps.navigate.NavigateEntryScreen
 import cl.emilym.sinatra.ui.presentation.screens.maps.navigate.NavigationLocation

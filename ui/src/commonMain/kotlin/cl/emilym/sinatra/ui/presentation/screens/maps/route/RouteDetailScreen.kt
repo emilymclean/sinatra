@@ -1,4 +1,4 @@
-package cl.emilym.sinatra.ui.presentation.screens.maps
+package cl.emilym.sinatra.ui.presentation.screens.maps.route
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
