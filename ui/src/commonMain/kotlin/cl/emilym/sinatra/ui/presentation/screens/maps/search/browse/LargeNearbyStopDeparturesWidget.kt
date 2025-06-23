@@ -16,7 +16,7 @@ import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.data.models.ReferencedTime
 import cl.emilym.sinatra.ui.asInstants
 import cl.emilym.sinatra.ui.presentation.screens.maps.RouteDetailScreen
-import cl.emilym.sinatra.ui.presentation.screens.maps.StopDetailScreen
+import cl.emilym.sinatra.ui.presentation.screens.maps.stop.StopDetailScreen
 import cl.emilym.sinatra.ui.widgets.SpecificRecomposeOnInstants
 import cl.emilym.sinatra.ui.widgets.StopStationTime
 import cl.emilym.sinatra.ui.widgets.UpcomingRouteCard

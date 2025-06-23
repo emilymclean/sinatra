@@ -37,7 +37,7 @@ import cl.emilym.sinatra.ui.navigation.MapScreen
 import cl.emilym.sinatra.ui.navigation.NativeMapScreen
 import cl.emilym.sinatra.ui.placeCardDefaultNavigation
 import cl.emilym.sinatra.ui.presentation.screens.maps.RouteDetailScreen
-import cl.emilym.sinatra.ui.presentation.screens.maps.StopDetailScreen
+import cl.emilym.sinatra.ui.presentation.screens.maps.stop.StopDetailScreen
 import cl.emilym.sinatra.ui.presentation.screens.maps.place.PointDetailScreen
 import cl.emilym.sinatra.ui.presentation.screens.maps.search.browse.BrowseViewModel
 import cl.emilym.sinatra.ui.presentation.screens.maps.search.browse.MapSearchScreenBrowseState
@@ -45,12 +45,10 @@ import cl.emilym.sinatra.ui.presentation.screens.search.SearchScreen
 import cl.emilym.sinatra.ui.widgets.LocalMapControl
 import cl.emilym.sinatra.ui.widgets.MyLocationIcon
 import cl.emilym.sinatra.ui.widgets.SearchIcon
-import cl.emilym.sinatra.ui.widgets.bottomsheet.SinatraSheetState
 import cl.emilym.sinatra.ui.widgets.bottomsheet.SinatraSheetValue
 import cl.emilym.sinatra.ui.widgets.collectAsStateWithLifecycle
 import cl.emilym.sinatra.ui.widgets.currentLocation
 import cl.emilym.sinatra.ui.widgets.viewportHeight
-import io.github.aakira.napier.Napier
 import org.jetbrains.compose.resources.stringResource
 import sinatra.ui.generated.resources.Res
 import sinatra.ui.generated.resources.semantics_open_search_screen

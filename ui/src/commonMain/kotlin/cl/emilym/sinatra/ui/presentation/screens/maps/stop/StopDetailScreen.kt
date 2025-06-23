@@ -1,4 +1,4 @@
-package cl.emilym.sinatra.ui.presentation.screens.maps
+package cl.emilym.sinatra.ui.presentation.screens.maps.stop
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -60,6 +60,7 @@ import cl.emilym.sinatra.ui.maps.stopMarkerIcon
 import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
 import cl.emilym.sinatra.ui.navigation.MapScreen
 import cl.emilym.sinatra.ui.open_maps
+import cl.emilym.sinatra.ui.presentation.screens.maps.RouteDetailScreen
 import cl.emilym.sinatra.ui.presentation.screens.maps.search.zoomThreshold
 import cl.emilym.sinatra.ui.retryIfNeeded
 import cl.emilym.sinatra.ui.stopJourneyNavigation
@@ -413,13 +414,15 @@ class StopDetailScreen(
                                 else -> it.stationTime.pick(it.route, it.sequence <= 1)
                             },
                             modifier = Modifier.fillMaxWidth(),
-                            onClick = { navigator.push(RouteDetailScreen(
+                            onClick = { navigator.push(
+                                RouteDetailScreen(
                                 it.routeId,
                                 it.serviceId,
                                 it.tripId,
                                 stopId,
                                 (it.stationTime.arrival.time as? ReferencedTime)?.startOfDay
-                            )) }
+                            )
+                            ) }
                         )
                     }
                     else -> item {
