@@ -39,12 +39,13 @@ import cl.emilym.compose.requeststate.RequestStateWidget
 import cl.emilym.compose.requeststate.child
 import cl.emilym.compose.requeststate.flatRequestStateFlow
 import cl.emilym.compose.requeststate.requestStateFlow
+import cl.emilym.compose.requeststate.unwrap
 import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.FeatureFlags
 import cl.emilym.sinatra.data.models.IStopTimetableTime
 import cl.emilym.sinatra.data.models.ReferencedTime
+import cl.emilym.sinatra.data.models.RouteId
 import cl.emilym.sinatra.data.models.StopId
-import cl.emilym.sinatra.data.models.merge
 import cl.emilym.sinatra.data.repository.AlertDisplayContext
 import cl.emilym.sinatra.data.repository.AlertRepository
 import cl.emilym.sinatra.data.repository.FavouriteRepository
@@ -82,9 +83,11 @@ import cl.emilym.sinatra.ui.widgets.defaultConfig
 import cl.emilym.sinatra.ui.widgets.openMaps
 import cl.emilym.sinatra.ui.widgets.pick
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.koin.core.annotation.Factory
@@ -99,6 +102,11 @@ import sinatra.ui.generated.resources.stop_detail_navigate
 import sinatra.ui.generated.resources.stop_not_found
 import sinatra.ui.generated.resources.upcoming_vehicles
 
+private data class StopRoute(
+    val stopId: StopId,
+    val routeId: RouteId?
+)
+
 @Factory
 class StopDetailViewModel(
     private val stopRepository: StopRepository,
@@ -110,6 +118,14 @@ class StopDetailViewModel(
 ): SinatraScreenModel {
 
     private val stopId = MutableStateFlow<StopId?>(null)
+    private val routeId = MutableStateFlow<RouteId?>(null)
+
+    private val stopRoute = combine(
+        stopId.filterNotNull(),
+        routeId
+    ) { stopId, routeId ->
+        StopRoute(stopId, routeId)
+    }
 
     val favourited = stopId.filterNotNull().flatMapLatest { stopId ->
         favouriteRepository.stopIsFavourited(stopId)
@@ -130,17 +146,38 @@ class StopDetailViewModel(
         }
         .state()
 
-    private val _upcoming = stopId.filterNotNull().flatRequestStateFlow(defaultConfig) { stopId ->
-        upcomingRoutesForStopUseCase(stopId).map { it.item }
+    private val _upcoming = stopRoute.flatRequestStateFlow(defaultConfig) { stopRoute ->
+        upcomingRoutesForStopUseCase(
+            stopId = stopRoute.stopId,
+            routeId = stopRoute.routeId
+        ).map { it.item }
     }
     val upcoming = _upcoming.state()
 
-    private val _lastDeparture = stopId.filterNotNull().flatRequestStateFlow(defaultConfig) { stopId ->
-        lastDepartureForStopUseCase(stopId)
+    private val _lastDeparture = stopRoute.flatRequestStateFlow(defaultConfig) { stopRoute ->
+        lastDepartureForStopUseCase(
+            stopId = stopRoute.stopId,
+            routeId = stopRoute.routeId
+        )
     }
     val lastDeparture = _lastDeparture.state()
 
-    fun init(stopId: StopId) {
+    val showChildren = combine(
+        stop.unwrap(),
+        routeId
+    ) { stop, routeId ->
+        stop?.visibility?.showChildren == true && routeId == null
+    }.state(false)
+
+    val showLastDeparture = routeId.mapLatest {
+        it != null
+    }.state(false)
+
+    fun init(
+        stopId: StopId,
+        routeId: RouteId? = null
+    ) {
+        this.routeId.value = routeId
         this.stopId.value = stopId
 
         screenModelScope.launch {
@@ -164,7 +201,8 @@ class StopDetailViewModel(
 }
 
 class StopDetailScreen(
-    val stopId: StopId
+    val stopId: StopId,
+    val routeId: RouteId? = null
 ): MapScreen {
     override val key: ScreenKey = "${this::class.qualifiedName!!}/$stopId"
 
@@ -181,7 +219,7 @@ class StopDetailScreen(
         }
 
         LifecycleEffectOnce {
-            viewModel.init(stopId)
+            viewModel.init(stopId, routeId)
         }
 
         val stop by viewModel.stop.collectAsStateWithLifecycle()
