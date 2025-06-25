@@ -102,15 +102,18 @@ class StopDetailViewModel(
         }
         .state()
 
-    private val _upcoming = stopId.filterNotNull().flatRequestStateFlow(defaultConfig) { stopId ->
-        upcomingRoutesForStopUseCase(stopId = stopId)
-    }
-    private val upcoming: StateFlow<RequestState<List<IStopTimetableTime>>> = combine(
-        _upcoming,
+    private val _upcoming = combine(
+        stopId.filterNotNull(),
         routeId
-    ) { upcoming, routeId ->
-        upcoming.map { it.item.filter { routeId.isEmpty() || routeId.contains(it.routeId) } }
-    }.state()
+    ) { stopId, routeId ->
+        StopRoutes(stopId, routeId)
+    }.flatRequestStateFlow(defaultConfig) { stopRoute ->
+        upcomingRoutesForStopUseCase(
+            stopId = stopRoute.stopId,
+            routeIds = stopRoute.routeIds
+        ).map { it.item }
+    }
+    private val upcoming: StateFlow<RequestState<List<IStopTimetableTime>>> = _upcoming.state()
 
     private val _lastDeparture = stopId.filterNotNull().flatRequestStateFlow(defaultConfig) { stopId ->
         lastDepartureForStopUseCase(stopId = stopId)

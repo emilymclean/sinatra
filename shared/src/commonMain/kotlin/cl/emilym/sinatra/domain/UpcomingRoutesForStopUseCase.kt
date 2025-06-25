@@ -39,7 +39,7 @@ class UpcomingRoutesForStopUseCase(
     @OptIn(ExperimentalCoroutinesApi::class)
     operator fun invoke(
         stopId: StopId,
-        routeId: RouteId? = null,
+        routeIds: List<RouteId> = emptyList(),
         number: Int = 10,
         live: Boolean = true
     ): Flow<Cachable<List<IStopTimetableTime>>> {
@@ -47,9 +47,9 @@ class UpcomingRoutesForStopUseCase(
             val scheduleTimeZone = metadataRepository.timeZone()
             val timesAndServices = servicesAndTimesForStopUseCase(stopId)
             val times = timesAndServices.item.times.run {
-                when (routeId) {
-                    null -> this
-                    else -> filter { it.routeId == routeId }
+                when {
+                    routeIds.isEmpty() -> this
+                    else -> filter { routeIds.contains(it.routeId) }
                 }
             }
             println(times)
