@@ -250,6 +250,8 @@ class StopDetailScreen(
                                     item { Box(Modifier.height(1.rdp)) }
                                 }
 
+                                item { Box(Modifier.height(1.rdp)) }
+
                                 if (routes.size > 1 && FeatureFlags.STOP_DETAIL_SHOW_ROUTE_FILTER) {
                                     item {
                                         val allUnselected = remember(routes) { routes.all { !it.selected } }
@@ -279,8 +281,6 @@ class StopDetailScreen(
                                     }
                                     item { Box(Modifier.height(1.rdp)) }
                                 }
-
-                                item { Box(Modifier.height(1.rdp)) }
 
                                 val state = state
                                 when (state) {
