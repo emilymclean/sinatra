@@ -40,7 +40,7 @@ class UpcomingRoutesForStopUseCase(
     operator fun invoke(
         stopId: StopId,
         routeIds: List<RouteId> = emptyList(),
-        number: Int = 10,
+        number: Int? = 10,
         live: Boolean = true
     ): Flow<Cachable<List<IStopTimetableTime>>> {
         return flow {
@@ -68,21 +68,14 @@ class UpcomingRoutesForStopUseCase(
                         val service = services.firstOrNull { it.id == time.serviceId } ?: continue
                         if (!service.active(checkTime, scheduleTimeZone)) continue
                         if (time.arrivalTime < now) continue
-                        if (active.any {
-                            it.routeId == time.routeId &&
-                            it.arrivalTime.instant == time.arrivalTime.instant &&
-                            it.sequence < time.sequence
-                        }) continue
 
-                        active.removeAll {
-                            it.routeId == time.routeId &&
-                            it.arrivalTime.instant == time.arrivalTime.instant &&
-                            it.sequence >= time.sequence
-                        }
                         active.add(time)
                         if (active.size == number) break
                     }
                     if (active.size == number) break
+                }
+                active.distinctBy {
+                    it.routeId to it.arrivalTime.instant
                 }
 
                 emit(timesAndServices.map { active.toList() })
