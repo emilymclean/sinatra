@@ -34,6 +34,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.annotation.ExperimentalVoyagerApi
 import cafe.adriel.voyager.core.lifecycle.LifecycleEffectOnce
@@ -237,7 +238,9 @@ class StopDetailScreen(
                                                                         StopDetailPage.CHILDREN -> Res.string.stop_detail_tab_child_stations
                                                                     }
                                                                 ),
-                                                                textAlign = TextAlign.Center
+                                                                textAlign = TextAlign.Center,
+                                                                overflow = TextOverflow.Ellipsis,
+                                                                maxLines = 1
                                                             )
                                                         },
                                                         // They have to all be fixed to the same height otherwise one may be larger than the others
@@ -252,7 +255,11 @@ class StopDetailScreen(
 
                                 item { Box(Modifier.height(1.rdp)) }
 
-                                if (routes.size > 1 && FeatureFlags.STOP_DETAIL_SHOW_ROUTE_FILTER) {
+                                if (
+                                    routes.size > 1 &&
+                                    FeatureFlags.STOP_DETAIL_SHOW_ROUTE_FILTER &&
+                                    state !is StopDetailState.Children
+                                ) {
                                     item {
                                         val allUnselected = remember(routes) { routes.all { !it.selected } }
                                         LazyRow(
