@@ -24,6 +24,8 @@ import cl.emilym.sinatra.lib.naturalComparator
 import cl.emilym.sinatra.ui.retryIfNeeded
 import cl.emilym.sinatra.ui.widgets.SinatraScreenModel
 import cl.emilym.sinatra.ui.widgets.defaultConfig
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -33,6 +35,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.koin.core.annotation.Factory
 
 private data class StopRoutes(
@@ -103,10 +106,12 @@ class StopDetailViewModel(
         .state()
 
     private val _upcoming = stopId.filterNotNull().flatRequestStateFlow(defaultConfig) { stopId ->
-        upcomingRoutesForStopUseCase(
-            stopId = stopId,
-            number = 100
-        )
+        withContext(Dispatchers.IO) {
+            upcomingRoutesForStopUseCase(
+                stopId = stopId,
+                number = null
+            )
+        }
     }
     private val upcoming: StateFlow<RequestState<List<IStopTimetableTime>>> = combine(
         _upcoming,
