@@ -18,6 +18,9 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -29,6 +32,7 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextAlign
 import cafe.adriel.voyager.core.annotation.ExperimentalVoyagerApi
 import cafe.adriel.voyager.core.lifecycle.LifecycleEffectOnce
 import cafe.adriel.voyager.core.screen.ScreenKey
@@ -107,6 +111,7 @@ class StopDetailScreen(
 
         val stop by viewModel.stop.collectAsStateWithLifecycle()
         val alerts by viewModel.alerts.collectAsStateWithLifecycle()
+        val pages by viewModel.pages.collectAsStateWithLifecycle()
         val state by viewModel.state.collectAsStateWithLifecycle()
 
         Box(
@@ -159,38 +164,46 @@ class StopDetailScreen(
                                 }
                                 item { Box(Modifier.height(1.rdp)) }
 
-                                item {
-                                    val actions by viewModel.actions.collectAsStateWithLifecycle()
-                                    LazyRow(
-                                        contentPadding = PaddingValues(horizontal = 1.rdp),
-                                        horizontalArrangement = Arrangement.spacedBy(1.rdp)
-                                    ) {
-                                        items(actions) { action ->
-                                            StopActionButton(
-                                                icon = when (action) {
-                                                    is StopDetailAction.Navigate -> { { NavigateIcon() } }
-                                                    else -> null
-                                                },
-                                                text = stringResource(
-                                                    when (action) {
-                                                        is StopDetailAction.Navigate -> Res.string.stop_detail_navigate
-                                                        is StopDetailAction.LastDepartures -> Res.string.stop_detail_last_departure
-                                                        is StopDetailAction.Children -> Res.string.stop_detail_child_stations
-                                                    }
-                                                ),
-                                                action.highlighted,
-                                                onClick = {
-                                                    when (action) {
-                                                        is StopDetailAction.Navigate -> navigator.stopJourneyNavigation(stop)
-                                                        is StopDetailAction.LastDepartures -> viewModel.option(StopDetailPage.LAST_DEPARTURES)
-                                                        is StopDetailAction.Children -> viewModel.option(StopDetailPage.CHILDREN)
-                                                    }
+                                if (pages.size > 1) {
+                                    item {
+                                        Row(
+                                            Modifier
+                                                .fillMaxWidth()
+                                                .padding(horizontal = 1.rdp),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            SingleChoiceSegmentedButtonRow(Modifier.weight(1f)) {
+                                                pages.forEachIndexed { i, page ->
+                                                    SegmentedButton(
+                                                        page.selected,
+                                                        onClick = {
+                                                            viewModel.option(page.page)
+                                                        },
+                                                        shape = SegmentedButtonDefaults.itemShape(
+                                                            index = i,
+                                                            count = pages.size
+                                                        ),
+                                                        icon = {},
+                                                        label = {
+                                                            Text(
+                                                                stringResource(
+                                                                    when (page.page) {
+                                                                        StopDetailPage.UPCOMING -> Res.string.upcoming_vehicles
+                                                                        StopDetailPage.LAST_DEPARTURES -> Res.string.stop_detail_last_departure
+                                                                        StopDetailPage.CHILDREN -> Res.string.stop_detail_child_stations
+                                                                    }
+                                                                ),
+                                                                textAlign = TextAlign.Center
+                                                            )
+                                                        }
+                                                    )
                                                 }
-                                            )
+                                            }
                                         }
                                     }
+                                    item { Box(Modifier.height(1.rdp)) }
                                 }
-                                item { Box(Modifier.height(2.rdp)) }
+                                item { Box(Modifier.height(1.rdp)) }
 
                                 val state = state
                                 when (state) {

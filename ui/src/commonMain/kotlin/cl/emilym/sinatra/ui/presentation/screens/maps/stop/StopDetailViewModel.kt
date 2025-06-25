@@ -41,6 +41,11 @@ enum class StopDetailPage {
     UPCOMING, LAST_DEPARTURES, CHILDREN
 }
 
+data class StopDetailPageInformation(
+    val page: StopDetailPage,
+    val selected: Boolean
+)
+
 sealed interface StopDetailState {
     data class Upcoming(
         val upcoming: RequestState<List<IStopTimetableTime>>
@@ -53,20 +58,6 @@ sealed interface StopDetailState {
     data class Children(
         val children: RequestState<List<Stop>>
     ): StopDetailState
-}
-
-sealed interface StopDetailAction {
-    val highlighted: Boolean
-
-    data object Navigate: StopDetailAction {
-        override val highlighted: Boolean = false
-    }
-    data class LastDepartures(
-        override val highlighted: Boolean = false
-    ): StopDetailAction
-    data class Children(
-        override val highlighted: Boolean = false
-    ): StopDetailAction
 }
 
 @Factory
@@ -82,7 +73,7 @@ class StopDetailViewModel(
 
     private val stopId = MutableStateFlow<StopId?>(null)
     private val routeId = MutableStateFlow<RouteId?>(null)
-    private val page = MutableStateFlow(StopDetailPage.UPCOMING)
+    val page = MutableStateFlow(StopDetailPage.UPCOMING)
 
     private val stopRoute = combine(
         stopId.filterNotNull(),
@@ -131,15 +122,17 @@ class StopDetailViewModel(
     }
     val routes = _routes.state()
 
-    val actions = combine(
+    val pages = combine(
         stop,
         page
     ) { stop, page ->
         listOfNotNull(
-            StopDetailAction.Navigate,
-            StopDetailAction.LastDepartures(page == StopDetailPage.LAST_DEPARTURES),
-            if (stop.unwrap()?.visibility?.showChildren == true) StopDetailAction.Children(page == StopDetailPage.CHILDREN) else null
-        )
+            StopDetailPage.UPCOMING,
+            StopDetailPage.LAST_DEPARTURES,
+            if (stop.unwrap()?.visibility?.showChildren == true) StopDetailPage.CHILDREN else null
+        ).map {
+            StopDetailPageInformation(it, it == page)
+        }
     }.state(emptyList())
 
     val state = page.flatMapLatest { page ->
@@ -171,11 +164,7 @@ class StopDetailViewModel(
     }
 
     fun option(page: StopDetailPage) {
-        val currentPage = this.page.value
-        this.page.value = when (page) {
-            currentPage -> StopDetailPage.UPCOMING
-            else -> page
-        }
+        this.page.value = page
     }
 
     fun retry() {
