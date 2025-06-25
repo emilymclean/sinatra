@@ -175,6 +175,9 @@
     <string name="upcoming_vehicles">Upcoming Vehicles</string>
     <string name="no_upcoming_vehicles">There are no routes scheduled for the rest of today.</string>
     <string name="stop_detail_last_departure">Last Departures</string>
+    <string name="stop_detail_tab_upcoming">Upcoming</string>
+    <string name="stop_detail_tab_last_departure">Last</string>
+    <string name="stop_detail_tab_child_stations">Stops</string>
     <string name="route_see_more">See more</string>
 
     <string name="accessibility_wheelchair_accessible">Wheelchair accessible</string>
