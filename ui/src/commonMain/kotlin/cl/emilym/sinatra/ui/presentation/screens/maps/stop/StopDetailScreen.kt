@@ -146,11 +146,19 @@ class StopDetailScreen(
                                         horizontalArrangement = Arrangement.spacedBy(1.rdp)
                                     ) {
                                         SheetIosBackButton()
-                                        Column(Modifier.weight(1f)) {
+                                        Row(
+                                            Modifier.weight(1f),
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(1.rdp)
+                                        ) {
                                             Text(
                                                 stop.name,
-                                                style = MaterialTheme.typography.titleLarge
+                                                style = MaterialTheme.typography.titleLarge,
+                                                modifier = Modifier.weight(1f, fill = false)
                                             )
+                                            if (FeatureFlags.STOP_DETAIL_SHOW_ACCESSIBILITY) {
+                                                WheelchairAccessibleIcon(stop.accessibility.wheelchair.isAccessible)
+                                            }
                                         }
                                         val favourited by viewModel.favourited.collectAsStateWithLifecycle()
                                         val favouriteContentDescription = stringResource(Res.string.semantics_favourite_stop)
@@ -237,26 +245,6 @@ class StopDetailScreen(
                                     item { Box(Modifier.height(1.rdp)) }
                                 }
                                 item { Box(Modifier.height(1.rdp)) }
-
-                                if (FeatureFlags.STOP_DETAIL_SHOW_ACCESSIBILITY) {
-                                    item {
-                                        Column(Modifier.padding(horizontal = 1.rdp)) {
-                                            AccessibilityIconLockup(
-                                                {
-                                                    WheelchairAccessibleIcon(stop.accessibility.wheelchair.isAccessible)
-                                                }
-                                            ) {
-                                                Text(
-                                                    when (stop.accessibility.wheelchair.isAccessible) {
-                                                        true -> stringResource(Res.string.accessibility_wheelchair_accessible)
-                                                        false -> stringResource(Res.string.accessibility_not_wheelchair_accessible)
-                                                    }
-                                                )
-                                            }
-                                        }
-                                    }
-                                    item { Box(Modifier.height(2.rdp)) }
-                                }
 
                                 val state = state
                                 when (state) {
