@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -16,6 +17,8 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedButton
@@ -33,6 +36,8 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.annotation.ExperimentalVoyagerApi
 import cafe.adriel.voyager.core.lifecycle.LifecycleEffectOnce
 import cafe.adriel.voyager.core.screen.ScreenKey
@@ -162,7 +167,23 @@ class StopDetailScreen(
                                 item {
                                     AlertScaffold((alerts as? RequestState.Success)?.value)
                                 }
+
                                 item { Box(Modifier.height(1.rdp)) }
+
+                                if (pages.size <= 1) {
+                                    item {
+                                        Button(
+                                            onClick = { navigator.stopJourneyNavigation(stop) },
+                                            modifier = Modifier.fillMaxWidth().padding(horizontal = 1.rdp)
+                                        ) {
+                                            NavigateIcon()
+                                            Box(Modifier.width(0.5.rdp))
+                                            Text(stringResource(Res.string.stop_detail_navigate))
+                                        }
+                                    }
+
+                                    item { Box(Modifier.height(1.rdp)) }
+                                }
 
                                 if (pages.size > 1) {
                                     item {
@@ -170,8 +191,18 @@ class StopDetailScreen(
                                             Modifier
                                                 .fillMaxWidth()
                                                 .padding(horizontal = 1.rdp),
-                                            verticalAlignment = Alignment.CenterVertically
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(1.rdp)
                                         ) {
+                                            FloatingActionButton(
+                                                onClick = { navigator.stopJourneyNavigation(stop) },
+                                                containerColor = MaterialTheme.colorScheme.primary,
+                                                contentColor = MaterialTheme.colorScheme.onPrimary,
+                                            ) {
+                                                NavigateIcon(
+                                                    contentDescription = stringResource(Res.string.stop_detail_navigate)
+                                                )
+                                            }
                                             SingleChoiceSegmentedButtonRow(Modifier.weight(1f)) {
                                                 pages.forEachIndexed { i, page ->
                                                     SegmentedButton(
@@ -195,7 +226,9 @@ class StopDetailScreen(
                                                                 ),
                                                                 textAlign = TextAlign.Center
                                                             )
-                                                        }
+                                                        },
+                                                        // They have to all be fixed to the same height otherwise one may be larger than the others
+                                                        modifier = Modifier.height(56.dp)
                                                     )
                                                 }
                                             }
