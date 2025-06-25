@@ -310,6 +310,7 @@ class StopDetailScreen(
     ) {
         Departures(
             state.upcoming,
+            "upcoming",
             empty = {
                 ListHint(
                     stringResource(Res.string.no_upcoming_vehicles)
@@ -329,6 +330,7 @@ class StopDetailScreen(
     ) {
         Departures(
             state.lastDepartures,
+            "last",
             forceShowDepartures = true,
             empty = {}
         ) {
@@ -364,6 +366,7 @@ class StopDetailScreen(
 
     fun LazyListScope.Departures(
         upcoming: RequestState<List<IStopTimetableTime>>,
+        key: String,
         forceShowDepartures: Boolean = false,
         empty: @Composable () -> Unit,
         title: @Composable () -> Unit,
@@ -400,7 +403,10 @@ class StopDetailScreen(
 
             is RequestState.Success -> {
                 when {
-                    upcoming.value.isNotEmpty() -> items(upcoming.value) {
+                    upcoming.value.isNotEmpty() -> items(
+                        upcoming.value,
+                        key = { "$key/${it.routeId}/${it.tripId}/${it.sequence}" }
+                    ) {
                         val navigator = LocalNavigator.currentOrThrow
                         UpcomingRouteCard(
                             it,
@@ -408,7 +414,7 @@ class StopDetailScreen(
                                 forceShowDepartures -> StopStationTime.Departure(it.stationTime.departure)
                                 else -> it.stationTime.pick(it.route, it.sequence <= 1)
                             },
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier.fillMaxWidth().animateItem(),
                             onClick = { navigator.push(
                                 RouteDetailScreen(
                                 it.routeId,
