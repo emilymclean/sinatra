@@ -464,8 +464,8 @@ class RouteDetailScreen(
                                 onClick = {
                                     navigator.push(
                                         StopDetailScreen(
-                                        nearestStop.stop.id
-                                    )
+                                            nearestStop.stop.id
+                                        )
                                     )
                                 },
                                 subtitle = stringResource(Res.string.stop_detail_distance, nearestStop.distance.text)
