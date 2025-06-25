@@ -33,9 +33,9 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import org.koin.core.annotation.Factory
 
-private data class StopRoute(
+private data class StopRoutes(
     val stopId: StopId,
-    val routeId: RouteId?
+    val routeIds: List<RouteId>
 )
 
 enum class StopDetailPage {
@@ -78,14 +78,17 @@ class StopDetailViewModel(
 ): SinatraScreenModel {
 
     private val stopId = MutableStateFlow<StopId?>(null)
-    private val routeId = MutableStateFlow<RouteId?>(null)
-    val page = MutableStateFlow(StopDetailPage.UPCOMING)
+    private val routeId = MutableStateFlow<List<RouteId>>(emptyList())
+    private val page = MutableStateFlow(StopDetailPage.UPCOMING)
 
     private val stopRoute = combine(
         stopId.filterNotNull(),
         routeId
     ) { stopId, routeId ->
-        StopRoute(stopId, routeId)
+        StopRoutes(
+            stopId,
+            routeId
+        )
     }
 
     val favourited = stopId.filterNotNull().flatMapLatest { stopId ->
@@ -109,17 +112,19 @@ class StopDetailViewModel(
 
     private val _upcoming = stopRoute.flatRequestStateFlow(defaultConfig) { stopRoute ->
         upcomingRoutesForStopUseCase(
-            stopId = stopRoute.stopId,
-            routeId = stopRoute.routeId
-        ).map { it.item }
+            stopId = stopRoute.stopId
+        ).mapLatest {
+            it.item.filter { stopRoute.routeIds.isEmpty() || stopRoute.routeIds.contains(it.routeId) }
+        }
     }
     private val upcoming = _upcoming.state()
 
     private val _lastDeparture = stopRoute.flatRequestStateFlow(defaultConfig) { stopRoute ->
         lastDepartureForStopUseCase(
-            stopId = stopRoute.stopId,
-            routeId = stopRoute.routeId
-        )
+            stopId = stopRoute.stopId
+        ).mapLatest {
+            it.filter { stopRoute.routeIds.isEmpty() || stopRoute.routeIds.contains(it.routeId) }
+        }
     }
     private val lastDeparture = _lastDeparture.state()
 
@@ -135,7 +140,7 @@ class StopDetailViewModel(
         routes.map {
             RouteInformation(
                 it,
-                it.id == routeId
+                routeId.contains(it.id)
             )
         }
     }.state(emptyList())
@@ -177,10 +182,11 @@ class StopDetailViewModel(
         }
     }
 
-    fun filter(routeId: RouteId?) {
-        this.routeId.value = when (routeId) {
-            this.routeId.value -> null
-            else -> routeId
+    fun filter(routeId: RouteId) {
+        val current = this.routeId.value
+        this.routeId.value = when {
+            current.contains(routeId) -> current - routeId
+            else -> current + routeId
         }
     }
 
