@@ -157,7 +157,13 @@ class StopDetailScreen(
                                                 modifier = Modifier.weight(1f, fill = false)
                                             )
                                             if (FeatureFlags.STOP_DETAIL_SHOW_ACCESSIBILITY) {
-                                                WheelchairAccessibleIcon(stop.accessibility.wheelchair.isAccessible)
+                                                WheelchairAccessibleIcon(
+                                                    stop.accessibility.wheelchair.isAccessible,
+                                                    contentDescription = when (stop.accessibility.wheelchair.isAccessible) {
+                                                        true -> stringResource(Res.string.accessibility_wheelchair_accessible)
+                                                        false -> stringResource(Res.string.accessibility_not_wheelchair_accessible)
+                                                    }
+                                                )
                                             }
                                         }
                                         val favourited by viewModel.favourited.collectAsStateWithLifecycle()
