@@ -238,9 +238,29 @@ class StopDetailScreen(
                                 }
                                 item { Box(Modifier.height(1.rdp)) }
 
+                                if (FeatureFlags.STOP_DETAIL_SHOW_ACCESSIBILITY) {
+                                    item {
+                                        Column(Modifier.padding(horizontal = 1.rdp)) {
+                                            AccessibilityIconLockup(
+                                                {
+                                                    WheelchairAccessibleIcon(stop.accessibility.wheelchair.isAccessible)
+                                                }
+                                            ) {
+                                                Text(
+                                                    when (stop.accessibility.wheelchair.isAccessible) {
+                                                        true -> stringResource(Res.string.accessibility_wheelchair_accessible)
+                                                        false -> stringResource(Res.string.accessibility_not_wheelchair_accessible)
+                                                    }
+                                                )
+                                            }
+                                        }
+                                    }
+                                    item { Box(Modifier.height(2.rdp)) }
+                                }
+
                                 val state = state
                                 when (state) {
-                                    is StopDetailState.Upcoming -> UpcomingPage(stop, state)
+                                    is StopDetailState.Upcoming -> UpcomingPage(state)
                                     is StopDetailState.LastDepartures -> LastDeparturesPage(state)
                                     is StopDetailState.Children -> ChildrenPage(state)
                                 }
@@ -255,29 +275,8 @@ class StopDetailScreen(
     }
 
     fun LazyListScope.UpcomingPage(
-        stop: Stop,
         state: StopDetailState.Upcoming
     ) {
-        if (FeatureFlags.STOP_DETAIL_SHOW_ACCESSIBILITY) {
-            item {
-                Column(Modifier.padding(horizontal = 1.rdp)) {
-                    AccessibilityIconLockup(
-                        {
-                            WheelchairAccessibleIcon(stop.accessibility.wheelchair.isAccessible)
-                        }
-                    ) {
-                        Text(
-                            when (stop.accessibility.wheelchair.isAccessible) {
-                                true -> stringResource(Res.string.accessibility_wheelchair_accessible)
-                                false -> stringResource(Res.string.accessibility_not_wheelchair_accessible)
-                            }
-                        )
-                    }
-                }
-            }
-            item { Box(Modifier.height(2.rdp)) }
-        }
-
         Departures(
             state.upcoming,
             empty = {
