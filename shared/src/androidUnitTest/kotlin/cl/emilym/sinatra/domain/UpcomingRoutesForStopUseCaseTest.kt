@@ -234,7 +234,7 @@ class UpcomingRoutesForStopUseCaseTest {
         )
         coEvery { clock.now() } returns currentTime
 
-        val result = useCase(stopId, routeId = "route-1", live = false).take(1).first()
+        val result = useCase(stopId, routeIds = listOf("route-1"), live = false).take(1).first()
 
         assertEquals(1, result.item.size)
         assertEquals("R1", result.item.first().routeCode)
