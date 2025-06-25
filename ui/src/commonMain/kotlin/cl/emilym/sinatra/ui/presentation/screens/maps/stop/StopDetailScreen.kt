@@ -26,6 +26,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.compositeOver
@@ -251,6 +252,7 @@ class StopDetailScreen(
 
                                 if (routes.size > 1 && FeatureFlags.STOP_DETAIL_SHOW_ROUTE_FILTER) {
                                     item {
+                                        val allUnselected = remember(routes) { routes.all { !it.selected } }
                                         LazyRow(
                                             Modifier.fillMaxWidth(),
                                             verticalAlignment = Alignment.CenterVertically,
@@ -259,13 +261,13 @@ class StopDetailScreen(
                                         ) {
                                             items(routes) { route ->
                                                 Chip(
-                                                    selected = route.selected,
+                                                    selected = route.selected || allUnselected,
                                                     onToggle = {
                                                         viewModel.filter(route.route.id)
                                                     },
                                                     contentDescription = null,
                                                     unselectedBackground = route.route.color()
-                                                        .copy(alpha = 0.75f)
+                                                        .copy(alpha = 0.5f)
                                                         .compositeOver(MaterialTheme.colorScheme.surface),
                                                     selectedBackground = route.route.color(),
                                                     contentColor = route.route.onColor()
