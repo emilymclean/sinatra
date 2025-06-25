@@ -3,6 +3,7 @@ package cl.emilym.sinatra.ui.presentation.screens.maps.stop
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -26,6 +28,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
@@ -46,15 +49,19 @@ import cl.emilym.sinatra.FeatureFlags
 import cl.emilym.sinatra.data.models.IStopTimetableTime
 import cl.emilym.sinatra.data.models.ReferencedTime
 import cl.emilym.sinatra.data.models.StopId
+import cl.emilym.sinatra.nullIf
+import cl.emilym.sinatra.ui.color
 import cl.emilym.sinatra.ui.maps.MapItem
 import cl.emilym.sinatra.ui.maps.MarkerItem
 import cl.emilym.sinatra.ui.maps.stopMarkerIcon
 import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
 import cl.emilym.sinatra.ui.navigation.MapScreen
+import cl.emilym.sinatra.ui.onColor
 import cl.emilym.sinatra.ui.presentation.screens.maps.route.RouteDetailScreen
 import cl.emilym.sinatra.ui.presentation.screens.maps.search.zoomThreshold
 import cl.emilym.sinatra.ui.stopJourneyNavigation
 import cl.emilym.sinatra.ui.widgets.AlertScaffold
+import cl.emilym.sinatra.ui.widgets.Chip
 import cl.emilym.sinatra.ui.widgets.FavouriteButton
 import cl.emilym.sinatra.ui.widgets.ListHint
 import cl.emilym.sinatra.ui.widgets.LocalMapControl
@@ -108,6 +115,7 @@ class StopDetailScreen(
         val alerts by viewModel.alerts.collectAsStateWithLifecycle()
         val pages by viewModel.pages.collectAsStateWithLifecycle()
         val state by viewModel.state.collectAsStateWithLifecycle()
+        val routes by viewModel.routes.collectAsStateWithLifecycle()
 
         Box(
             Modifier.fillMaxSize(),
@@ -240,6 +248,36 @@ class StopDetailScreen(
                                     }
                                     item { Box(Modifier.height(1.rdp)) }
                                 }
+
+                                if (routes.size > 1 && FeatureFlags.STOP_DETAIL_SHOW_ROUTE_FILTER) {
+                                    item {
+                                        LazyRow(
+                                            Modifier.fillMaxWidth(),
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(0.5.rdp),
+                                            contentPadding = PaddingValues(horizontal = 1.rdp)
+                                        ) {
+                                            items(routes) { route ->
+                                                Chip(
+                                                    selected = route.selected,
+                                                    onToggle = {
+                                                        viewModel.filter(route.route.id)
+                                                    },
+                                                    contentDescription = null,
+                                                    unselectedBackground = route.route.color()
+                                                        .copy(alpha = 0.75f)
+                                                        .compositeOver(MaterialTheme.colorScheme.surface),
+                                                    selectedBackground = route.route.color(),
+                                                    contentColor = route.route.onColor()
+                                                ) {
+                                                    Text(route.route.displayCode)
+                                                }
+                                            }
+                                        }
+                                    }
+                                    item { Box(Modifier.height(1.rdp)) }
+                                }
+
                                 item { Box(Modifier.height(1.rdp)) }
 
                                 val state = state

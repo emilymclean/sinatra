@@ -16,7 +16,7 @@ class RoutesVisitingStopUseCase(
         stopId: StopId
     ): Cachable<List<Route>> {
         return stopRepository.timetable(stopId).map {
-            it.times.mapNotNull { it.route }.distinct()
+            it.times.mapNotNull { it.route }.distinctBy { it.id }.filterAndSort()
         }
     }
 

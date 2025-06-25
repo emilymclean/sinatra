@@ -451,8 +451,7 @@ class NavigateEntryScreen(
                                                             Res.string.navigate_chip_anchor_arrive,
                                                             anchorTime.time.format()
                                                         )
-                                                },
-                                                style = MaterialTheme.typography.labelSmall
+                                                }
                                             )
                                         }
                                     }

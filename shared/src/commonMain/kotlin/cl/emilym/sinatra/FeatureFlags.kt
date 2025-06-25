@@ -23,6 +23,7 @@ object FeatureFlags {
     val ROUTE_DETAIL_PREVENT_ZOOM_WHEN_HAVE_SOURCE_STOP by FeatureFlagDelegate(false)
     val ROUTE_DETAIL_NEAREST_STOP by FeatureFlagDelegate(true)
     val STOP_DETAIL_SHOW_ACCESSIBILITY by FeatureFlagDelegate(true)
+    val STOP_DETAIL_SHOW_ROUTE_FILTER by FeatureFlagDelegate(true)
     val STOP_CARD_SHOW_ACCESSIBILITY by FeatureFlagDelegate(false)
     val MAP_SEARCH_SCREEN_NEARBY_STOPS_SEARCH by FeatureFlagDelegate(true)
     val NAVIGATE_ENTRY_SCREEN_FAVOURITE_SEARCH by FeatureFlagDelegate(true)

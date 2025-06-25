@@ -7,6 +7,7 @@ import cl.emilym.compose.requeststate.flatRequestStateFlow
 import cl.emilym.compose.requeststate.requestStateFlow
 import cl.emilym.compose.requeststate.unwrap
 import cl.emilym.sinatra.data.models.IStopTimetableTime
+import cl.emilym.sinatra.data.models.Route
 import cl.emilym.sinatra.data.models.RouteId
 import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.data.models.StopId
@@ -43,6 +44,11 @@ enum class StopDetailPage {
 
 data class StopDetailPageInformation(
     val page: StopDetailPage,
+    val selected: Boolean
+)
+
+data class RouteInformation(
+    val route: Route,
     val selected: Boolean
 )
 
@@ -120,7 +126,19 @@ class StopDetailViewModel(
     private val _routes = stopId.filterNotNull().requestStateFlow { stopId ->
         routesForStopUseCase(stopId).item
     }
-    val routes = _routes.state()
+    private val routesState = _routes.state()
+
+    val routes = combine(
+        routesState.unwrap().filterNotNull(),
+        routeId
+    ) { routes, routeId ->
+        routes.map {
+            RouteInformation(
+                it,
+                it.id == routeId
+            )
+        }
+    }.state(emptyList())
 
     val pages = combine(
         stop,
@@ -160,7 +178,10 @@ class StopDetailViewModel(
     }
 
     fun filter(routeId: RouteId?) {
-        this.routeId.value = routeId
+        this.routeId.value = when (routeId) {
+            this.routeId.value -> null
+            else -> routeId
+        }
     }
 
     fun option(page: StopDetailPage) {
@@ -172,7 +193,7 @@ class StopDetailViewModel(
         screenModelScope.launch { stopWithChildren.retryIfNeeded(stop.value) }
         screenModelScope.launch { _upcoming.retryIfNeeded(upcoming.value) }
         screenModelScope.launch { _lastDeparture.retryIfNeeded(lastDeparture.value) }
-        screenModelScope.launch { _routes.retryIfNeeded(routes.value) }
+        screenModelScope.launch { _routes.retryIfNeeded(routesState.value) }
     }
 
     fun favourite(stopId: StopId, favourited: Boolean) {
