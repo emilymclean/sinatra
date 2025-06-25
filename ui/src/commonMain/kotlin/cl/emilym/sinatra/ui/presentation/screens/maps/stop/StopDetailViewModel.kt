@@ -4,6 +4,7 @@ import cafe.adriel.voyager.core.model.screenModelScope
 import cl.emilym.compose.requeststate.RequestState
 import cl.emilym.compose.requeststate.child
 import cl.emilym.compose.requeststate.flatRequestStateFlow
+import cl.emilym.compose.requeststate.map
 import cl.emilym.compose.requeststate.requestStateFlow
 import cl.emilym.compose.requeststate.unwrap
 import cl.emilym.sinatra.data.models.IStopTimetableTime
@@ -23,6 +24,7 @@ import cl.emilym.sinatra.lib.naturalComparator
 import cl.emilym.sinatra.ui.retryIfNeeded
 import cl.emilym.sinatra.ui.widgets.SinatraScreenModel
 import cl.emilym.sinatra.ui.widgets.defaultConfig
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -81,16 +83,6 @@ class StopDetailViewModel(
     private val routeId = MutableStateFlow<List<RouteId>>(emptyList())
     private val page = MutableStateFlow(StopDetailPage.UPCOMING)
 
-    private val stopRoute = combine(
-        stopId.filterNotNull(),
-        routeId
-    ) { stopId, routeId ->
-        StopRoutes(
-            stopId,
-            routeId
-        )
-    }
-
     val favourited = stopId.filterNotNull().flatMapLatest { stopId ->
         favouriteRepository.stopIsFavourited(stopId)
     }.state(false)
@@ -110,23 +102,25 @@ class StopDetailViewModel(
         }
         .state()
 
-    private val _upcoming = stopRoute.flatRequestStateFlow(defaultConfig) { stopRoute ->
-        upcomingRoutesForStopUseCase(
-            stopId = stopRoute.stopId
-        ).mapLatest {
-            it.item.filter { stopRoute.routeIds.isEmpty() || stopRoute.routeIds.contains(it.routeId) }
-        }
+    private val _upcoming = stopId.filterNotNull().flatRequestStateFlow(defaultConfig) { stopId ->
+        upcomingRoutesForStopUseCase(stopId = stopId)
     }
-    private val upcoming = _upcoming.state()
+    private val upcoming: StateFlow<RequestState<List<IStopTimetableTime>>> = combine(
+        _upcoming,
+        routeId
+    ) { upcoming, routeId ->
+        upcoming.map { it.item.filter { routeId.isEmpty() || routeId.contains(it.routeId) } }
+    }.state()
 
-    private val _lastDeparture = stopRoute.flatRequestStateFlow(defaultConfig) { stopRoute ->
-        lastDepartureForStopUseCase(
-            stopId = stopRoute.stopId
-        ).mapLatest {
-            it.filter { stopRoute.routeIds.isEmpty() || stopRoute.routeIds.contains(it.routeId) }
-        }
+    private val _lastDeparture = stopId.filterNotNull().flatRequestStateFlow(defaultConfig) { stopId ->
+        lastDepartureForStopUseCase(stopId = stopId)
     }
-    private val lastDeparture = _lastDeparture.state()
+    private val lastDeparture: StateFlow<RequestState<List<IStopTimetableTime>>> = combine(
+        _lastDeparture,
+        routeId
+    ) { upcoming, routeId ->
+        upcoming.map { it.filter { routeId.isEmpty() || routeId.contains(it.routeId) } }
+    }.state()
 
     private val _routes = stopId.filterNotNull().requestStateFlow { stopId ->
         routesForStopUseCase(stopId).item
