@@ -15,13 +15,16 @@ import cl.emilym.sinatra.data.repository.TransportMetadataRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.IO
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.isActive
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.isActive
 import kotlinx.datetime.Clock
 import org.koin.core.annotation.Factory
 import kotlin.text.Typography.times
@@ -55,7 +58,7 @@ class UpcomingRoutesForStopUseCase(
             println(times)
             val services = timesAndServices.item.services
 
-            while (true) {
+            while (currentCoroutineContext().isActive) {
                 val now = clock.now()
                 val checkTimes = listOf(now - 1.days, now)
 
