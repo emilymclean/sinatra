@@ -24,6 +24,9 @@ import cl.emilym.sinatra.router.data.NetworkGraph
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
@@ -113,6 +116,7 @@ class CalculateJourneyUseCase(
                         arrivalStops
                     )?.let { options += it }
 
+                    currentCoroutineContext().ensureActive()
                     if (clock.now() > computationCutoffTime) break
                 }
 
