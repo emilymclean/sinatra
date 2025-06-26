@@ -154,20 +154,34 @@
     <string name="accessibility_title">Accessibility</string>
 
     <string name="scheduled_arrival">Scheduled to arrive at %1$s</string>
+    <string name="scheduled_arrival_day">Scheduled to arrive on %1$s</string>
     <string name="estimated_arrival">Expected to arrive at %1$s</string>
+    <string name="estimated_arrival_day">Expected to arrive on %1$s</string>
     <string name="approximate_arrival">Arriving at approximately %1$s</string>
+    <string name="approximate_arrival_day">Arriving at approximately %1$s</string>
     <string name="estimated_arrival_late">Expected to arrive at %1$s (%2$s late)</string>
+    <string name="estimated_arrival_late_day">Expected to arrive on %1$s (%2$s late)</string>
     <string name="estimated_arrival_early">Expected to arrive at %1$s (%2$s early)</string>
+    <string name="estimated_arrival_early_day">Expected to arrive on %1$s (%2$s early)</string>
 
     <string name="past_departure">Departed at %1$s</string>
+    <string name="past_departure_day">Departed on %1$s</string>
     <string name="past_departure_approximate">Departed at approximately %1$s</string>
+    <string name="past_departure_approximate_day">Departed on approximately %1$s</string>
     <string name="past_departure_late">Departed at %1$s (%2$s late)</string>
+    <string name="past_departure_late_day">Departed on %1$s (%2$s late)</string>
     <string name="past_departure_early">Departed at %1$s (%2$s early)</string>
+    <string name="past_departure_early_day">Departed on %1$s (%2$s early)</string>
     <string name="future_scheduled_departure">Scheduled to depart at %1$s</string>
+    <string name="future_scheduled_departure_day">Scheduled to depart on %1$s</string>
     <string name="future_estimated_departure">Expected to depart at %1$s</string>
+    <string name="future_estimated_departure_day">Expected to depart on %1$s</string>
     <string name="future_approximate_departure">Expected to depart at approximately %1$s</string>
+    <string name="future_approximate_departure_day">Expected to depart on approximately %1$s</string>
     <string name="future_estimated_departure_late">Expected to depart at %1$s (%2$s late)</string>
+    <string name="future_estimated_departure_late_day">Expected to depart on %1$s (%2$s late)</string>
     <string name="future_estimated_departure_early">Expected to depart at %1$s (%2$s early)</string>
+    <string name="future_estimated_departure_early_day">Expected to depart on %1$s (%2$s early)</string>
 
     <string name="route_with_heading">%1$s towards %2$s</string>
     <string name="route_heading">Towards %1$s</string>
