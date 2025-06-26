@@ -126,7 +126,13 @@ class CalculateJourneyUseCase(
 
                 options
                     .sortedWith(compareBy(
-                        { it.arrivalTime },
+                        {
+                            when (anchorTime) {
+                                is JourneyCalculationTime.DepartureTime -> it.arrivalTime.instant.epochSeconds
+                                is JourneyCalculationTime.ArrivalTime -> it.departureTime.instant.epochSeconds * -1
+                            }
+                        },
+                        { it.duration },
                         { it.legs.filterIsInstance<JourneyLeg.Travel>().size }
                     ))
                     .distinctBy { it.deduplicationKey }
