@@ -98,7 +98,7 @@ open class ContentScreen(
             }
         ) { innerPadding ->
             Box(
-                Modifier.padding(innerPadding).fillMaxSize(),
+                Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
                 RequestStateWidget(content, retry = { viewModel.retry(id) }) { content ->
@@ -113,6 +113,7 @@ open class ContentScreen(
                                 modifier = Modifier
                                     .fillMaxSize()
                                     .verticalScroll(rememberScrollState())
+                                    .padding(innerPadding)
                             ) {
                                 PageContent(content)
 

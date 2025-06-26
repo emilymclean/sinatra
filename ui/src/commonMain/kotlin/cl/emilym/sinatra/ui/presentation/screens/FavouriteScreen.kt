@@ -212,18 +212,21 @@ class FavouriteScreen: Screen {
                     title = { Text(stringResource(Res.string.navigation_bar_favourites)) }
                 )
             }
-        ) { internalPadding ->
+        ) { innerPadding ->
             val favourites by viewModel.favourites.collectAsStateWithLifecycle()
             val anyFavourites by viewModel.anyFavourites.collectAsStateWithLifecycle()
             Box(
-                Modifier.fillMaxSize().padding(internalPadding),
+                Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
                 RequestStateWidget(
                     favourites,
                     retry = { viewModel.retry() }
                 ) { favourites ->
-                    LazyColumn(Modifier.fillMaxSize()) {
+                    LazyColumn(
+                        Modifier.fillMaxSize(),
+                        contentPadding = innerPadding
+                    ) {
                         item {
                             val specials by viewModel.special.collectAsStateWithLifecycle()
                             LazyRow(
