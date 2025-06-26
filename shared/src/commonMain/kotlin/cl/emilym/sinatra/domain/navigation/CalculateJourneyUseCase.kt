@@ -33,6 +33,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import org.koin.core.annotation.Factory
+import kotlin.math.min
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.seconds
@@ -125,7 +126,15 @@ class CalculateJourneyUseCase(
                 }
 
                 options
-                    .filter { it.departureTime >= now }
+                    .filter {
+                        it.departureTime.instant.epochSeconds >= min(
+                            now.epochSeconds,
+                            when (anchorTime) {
+                                is JourneyCalculationTime.DepartureTime -> it.departureTime.instant.epochSeconds
+                                else -> Long.MAX_VALUE
+                            }
+                        )
+                    }
                     .also { if (it.isEmpty()) throw RouterException.noJourneyFound() }
                     .sortedWith(compareBy(
                         {
