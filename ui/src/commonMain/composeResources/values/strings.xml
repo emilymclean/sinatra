@@ -234,6 +234,7 @@
     <string name="app_out_of_date_homepage_title">Visit our website</string>
     <string name="app_out_of_date_homepage_link">https://sinatra-transport.com</string>
 
+    <string name="time_local_timezone">%1$s (Local)</string>
     <string name="time_am">am</string>
     <string name="time_pm">pm</string>
     <string name="day_of_week_monday">Monday</string>

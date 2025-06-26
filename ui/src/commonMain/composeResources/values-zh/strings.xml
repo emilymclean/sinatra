@@ -319,6 +319,8 @@
 
   <string name="service_alert_title">服务警报</string>
 
+  <string name="time_local_timezone">%1$s (当地时间)</string>
+
   <string name="time_am">上午</string>
 
   <string name="time_pm">下午</string>
