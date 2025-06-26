@@ -417,12 +417,12 @@ class StopDetailScreen(
                             modifier = Modifier.fillMaxWidth().animateItem(),
                             onClick = { navigator.push(
                                 RouteDetailScreen(
-                                it.routeId,
-                                it.serviceId,
-                                it.tripId,
-                                stopId,
-                                (it.stationTime.arrival.time as? ReferencedTime)?.startOfDay
-                            )
+                                    it.routeId,
+                                    it.serviceId,
+                                    it.tripId,
+                                    stopId,
+                                    (it.stationTime.arrival.time as? ReferencedTime)?.startOfDay
+                                )
                             ) }
                         )
                     }

@@ -208,33 +208,61 @@
   <string name="accessibility_title">无障碍设施</string>
       
   <string name="scheduled_arrival">计划到达%1$s</string>
-      
+
+  <string name="scheduled_arrival_day">计划到达%1$s</string>
+
   <string name="estimated_arrival">预计到达%1$s</string>
 
+  <string name="estimated_arrival_day">预计到达%1$s</string>
+
   <string name="approximate_arrival">约%1$s到达</string>
-      
+
+  <string name="approximate_arrival_day">约%1$s到达</string>
+
   <string name="estimated_arrival_late">预计到达时间为%1$s（晚点%2$s）</string>
-      
+
+  <string name="estimated_arrival_late_day">预计到达时间为%1$s（晚点%2$s）</string>
+
   <string name="estimated_arrival_early">预计到达时间为%1$s（早%2$s）</string>
-      
+
+  <string name="estimated_arrival_early_day">预计到达时间为%1$s（早%2$s）</string>
+
   <string name="past_departure">于 %1$s 出发</string>
 
+  <string name="past_departure_day">于 %1$s 出发</string>
+
   <string name="past_departure_approximate">大约在 %1$s 出发</string>
-      
+
+  <string name="past_departure_approximate_day">大约在 %1$s 出发</string>
+
   <string name="past_departure_late">于%1$s出发（晚点 %2$s）</string>
-      
+
+  <string name="past_departure_late_day">于%1$s出发（晚点 %2$s）</string>
+
   <string name="past_departure_early">于%1$s出发（早于%2$s）</string>
-      
+
+  <string name="past_departure_early_day">于%1$s出发（早于%2$s）</string>
+
   <string name="future_scheduled_departure">预计于%1$s出发</string>
-      
+
+  <string name="future_scheduled_departure_day">预计于%1$s出发</string>
+
   <string name="future_estimated_departure">预计于%1$s出发</string>
 
+  <string name="future_estimated_departure_day">预计于%1$s出发</string>
+
   <string name="future_approximate_departure">预计于%1$s出发</string>
-      
+
+  <string name="future_approximate_departure_day">预计于%1$s出发</string>
+
   <string name="future_estimated_departure_late">预计于%1$s出发（晚点%2$s）</string>
-      
+
+  <string name="future_estimated_departure_late_day">预计于%1$s出发（晚点%2$s）</string>
+
   <string name="future_estimated_departure_early">预计于%1$s出发（提前%2$s）</string>
-      
+
+  <string name="future_estimated_departure_early_day">预计于%1$s出发（提前%2$s）</string>
+
   <string name="route_with_heading">%1$s 至 %2$s</string>
       
   <string name="route_heading">至 %1$s</string>
@@ -290,6 +318,8 @@
   <string name="navigate_entry_no_starting_point_destination">选择起点和目的地来规划旅程。</string>
 
   <string name="service_alert_title">服务警报</string>
+
+  <string name="time_local_timezone">%1$s (当地时间)</string>
 
   <string name="time_am">上午</string>
 
