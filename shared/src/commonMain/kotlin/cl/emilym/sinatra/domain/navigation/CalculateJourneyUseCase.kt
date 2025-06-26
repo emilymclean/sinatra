@@ -125,6 +125,8 @@ class CalculateJourneyUseCase(
                 }
 
                 options
+                    .filter { it.departureTime >= now }
+                    .also { if (it.isEmpty()) throw RouterException.noJourneyFound() }
                     .sortedWith(compareBy(
                         {
                             when (anchorTime) {
