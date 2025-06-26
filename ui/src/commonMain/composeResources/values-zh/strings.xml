@@ -245,6 +245,14 @@
       
   <string name="no_upcoming_vehicles">今天剩余时间没有安排航线。</string>
 
+  <string name="stop_detail_last_departure">末班车时间</string>
+
+  <string name="stop_detail_tab_upcoming">即将</string>
+
+  <string name="stop_detail_tab_last_departure">末班</string>
+
+  <string name="stop_detail_tab_child_stations">分站</string>
+
   <string name="route_see_more">查看更多</string>
       
   <string name="accessibility_wheelchair_accessible">轮椅无障碍</string>

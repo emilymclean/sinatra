@@ -1,6 +1,7 @@
 package cl.emilym.sinatra.domain
 
 import cl.emilym.sinatra.data.models.IStopTimetableTime
+import cl.emilym.sinatra.data.models.RouteId
 import cl.emilym.sinatra.data.models.StopId
 import cl.emilym.sinatra.data.models.startOfDay
 import cl.emilym.sinatra.data.repository.TransportMetadataRepository
@@ -20,7 +21,8 @@ class LastDepartureForStopUseCase(
 ) {
 
     operator fun invoke(
-        stopId: StopId
+        stopId: StopId,
+        routeId: RouteId? = null
     ): Flow<List<IStopTimetableTime>> = flow {
         val scheduleTimeZone = metadataRepository.timeZone()
         val now = clock.now()
@@ -40,6 +42,12 @@ class LastDepartureForStopUseCase(
             activeServices.map { activeService ->
                 timesAndServices.item.times
                     .filter { it.serviceId == activeService.id }
+                    .run {
+                        when (routeId) {
+                            null -> this
+                            else -> filter { it.routeId == routeId }
+                        }
+                    }
                     .groupBy { it.routeId to it.heading }
                     .values
                     .map { it.last().withTimeReference(days[i].startOfDay(scheduleTimeZone)) }

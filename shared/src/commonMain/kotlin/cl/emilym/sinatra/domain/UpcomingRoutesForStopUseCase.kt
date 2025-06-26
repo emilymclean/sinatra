@@ -3,6 +3,7 @@ package cl.emilym.sinatra.domain
 import cl.emilym.sinatra.data.models.Cachable
 import cl.emilym.sinatra.data.models.Cachable.Companion.live
 import cl.emilym.sinatra.data.models.IStopTimetableTime
+import cl.emilym.sinatra.data.models.RouteId
 import cl.emilym.sinatra.data.models.StopId
 import cl.emilym.sinatra.data.models.StopTimetableTime
 import cl.emilym.sinatra.data.models.flatMap
@@ -38,13 +39,20 @@ class UpcomingRoutesForStopUseCase(
     @OptIn(ExperimentalCoroutinesApi::class)
     operator fun invoke(
         stopId: StopId,
-        number: Int = 10,
+        routeIds: List<RouteId> = emptyList(),
+        number: Int? = 10,
         live: Boolean = true
     ): Flow<Cachable<List<IStopTimetableTime>>> {
         return flow {
             val scheduleTimeZone = metadataRepository.timeZone()
             val timesAndServices = servicesAndTimesForStopUseCase(stopId)
-            val times = timesAndServices.item.times
+            val times = timesAndServices.item.times.run {
+                when {
+                    routeIds.isEmpty() -> this
+                    else -> filter { routeIds.contains(it.routeId) }
+                }
+            }
+            println(times)
             val services = timesAndServices.item.services
 
             while (true) {
@@ -60,21 +68,14 @@ class UpcomingRoutesForStopUseCase(
                         val service = services.firstOrNull { it.id == time.serviceId } ?: continue
                         if (!service.active(checkTime, scheduleTimeZone)) continue
                         if (time.arrivalTime < now) continue
-                        if (active.any {
-                            it.routeId == time.routeId &&
-                            it.arrivalTime.instant == time.arrivalTime.instant &&
-                            it.sequence < time.sequence
-                        }) continue
 
-                        active.removeAll {
-                            it.routeId == time.routeId &&
-                            it.arrivalTime.instant == time.arrivalTime.instant &&
-                            it.sequence >= time.sequence
-                        }
                         active.add(time)
                         if (active.size == number) break
                     }
                     if (active.size == number) break
+                }
+                active.distinctBy {
+                    it.routeId to it.arrivalTime.instant
                 }
 
                 emit(timesAndServices.map { active.toList() })

@@ -87,15 +87,15 @@ class UpcomingRoutesForStopUseCaseTest {
             )
         )
         coEvery { clock.now() } returns currentTime
-        coEvery { liveStopTimetableUseCase.invoke(stopId, any()) } returns flowOf(timetable)
 
-        val result = useCase(stopId, number = 1).take(1).first()
+        val result = useCase(stopId, number = 1, live = false).take(1).first()
 
         assertEquals(1, result.item.size)
         assertEquals("R1", result.item.first().routeCode)
 
         coVerify { servicesAndTimesForStopUseCase.invoke(stopId) }
         coVerify { metadataRepository.timeZone() }
+        coVerify(exactly = 0) { liveStopTimetableUseCase.invoke(any(), any()) }
         verify { clock.now() }
     }
 
@@ -114,12 +114,13 @@ class UpcomingRoutesForStopUseCaseTest {
         )
         every { clock.now() } returns currentTime
 
-        val result = useCase(stopId).take(1).first()
+        val result = useCase(stopId, live = false).take(1).first()
 
         assertEquals(0, result.item.size)
 
         coVerify { servicesAndTimesForStopUseCase.invoke(stopId) }
         coVerify { metadataRepository.timeZone() }
+        coVerify(exactly = 0) { liveStopTimetableUseCase.invoke(any(), any()) }
         coVerify { clock.now() }
     }
 
@@ -183,5 +184,64 @@ class UpcomingRoutesForStopUseCaseTest {
 
         coVerify { servicesAndTimesForStopUseCase.invoke(stopId) }
         verify(exactly = 1) { liveStopTimetableUseCase(stopId, any()) }
+    }
+
+    @Test
+    fun `should return stop timetable times from requested routes`() = runTest {
+        val stopId = "stop-123"
+        val timeZone = TimeZone.UTC
+        val currentTime = Instant.parse("2024-01-01T01:00:00Z")
+
+        val timetable = listOf(
+            StopTimetableTime(
+                childStopId = null,
+                routeId = "route-1",
+                routeCode = "R1",
+                serviceId = "service-1",
+                tripId = "trip-1",
+                arrivalTime = Time.parse("PT13H"),
+                departureTime = Time.parse("PT13H5M"),
+                heading = "North",
+                sequence = 1,
+                route = null
+            ),
+            StopTimetableTime(
+                childStopId = null,
+                routeId = "route-2",
+                routeCode = "R2",
+                serviceId = "service-1",
+                tripId = "trip-1",
+                arrivalTime = Time.parse("PT13H"),
+                departureTime = Time.parse("PT13H5M"),
+                heading = "North",
+                sequence = 1,
+                route = null
+            )
+        )
+
+
+        val services = listOf(
+            service
+        )
+
+        every { service.active(any(), any(), any()) } returns true
+        coEvery { metadataRepository.timeZone() } returns timeZone
+        coEvery { servicesAndTimesForStopUseCase.invoke(stopId) } returns Cachable.live(
+            ServicesAndTimes(
+                services = services,
+                times = timetable
+            )
+        )
+        coEvery { clock.now() } returns currentTime
+
+        val result = useCase(stopId, routeIds = listOf("route-1"), live = false).take(1).first()
+
+        assertEquals(1, result.item.size)
+        assertEquals("R1", result.item.first().routeCode)
+
+        coVerify { servicesAndTimesForStopUseCase.invoke(stopId) }
+        coVerify { metadataRepository.timeZone() }
+        coVerify(exactly = 0) { liveStopTimetableUseCase.invoke(any(), any()) }
+        verify { clock.now() }
     }
 }

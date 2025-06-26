@@ -1,4 +1,4 @@
-package cl.emilym.sinatra.ui.presentation.screens.maps
+package cl.emilym.sinatra.ui.presentation.screens.maps.route
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -76,6 +76,7 @@ import cl.emilym.sinatra.ui.maps.routeStopMarkerIcon
 import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
 import cl.emilym.sinatra.ui.navigation.MapScreen
 import cl.emilym.sinatra.ui.past
+import cl.emilym.sinatra.ui.presentation.screens.maps.stop.StopDetailScreen
 import cl.emilym.sinatra.ui.retryIfNeeded
 import cl.emilym.sinatra.ui.text
 import cl.emilym.sinatra.ui.widgets.AccessibilityIconLockup
@@ -461,9 +462,11 @@ class RouteDetailScreen(
                                 nearestStop.stop,
                                 Modifier.fillMaxWidth(),
                                 onClick = {
-                                    navigator.push(StopDetailScreen(
-                                        nearestStop.stop.id
-                                    ))
+                                    navigator.push(
+                                        StopDetailScreen(
+                                            nearestStop.stop.id
+                                        )
+                                    )
                                 },
                                 subtitle = stringResource(Res.string.stop_detail_distance, nearestStop.distance.text)
                             )
@@ -508,9 +511,11 @@ class RouteDetailScreen(
                 Modifier.fillMaxWidth(),
                 it.stationTime?.pick(route, it.sequence <= 1),
                 onClick = {
-                    navigator.push(StopDetailScreen(
+                    navigator.push(
+                        StopDetailScreen(
                         it.stopId
-                    ))
+                    )
+                    )
                 }
             )
         }
