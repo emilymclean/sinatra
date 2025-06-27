@@ -40,6 +40,8 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import cl.emilym.compose.requeststate.RequestState
 import cl.emilym.compose.requeststate.RequestStateWidget
 import cl.emilym.compose.requeststate.flatRequestStateFlow
+import cl.emilym.compose.requeststate.map
+import cl.emilym.compose.requeststate.unwrap
 import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.FeatureFlags
 import cl.emilym.sinatra.bounds
@@ -104,6 +106,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
@@ -154,7 +157,7 @@ class RouteDetailViewModel(
 
     val favourited = MutableStateFlow(false)
 
-    private val _tripInformation = params.filterNotNull().flatRequestStateFlow(defaultConfig) { params ->
+    private val _currentTripInformation = params.filterNotNull().flatRequestStateFlow(defaultConfig) { params ->
         currentTripForRouteUseCase(
             params.routeId,
             params.serviceId,
@@ -162,11 +165,14 @@ class RouteDetailViewModel(
             params.referenceTime ?: clock.now()
         ).map { it.item }
     }
-    val tripInformation = _tripInformation.state()
+    private val currentTripInformation = _currentTripInformation.state()
+
+    val route = currentTripInformation.mapLatest { it.unwrap()?.route }.state(null)
+    val tripInformation = currentTripInformation.mapLatest { it.map { it?.tripInformation } }.state()
 
     val nearestStop = tripInformation.combine(lastLocation) { tripInformation, lastLocation ->
         if (tripInformation !is RequestState.Success || lastLocation == null) return@combine null
-        val stops = tripInformation.value?.tripInformation?.stops?.mapNotNull { it.stop }?.nullIfEmpty() ?: return@combine null
+        val stops = tripInformation.value?.stops?.mapNotNull { it.stop }?.nullIfEmpty() ?: return@combine null
         stops.map { StopWithDistance(it, distance(lastLocation, it.location)) }
             .filter { it.distance < NEAREST_STOP_RADIUS }
             .nullIfEmpty()
@@ -202,7 +208,7 @@ class RouteDetailViewModel(
     }
 
     fun retry() {
-        screenModelScope.launch { _tripInformation.retryIfNeeded(tripInformation.value) }
+        screenModelScope.launch { _currentTripInformation.retryIfNeeded(tripInformation.value) }
         screenModelScope.launch { _alerts.retryIfNeeded(alerts.value) }
     }
 
@@ -253,26 +259,28 @@ class RouteDetailScreen(
             }
         }
 
+        val route by viewModel.route.collectAsStateWithLifecycle()
         val tripInformation by viewModel.tripInformation.collectAsStateWithLifecycle()
         Box(
             Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
             RequestStateWidget(tripInformation, { viewModel.retry() }) { tripInformation ->
+                val route = route
                 when {
-                    tripInformation == null -> { Text(stringResource(Res.string.route_not_found)) }
-                    tripInformation.tripInformation == null -> { Text(stringResource(Res.string.trip_not_found)) }
+                    route == null -> { Text(stringResource(Res.string.route_not_found)) }
+                    tripInformation == null -> { Text(stringResource(Res.string.trip_not_found)) }
                     else -> {
-                        val info = tripInformation.tripInformation!!
+                        val info = tripInformation
                         val triggers = info.stationTimes?.asInstants()
                         when {
                             triggers != null -> {
                                 SpecificRecomposeOnInstants(triggers) { trigger ->
-                                    TripDetails(tripInformation.route, info, trigger)
+                                    TripDetails(route, info, trigger)
                                 }
                             }
                             else -> {
-                                TripDetails(tripInformation.route, info, null)
+                                TripDetails(route, info, null)
                             }
                         }
                     }
@@ -525,11 +533,11 @@ class RouteDetailScreen(
     override fun mapItems(): List<MapItem> {
         val viewModel = koinScreenModel<RouteDetailViewModel>()
         val navigator = LocalNavigator.currentOrThrow
-        val tripInformationRS by viewModel.tripInformation.collectAsStateWithLifecycle()
-        val info = (tripInformationRS as? RequestState.Success)?.value ?: return listOf()
-        val route = info.route
+        val info = viewModel.tripInformation.collectAsStateWithLifecycle().value.unwrap() ?: return emptyList()
+        val route = viewModel.route.collectAsStateWithLifecycle().value ?: return emptyList()
+        
         val icon = routeStopMarkerIcon(route)
-        val stops = info.tripInformation?.stops ?: return listOf()
+        val stops = info.stops
         if (stops.all { it.stop == null }) return listOf()
 
         return listOf(
