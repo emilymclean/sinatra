@@ -87,8 +87,16 @@ class RouteDetailViewModel(
         }.filterNotNull()
     ).state(null)
 
-    val nearestStop = tripInformation.combine(lastLocation) { tripInformation, lastLocation ->
-        if (tripInformation !is RequestState.Success || lastLocation == null) return@combine null
+    val nearestStop = combine(
+        tripInformation,
+        lastLocation,
+        params
+    ) { tripInformation, lastLocation, params ->
+        if (
+            tripInformation !is RequestState.Success ||
+            lastLocation == null ||
+            params?.tripId != null
+        ) return@combine null
         val stops = tripInformation.value?.stops?.mapNotNull { it.stop }?.nullIfEmpty() ?: return@combine null
         stops.map { StopWithDistance(it, distance(lastLocation, it.location)) }
             .filter { it.distance < NEAREST_STOP_RADIUS }
