@@ -535,7 +535,7 @@ class RouteDetailScreen(
         val navigator = LocalNavigator.currentOrThrow
         val info = viewModel.tripInformation.collectAsStateWithLifecycle().value.unwrap() ?: return emptyList()
         val route = viewModel.route.collectAsStateWithLifecycle().value ?: return emptyList()
-        
+
         val icon = routeStopMarkerIcon(route)
         val stops = info.stops
         if (stops.all { it.stop == null }) return listOf()
