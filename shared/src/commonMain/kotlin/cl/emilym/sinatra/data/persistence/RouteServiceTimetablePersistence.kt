@@ -74,11 +74,11 @@ class RouteServiceCanonicalTimetablePersistence(
 ) {
 
     suspend fun save(timetable: RouteServiceCanonicalTimetable, resource: ResourceKey) {
-        routeTripInformationPersistence.save(listOf(timetable.trip), resource)
+        routeTripInformationPersistence.save(timetable.trips, resource)
     }
 
     suspend fun get(resource: ResourceKey): RouteServiceCanonicalTimetable? {
-        return routeTripInformationPersistence.get(resource, null).firstOrNull()?.let { RouteServiceCanonicalTimetable(it) }
+        return routeTripInformationPersistence.get(resource, null).let { RouteServiceCanonicalTimetable(it) }
     }
 
     suspend fun clear(resource: ResourceKey) {

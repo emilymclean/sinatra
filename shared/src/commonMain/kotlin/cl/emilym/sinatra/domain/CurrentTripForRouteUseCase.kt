@@ -23,9 +23,14 @@ import kotlinx.datetime.Instant
 import org.koin.core.annotation.Factory
 
 data class CurrentTripInformation(
-    val tripInformation: IRouteTripInformation?,
+    val tripInformations: List<IRouteTripInformation>,
     val route: Route,
-)
+) {
+
+    @Deprecated("Use trip informations")
+    val tripInformation = tripInformations.firstOrNull()
+
+}
 
 @Factory
 class CurrentTripForRouteUseCase(
@@ -69,13 +74,13 @@ class CurrentTripForRouteUseCase(
                     now
                 )
             }
-            return flowOf(timetable.map { CurrentTripInformation(it.trip, route) })
+            return flowOf(timetable.map { CurrentTripInformation(listOf(it.trip), route) })
         }
 
         return when {
             tripId == null -> {
                 val timetable = activeServices.flatMap { routeRepository.canonicalServiceTimetable(routeId, it!!.id) }
-                flowOf(timetable.map { CurrentTripInformation(it.trip, route) })
+                flowOf(timetable.map { CurrentTripInformation(it.trips, route) })
             }
             !route.hasRealtime -> {
                 fallback()
@@ -89,7 +94,7 @@ class CurrentTripForRouteUseCase(
                         now
                     ).map {
                         it
-                            .map { CurrentTripInformation(it, route) }
+                            .map { CurrentTripInformation(listOf(it), route) }
                             .merge(activeServices) { i1, i2 -> i1 }
                     }
                 } catch (e: Exception) {
