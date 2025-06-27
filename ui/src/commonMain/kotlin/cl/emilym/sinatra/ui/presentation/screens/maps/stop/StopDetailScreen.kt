@@ -17,6 +17,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedButton
@@ -212,6 +213,7 @@ class StopDetailScreen(
                                                 onClick = { navigator.stopJourneyNavigation(stop) },
                                                 containerColor = MaterialTheme.colorScheme.primary,
                                                 contentColor = MaterialTheme.colorScheme.onPrimary,
+                                                elevation = FloatingActionButtonDefaults.bottomAppBarFabElevation()
                                             ) {
                                                 NavigateIcon(
                                                     contentDescription = stringResource(Res.string.stop_detail_navigate)
