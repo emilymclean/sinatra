@@ -31,7 +31,6 @@ import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import cafe.adriel.voyager.core.annotation.ExperimentalVoyagerApi
 import cafe.adriel.voyager.core.lifecycle.LifecycleEffectOnce
-import cafe.adriel.voyager.core.model.screenModelScope
 import cafe.adriel.voyager.core.screen.ScreenKey
 import cafe.adriel.voyager.koin.koinScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
@@ -39,31 +38,20 @@ import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import cl.emilym.compose.requeststate.RequestState
 import cl.emilym.compose.requeststate.RequestStateWidget
-import cl.emilym.compose.requeststate.flatRequestStateFlow
-import cl.emilym.compose.requeststate.map
 import cl.emilym.compose.requeststate.unwrap
 import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.FeatureFlags
 import cl.emilym.sinatra.bounds
 import cl.emilym.sinatra.data.models.IRouteTripInformation
 import cl.emilym.sinatra.data.models.IRouteTripStop
-import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.data.models.Route
 import cl.emilym.sinatra.data.models.RouteId
 import cl.emilym.sinatra.data.models.ServiceBikesAllowed
 import cl.emilym.sinatra.data.models.ServiceId
 import cl.emilym.sinatra.data.models.ServiceWheelchairAccessible
 import cl.emilym.sinatra.data.models.StopId
-import cl.emilym.sinatra.data.models.StopWithDistance
 import cl.emilym.sinatra.data.models.TripId
-import cl.emilym.sinatra.data.models.distance
 import cl.emilym.sinatra.data.models.startOfDay
-import cl.emilym.sinatra.data.repository.AlertDisplayContext
-import cl.emilym.sinatra.data.repository.AlertRepository
-import cl.emilym.sinatra.data.repository.FavouriteRepository
-import cl.emilym.sinatra.data.repository.RecentVisitRepository
-import cl.emilym.sinatra.domain.CurrentTripForRouteUseCase
-import cl.emilym.sinatra.domain.NEAREST_STOP_RADIUS
 import cl.emilym.sinatra.nullIfEmpty
 import cl.emilym.sinatra.ui.asInstants
 import cl.emilym.sinatra.ui.color
@@ -79,7 +67,6 @@ import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
 import cl.emilym.sinatra.ui.navigation.MapScreen
 import cl.emilym.sinatra.ui.past
 import cl.emilym.sinatra.ui.presentation.screens.maps.stop.StopDetailScreen
-import cl.emilym.sinatra.ui.retryIfNeeded
 import cl.emilym.sinatra.ui.text
 import cl.emilym.sinatra.ui.widgets.AccessibilityIconLockup
 import cl.emilym.sinatra.ui.widgets.AlertScaffold
@@ -90,7 +77,6 @@ import cl.emilym.sinatra.ui.widgets.LocalMapControl
 import cl.emilym.sinatra.ui.widgets.RouteLine
 import cl.emilym.sinatra.ui.widgets.RouteRandle
 import cl.emilym.sinatra.ui.widgets.SheetIosBackButton
-import cl.emilym.sinatra.ui.widgets.SinatraScreenModel
 import cl.emilym.sinatra.ui.widgets.SpecificRecomposeOnInstants
 import cl.emilym.sinatra.ui.widgets.StopCard
 import cl.emilym.sinatra.ui.widgets.Subheading
@@ -98,20 +84,10 @@ import cl.emilym.sinatra.ui.widgets.WarningIcon
 import cl.emilym.sinatra.ui.widgets.WheelchairAccessibleIcon
 import cl.emilym.sinatra.ui.widgets.collectAsStateWithLifecycle
 import cl.emilym.sinatra.ui.widgets.currentLocation
-import cl.emilym.sinatra.ui.widgets.defaultConfig
 import cl.emilym.sinatra.ui.widgets.pick
 import com.mikepenz.markdown.m3.Markdown
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.emitAll
-import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.mapLatest
-import kotlinx.coroutines.launch
-import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import org.jetbrains.compose.resources.stringResource
-import org.koin.core.annotation.Factory
 import sinatra.ui.generated.resources.Res
 import sinatra.ui.generated.resources.accessibility_title
 import sinatra.ui.generated.resources.current_stops_title
@@ -134,96 +110,6 @@ import sinatra.ui.generated.resources.trip_not_found
 val zoomPadding
     @Composable
     get() = 2.rdp
-
-@Factory
-class RouteDetailViewModel(
-    private val currentTripForRouteUseCase: CurrentTripForRouteUseCase,
-    private val favouriteRepository: FavouriteRepository,
-    private val recentVisitRepository: RecentVisitRepository,
-    private val alertRepository: AlertRepository,
-    private val clock: Clock
-): SinatraScreenModel {
-
-    private data class Params(
-        val routeId: RouteId,
-        val serviceId: ServiceId? = null,
-        val tripId: TripId? = null,
-        val referenceTime: Instant? = null
-    )
-
-    private val params = MutableStateFlow<Params?>(null)
-
-    private var lastLocation = MutableStateFlow<MapLocation?>(null)
-
-    val favourited = MutableStateFlow(false)
-
-    private val _currentTripInformation = params.filterNotNull().flatRequestStateFlow(defaultConfig) { params ->
-        currentTripForRouteUseCase(
-            params.routeId,
-            params.serviceId,
-            params.tripId,
-            params.referenceTime ?: clock.now()
-        ).map { it.item }
-    }
-    private val currentTripInformation = _currentTripInformation.state()
-
-    val route = currentTripInformation.mapLatest { it.unwrap()?.route }.state(null)
-    val tripInformation = currentTripInformation.mapLatest { it.map { it?.tripInformation } }.state()
-
-    val nearestStop = tripInformation.combine(lastLocation) { tripInformation, lastLocation ->
-        if (tripInformation !is RequestState.Success || lastLocation == null) return@combine null
-        val stops = tripInformation.value?.stops?.mapNotNull { it.stop }?.nullIfEmpty() ?: return@combine null
-        stops.map { StopWithDistance(it, distance(lastLocation, it.location)) }
-            .filter { it.distance < NEAREST_STOP_RADIUS }
-            .nullIfEmpty()
-            ?.minBy { it.distance }
-    }.state(null)
-
-    private val _alerts = params.filterNotNull().flatRequestStateFlow(defaultConfig) { params ->
-        alertRepository.alerts(AlertDisplayContext.Route(
-            routeId = params.routeId,
-            tripId = params.tripId
-        ))
-    }
-    val alerts = _alerts.state()
-
-    fun init(
-        routeId: RouteId,
-        serviceId: ServiceId?,
-        tripId: TripId?,
-        referenceTime: Instant?
-    ) {
-        params.value = Params(
-            routeId,
-            serviceId,
-            tripId,
-            referenceTime
-        )
-        screenModelScope.launch {
-            favourited.emitAll(favouriteRepository.routeIsFavourited(routeId))
-        }
-        screenModelScope.launch {
-            recentVisitRepository.addRouteVisit(routeId)
-        }
-    }
-
-    fun retry() {
-        screenModelScope.launch { _currentTripInformation.retryIfNeeded(tripInformation.value) }
-        screenModelScope.launch { _alerts.retryIfNeeded(alerts.value) }
-    }
-
-    fun updateLocation(location: MapLocation) {
-        lastLocation.value = location
-    }
-
-    fun favourite(routeId: RouteId, favourited: Boolean) {
-        this.favourited.value = favourited
-        screenModelScope.launch {
-            favouriteRepository.setRouteFavourite(routeId, favourited)
-        }
-    }
-
-}
 
 class RouteDetailScreen(
     private val routeId: RouteId,
@@ -299,6 +185,7 @@ class RouteDetailScreen(
 
         val nearestStop by viewModel.nearestStop.collectAsStateWithLifecycle()
         val alerts by viewModel.alerts.collectAsStateWithLifecycle()
+        val heading by viewModel.heading.collectAsStateWithLifecycle()
 
         val current = if (trigger != null) {
             remember(trigger) {
@@ -345,7 +232,7 @@ class RouteDetailScreen(
                                 route.name,
                                 style = MaterialTheme.typography.titleLarge
                             )
-                            info.heading?.let {
+                            heading?.let {
                                 Text(
                                     stringResource(Res.string.route_heading, it),
                                     style = MaterialTheme.typography.titleMedium
