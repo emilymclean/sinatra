@@ -363,27 +363,6 @@ class RouteDetailScreen(
                     }
                 }
                 item { Box(Modifier.height(2.rdp)) }
-                nearestStop?.let { nearestStop ->
-                    if (!FeatureFlags.ROUTE_DETAIL_NEAREST_STOP) return@let
-                    item {
-                        Column {
-                            Subheading(stringResource(Res.string.stop_detail_nearest_stop))
-                            StopCard(
-                                nearestStop.stop,
-                                Modifier.fillMaxWidth(),
-                                onClick = {
-                                    navigator.push(
-                                        StopDetailScreen(
-                                            nearestStop.stop.id
-                                        )
-                                    )
-                                },
-                                subtitle = stringResource(Res.string.stop_detail_distance, nearestStop.distance.text)
-                            )
-                            Box(Modifier.height(1.rdp))
-                        }
-                    }
-                }
                 headings?.nullIf { it.size <= 1 }?.let { headings ->
                     item {
                         BoxWithConstraints(
@@ -421,6 +400,27 @@ class RouteDetailScreen(
                         }
                     }
                     item { Box(Modifier.height(2.rdp)) }
+                }
+                nearestStop?.let { nearestStop ->
+                    if (!FeatureFlags.ROUTE_DETAIL_NEAREST_STOP) return@let
+                    item {
+                        Column {
+                            Subheading(stringResource(Res.string.stop_detail_nearest_stop))
+                            StopCard(
+                                nearestStop.stop,
+                                Modifier.fillMaxWidth(),
+                                onClick = {
+                                    navigator.push(
+                                        StopDetailScreen(
+                                            nearestStop.stop.id
+                                        )
+                                    )
+                                },
+                                subtitle = stringResource(Res.string.stop_detail_distance, nearestStop.distance.text)
+                            )
+                            Box(Modifier.height(1.rdp))
+                        }
+                    }
                 }
                 when {
                     trigger == null -> {
