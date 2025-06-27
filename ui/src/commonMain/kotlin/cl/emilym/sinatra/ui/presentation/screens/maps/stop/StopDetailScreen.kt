@@ -70,6 +70,7 @@ import cl.emilym.sinatra.ui.widgets.ListHint
 import cl.emilym.sinatra.ui.widgets.LocalMapControl
 import cl.emilym.sinatra.ui.widgets.NavigateIcon
 import cl.emilym.sinatra.ui.widgets.NoBusIcon
+import cl.emilym.sinatra.ui.widgets.SegmentedButtonHeight
 import cl.emilym.sinatra.ui.widgets.SheetIosBackButton
 import cl.emilym.sinatra.ui.widgets.StopCard
 import cl.emilym.sinatra.ui.widgets.StopStationTime
@@ -246,7 +247,7 @@ class StopDetailScreen(
                                                             )
                                                         },
                                                         // They have to all be fixed to the same height otherwise one may be larger than the others
-                                                        modifier = Modifier.height(56.dp)
+                                                        modifier = Modifier.height(SegmentedButtonHeight)
                                                     )
                                                 }
                                             }

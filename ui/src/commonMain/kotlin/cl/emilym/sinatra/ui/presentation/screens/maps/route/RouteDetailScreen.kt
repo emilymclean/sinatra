@@ -1,7 +1,9 @@
 package cl.emilym.sinatra.ui.presentation.screens.maps.route
 
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -9,15 +11,21 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -29,6 +37,8 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.annotation.ExperimentalVoyagerApi
 import cafe.adriel.voyager.core.lifecycle.LifecycleEffectOnce
 import cafe.adriel.voyager.core.screen.ScreenKey
@@ -52,6 +62,7 @@ import cl.emilym.sinatra.data.models.ServiceWheelchairAccessible
 import cl.emilym.sinatra.data.models.StopId
 import cl.emilym.sinatra.data.models.TripId
 import cl.emilym.sinatra.data.models.startOfDay
+import cl.emilym.sinatra.nullIf
 import cl.emilym.sinatra.nullIfEmpty
 import cl.emilym.sinatra.ui.asInstants
 import cl.emilym.sinatra.ui.color
@@ -76,6 +87,7 @@ import cl.emilym.sinatra.ui.widgets.FavouriteButton
 import cl.emilym.sinatra.ui.widgets.LocalMapControl
 import cl.emilym.sinatra.ui.widgets.RouteLine
 import cl.emilym.sinatra.ui.widgets.RouteRandle
+import cl.emilym.sinatra.ui.widgets.SegmentedButtonHeight
 import cl.emilym.sinatra.ui.widgets.SheetIosBackButton
 import cl.emilym.sinatra.ui.widgets.SpecificRecomposeOnInstants
 import cl.emilym.sinatra.ui.widgets.StopCard
@@ -86,6 +98,7 @@ import cl.emilym.sinatra.ui.widgets.collectAsStateWithLifecycle
 import cl.emilym.sinatra.ui.widgets.currentLocation
 import cl.emilym.sinatra.ui.widgets.pick
 import com.mikepenz.markdown.m3.Markdown
+import io.github.aakira.napier.Napier
 import kotlinx.datetime.Instant
 import org.jetbrains.compose.resources.stringResource
 import sinatra.ui.generated.resources.Res
@@ -185,7 +198,9 @@ class RouteDetailScreen(
 
         val nearestStop by viewModel.nearestStop.collectAsStateWithLifecycle()
         val alerts by viewModel.alerts.collectAsStateWithLifecycle()
+        val selectedHeading by viewModel.selectedHeading.collectAsStateWithLifecycle()
         val heading by viewModel.heading.collectAsStateWithLifecycle()
+        val headings by viewModel.headings.collectAsStateWithLifecycle()
 
         val current = if (trigger != null) {
             remember(trigger) {
@@ -368,6 +383,44 @@ class RouteDetailScreen(
                             Box(Modifier.height(1.rdp))
                         }
                     }
+                }
+                headings?.nullIf { it.size <= 1 }?.let { headings ->
+                    item {
+                        BoxWithConstraints(
+                            Modifier.fillMaxWidth()
+                        ) {
+                            Box(
+                                Modifier
+                                    .fillMaxWidth()
+                                    .horizontalScroll(rememberScrollState())
+                                    .padding(horizontal = 1.rdp),
+                            ) {
+                                SingleChoiceSegmentedButtonRow(
+                                    Modifier.widthIn(min = this@BoxWithConstraints.maxWidth - 2.rdp)
+                                ) {
+                                    headings.forEachIndexed { i, heading ->
+                                        SegmentedButton(
+                                            heading == selectedHeading || (i == 0 && selectedHeading == null),
+                                            onClick = {
+                                                viewModel.selectHeading(heading)
+                                            },
+                                            shape = SegmentedButtonDefaults.itemShape(
+                                                index = i,
+                                                count = headings.size
+                                            ),
+                                            icon = {},
+                                            label = {
+                                                Text(heading, softWrap = false)
+                                            },
+                                            // They have to all be fixed to the same height otherwise one may be larger than the others
+                                            modifier = Modifier.height(SegmentedButtonHeight)
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    item { Box(Modifier.height(2.rdp)) }
                 }
                 when {
                     trigger == null -> {

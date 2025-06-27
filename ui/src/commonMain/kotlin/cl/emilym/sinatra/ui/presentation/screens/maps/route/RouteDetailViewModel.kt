@@ -86,18 +86,16 @@ class RouteDetailViewModel(
             }
         }
     }.state()
-    val heading = merge(
-        _heading,
-        combine(
-            params,
-            headings
-        ) { params, headings ->
-            when {
-                params?.tripId != null -> headings?.firstOrNull()
-                else -> null
-            }
-        }.filterNotNull()
-    ).state(null)
+    val heading = combine(
+        params,
+        headings
+    ) { params, headings ->
+        when {
+            params?.tripId != null -> headings?.firstOrNull()
+            else -> null
+        }
+    }.state(null)
+    val selectedHeading = _heading.asStateFlow()
 
     val nearestStop = combine(
         tripInformation,
@@ -146,11 +144,11 @@ class RouteDetailViewModel(
     }
 
     fun selectHeading(heading: Heading) {
-
+        _heading.value = heading
     }
 
     fun retry() {
-        screenModelScope.launch { _currentTripInformation.retryIfNeeded(tripInformation.value) }
+        screenModelScope.launch { _currentTripInformation.retryIfNeeded(currentTripInformation.value) }
         screenModelScope.launch { _alerts.retryIfNeeded(alerts.value) }
     }
 
