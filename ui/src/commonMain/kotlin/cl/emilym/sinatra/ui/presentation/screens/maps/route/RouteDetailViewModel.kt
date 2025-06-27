@@ -18,6 +18,7 @@ import cl.emilym.sinatra.data.repository.FavouriteRepository
 import cl.emilym.sinatra.data.repository.RecentVisitRepository
 import cl.emilym.sinatra.domain.CurrentTripForRouteUseCase
 import cl.emilym.sinatra.domain.NEAREST_STOP_RADIUS
+import cl.emilym.sinatra.lib.combineFlatMapLatest
 import cl.emilym.sinatra.nullIfEmpty
 import cl.emilym.sinatra.ui.retryIfNeeded
 import cl.emilym.sinatra.ui.widgets.SinatraScreenModel
@@ -74,7 +75,17 @@ class RouteDetailViewModel(
     }.state(null)
 
     val route = currentTripInformation.mapLatest { it.unwrap()?.route }.state(null)
-    val tripInformation = currentTripInformation.mapLatest { it.map { it?.tripInformation } }.state()
+    val tripInformation = combine(
+        currentTripInformation,
+        _heading
+    ) { currentTripInformation, heading ->
+        currentTripInformation.map {
+            when (heading) {
+                null -> it?.tripInformations?.firstOrNull()
+                else -> it?.tripInformations?.firstOrNull { it.heading == heading }
+            }
+        }
+    }.state()
     val heading = merge(
         _heading,
         combine(
