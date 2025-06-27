@@ -13,7 +13,7 @@ interface IRouteTripInformation {
     val startTime: Time?
     val endTime: Time?
     val accessibility: RouteServiceAccessibility
-    val heading: String?
+    val heading: Heading?
     val stops: List<IRouteTripStop>
 
     val stationTimes: List<TimetableStationTime>? get() = stops.mapNotNull {

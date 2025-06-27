@@ -5,6 +5,7 @@ import cl.emilym.compose.requeststate.RequestState
 import cl.emilym.compose.requeststate.flatRequestStateFlow
 import cl.emilym.compose.requeststate.map
 import cl.emilym.compose.requeststate.unwrap
+import cl.emilym.sinatra.data.models.Heading
 import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.data.models.RouteId
 import cl.emilym.sinatra.data.models.ServiceId
@@ -52,7 +53,7 @@ class RouteDetailViewModel(
     )
 
     private val params = MutableStateFlow<Params?>(null)
-    private val _heading = MutableStateFlow<String?>(null)
+    private val _heading = MutableStateFlow<Heading?>(null)
 
     private var lastLocation = MutableStateFlow<MapLocation?>(null)
 
@@ -68,7 +69,7 @@ class RouteDetailViewModel(
     }
     private val currentTripInformation = _currentTripInformation.state()
 
-    val headings: StateFlow<List<String>?> = currentTripInformation.mapLatest {
+    val headings: StateFlow<List<Heading>?> = currentTripInformation.mapLatest {
         it.unwrap()?.tripInformations?.mapNotNull { it.heading }
     }.state(null)
 
@@ -131,6 +132,10 @@ class RouteDetailViewModel(
         screenModelScope.launch {
             recentVisitRepository.addRouteVisit(routeId)
         }
+    }
+
+    fun selectHeading(heading: Heading) {
+
     }
 
     fun retry() {
