@@ -18,6 +18,7 @@ import cl.emilym.sinatra.data.persistence.RouteServiceCanonicalTimetablePersiste
 import cl.emilym.sinatra.data.persistence.RouteServicePersistence
 import cl.emilym.sinatra.data.persistence.RouteServiceTimetablePersistence
 import cl.emilym.sinatra.data.persistence.RouteTripTimetablePersistence
+import cl.emilym.sinatra.lib.naturalComparator
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import org.koin.core.annotation.Factory
@@ -235,7 +236,11 @@ class RouteRepository(
 
     suspend fun canonicalServiceTimetable(routeId: RouteId, serviceId: ServiceId): Cachable<RouteServiceCanonicalTimetable> {
         val stops = stopsCacheWorker.get()
-        return stops.flatMap { routeServiceCanonicalTimetableCacheWorker.get(routeId, serviceId) }
+        return stops.flatMap {
+            routeServiceCanonicalTimetableCacheWorker.get(routeId, serviceId).map { it.copy(
+                trips = it.trips.sortedWith(compareBy(naturalComparator()) { it.heading ?: "" })
+            ) }
+        }
     }
 
     suspend fun tripTimetable(
