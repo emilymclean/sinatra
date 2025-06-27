@@ -440,6 +440,38 @@ public data class RouteCanonicalTimetableEndpoint(
 }
 
 @pbandk.Export
+public data class RouteCanonicalTimetableEndpointV2(
+    val trips: List<cl.emilym.gtfs.RouteTripInformation> = emptyList(),
+    override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
+) : pbandk.Message {
+    override operator fun plus(other: pbandk.Message?): cl.emilym.gtfs.RouteCanonicalTimetableEndpointV2 = protoMergeImpl(other)
+    override val descriptor: pbandk.MessageDescriptor<cl.emilym.gtfs.RouteCanonicalTimetableEndpointV2> get() = Companion.descriptor
+    override val protoSize: Int by lazy { super.protoSize }
+    public companion object : pbandk.Message.Companion<cl.emilym.gtfs.RouteCanonicalTimetableEndpointV2> {
+        public val defaultInstance: cl.emilym.gtfs.RouteCanonicalTimetableEndpointV2 by lazy { cl.emilym.gtfs.RouteCanonicalTimetableEndpointV2() }
+        override fun decodeWith(u: pbandk.MessageDecoder): cl.emilym.gtfs.RouteCanonicalTimetableEndpointV2 = cl.emilym.gtfs.RouteCanonicalTimetableEndpointV2.decodeWithImpl(u)
+
+        override val descriptor: pbandk.MessageDescriptor<cl.emilym.gtfs.RouteCanonicalTimetableEndpointV2> = pbandk.MessageDescriptor(
+            fullName = "proto.RouteCanonicalTimetableEndpointV2",
+            messageClass = cl.emilym.gtfs.RouteCanonicalTimetableEndpointV2::class,
+            messageCompanion = this,
+            fields = buildList(1) {
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "trips",
+                        number = 3,
+                        type = pbandk.FieldDescriptor.Type.Repeated<cl.emilym.gtfs.RouteTripInformation>(valueType = pbandk.FieldDescriptor.Type.Message(messageCompanion = cl.emilym.gtfs.RouteTripInformation.Companion)),
+                        jsonName = "trips",
+                        value = cl.emilym.gtfs.RouteCanonicalTimetableEndpointV2::trips
+                    )
+                )
+            }
+        )
+    }
+}
+
+@pbandk.Export
 public data class RouteTripTimetableEndpoint(
     val routeId: String,
     val serviceId: String,
@@ -2211,6 +2243,30 @@ private fun RouteCanonicalTimetableEndpoint.Companion.decodeWithImpl(u: pbandk.M
         throw pbandk.InvalidProtocolBufferException.missingRequiredField("trip")
     }
     return RouteCanonicalTimetableEndpoint(routeId!!, serviceId!!, trip!!, unknownFields)
+}
+
+@pbandk.Export
+@pbandk.JsName("orDefaultForRouteCanonicalTimetableEndpointV2")
+public fun RouteCanonicalTimetableEndpointV2?.orDefault(): cl.emilym.gtfs.RouteCanonicalTimetableEndpointV2 = this ?: RouteCanonicalTimetableEndpointV2.defaultInstance
+
+private fun RouteCanonicalTimetableEndpointV2.protoMergeImpl(plus: pbandk.Message?): RouteCanonicalTimetableEndpointV2 = (plus as? RouteCanonicalTimetableEndpointV2)?.let {
+    it.copy(
+        trips = trips + plus.trips,
+        unknownFields = unknownFields + plus.unknownFields
+    )
+} ?: this
+
+@Suppress("UNCHECKED_CAST")
+private fun RouteCanonicalTimetableEndpointV2.Companion.decodeWithImpl(u: pbandk.MessageDecoder): RouteCanonicalTimetableEndpointV2 {
+    var trips: pbandk.ListWithSize.Builder<cl.emilym.gtfs.RouteTripInformation>? = null
+
+    val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
+        when (_fieldNumber) {
+            3 -> trips = (trips ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as kotlin.sequences.Sequence<cl.emilym.gtfs.RouteTripInformation> }
+        }
+    }
+
+    return RouteCanonicalTimetableEndpointV2(pbandk.ListWithSize.Builder.fixed(trips), unknownFields)
 }
 
 private fun RouteTripTimetableEndpoint.protoMergeImpl(plus: pbandk.Message?): RouteTripTimetableEndpoint = (plus as? RouteTripTimetableEndpoint)?.let {

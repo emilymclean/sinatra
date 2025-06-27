@@ -105,7 +105,7 @@ class RouteServiceCanonicalTimetableCacheWorker(
     suspend fun get(routeId: RouteId, serviceId: ServiceId): Cachable<RouteServiceCanonicalTimetable> {
         return run(
             routeClient.routeServiceCanonicalTimetableEndpointPair(routeId, serviceId),
-            "route/${routeId}/service/${serviceId}/canonical"
+            "route/${routeId}/service/${serviceId}/canonical/v2"
         )
     }
 }
