@@ -21,6 +21,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedButton
@@ -33,10 +34,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.annotation.ExperimentalVoyagerApi
@@ -365,6 +368,7 @@ class RouteDetailScreen(
                 item { Box(Modifier.height(2.rdp)) }
                 headings?.nullIf { it.size <= 1 }?.let { headings ->
                     item {
+                        val textMeasurer = rememberTextMeasurer()
                         BoxWithConstraints(
                             Modifier.fillMaxWidth()
                         ) {
@@ -378,6 +382,16 @@ class RouteDetailScreen(
                                     Modifier.widthIn(min = this@BoxWithConstraints.maxWidth - 2.rdp)
                                 ) {
                                     headings.forEachIndexed { i, heading ->
+                                        val style = MaterialTheme.typography.labelLarge
+                                        val widthMeasurement = remember(heading, style) {
+                                            textMeasurer
+                                                .measure(
+                                                    heading,
+                                                    style = style
+                                                )
+                                                .size.width
+                                        }
+                                        val width = with(LocalDensity.current) { widthMeasurement.toDp() }
                                         SegmentedButton(
                                             heading == selectedHeading || (i == 0 && selectedHeading == null),
                                             onClick = {
@@ -392,7 +406,9 @@ class RouteDetailScreen(
                                                 Text(heading, softWrap = false)
                                             },
                                             // They have to all be fixed to the same height otherwise one may be larger than the others
-                                            modifier = Modifier.height(SegmentedButtonHeight)
+                                            modifier = Modifier
+                                                .height(SegmentedButtonHeight)
+                                                .widthIn(min = width + 2.rdp)
                                         )
                                     }
                                 }
