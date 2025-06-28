@@ -2,6 +2,7 @@ package cl.emilym.sinatra.data.models
 
 import cl.emilym.gtfs.WheelchairStopAccessibility
 import cl.emilym.kmp.serializable.Serializable
+import cl.emilym.sinatra.mapping.GtfsStopToStop
 import kotlinx.datetime.Instant
 import kotlin.time.Duration
 
@@ -21,16 +22,7 @@ data class Stop(
     companion object {
 
         fun fromPB(pb: cl.emilym.gtfs.Stop): Stop {
-            return Stop(
-                pb.id,
-                pb.parentStation,
-                pb.name,
-                pb.simpleName,
-                MapLocation.fromPB(pb.location),
-                StopAccessibility.fromPB(pb.accessibility),
-                StopVisibility.fromPB(pb, pb.visibility),
-                pb.hasRealtime == true
-            )
+            return GtfsStopToStop.map(pb)
         }
     }
 
@@ -57,6 +49,7 @@ data class StopVisibility(
         val SEARCH_WEIGHT_DEFAULT: Double? = null
 
         fun fromPB(stopPb: cl.emilym.gtfs.Stop, pb: cl.emilym.gtfs.StopVisibility?): StopVisibility {
+
             return StopVisibility(
                 pb?.visibleZoomedOut ?: false,
                 pb?.visibleZoomedIn ?: (stopPb.parentStation == null),
