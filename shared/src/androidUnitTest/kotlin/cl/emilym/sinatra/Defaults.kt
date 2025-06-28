@@ -58,5 +58,6 @@ val DefaultStopTimetableTime get() = StopTimetableTime(
     Instant.DISTANT_FUTURE.toTime(Instant.DISTANT_FUTURE),
     "somewhere",
     0,
-    DefaultRoute
+    DefaultRoute,
+    false
 )

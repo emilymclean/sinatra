@@ -42,6 +42,7 @@ class LastDepartureForStopUseCase(
             activeServices.map { activeService ->
                 timesAndServices.item.times
                     .filter { it.serviceId == activeService.id }
+                    .filterNot { it.last }
                     .run {
                         when (routeId) {
                             null -> this

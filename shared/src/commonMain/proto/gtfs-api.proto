@@ -165,6 +165,7 @@ message StopTimetableTime {
   required string heading = 6;
   required uint32 sequence = 7;
   required ServiceAccessibility accessibility = 8;
+  optional bool last = 11;
 }
 
 message Service {
