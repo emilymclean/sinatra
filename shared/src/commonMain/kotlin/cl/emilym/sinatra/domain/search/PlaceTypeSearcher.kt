@@ -15,6 +15,8 @@ class PlaceTypeSearcher(
 
     }
 
+    override val permitIncompleteMatches: Boolean = true
+
     override suspend fun invoke(tokens: List<String>): List<RankableResult<Place>> {
         if (tokens.sumOf { it.length } < MIN_QUERY_LENGTH) return listOf()
         if (!placeRepository.available()) return listOf()

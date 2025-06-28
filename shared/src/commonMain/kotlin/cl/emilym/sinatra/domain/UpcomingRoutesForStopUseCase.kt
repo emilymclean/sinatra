@@ -1,7 +1,9 @@
 package cl.emilym.sinatra.domain
 
 import cl.emilym.sinatra.data.models.Cachable
+import cl.emilym.sinatra.data.models.Cachable.Companion.live
 import cl.emilym.sinatra.data.models.IStopTimetableTime
+import cl.emilym.sinatra.data.models.RouteId
 import cl.emilym.sinatra.data.models.StopId
 import cl.emilym.sinatra.data.models.StopTimetableTime
 import cl.emilym.sinatra.data.models.flatMap
@@ -13,23 +15,26 @@ import cl.emilym.sinatra.data.repository.TransportMetadataRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.IO
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.isActive
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.isActive
 import kotlinx.datetime.Clock
 import org.koin.core.annotation.Factory
+import kotlin.text.Typography.times
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.minutes
 
 @Factory
 class UpcomingRoutesForStopUseCase(
     private val liveStopTimetableUseCase: LiveStopTimetableUseCase,
-    private val stopRepository: StopRepository,
-    private val serviceRepository: ServiceRepository,
+    private val servicesAndTimesForStopUseCase: ServicesAndTimesForStopUseCase,
     private val clock: Clock,
     private val metadataRepository: TransportMetadataRepository
 ) {
@@ -37,16 +42,23 @@ class UpcomingRoutesForStopUseCase(
     @OptIn(ExperimentalCoroutinesApi::class)
     operator fun invoke(
         stopId: StopId,
-        number: Int = 10,
+        routeIds: List<RouteId> = emptyList(),
+        number: Int? = 10,
         live: Boolean = true
     ): Flow<Cachable<List<IStopTimetableTime>>> {
         return flow {
             val scheduleTimeZone = metadataRepository.timeZone()
-            val timetable = stopRepository.timetable(stopId)
-            val times = timetable.item.times.sortedBy { it.arrivalTime }
-            val services = serviceRepository.services(timetable.item.times.map { it.serviceId }.distinct())
+            val timesAndServices = servicesAndTimesForStopUseCase(stopId)
+            val times = timesAndServices.item.times.run {
+                when {
+                    routeIds.isEmpty() -> this
+                    else -> filter { routeIds.contains(it.routeId) }
+                }
+            }
+            println(times)
+            val services = timesAndServices.item.services
 
-            while (true) {
+            while (currentCoroutineContext().isActive) {
                 val now = clock.now()
                 val checkTimes = listOf(now - 1.days, now)
 
@@ -56,27 +68,20 @@ class UpcomingRoutesForStopUseCase(
                     for (time in times) {
                         val time = time.withTimeReference(checkTime.startOfDay(metadataRepository.timeZone()))
 
-                        val service = services.item.firstOrNull { it.id == time.serviceId } ?: continue
+                        val service = services.firstOrNull { it.id == time.serviceId } ?: continue
                         if (!service.active(checkTime, scheduleTimeZone)) continue
                         if (time.arrivalTime < now) continue
-                        if (active.any {
-                            it.routeId == time.routeId &&
-                            it.arrivalTime.instant == time.arrivalTime.instant &&
-                            it.sequence < time.sequence
-                        }) continue
 
-                        active.removeAll {
-                            it.routeId == time.routeId &&
-                            it.arrivalTime.instant == time.arrivalTime.instant &&
-                            it.sequence >= time.sequence
-                        }
                         active.add(time)
                         if (active.size == number) break
                     }
                     if (active.size == number) break
                 }
+                active.distinctBy {
+                    it.routeId to it.arrivalTime.instant
+                }
 
-                emit(timetable.flatMap { services.map { active.toList() } })
+                emit(timesAndServices.map { active.toList() })
                 delay(1.minutes)
             }
         }

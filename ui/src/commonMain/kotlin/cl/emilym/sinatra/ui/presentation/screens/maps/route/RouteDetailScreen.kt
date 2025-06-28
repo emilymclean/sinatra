@@ -1,7 +1,9 @@
-package cl.emilym.sinatra.ui.presentation.screens.maps
+package cl.emilym.sinatra.ui.presentation.screens.maps.route
 
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -9,15 +11,22 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -25,13 +34,16 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.annotation.ExperimentalVoyagerApi
 import cafe.adriel.voyager.core.lifecycle.LifecycleEffectOnce
-import cafe.adriel.voyager.core.model.screenModelScope
 import cafe.adriel.voyager.core.screen.ScreenKey
 import cafe.adriel.voyager.koin.koinScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
@@ -39,29 +51,21 @@ import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import cl.emilym.compose.requeststate.RequestState
 import cl.emilym.compose.requeststate.RequestStateWidget
-import cl.emilym.compose.requeststate.flatRequestStateFlow
+import cl.emilym.compose.requeststate.unwrap
 import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.FeatureFlags
 import cl.emilym.sinatra.bounds
 import cl.emilym.sinatra.data.models.IRouteTripInformation
 import cl.emilym.sinatra.data.models.IRouteTripStop
-import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.data.models.Route
 import cl.emilym.sinatra.data.models.RouteId
 import cl.emilym.sinatra.data.models.ServiceBikesAllowed
 import cl.emilym.sinatra.data.models.ServiceId
 import cl.emilym.sinatra.data.models.ServiceWheelchairAccessible
 import cl.emilym.sinatra.data.models.StopId
-import cl.emilym.sinatra.data.models.StopWithDistance
 import cl.emilym.sinatra.data.models.TripId
-import cl.emilym.sinatra.data.models.distance
 import cl.emilym.sinatra.data.models.startOfDay
-import cl.emilym.sinatra.data.repository.AlertDisplayContext
-import cl.emilym.sinatra.data.repository.AlertRepository
-import cl.emilym.sinatra.data.repository.FavouriteRepository
-import cl.emilym.sinatra.data.repository.RecentVisitRepository
-import cl.emilym.sinatra.domain.CurrentTripForRouteUseCase
-import cl.emilym.sinatra.domain.NEAREST_STOP_RADIUS
+import cl.emilym.sinatra.nullIf
 import cl.emilym.sinatra.nullIfEmpty
 import cl.emilym.sinatra.ui.asInstants
 import cl.emilym.sinatra.ui.color
@@ -76,7 +80,7 @@ import cl.emilym.sinatra.ui.maps.routeStopMarkerIcon
 import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
 import cl.emilym.sinatra.ui.navigation.MapScreen
 import cl.emilym.sinatra.ui.past
-import cl.emilym.sinatra.ui.retryIfNeeded
+import cl.emilym.sinatra.ui.presentation.screens.maps.stop.StopDetailScreen
 import cl.emilym.sinatra.ui.text
 import cl.emilym.sinatra.ui.widgets.AccessibilityIconLockup
 import cl.emilym.sinatra.ui.widgets.AlertScaffold
@@ -86,8 +90,8 @@ import cl.emilym.sinatra.ui.widgets.FavouriteButton
 import cl.emilym.sinatra.ui.widgets.LocalMapControl
 import cl.emilym.sinatra.ui.widgets.RouteLine
 import cl.emilym.sinatra.ui.widgets.RouteRandle
+import cl.emilym.sinatra.ui.widgets.SegmentedButtonHeight
 import cl.emilym.sinatra.ui.widgets.SheetIosBackButton
-import cl.emilym.sinatra.ui.widgets.SinatraScreenModel
 import cl.emilym.sinatra.ui.widgets.SpecificRecomposeOnInstants
 import cl.emilym.sinatra.ui.widgets.StopCard
 import cl.emilym.sinatra.ui.widgets.Subheading
@@ -97,16 +101,9 @@ import cl.emilym.sinatra.ui.widgets.collectAsStateWithLifecycle
 import cl.emilym.sinatra.ui.widgets.currentLocation
 import cl.emilym.sinatra.ui.widgets.pick
 import com.mikepenz.markdown.m3.Markdown
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.emitAll
-import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.launch
-import kotlinx.datetime.Clock
+import io.github.aakira.napier.Napier
 import kotlinx.datetime.Instant
 import org.jetbrains.compose.resources.stringResource
-import org.koin.core.annotation.Factory
 import sinatra.ui.generated.resources.Res
 import sinatra.ui.generated.resources.accessibility_title
 import sinatra.ui.generated.resources.current_stops_title
@@ -129,93 +126,6 @@ import sinatra.ui.generated.resources.trip_not_found
 val zoomPadding
     @Composable
     get() = 2.rdp
-
-@Factory
-class RouteDetailViewModel(
-    private val currentTripForRouteUseCase: CurrentTripForRouteUseCase,
-    private val favouriteRepository: FavouriteRepository,
-    private val recentVisitRepository: RecentVisitRepository,
-    private val alertRepository: AlertRepository,
-    private val clock: Clock
-): SinatraScreenModel {
-
-    private data class Params(
-        val routeId: RouteId,
-        val serviceId: ServiceId? = null,
-        val tripId: TripId? = null,
-        val referenceTime: Instant? = null
-    )
-
-    private val params = MutableStateFlow<Params?>(null)
-
-    private var lastLocation = MutableStateFlow<MapLocation?>(null)
-
-    val favourited = MutableStateFlow(false)
-
-    private val _tripInformation = params.filterNotNull().flatRequestStateFlow { params ->
-        currentTripForRouteUseCase(
-            params.routeId,
-            params.serviceId,
-            params.tripId,
-            params.referenceTime ?: clock.now()
-        ).map { it.item }
-    }
-    val tripInformation = _tripInformation.state()
-
-    val nearestStop = tripInformation.combine(lastLocation) { tripInformation, lastLocation ->
-        if (tripInformation !is RequestState.Success || lastLocation == null) return@combine null
-        val stops = tripInformation.value?.tripInformation?.stops?.mapNotNull { it.stop }?.nullIfEmpty() ?: return@combine null
-        stops.map { StopWithDistance(it, distance(lastLocation, it.location)) }
-            .filter { it.distance < NEAREST_STOP_RADIUS }
-            .nullIfEmpty()
-            ?.minBy { it.distance }
-    }.state(null)
-
-    private val _alerts = params.filterNotNull().flatRequestStateFlow { params ->
-        alertRepository.alerts(AlertDisplayContext.Route(
-            routeId = params.routeId,
-            tripId = params.tripId
-        ))
-    }
-    val alerts = _alerts.state()
-
-    fun init(
-        routeId: RouteId,
-        serviceId: ServiceId?,
-        tripId: TripId?,
-        referenceTime: Instant?
-    ) {
-        params.value = Params(
-            routeId,
-            serviceId,
-            tripId,
-            referenceTime
-        )
-        screenModelScope.launch {
-            favourited.emitAll(favouriteRepository.routeIsFavourited(routeId))
-        }
-        screenModelScope.launch {
-            recentVisitRepository.addRouteVisit(routeId)
-        }
-    }
-
-    fun retry() {
-        screenModelScope.launch { _tripInformation.retryIfNeeded(tripInformation.value) }
-        screenModelScope.launch { _alerts.retryIfNeeded(alerts.value) }
-    }
-
-    fun updateLocation(location: MapLocation) {
-        lastLocation.value = location
-    }
-
-    fun favourite(routeId: RouteId, favourited: Boolean) {
-        this.favourited.value = favourited
-        screenModelScope.launch {
-            favouriteRepository.setRouteFavourite(routeId, favourited)
-        }
-    }
-
-}
 
 class RouteDetailScreen(
     private val routeId: RouteId,
@@ -251,26 +161,28 @@ class RouteDetailScreen(
             }
         }
 
+        val route by viewModel.route.collectAsStateWithLifecycle()
         val tripInformation by viewModel.tripInformation.collectAsStateWithLifecycle()
         Box(
             Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
             RequestStateWidget(tripInformation, { viewModel.retry() }) { tripInformation ->
+                val route = route
                 when {
-                    tripInformation == null -> { Text(stringResource(Res.string.route_not_found)) }
-                    tripInformation.tripInformation == null -> { Text(stringResource(Res.string.trip_not_found)) }
+                    route == null -> { Text(stringResource(Res.string.route_not_found)) }
+                    tripInformation == null -> { Text(stringResource(Res.string.trip_not_found)) }
                     else -> {
-                        val info = tripInformation.tripInformation!!
+                        val info = tripInformation
                         val triggers = info.stationTimes?.asInstants()
                         when {
                             triggers != null -> {
                                 SpecificRecomposeOnInstants(triggers) { trigger ->
-                                    TripDetails(tripInformation.route, info, trigger)
+                                    TripDetails(route, info, trigger)
                                 }
                             }
                             else -> {
-                                TripDetails(tripInformation.route, info, null)
+                                TripDetails(route, info, null)
                             }
                         }
                     }
@@ -289,6 +201,9 @@ class RouteDetailScreen(
 
         val nearestStop by viewModel.nearestStop.collectAsStateWithLifecycle()
         val alerts by viewModel.alerts.collectAsStateWithLifecycle()
+        val selectedHeading by viewModel.selectedHeading.collectAsStateWithLifecycle()
+        val heading by viewModel.heading.collectAsStateWithLifecycle()
+        val headings by viewModel.headings.collectAsStateWithLifecycle()
 
         val current = if (trigger != null) {
             remember(trigger) {
@@ -335,7 +250,7 @@ class RouteDetailScreen(
                                 route.name,
                                 style = MaterialTheme.typography.titleLarge
                             )
-                            info.heading?.let {
+                            heading?.let {
                                 Text(
                                     stringResource(Res.string.route_heading, it),
                                     style = MaterialTheme.typography.titleMedium
@@ -451,6 +366,57 @@ class RouteDetailScreen(
                     }
                 }
                 item { Box(Modifier.height(2.rdp)) }
+                headings?.nullIf { it.size <= 1 }?.let { headings ->
+                    item {
+                        val textMeasurer = rememberTextMeasurer()
+                        BoxWithConstraints(
+                            Modifier.fillMaxWidth()
+                        ) {
+                            Box(
+                                Modifier
+                                    .fillMaxWidth()
+                                    .horizontalScroll(rememberScrollState())
+                                    .padding(horizontal = 1.rdp),
+                            ) {
+                                SingleChoiceSegmentedButtonRow(
+                                    Modifier.widthIn(min = this@BoxWithConstraints.maxWidth - 2.rdp)
+                                ) {
+                                    headings.forEachIndexed { i, heading ->
+                                        val style = MaterialTheme.typography.labelLarge
+                                        val widthMeasurement = remember(heading, style) {
+                                            textMeasurer
+                                                .measure(
+                                                    heading,
+                                                    style = style
+                                                )
+                                                .size.width
+                                        }
+                                        val width = with(LocalDensity.current) { widthMeasurement.toDp() }
+                                        SegmentedButton(
+                                            heading == selectedHeading || (i == 0 && selectedHeading == null),
+                                            onClick = {
+                                                viewModel.selectHeading(heading)
+                                            },
+                                            shape = SegmentedButtonDefaults.itemShape(
+                                                index = i,
+                                                count = headings.size
+                                            ),
+                                            icon = {},
+                                            label = {
+                                                Text(heading, softWrap = false)
+                                            },
+                                            // They have to all be fixed to the same height otherwise one may be larger than the others
+                                            modifier = Modifier
+                                                .height(SegmentedButtonHeight)
+                                                .widthIn(min = width + 2.rdp)
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    item { Box(Modifier.height(2.rdp)) }
+                }
                 nearestStop?.let { nearestStop ->
                     if (!FeatureFlags.ROUTE_DETAIL_NEAREST_STOP) return@let
                     item {
@@ -460,9 +426,11 @@ class RouteDetailScreen(
                                 nearestStop.stop,
                                 Modifier.fillMaxWidth(),
                                 onClick = {
-                                    navigator.push(StopDetailScreen(
-                                        nearestStop.stop.id
-                                    ))
+                                    navigator.push(
+                                        StopDetailScreen(
+                                            nearestStop.stop.id
+                                        )
+                                    )
                                 },
                                 subtitle = stringResource(Res.string.stop_detail_distance, nearestStop.distance.text)
                             )
@@ -507,9 +475,11 @@ class RouteDetailScreen(
                 Modifier.fillMaxWidth(),
                 it.stationTime?.pick(route, it.sequence <= 1),
                 onClick = {
-                    navigator.push(StopDetailScreen(
+                    navigator.push(
+                        StopDetailScreen(
                         it.stopId
-                    ))
+                    )
+                    )
                 }
             )
         }
@@ -519,11 +489,11 @@ class RouteDetailScreen(
     override fun mapItems(): List<MapItem> {
         val viewModel = koinScreenModel<RouteDetailViewModel>()
         val navigator = LocalNavigator.currentOrThrow
-        val tripInformationRS by viewModel.tripInformation.collectAsStateWithLifecycle()
-        val info = (tripInformationRS as? RequestState.Success)?.value ?: return listOf()
-        val route = info.route
+        val info = viewModel.tripInformation.collectAsStateWithLifecycle().value.unwrap() ?: return emptyList()
+        val route = viewModel.route.collectAsStateWithLifecycle().value ?: return emptyList()
+
         val icon = routeStopMarkerIcon(route)
-        val stops = info.tripInformation?.stops ?: return listOf()
+        val stops = info.stops
         if (stops.all { it.stop == null }) return listOf()
 
         return listOf(

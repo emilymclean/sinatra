@@ -22,6 +22,7 @@ import cl.emilym.sinatra.ui.presentation.screens.maps.navigate.NavigationLocatio
 import cl.emilym.sinatra.ui.retryIfNeeded
 import cl.emilym.sinatra.ui.toNavigationLocation
 import cl.emilym.sinatra.ui.widgets.SinatraScreenModel
+import cl.emilym.sinatra.ui.widgets.defaultConfig
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -76,12 +77,12 @@ class BrowseViewModel(
     private val serviceAlertRepository: ServiceAlertRepository
 ): SinatraScreenModel {
 
-    private val _routes = requestStateFlow { displayRoutesUseCase().item }
+    private val _routes = requestStateFlow(defaultConfig) { displayRoutesUseCase().item }
     val routes = _routes.state(RequestState.Initial())
 
     private val lastLocation = MutableStateFlow<MapLocation?>(null)
 
-    private val newServices = flatRequestStateFlow {
+    private val newServices = flatRequestStateFlow(defaultConfig) {
         withContext(Dispatchers.IO) { newServiceUpdateUseCase() }
     }
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -99,7 +100,7 @@ class BrowseViewModel(
         }
     }
     @OptIn(ExperimentalCoroutinesApi::class)
-    private val specialAdd = flatRequestStateFlow {
+    private val specialAdd = flatRequestStateFlow(defaultConfig) {
         withContext(Dispatchers.IO) {
             specialAddUseCase().mapLatest { it.map { QuickNavigationItem.ToAdd(it) } }
         }
