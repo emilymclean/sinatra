@@ -128,6 +128,37 @@ class LastDepartureForStopUseCaseTest {
     }
 
     @Test
+    fun `invoke discards last departures in a trip`() = runTest {
+        // Given
+        val activeService = mockk<Service>()
+
+        val futureTime = 2.hours
+        val timetableTime = DefaultStopTimetableTime.copy(
+            serviceId = "service1",
+            routeId = "route1",
+            heading = "City",
+            departureTime = Time.create(futureTime),
+            last = true
+        )
+
+        val servicesAndTimes = createServicesAndTimes(
+            services = listOf(activeService),
+            times = listOf(timetableTime)
+        )
+
+        every { activeService.id } returns "service1"
+        every { activeService.active(any(), any()) } returns true
+
+        coEvery { servicesAndTimesForStopUseCase(testStopId) } returns servicesAndTimes
+
+        // When
+        val result = useCase(testStopId).first()
+
+        // Then
+        assertEquals(0, result.size)
+    }
+
+    @Test
     fun `invoke returns today's departure when yesterday's has passed`() = runTest {
         // Given
         val yesterdayService = mockk<Service>()

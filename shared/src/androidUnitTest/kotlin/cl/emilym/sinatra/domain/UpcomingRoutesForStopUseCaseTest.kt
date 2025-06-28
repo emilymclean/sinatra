@@ -69,7 +69,8 @@ class UpcomingRoutesForStopUseCaseTest {
                 departureTime = Time.parse("PT13H5M"),
                 heading = "North",
                 sequence = 1,
-                route = null
+                route = null,
+                false
             )
         )
 
@@ -142,7 +143,8 @@ class UpcomingRoutesForStopUseCaseTest {
                 departureTime = Time.parse("PT13H5M"),
                 heading = "North",
                 sequence = 1,
-                route = null
+                route = null,
+                false
             )
         )
 
@@ -157,7 +159,8 @@ class UpcomingRoutesForStopUseCaseTest {
                 departureTime = Time.parse("PT14H5M"),
                 heading = "South",
                 sequence = 2,
-                route = null
+                route = null,
+                false
             )
         )
 
@@ -203,7 +206,8 @@ class UpcomingRoutesForStopUseCaseTest {
                 departureTime = Time.parse("PT13H5M"),
                 heading = "North",
                 sequence = 1,
-                route = null
+                route = null,
+                false
             ),
             StopTimetableTime(
                 childStopId = null,
@@ -215,7 +219,8 @@ class UpcomingRoutesForStopUseCaseTest {
                 departureTime = Time.parse("PT13H5M"),
                 heading = "North",
                 sequence = 1,
-                route = null
+                route = null,
+                false
             )
         )
 

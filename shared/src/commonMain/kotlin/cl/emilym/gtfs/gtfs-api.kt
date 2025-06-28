@@ -1310,6 +1310,7 @@ public data class StopTimetableTime(
     val heading: String,
     val sequence: Int,
     val accessibility: cl.emilym.gtfs.ServiceAccessibility,
+    val last: Boolean? = null,
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
 ) : pbandk.Message {
     override operator fun plus(other: pbandk.Message?): cl.emilym.gtfs.StopTimetableTime = protoMergeImpl(other)
@@ -1322,7 +1323,7 @@ public data class StopTimetableTime(
             fullName = "proto.StopTimetableTime",
             messageClass = cl.emilym.gtfs.StopTimetableTime::class,
             messageCompanion = this,
-            fields = buildList(10) {
+            fields = buildList(11) {
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
@@ -1421,6 +1422,16 @@ public data class StopTimetableTime(
                         type = pbandk.FieldDescriptor.Type.Primitive.String(hasPresence = true),
                         jsonName = "tripId",
                         value = cl.emilym.gtfs.StopTimetableTime::tripId
+                    )
+                )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "last",
+                        number = 11,
+                        type = pbandk.FieldDescriptor.Type.Primitive.Bool(hasPresence = true),
+                        jsonName = "last",
+                        value = cl.emilym.gtfs.StopTimetableTime::last
                     )
                 )
             }
@@ -2730,6 +2741,7 @@ private fun StopTimetableTime.protoMergeImpl(plus: pbandk.Message?): StopTimetab
     it.copy(
         childStopId = plus.childStopId ?: childStopId,
         accessibility = accessibility.plus(plus.accessibility),
+        last = plus.last ?: last,
         unknownFields = unknownFields + plus.unknownFields
     )
 } ?: this
@@ -2746,6 +2758,7 @@ private fun StopTimetableTime.Companion.decodeWithImpl(u: pbandk.MessageDecoder)
     var heading: String? = null
     var sequence: Int? = null
     var accessibility: cl.emilym.gtfs.ServiceAccessibility? = null
+    var last: Boolean? = null
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
@@ -2759,6 +2772,7 @@ private fun StopTimetableTime.Companion.decodeWithImpl(u: pbandk.MessageDecoder)
             8 -> accessibility = _fieldValue as cl.emilym.gtfs.ServiceAccessibility
             9 -> childStopId = _fieldValue as String
             10 -> tripId = _fieldValue as String
+            11 -> last = _fieldValue as Boolean
         }
     }
 
@@ -2791,7 +2805,7 @@ private fun StopTimetableTime.Companion.decodeWithImpl(u: pbandk.MessageDecoder)
     }
     return StopTimetableTime(childStopId, routeId!!, routeCode!!, serviceId!!,
         tripId!!, arrivalTime!!, departureTime!!, heading!!,
-        sequence!!, accessibility!!, unknownFields)
+        sequence!!, accessibility!!, last, unknownFields)
 }
 
 private fun Service.protoMergeImpl(plus: pbandk.Message?): Service = (plus as? Service)?.let {
