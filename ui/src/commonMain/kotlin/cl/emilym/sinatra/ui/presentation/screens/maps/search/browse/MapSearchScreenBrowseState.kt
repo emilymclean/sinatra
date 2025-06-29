@@ -20,13 +20,12 @@ import cl.emilym.compose.requeststate.RequestState
 import cl.emilym.compose.requeststate.RequestStateWidget
 import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
-import cl.emilym.sinatra.ui.presentation.screens.maps.RouteDetailScreen
+import cl.emilym.sinatra.ui.presentation.screens.maps.route.RouteDetailScreen
 import cl.emilym.sinatra.ui.presentation.screens.maps.search.MapSearchViewModel
 import cl.emilym.sinatra.ui.widgets.AlertScaffold
 import cl.emilym.sinatra.ui.widgets.RouteCard
 import cl.emilym.sinatra.ui.widgets.collectAsStateWithLifecycle
 import cl.emilym.sinatra.ui.widgets.currentLocation
-import cl.emilym.sinatra.ui.widgets.rememberBottomSheetPosition
 
 @OptIn(ExperimentalVoyagerApi::class)
 @Composable

@@ -14,6 +14,7 @@ import cl.emilym.sinatra.domain.NearbyStopsUseCase
 import cl.emilym.sinatra.nullIfEmpty
 import cl.emilym.sinatra.ui.retryIfNeeded
 import cl.emilym.sinatra.ui.widgets.SinatraScreenModel
+import cl.emilym.sinatra.ui.widgets.defaultConfig
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -35,7 +36,7 @@ abstract class AbstractPlaceViewModel : SinatraScreenModel {
     protected abstract val placeId: StateFlow<PlaceId?>
 
     protected abstract val _place: Flow<RequestState<Place?>>
-    val place: StateFlow<RequestState<Place?>> by lazy { _place.stateIn(screenModelScope, SharingStarted.Lazily, RequestState.Initial()) }
+    val place: StateFlow<RequestState<Place?>> by lazy { _place.state() }
     abstract val location: StateFlow<MapLocation?>
 
     open val outsideServiceArea: StateFlow<Boolean> = MutableStateFlow(false).asStateFlow()
@@ -45,7 +46,7 @@ abstract class AbstractPlaceViewModel : SinatraScreenModel {
         it?.let { favouriteRepository.placeIsFavourited(it) } ?: flowOf(false)
     }.state(null) }
 
-    private val _nearbyStops by lazy { place.requestStateFlow {
+    private val _nearbyStops by lazy { place.requestStateFlow(defaultConfig) {
         it.unwrap()?.let {
             nearbyStopsUseCase(it.location, limit = 25)
         }

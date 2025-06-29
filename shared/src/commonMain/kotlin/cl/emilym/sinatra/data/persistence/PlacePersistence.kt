@@ -4,6 +4,7 @@ import cl.emilym.sinatra.data.models.Place
 import cl.emilym.sinatra.data.models.PlaceId
 import cl.emilym.sinatra.room.dao.PlaceDao
 import cl.emilym.sinatra.room.entities.PlaceEntity
+import io.github.aakira.napier.Napier
 import org.koin.core.annotation.Factory
 
 @Factory
@@ -17,6 +18,10 @@ class PlacePersistence(
 
     suspend fun get(id: PlaceId): Place? {
         return placeDao.get(id)?.toModel()
+    }
+
+    suspend fun find(lat: Double, lng: Double, latRange: Double, lngRange: Double): Place? {
+        return placeDao.find(lat, lng, latRange, lngRange)?.toModel()
     }
 
 }

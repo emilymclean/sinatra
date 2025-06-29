@@ -1,13 +1,8 @@
 package cl.emilym.sinatra.ui.presentation.screens
 
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -17,20 +12,14 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.role
-import androidx.compose.ui.semantics.semantics
 import cafe.adriel.voyager.core.model.screenModelScope
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.core.screen.ScreenKey
@@ -54,41 +43,33 @@ import cl.emilym.sinatra.data.repository.FavouriteRepository
 import cl.emilym.sinatra.domain.search.SearchType
 import cl.emilym.sinatra.ui.label
 import cl.emilym.sinatra.ui.placeCardDefaultNavigation
-import cl.emilym.sinatra.ui.presentation.screens.maps.RouteDetailScreen
-import cl.emilym.sinatra.ui.presentation.screens.maps.StopDetailScreen
+import cl.emilym.sinatra.ui.presentation.screens.maps.route.RouteDetailScreen
+import cl.emilym.sinatra.ui.presentation.screens.maps.stop.StopDetailScreen
 import cl.emilym.sinatra.ui.retryIfNeeded
 import cl.emilym.sinatra.ui.widgets.ClearIcon
 import cl.emilym.sinatra.ui.widgets.FavouriteCard
 import cl.emilym.sinatra.ui.widgets.HomeIcon
 import cl.emilym.sinatra.ui.widgets.ListCard
 import cl.emilym.sinatra.ui.widgets.ListHint
-import cl.emilym.sinatra.ui.widgets.MyLocationIcon
-import cl.emilym.sinatra.ui.widgets.PlaceCard
 import cl.emilym.sinatra.ui.widgets.QuickSelectCard
-import cl.emilym.sinatra.ui.widgets.RandleScaffold
-import cl.emilym.sinatra.ui.widgets.RouteCard
 import cl.emilym.sinatra.ui.widgets.SearchWidget
 import cl.emilym.sinatra.ui.widgets.SinatraScreenModel
 import cl.emilym.sinatra.ui.widgets.StarOutlineIcon
-import cl.emilym.sinatra.ui.widgets.StopCard
 import cl.emilym.sinatra.ui.widgets.WorkIcon
 import cl.emilym.sinatra.ui.widgets.collectAsStateWithLifecycle
-import io.github.aakira.napier.Napier
+import cl.emilym.sinatra.ui.widgets.defaultConfig
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.jetbrains.compose.resources.stringResource
 import org.koin.core.annotation.Factory
 import sinatra.ui.generated.resources.Res
-import sinatra.ui.generated.resources.current_location
 import sinatra.ui.generated.resources.favourites_no_home
 import sinatra.ui.generated.resources.favourites_no_work
 import sinatra.ui.generated.resources.favourites_nothing_favourited
@@ -118,7 +99,7 @@ class FavouriteViewModel(
         private val SPECIAL_ORDER_EMPTY = SPECIAL_ORDER.map { SpecialFavourite(it, null) }
     }
 
-    private val allFavourites = flatRequestStateFlow { favouriteRepository.all() }
+    private val allFavourites = flatRequestStateFlow(defaultConfig) { favouriteRepository.all() }
     private val searchType = MutableStateFlow<SpecialFavouriteType?>(null)
 
     val anyFavourites = allFavourites.mapLatest {
@@ -231,18 +212,21 @@ class FavouriteScreen: Screen {
                     title = { Text(stringResource(Res.string.navigation_bar_favourites)) }
                 )
             }
-        ) { internalPadding ->
+        ) { innerPadding ->
             val favourites by viewModel.favourites.collectAsStateWithLifecycle()
             val anyFavourites by viewModel.anyFavourites.collectAsStateWithLifecycle()
             Box(
-                Modifier.fillMaxSize().padding(internalPadding),
+                Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
                 RequestStateWidget(
                     favourites,
                     retry = { viewModel.retry() }
                 ) { favourites ->
-                    LazyColumn(Modifier.fillMaxSize()) {
+                    LazyColumn(
+                        Modifier.fillMaxSize(),
+                        contentPadding = innerPadding
+                    ) {
                         item {
                             val specials by viewModel.special.collectAsStateWithLifecycle()
                             LazyRow(

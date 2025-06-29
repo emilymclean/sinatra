@@ -7,6 +7,8 @@ import cl.emilym.sinatra.nullIfEmpty
 import cl.emilym.sinatra.router.data.EdgeType
 import cl.emilym.sinatra.router.data.NetworkGraph
 import cl.emilym.sinatra.router.data.NetworkGraphEdge
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 
 data class RaptorStop(
     val id: StopId,
@@ -44,7 +46,7 @@ abstract class Router {
         }
     }
 
-    fun calculate(
+    suspend fun calculate(
         anchorTime: DaySeconds,
         departureStop: StopId,
         arrivalStop: StopId
@@ -56,7 +58,7 @@ abstract class Router {
         )
     }
 
-    fun calculate(
+    suspend fun calculate(
         anchorTime: DaySeconds,
         departureStops: List<RaptorStop>,
         arrivalStops: List<RaptorStop>
@@ -81,7 +83,7 @@ abstract class Router {
         dist: Long
     ): Long
 
-    private fun doCalculation(
+    private suspend fun doCalculation(
         anchorTime: DaySeconds,
         departureStops: List<RaptorStop>,
         arrivalStops: List<RaptorStop>
@@ -144,6 +146,7 @@ abstract class Router {
                     }
                 }
             }
+            currentCoroutineContext().ensureActive()
         }
 
         return reconstruct(

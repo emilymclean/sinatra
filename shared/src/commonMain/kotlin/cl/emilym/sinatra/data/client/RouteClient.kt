@@ -78,14 +78,14 @@ class RouteClient(
     }
 
     suspend fun routeServiceCanonicalTimetable(routeId: RouteId, serviceId: ServiceId): RouteServiceCanonicalTimetable {
-        val pb = gtfsApi.routeServiceCanonicalTimetable(
+        val pb = gtfsApi.routeServiceCanonicalTimetableV2(
             routeId, serviceId
         )
         return RouteServiceCanonicalTimetable.fromPB(pb)
     }
 
     suspend fun routeServiceCanonicalTimetableDigest(routeId: RouteId, serviceId: ServiceId): ShaDigest {
-        return gtfsApi.routeServiceCanonicalTimetableDigest(routeId, serviceId)
+        return gtfsApi.routeServiceCanonicalTimetableV2Digest(routeId, serviceId)
     }
 
     suspend fun routeTripTimetable(routeId: RouteId, serviceId: ServiceId, tripId: TripId): RouteTripTimetable {

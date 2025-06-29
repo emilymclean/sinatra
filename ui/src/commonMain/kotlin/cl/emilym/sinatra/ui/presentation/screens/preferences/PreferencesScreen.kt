@@ -56,15 +56,16 @@ abstract class PreferencesScreen: Screen {
                     navigationIcon = { NavigatorBackButton() }
                 )
             }
-        ) { internalPadding ->
+        ) { innerPadding ->
             Box(
-                Modifier.fillMaxSize().padding(internalPadding),
+                Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
                 Column(
                     Modifier
                         .fillMaxSize()
-                        .verticalScroll(rememberScrollState()),
+                        .verticalScroll(rememberScrollState())
+                        .padding(innerPadding),
                 ) {
                     val koin = getKoin()
                     val preferencesRepository = remember(koin) { koin.get<PreferencesRepository>() }

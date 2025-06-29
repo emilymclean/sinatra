@@ -29,6 +29,7 @@ import cl.emilym.sinatra.ui.localization.format
 import cl.emilym.sinatra.ui.placeJourneyNavigation
 import cl.emilym.sinatra.ui.pointJourneyNavigation
 import cl.emilym.sinatra.ui.widgets.NavigateIcon
+import cl.emilym.sinatra.ui.widgets.defaultConfig
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
@@ -57,7 +58,7 @@ class PointDetailViewModel(
 
     private val point = MutableStateFlow<MapLocationAndZoom?>(null)
 
-    override val _place = point.requestStateFlow {
+    override val _place = point.requestStateFlow(defaultConfig) {
         it?.let {
             placeRepository.reverse(it.mapLocation, it.zoom) ?: Place(
                 "",

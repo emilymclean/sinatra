@@ -60,7 +60,7 @@ import cl.emilym.sinatra.ui.maps.walkingMarkerIcon
 import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
 import cl.emilym.sinatra.ui.navigation.MapScreen
 import cl.emilym.sinatra.ui.placeCardDefaultNavigation
-import cl.emilym.sinatra.ui.presentation.screens.maps.zoomPadding
+import cl.emilym.sinatra.ui.presentation.screens.maps.route.zoomPadding
 import cl.emilym.sinatra.ui.presentation.screens.search.SearchScreen
 import cl.emilym.sinatra.ui.presentation.theme.Container
 import cl.emilym.sinatra.ui.presentation.theme.walkingColor
@@ -451,8 +451,7 @@ class NavigateEntryScreen(
                                                             Res.string.navigate_chip_anchor_arrive,
                                                             anchorTime.time.format()
                                                         )
-                                                },
-                                                style = MaterialTheme.typography.labelSmall
+                                                }
                                             )
                                         }
                                     }

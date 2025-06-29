@@ -28,6 +28,7 @@ import cl.emilym.sinatra.nullIfEmpty
 import cl.emilym.sinatra.ui.placeJourneyNavigation
 import cl.emilym.sinatra.ui.retryIfNeeded
 import cl.emilym.sinatra.ui.widgets.NavigateIcon
+import cl.emilym.sinatra.ui.widgets.defaultConfig
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -50,7 +51,7 @@ class PlaceDetailViewModel(
 
     override val placeId = MutableStateFlow<PlaceId?>(null)
 
-    override val _place = placeId.requestStateFlow {
+    override val _place = placeId.requestStateFlow(defaultConfig) {
         it?.let { placeRepository.get(it).item }
     }
 

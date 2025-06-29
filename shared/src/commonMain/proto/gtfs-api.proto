@@ -41,6 +41,11 @@ message RouteCanonicalTimetableEndpoint {
   required RouteTripInformation trip = 3;
 }
 
+message RouteCanonicalTimetableEndpointV2 {
+  repeated RouteTripInformation trips = 3;
+}
+
+
 message RouteTripTimetableEndpoint {
   required string routeId = 1;
   required string serviceId = 2;
@@ -74,8 +79,8 @@ message JourneySearchOption {
 }
 
 message RealtimeEndpoint {
-  repeated RealtimeUpdate updates = 1;
-  optional string expireTimestamp = 2;
+    repeated RealtimeUpdate updates = 1;
+    optional string expireTimestamp = 2;
 }
 
 message Stop {
@@ -160,6 +165,7 @@ message StopTimetableTime {
   required string heading = 6;
   required uint32 sequence = 7;
   required ServiceAccessibility accessibility = 8;
+  optional bool last = 11;
 }
 
 message Service {
@@ -254,6 +260,6 @@ message ServiceAlert {
 }
 
 message RealtimeUpdate {
-  required string tripId = 1;
-  optional int32 delay = 2;
+    required string tripId = 1;
+    optional int32 delay = 2;
 }

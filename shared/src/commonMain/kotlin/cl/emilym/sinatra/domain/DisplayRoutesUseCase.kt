@@ -13,10 +13,13 @@ class DisplayRoutesUseCase(
 
     suspend operator fun invoke(): Cachable<List<Route>> {
         return routeRepository.routes().map {
-            it.filterNot { it.routeVisibility.hidden }.sortedWith(compareBy(
-                { !it.eventRoute }, { it.designation == null }, { it.code.toIntOrNull() }
-            ))
+            it.filterAndSort()
         }
     }
 
 }
+
+internal fun List<Route>.filterAndSort(): List<Route> =
+    filterNot { it.routeVisibility.hidden }.sortedWith(compareBy(
+        { !it.eventRoute }, { it.designation == null }, { it.code.toIntOrNull() }
+    ))

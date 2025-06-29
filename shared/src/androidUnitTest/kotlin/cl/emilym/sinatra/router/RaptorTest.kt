@@ -2,6 +2,7 @@ package cl.emilym.sinatra.router
 
 import cl.emilym.sinatra.RouterException
 import cl.emilym.sinatra.router.data.NetworkGraph
+import kotlinx.coroutines.test.runTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -71,7 +72,7 @@ class RaptorTest {
     }
 
     @Test
-    fun testValidJourneyOnSingleRoute() {
+    fun testValidJourneyOnSingleRoute() = runTest {
         val result = raptor.calculate(
             Duration.parseIsoString("PT09H").inWholeSeconds,
             STOP_ID_SWINDEN_STREET_GGN,
@@ -93,7 +94,7 @@ class RaptorTest {
     }
 
     @Test
-    fun testValidJourneyOnSingleRouteEndToEnd() {
+    fun testValidJourneyOnSingleRouteEndToEnd() = runTest {
         val result = raptor.calculate(
             Duration.parseIsoString("PT09H").inWholeSeconds,
             STOP_ID_GUNGAHLIN_GGN,
@@ -115,7 +116,7 @@ class RaptorTest {
     }
 
     @Test
-    fun testValidJourneyOnSingleRouteReverse() {
+    fun testValidJourneyOnSingleRouteReverse() = runTest {
         val result = raptorReverse
             .calculate(
                 Duration.parseIsoString("PT09H").inWholeSeconds,
@@ -138,7 +139,7 @@ class RaptorTest {
     }
 
     @Test
-    fun testValidJourneyOnSingleRouteEndToEndReverse() {
+    fun testValidJourneyOnSingleRouteEndToEndReverse() = runTest {
         val result = raptorReverse.calculate(
             33875,
             STOP_ID_GUNGAHLIN_GGN,
@@ -160,7 +161,7 @@ class RaptorTest {
     }
 
     @Test
-    fun testValidJourneyOnSingleRouteWithTransfer() {
+    fun testValidJourneyOnSingleRouteWithTransfer() = runTest {
         val result = try {
             raptor.calculate(
                 Duration.parseIsoString("PT09H").inWholeSeconds,
@@ -192,7 +193,7 @@ class RaptorTest {
     }
 
     @Test
-    fun testValidJourneyOnSingleRouteWithTransferReverse() {
+    fun testValidJourneyOnSingleRouteWithTransferReverse() = runTest {
         val result = try {
             raptorReverse.calculate(
                 Duration.parseIsoString("PT10H").inWholeSeconds,
@@ -224,7 +225,7 @@ class RaptorTest {
     }
 
     @Test
-    fun testValidJourneyOnSingleRouteBus() {
+    fun testValidJourneyOnSingleRouteBus() = runTest {
         val result = DepartureBasedRouter(
             graph,
             List(3) { graph.mappings.serviceIds },
@@ -250,7 +251,7 @@ class RaptorTest {
     }
 
     @Test
-    fun testValidJourneyOnSingleRouteBusReverse() {
+    fun testValidJourneyOnSingleRouteBusReverse() = runTest {
         val result = ArrivalBasedRouter(
             graphReverse,
             List(3) { graph.mappings.serviceIds },
@@ -274,7 +275,7 @@ class RaptorTest {
     }
 
     @Test
-    fun testValidJourneyAcrossMultipleRoutes() {
+    fun testValidJourneyAcrossMultipleRoutes() = runTest {
         val result = raptor.calculate(
             Duration.parseIsoString("PT09H").inWholeSeconds,
             STOP_ID_CANBERRA_RAILWAY_STATION,
@@ -330,7 +331,7 @@ class RaptorTest {
     }
 
     @Test
-    fun testValidJourneyAcrossMultipleRoutesReverse() {
+    fun testValidJourneyAcrossMultipleRoutesReverse() = runTest {
         val result = raptorReverse.calculate(
             Duration.parseIsoString("PT10H").inWholeSeconds,
             STOP_ID_CANBERRA_RAILWAY_STATION,
@@ -397,7 +398,7 @@ class RaptorTest {
     }
 
     @Test
-    fun testValidJourneyWithFewerServices() {
+    fun testValidJourneyWithFewerServices() = runTest {
         val raptor = Raptor(graph, List(3) { listOf("2023-COMBVAC-Weekday-05", "WD") }, config)
         val result = raptor.calculate(
             Duration.parseIsoString("PT09H").inWholeSeconds,
@@ -428,7 +429,7 @@ class RaptorTest {
     }
 
     @Test
-    fun testInvalidJourney() {
+    fun testInvalidJourney() = runTest {
         assertFails {
             val raptor = Raptor(graph, List(3) { graph.mappings.serviceIds }, config = RaptorConfig(
                 maximumWalkingTime = 0 * 60L,
@@ -446,7 +447,7 @@ class RaptorTest {
     }
 
     @Test
-    fun testNegativeValueOutcomeJourney() {
+    fun testNegativeValueOutcomeJourney() = runTest {
         val raptor = Raptor(
             graph,
             listOf(
@@ -483,7 +484,7 @@ class RaptorTest {
     }
 
     @Test
-    fun testNegativeValueOutcomeJourney2() {
+    fun testNegativeValueOutcomeJourney2() = runTest {
         val result = Raptor(
             graph,
             listOf(
@@ -515,7 +516,7 @@ class RaptorTest {
     }
 
     @Test
-    fun `when multiple valid nearby stops, the soonest should be picked`() {
+    fun `when multiple valid nearby stops, the soonest should be picked`() = runTest {
         val raptor = Raptor(graph, List(3) { listOf("2023-COMBVAC-Weekday-05", "WD") }, altConfig)
         // This route would have previously followed the whole loop, since R2 visits the belconnen
         // interchange twice in one journey, and the stop it visits the 2nd time just happens to

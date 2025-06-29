@@ -87,13 +87,16 @@ data class RouteServiceTimetable(
 }
 
 data class RouteServiceCanonicalTimetable(
-    val trip: RouteTripInformation
+    val trips: List<RouteTripInformation>
 ) {
 
+    @Deprecated("Use trips")
+    val trip = trips.first()
+
     companion object {
-        fun fromPB(pb: cl.emilym.gtfs.RouteCanonicalTimetableEndpoint): RouteServiceCanonicalTimetable {
+        fun fromPB(pb: cl.emilym.gtfs.RouteCanonicalTimetableEndpointV2): RouteServiceCanonicalTimetable {
             return RouteServiceCanonicalTimetable(
-                RouteTripInformation.fromPB(pb.trip)
+                pb.trips.map { RouteTripInformation.fromPB(it) }
             )
         }
     }

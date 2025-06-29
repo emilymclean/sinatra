@@ -14,6 +14,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
@@ -31,6 +32,11 @@ fun Chip(
     onToggle: (selected: Boolean) -> Unit,
     contentDescription: String?,
     modifier: Modifier = Modifier,
+    unselectedBackground: Color = MaterialTheme.colorScheme.surface,
+    selectedBackground: Color = MaterialTheme.colorScheme.primary.copy(
+        alpha = 0.25f
+    ).compositeOver(MaterialTheme.colorScheme.surface),
+    contentColor: Color = MaterialTheme.colorScheme.onSurface,
     content: @Composable () -> Unit,
 ) {
     Box(
@@ -39,10 +45,8 @@ fun Chip(
             .height(2.rdp)
             .background(
                 when (selected) {
-                    false -> MaterialTheme.colorScheme.surface
-                    true -> MaterialTheme.colorScheme.primary.copy(
-                        alpha = 0.25f
-                    ).compositeOver(MaterialTheme.colorScheme.surface)
+                    false -> unselectedBackground
+                    true -> selectedBackground
                 }
             )
             .clickable {
@@ -61,8 +65,8 @@ fun Chip(
         contentAlignment = Alignment.Center
     ) {
         CompositionLocalProvider(
-            LocalContentColor provides MaterialTheme.colorScheme.onSurface,
-            LocalTextStyle provides localTextStyleFixIos
+            LocalContentColor provides contentColor,
+            LocalTextStyle provides MaterialTheme.typography.labelSmall.fixIos()
         ) {
             content()
         }

@@ -1,5 +1,6 @@
 package cl.emilym.sinatra.room.entities
 
+import androidx.room.ColumnInfo
 import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.PrimaryKey
@@ -23,7 +24,9 @@ class StopTimetableTimeEntity(
     val arrivalTime: Long,
     val departureTime: Long,
     val heading: String,
-    val sequence: Int
+    val sequence: Int,
+    @ColumnInfo(defaultValue = "0")
+    val last: Boolean
 ) {
 
     fun toModel(
@@ -39,7 +42,8 @@ class StopTimetableTimeEntity(
             departureTime.time.referenced(startOfDay),
             heading,
             sequence,
-            null
+            null,
+            last
         )
     }
 
@@ -56,7 +60,8 @@ class StopTimetableTimeEntity(
                 stop.arrivalTime.toLong(),
                 stop.departureTime.toLong(),
                 stop.heading,
-                stop.sequence
+                stop.sequence,
+                stop.last
             )
         }
     }

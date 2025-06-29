@@ -24,25 +24,42 @@ import cl.emilym.sinatra.data.models.StopTime
 import cl.emilym.sinatra.data.models.StopWheelchairAccessibility
 import cl.emilym.sinatra.data.models.TimetableStationTime
 import cl.emilym.sinatra.data.models.merge
+import cl.emilym.sinatra.ui.localization.LocalScheduleTimeZone
 import cl.emilym.sinatra.ui.localization.format
 import cl.emilym.sinatra.ui.localization.isInPast
+import cl.emilym.sinatra.ui.localization.isSameDay
 import cl.emilym.sinatra.ui.text
+import kotlinx.datetime.LocalTime
 import org.jetbrains.compose.resources.stringResource
 import sinatra.ui.generated.resources.Res
 import sinatra.ui.generated.resources.approximate_arrival
+import sinatra.ui.generated.resources.approximate_arrival_day
 import sinatra.ui.generated.resources.estimated_arrival
+import sinatra.ui.generated.resources.estimated_arrival_day
 import sinatra.ui.generated.resources.estimated_arrival_early
+import sinatra.ui.generated.resources.estimated_arrival_early_day
 import sinatra.ui.generated.resources.estimated_arrival_late
+import sinatra.ui.generated.resources.estimated_arrival_late_day
 import sinatra.ui.generated.resources.future_approximate_departure
+import sinatra.ui.generated.resources.future_approximate_departure_day
 import sinatra.ui.generated.resources.future_estimated_departure
+import sinatra.ui.generated.resources.future_estimated_departure_day
 import sinatra.ui.generated.resources.future_estimated_departure_early
+import sinatra.ui.generated.resources.future_estimated_departure_early_day
 import sinatra.ui.generated.resources.future_estimated_departure_late
+import sinatra.ui.generated.resources.future_estimated_departure_late_day
 import sinatra.ui.generated.resources.future_scheduled_departure
+import sinatra.ui.generated.resources.future_scheduled_departure_day
 import sinatra.ui.generated.resources.past_departure
 import sinatra.ui.generated.resources.past_departure_approximate
+import sinatra.ui.generated.resources.past_departure_approximate_day
+import sinatra.ui.generated.resources.past_departure_day
 import sinatra.ui.generated.resources.past_departure_early
+import sinatra.ui.generated.resources.past_departure_early_day
 import sinatra.ui.generated.resources.past_departure_late
+import sinatra.ui.generated.resources.past_departure_late_day
 import sinatra.ui.generated.resources.scheduled_arrival
+import sinatra.ui.generated.resources.scheduled_arrival_day
 import sinatra.ui.generated.resources.semantics_stop_listing
 
 sealed interface StopStationTime {
@@ -159,30 +176,58 @@ val StopStationTime.text: String
         val time = stationTime.time.format()
         val stationTime = stationTime
         val isInPast = stationTime.time.isInPast()
+        val hasDay = !stationTime.time.isSameDay(LocalScheduleTimeZone.current)
         return when (stationTime) {
             is StationTime.Scheduled -> stringResource(when (this) {
                 is StopStationTime.Arrival -> when (stationTime.approximate) {
-                    true -> Res.string.approximate_arrival
-                    false -> Res.string.scheduled_arrival
+                    true -> when (hasDay) {
+                        true -> Res.string.approximate_arrival_day
+                        else -> Res.string.approximate_arrival
+                    }
+                    else -> when (hasDay) {
+                        true -> Res.string.scheduled_arrival_day
+                        else -> Res.string.scheduled_arrival
+                    }
                 }
                 is StopStationTime.Departure -> when (isInPast) {
                     true -> when(stationTime.approximate) {
-                        true -> Res.string.past_departure_approximate
-                        false -> Res.string.past_departure
+                        true -> when (hasDay) {
+                            true -> Res.string.past_departure_approximate_day
+                            else -> Res.string.past_departure_approximate
+                        }
+                        else -> when (hasDay) {
+                            true -> Res.string.past_departure_day
+                            else -> Res.string.past_departure
+                        }
                     }
-                    false -> when(stationTime.approximate) {
-                        true -> Res.string.future_approximate_departure
-                        false -> Res.string.future_scheduled_departure
+                    else -> when(stationTime.approximate) {
+                        true -> when (hasDay) {
+                            true -> Res.string.future_approximate_departure_day
+                            else -> Res.string.future_approximate_departure
+                        }
+                        else -> when (hasDay) {
+                            true -> Res.string.future_scheduled_departure_day
+                            else -> Res.string.future_scheduled_departure
+                        }
                     }
                 }
             }, time)
             is StationTime.Live -> when {
                 stationTime.delay.inWholeSeconds < -60L -> stringResource(
                     when (this) {
-                        is StopStationTime.Arrival -> Res.string.estimated_arrival_early
+                        is StopStationTime.Arrival -> when (hasDay) {
+                            true -> Res.string.estimated_arrival_early_day
+                            else -> Res.string.estimated_arrival_early
+                        }
                         is StopStationTime.Departure -> when (isInPast) {
-                            true -> Res.string.past_departure_early
-                            else -> Res.string.future_estimated_departure_early
+                            true -> when (hasDay) {
+                                true -> Res.string.past_departure_early_day
+                                else -> Res.string.past_departure_early
+                            }
+                            else -> when (hasDay) {
+                                true -> Res.string.future_estimated_departure_early_day
+                                else -> Res.string.future_estimated_departure_early
+                            }
                         }
                     },
                     time,
@@ -190,10 +235,19 @@ val StopStationTime.text: String
                 )
                 stationTime.delay.inWholeSeconds > 60L -> stringResource(
                     when (this) {
-                        is StopStationTime.Arrival -> Res.string.estimated_arrival_late
+                        is StopStationTime.Arrival -> when (hasDay) {
+                            true -> Res.string.estimated_arrival_late_day
+                            else -> Res.string.estimated_arrival_late
+                        }
                         is StopStationTime.Departure -> when (isInPast) {
-                            true -> Res.string.past_departure_late
-                            else -> Res.string.future_estimated_departure_late
+                            true -> when (hasDay) {
+                                true -> Res.string.past_departure_late_day
+                                else -> Res.string.past_departure_late
+                            }
+                            else -> when (hasDay) {
+                                true -> Res.string.future_estimated_departure_late_day
+                                else -> Res.string.future_estimated_departure_late
+                            }
                         }
                     },
                     time,
@@ -201,10 +255,19 @@ val StopStationTime.text: String
                 )
                 else -> stringResource(
                     when (this) {
-                        is StopStationTime.Arrival -> Res.string.estimated_arrival
+                        is StopStationTime.Arrival -> when (hasDay) {
+                            true -> Res.string.estimated_arrival_day
+                            else -> Res.string.estimated_arrival
+                        }
                         is StopStationTime.Departure -> when (isInPast) {
-                            true -> Res.string.past_departure
-                            else -> Res.string.future_estimated_departure
+                            true -> when (hasDay) {
+                                true -> Res.string.past_departure_day
+                                else -> Res.string.past_departure
+                            }
+                            else -> when (hasDay) {
+                                true -> Res.string.future_estimated_departure_day
+                                else -> Res.string.future_estimated_departure
+                            }
                         }
                     },
                     time

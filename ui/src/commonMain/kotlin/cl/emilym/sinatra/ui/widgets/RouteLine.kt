@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
@@ -24,8 +25,10 @@ import androidx.compose.ui.layout.MeasureResult
 import androidx.compose.ui.layout.MeasureScope
 import androidx.compose.ui.layout.MultiContentMeasurePolicy
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.asRadians
 import cl.emilym.sinatra.data.models.Degree
@@ -136,7 +139,9 @@ private fun _RouteLine(
                             else -> MaterialTheme.colorScheme.onSurface.copy(alpha = PASSED_ALPHA)
                                 .compositeOver(MaterialTheme.colorScheme.surface)
                         },
-                        modifier = Modifier.rotate(-80f)
+                        overflow = TextOverflow.Ellipsis,
+                        maxLines = 1,
+                        modifier = Modifier.widthIn(max = 200.dp).rotate(-80f)
                     )
                 }
             },

@@ -77,7 +77,7 @@ internal class DefaultSearchScreenViewModel(
 ): SinatraScreenModel, SearchScreenViewModel {
 
     val lastLocation = MutableStateFlow<MapLocation?>(null)
-    private val stops = requestStateFlow { stopRepository.stops() }
+    private val stops = requestStateFlow(defaultConfig) { stopRepository.stops() }
 
     override var query by mutableStateOf("")
     private val searchTypes = MutableStateFlow<List<SearchType>>(listOf())
@@ -93,7 +93,7 @@ internal class DefaultSearchScreenViewModel(
         with(nearbyStopsUseCase) { stops.filter(lastLocation).nullIfEmpty() }
     }.state(null)
 
-    private val _recentVisits = searchTypes.flatRequestStateFlow {
+    private val _recentVisits = searchTypes.flatRequestStateFlow(defaultConfig) {
         recentVisitRepository.all(it.mapNotNull { it.toRecentVisitType() })
     }
     override val recentVisits = _recentVisits.state(RequestState.Initial())

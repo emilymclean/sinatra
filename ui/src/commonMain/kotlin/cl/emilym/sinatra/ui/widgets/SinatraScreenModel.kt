@@ -3,6 +3,7 @@ package cl.emilym.sinatra.ui.widgets
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import cl.emilym.compose.requeststate.RequestState
+import cl.emilym.compose.requeststate.RequestStateConfig
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -11,6 +12,10 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+
+val defaultConfig = RequestStateConfig(
+    showLoadingOnEmission = false
+)
 
 interface SinatraScreenModel: ScreenModel {
     fun <T> Flow<T>.state(initial: T): StateFlow<T> =

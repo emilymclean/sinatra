@@ -44,9 +44,10 @@ fun AppOutOfDateScreen() {
             Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
+                .padding(internalPadding)
         ) {
             Column(
-                Modifier.padding(internalPadding).padding(vertical = 1.rdp),
+                Modifier.padding(vertical = 1.rdp),
                 verticalArrangement = Arrangement.spacedBy(1.rdp)
             ) {
                 Column(

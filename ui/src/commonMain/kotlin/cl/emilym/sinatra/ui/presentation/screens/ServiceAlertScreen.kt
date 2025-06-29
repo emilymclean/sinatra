@@ -126,10 +126,10 @@ class ServiceAlertScreen: ContentScreen(ContentRepository.SERVICE_ALERT_ID) {
                     navigationIcon = { NavigatorBackButton() }
                 )
             }
-        ) { internalPadding ->
+        ) { innerPadding ->
             val alerts by viewModel.serviceAlerts.collectAsStateWithLifecycle()
             Box(
-                Modifier.fillMaxSize().padding(internalPadding),
+                Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
                 RequestStateWidget(
@@ -139,7 +139,7 @@ class ServiceAlertScreen: ContentScreen(ContentRepository.SERVICE_ALERT_ID) {
                     if (alerts.isNotEmpty()) {
                         LazyColumn(
                             Modifier.fillMaxSize(),
-                            contentPadding = PaddingValues(bottom = 1.rdp)
+                            contentPadding = innerPadding
                         ) {
                             items(alerts) {
                                 ServiceAlertCard(
@@ -156,6 +156,9 @@ class ServiceAlertScreen: ContentScreen(ContentRepository.SERVICE_ALERT_ID) {
                                         RenderLinks(it)
                                     }
                                 }
+                            }
+                            item {
+                                Spacer(Modifier.height(1.rdp))
                             }
                         }
                     } else {

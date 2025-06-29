@@ -92,8 +92,9 @@ class LiveStopTimetableUseCaseTest {
                         false
                     ),
                     false,
-                    null
-                )
+                    null,
+                ),
+                false
             )
         )
         val updates = StopRealtimeInformation(
@@ -152,7 +153,8 @@ class LiveStopTimetableUseCaseTest {
                     ),
                     false,
                     null
-                )
+                ),
+                false
             )
         )
         val updates = StopRealtimeInformation(
@@ -207,7 +209,8 @@ class LiveStopTimetableUseCaseTest {
                     ),
                     false,
                     null
-                )
+                ),
+                false
             )
         )
         val updates = StopRealtimeInformation(
@@ -262,7 +265,8 @@ class LiveStopTimetableUseCaseTest {
                     ),
                     false,
                     null
-                )
+                ),
+                false
             )
         )
 
@@ -309,7 +313,8 @@ class LiveStopTimetableUseCaseTest {
                     ),
                     false,
                     null
-                )
+                ),
+                false
             )
         )
         coEvery { liveServiceRepository.getStopRealtimeUpdates(any()) } throws Exception("Network error")

@@ -31,6 +31,7 @@ import cl.emilym.sinatra.ui.presentation.screens.search.searchHandler
 import cl.emilym.sinatra.ui.retryIfNeeded
 import cl.emilym.sinatra.ui.widgets.SinatraScreenModel
 import cl.emilym.sinatra.ui.widgets.createRequestStateFlowFlow
+import cl.emilym.sinatra.ui.widgets.defaultConfig
 import cl.emilym.sinatra.ui.widgets.handleFlowProperly
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
@@ -275,7 +276,7 @@ class NavigationEntryViewModel(
         emptyList()
     )
 
-    private val _favourites = flatRequestStateFlow { navigableFavouritesUseCase() }
+    private val _favourites = flatRequestStateFlow(defaultConfig) { navigableFavouritesUseCase() }
     val favourites = _favourites.state()
 
     @OptIn(ExperimentalCoroutinesApi::class)

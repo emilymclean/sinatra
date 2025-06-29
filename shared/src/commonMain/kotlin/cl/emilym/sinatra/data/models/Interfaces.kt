@@ -13,7 +13,7 @@ interface IRouteTripInformation {
     val startTime: Time?
     val endTime: Time?
     val accessibility: RouteServiceAccessibility
-    val heading: String?
+    val heading: Heading?
     val stops: List<IRouteTripStop>
 
     val stationTimes: List<TimetableStationTime>? get() = stops.mapNotNull {
@@ -53,6 +53,7 @@ interface IStopTimetableTime: StopTime {
     override val departureTime: Time
     val heading: String
     val route: Route?
+    val last: Boolean
 
     override val stationTime: TimetableStationTime
 }

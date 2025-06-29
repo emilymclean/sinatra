@@ -24,12 +24,16 @@ import cl.emilym.sinatra.router.data.NetworkGraph
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import org.koin.core.annotation.Factory
+import kotlin.math.min
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.seconds
@@ -113,6 +117,7 @@ class CalculateJourneyUseCase(
                         arrivalStops
                     )?.let { options += it }
 
+                    currentCoroutineContext().ensureActive()
                     if (clock.now() > computationCutoffTime) break
                 }
 
@@ -121,8 +126,24 @@ class CalculateJourneyUseCase(
                 }
 
                 options
+                    .filter {
+                        it.departureTime.instant.epochSeconds >= min(
+                            now.epochSeconds,
+                            when (anchorTime) {
+                                is JourneyCalculationTime.DepartureTime -> it.departureTime.instant.epochSeconds
+                                else -> Long.MAX_VALUE
+                            }
+                        )
+                    }
+                    .also { if (it.isEmpty()) throw RouterException.noJourneyFound() }
                     .sortedWith(compareBy(
-                        { it.arrivalTime },
+                        {
+                            when (anchorTime) {
+                                is JourneyCalculationTime.DepartureTime -> it.arrivalTime.instant.epochSeconds
+                                is JourneyCalculationTime.ArrivalTime -> it.departureTime.instant.epochSeconds * -1
+                            }
+                        },
+                        { it.duration },
                         { it.legs.filterIsInstance<JourneyLeg.Travel>().size }
                     ))
                     .distinctBy { it.deduplicationKey }

@@ -11,7 +11,7 @@ import cl.emilym.sinatra.ui.maps.MarkerIcon
 import cl.emilym.sinatra.ui.maps.MarkerItem
 import cl.emilym.sinatra.ui.maps.NativeMapScope
 import cl.emilym.sinatra.ui.maps.stopMarkerIcon
-import cl.emilym.sinatra.ui.presentation.screens.maps.StopDetailScreen
+import cl.emilym.sinatra.ui.presentation.screens.maps.stop.StopDetailScreen
 
 @Composable
 actual fun NativeMapScope.DrawMapSearchScreenMapNative(stops: List<Stop>) {

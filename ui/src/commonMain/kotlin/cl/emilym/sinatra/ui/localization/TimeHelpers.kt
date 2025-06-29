@@ -12,6 +12,9 @@ import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.format
 import kotlinx.datetime.toLocalDateTime
+import org.jetbrains.compose.resources.stringResource
+import sinatra.ui.generated.resources.Res
+import sinatra.ui.generated.resources.time_local_timezone
 
 val LocalScheduleTimeZone = staticCompositionLocalOf<TimeZone> { error("Schedule time zone not provided!") }
 val LocalLocalTimeZone = staticCompositionLocalOf<TimeZone> { TimeZone.currentSystemDefault() }
@@ -39,6 +42,11 @@ fun Time.isInPast(): Boolean {
 }
 
 @Composable
+fun Time.isSameDay(timeZone: TimeZone = LocalLocalTimeZone.current): Boolean {
+    return toTodayInstant().isSameDay(timeZone)
+}
+
+@Composable
 fun Instant.format(): String {
     val localTimeZone = LocalLocalTimeZone.current
     val scheduleTimeZone = LocalScheduleTimeZone.current
@@ -46,19 +54,23 @@ fun Instant.format(): String {
     val scheduleTime = format(scheduleTimeZone)
     return when {
         localTimeZone.id != scheduleTimeZone.id && FeatureFlags.SPECIFY_TIMEZONE_WHEN_DIFFERENT ->
-            "$scheduleTime (${scheduleTimeZone.id})"
+            stringResource(Res.string.time_local_timezone, scheduleTime)
         else -> scheduleTime
     }
 }
 
 @Composable
+fun Instant.isSameDay(timeZone: TimeZone): Boolean {
+    return toLocalDateTime(timeZone).isSameDay(LocalClock.current.now().toLocalDateTime(timeZone))
+}
+
+@Composable
 private fun Instant.format(timeZone: TimeZone): String {
     val inTz = toLocalDateTime(timeZone)
-    val todayInTz = LocalClock.current.now().toLocalDateTime(timeZone)
     val timeFormat = timeFormat
 
     return when {
-        inTz.isSameDay(todayInTz) -> inTz.format(LocalDateTime.Format {
+        isSameDay(timeZone) -> inTz.format(LocalDateTime.Format {
             time(timeFormat)
         })
         else -> inTz.format(dayOfWeekDateTimeFormat)
