@@ -188,7 +188,9 @@
   <string name="no_content_page">找不到所请求的页面。</string>
       
   <string name="route_not_found">请求的路线没有站点。</string>
-      
+
+  <string name="route_not_operating">此路线今日不运营。</string>
+
   <string name="stop_not_found">找不到要求的停靠点。</string>
       
   <string name="trip_not_found">目前没有符合所请求路线的行程。</string>

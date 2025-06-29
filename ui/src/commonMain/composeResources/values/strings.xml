@@ -139,7 +139,8 @@
     <string name="no_content_page">The requested page could not be found.</string>
 
     <string name="no_nearby_stops">There are no stops nearby.</string>
-    <string name="route_not_found">The requested route has no stops.</string>
+    <string name="route_not_found">The requested route could not be found.</string>
+    <string name="route_not_operating">This route does not operate today.</string>
     <string name="stop_not_found">The requested stop could not be found.</string>
     <string name="place_not_found">The requested place could not be found.</string>
     <string name="point_outside_service_area">This point is outside the service area.</string>
