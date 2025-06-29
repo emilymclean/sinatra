@@ -209,6 +209,7 @@ class RouteDetailScreen(
         val selectedHeading by viewModel.selectedHeading.collectAsStateWithLifecycle()
         val heading by viewModel.heading.collectAsStateWithLifecycle()
         val headings by viewModel.headings.collectAsStateWithLifecycle()
+        val isToday by viewModel.isToday.collectAsStateWithLifecycle()
 
         val current = if (trigger != null) {
             remember(trigger) {
@@ -304,38 +305,27 @@ class RouteDetailScreen(
                             )
                         }
                     }
-                    item { Box(Modifier.height(2.rdp)) }
+                    item { Box(Modifier.height(1.rdp)) }
                 }
-                if (route.approximateTimings) {
+                if (isToday) {
                     item {
-                        Column(
-                            Modifier.padding(horizontal = 1.rdp)
-                        ) {
-                            Card(
-                                Modifier.fillMaxWidth(),
-                                colors = CardDefaults.cardColors(
-                                    containerColor = MaterialTheme.colorScheme.secondaryContainer
-                                )
-                            ) {
-                                Row(
-                                    modifier = Modifier.padding(1.rdp),
-                                    horizontalArrangement = Arrangement.spacedBy(0.5.rdp)
-                                ) {
-                                    WarningIcon()
-                                    Column {
-                                        Text(
-                                            stringResource(Res.string.stops_timing_approximate_title),
-                                            style = MaterialTheme.typography.titleMedium
-                                        )
-                                        Text(
-                                            stringResource(Res.string.stops_timing_approximate),
-                                        )
-                                    }
-                                }
-                            }
-                            Box(Modifier.height(2.rdp))
-                        }
+                        WarningCard(
+                            stringResource(Res.string.route_not_operating),
+                            null,
+                            Modifier.fillMaxWidth().padding(horizontal = 1.rdp)
+                        )
                     }
+                    item { Box(Modifier.height(1.rdp)) }
+                }
+                if (route.approximateTimings && isToday) {
+                    item {
+                        WarningCard(
+                            stringResource(Res.string.stops_timing_approximate_title),
+                            stringResource(Res.string.stops_timing_approximate),
+                            Modifier.fillMaxWidth().padding(horizontal = 1.rdp)
+                        )
+                    }
+                    item { Box(Modifier.height(2.rdp)) }
                 }
                 if (route.description != null && trigger == null) {
                     item {
@@ -546,4 +536,32 @@ class RouteDetailScreen(
         }
     }
 
+}
+
+@Composable
+fun WarningCard(
+    title: String,
+    description: String?,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        Modifier.then(modifier),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.secondaryContainer
+        )
+    ) {
+        Row(
+            modifier = Modifier.padding(1.rdp),
+            horizontalArrangement = Arrangement.spacedBy(0.5.rdp)
+        ) {
+            WarningIcon()
+            Column {
+                Text(
+                    title,
+                    style = MaterialTheme.typography.titleMedium
+                )
+                description?.let { Text(description) }
+            }
+        }
+    }
 }

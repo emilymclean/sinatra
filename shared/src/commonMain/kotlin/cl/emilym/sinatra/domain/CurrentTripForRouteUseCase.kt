@@ -25,6 +25,7 @@ import org.koin.core.annotation.Factory
 data class CurrentTripInformation(
     val tripInformations: List<IRouteTripInformation>,
     val route: Route,
+    val isToday: Boolean,
 ) {
 
     @Deprecated("Use trip informations")
@@ -47,7 +48,8 @@ class CurrentTripForRouteUseCase(
         tripId: TripId? = null,
         referenceTime: Instant? = null
     ): Flow<Cachable<CurrentTripInformation?>> {
-        val now = (referenceTime ?: clock.now()).startOfDay(transportMetadataRepository.timeZone())
+        val timeZone = transportMetadataRepository.timeZone()
+        val now = (referenceTime ?: clock.now()).startOfDay(timeZone)
 
         val rc = routeRepository.route(routeId)
         val route = rc.item ?: return flowOf(rc.map { null })
@@ -57,8 +59,9 @@ class CurrentTripForRouteUseCase(
                 serviceRepository.services(it)
             }
             services.map {
-                it.firstOrNull { it.active(now, transportMetadataRepository.timeZone()) } ?:
-                    it.firstOrNull { it.active(now, transportMetadataRepository.timeZone(), ignoreDates = true) }
+                it.firstOrNull { it.active(now, timeZone) } ?:
+                it.firstOrNull { it.active(now, timeZone, ignoreDates = true) } ?:
+                if (tripId == null) it.firstOrNull() else null
             }
         } else {
             serviceRepository.services(listOf(serviceId)).map { it.firstOrNull() }
@@ -74,13 +77,21 @@ class CurrentTripForRouteUseCase(
                     now
                 )
             }
-            return flowOf(timetable.map { CurrentTripInformation(listOf(it.trip), route) })
+            return flowOf(timetable.map { CurrentTripInformation(
+                listOf(it.trip),
+                route,
+                true
+            ) })
         }
 
         return when {
             tripId == null -> {
                 val timetable = activeServices.flatMap { routeRepository.canonicalServiceTimetable(routeId, it!!.id) }
-                flowOf(timetable.map { CurrentTripInformation(it.trips, route) })
+                flowOf(timetable.map { CurrentTripInformation(
+                    it.trips,
+                    route,
+                    activeServices.item.active(now, timeZone) == true
+                ) })
             }
             !route.hasRealtime -> {
                 fallback()
@@ -94,7 +105,7 @@ class CurrentTripForRouteUseCase(
                         now
                     ).map {
                         it
-                            .map { CurrentTripInformation(listOf(it), route) }
+                            .map { CurrentTripInformation(listOf(it), route, true) }
                             .merge(activeServices) { i1, i2 -> i1 }
                     }
                 } catch (e: Exception) {

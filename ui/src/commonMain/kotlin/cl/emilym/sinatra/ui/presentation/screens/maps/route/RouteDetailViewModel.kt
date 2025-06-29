@@ -82,6 +82,8 @@ class RouteDetailViewModel(
     }
     val route = _route.state()
 
+    val isToday = currentTripInformation.mapLatest { it.unwrap()?.isToday != false }.state(true)
+
     val tripInformation = combine(
         currentTripInformation,
         _heading
