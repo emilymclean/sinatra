@@ -4,6 +4,7 @@ import cafe.adriel.voyager.core.model.screenModelScope
 import cl.emilym.compose.requeststate.RequestState
 import cl.emilym.compose.requeststate.flatRequestStateFlow
 import cl.emilym.compose.requeststate.map
+import cl.emilym.compose.requeststate.requestStateFlow
 import cl.emilym.compose.requeststate.unwrap
 import cl.emilym.sinatra.data.models.Heading
 import cl.emilym.sinatra.data.models.MapLocation
@@ -16,6 +17,7 @@ import cl.emilym.sinatra.data.repository.AlertDisplayContext
 import cl.emilym.sinatra.data.repository.AlertRepository
 import cl.emilym.sinatra.data.repository.FavouriteRepository
 import cl.emilym.sinatra.data.repository.RecentVisitRepository
+import cl.emilym.sinatra.data.repository.RouteRepository
 import cl.emilym.sinatra.domain.CurrentTripForRouteUseCase
 import cl.emilym.sinatra.domain.NEAREST_STOP_RADIUS
 import cl.emilym.sinatra.lib.combineFlatMapLatest
@@ -43,6 +45,7 @@ class RouteDetailViewModel(
     private val favouriteRepository: FavouriteRepository,
     private val recentVisitRepository: RecentVisitRepository,
     private val alertRepository: AlertRepository,
+    private val routeRepository: RouteRepository,
     private val clock: Clock
 ): SinatraScreenModel {
 
@@ -74,7 +77,11 @@ class RouteDetailViewModel(
         it.unwrap()?.tripInformations?.mapNotNull { it.heading }
     }.state(null)
 
-    val route = currentTripInformation.mapLatest { it.unwrap()?.route }.state(null)
+    private val _route = params.filterNotNull().requestStateFlow(defaultConfig) {
+        routeRepository.route(it.routeId).item
+    }
+    val route = _route.state()
+
     val tripInformation = combine(
         currentTripInformation,
         _heading
@@ -150,6 +157,7 @@ class RouteDetailViewModel(
     fun retry() {
         screenModelScope.launch { _currentTripInformation.retryIfNeeded(currentTripInformation.value) }
         screenModelScope.launch { _alerts.retryIfNeeded(alerts.value) }
+        screenModelScope.launch { _route.retryIfNeeded(route.value) }
     }
 
     fun updateLocation(location: MapLocation) {
