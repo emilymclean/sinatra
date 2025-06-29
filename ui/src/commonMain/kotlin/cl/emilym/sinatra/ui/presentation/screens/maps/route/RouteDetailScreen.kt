@@ -307,7 +307,7 @@ class RouteDetailScreen(
                     }
                     item { Box(Modifier.height(1.rdp)) }
                 }
-                if (isToday) {
+                if (!isToday) {
                     item {
                         WarningCard(
                             stringResource(Res.string.route_not_operating),
