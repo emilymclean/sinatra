@@ -210,6 +210,7 @@ class RouteDetailScreen(
         val heading by viewModel.heading.collectAsStateWithLifecycle()
         val headings by viewModel.headings.collectAsStateWithLifecycle()
         val isToday by viewModel.isToday.collectAsStateWithLifecycle()
+        val showAccessibility by viewModel.showAccessibility.collectAsStateWithLifecycle()
 
         val current = if (trigger != null) {
             remember(trigger) {
@@ -354,30 +355,34 @@ class RouteDetailScreen(
                     }
                     item { Box(Modifier.height(2.rdp)) }
                 }
-                info?.let { info ->
+                info?.nullIf { !showAccessibility }?.let { info ->
                     item {
                         Subheading(stringResource(Res.string.accessibility_title))
                     }
                     item { Box(Modifier.height(1.rdp)) }
                     item {
                         Column(Modifier.padding(horizontal = 1.rdp)) {
-                            AccessibilityIconLockup(
-                                {
-                                    WheelchairAccessibleIcon(info.accessibility.wheelchairAccessible == ServiceWheelchairAccessible.ACCESSIBLE)
+                            if (info.accessibility.wheelchairAccessible != ServiceWheelchairAccessible.UNKNOWN) {
+                                AccessibilityIconLockup(
+                                    {
+                                        WheelchairAccessibleIcon(info.accessibility.wheelchairAccessible == ServiceWheelchairAccessible.ACCESSIBLE)
+                                    }
+                                ) {
+                                    Text(when(info.accessibility.wheelchairAccessible == ServiceWheelchairAccessible.ACCESSIBLE) {
+                                        true -> stringResource(Res.string.route_accessibility_wheelchair_accessible)
+                                        false -> stringResource(Res.string.route_accessibility_not_wheelchair_accessible)
+                                    })
                                 }
-                            ) {
-                                Text(when(info.accessibility.wheelchairAccessible == ServiceWheelchairAccessible.ACCESSIBLE) {
-                                    true -> stringResource(Res.string.route_accessibility_wheelchair_accessible)
-                                    false -> stringResource(Res.string.route_accessibility_not_wheelchair_accessible)
-                                })
                             }
-                            AccessibilityIconLockup(
-                                { BikeIcon() }
-                            ) {
-                                Text(when(info.accessibility.bikesAllowed == ServiceBikesAllowed.ALLOWED) {
-                                    true -> stringResource(Res.string.route_accessibility_bikes_allowed)
-                                    false -> stringResource(Res.string.route_accessibility_no_bikes_allowed)
-                                })
+                            if (info.accessibility.bikesAllowed != ServiceBikesAllowed.UNKNOWN) {
+                                AccessibilityIconLockup(
+                                    { BikeIcon() }
+                                ) {
+                                    Text(when(info.accessibility.bikesAllowed == ServiceBikesAllowed.ALLOWED) {
+                                        true -> stringResource(Res.string.route_accessibility_bikes_allowed)
+                                        false -> stringResource(Res.string.route_accessibility_no_bikes_allowed)
+                                    })
+                                }
                             }
                         }
                     }
