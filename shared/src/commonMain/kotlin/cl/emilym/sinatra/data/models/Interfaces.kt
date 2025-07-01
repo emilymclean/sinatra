@@ -52,8 +52,9 @@ interface IStopTimetableTime: StopTime {
     override val arrivalTime: Time
     override val departureTime: Time
     val heading: String
-    val route: Route?
     val last: Boolean
+    val route: Route?
+    val childStop: Stop?
 
     override val stationTime: TimetableStationTime
 }

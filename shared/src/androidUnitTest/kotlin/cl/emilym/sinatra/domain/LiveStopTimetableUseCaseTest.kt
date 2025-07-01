@@ -75,6 +75,7 @@ class LiveStopTimetableUseCaseTest {
                 Time.parse("PT10H1M").addReference(scheduleStartOfDay),
                 "North",
                 0,
+                false,
                 Route(
                     "R1",
                     "R1",
@@ -94,7 +95,7 @@ class LiveStopTimetableUseCaseTest {
                     false,
                     null,
                 ),
-                false
+                null
             )
         )
         val updates = StopRealtimeInformation(
@@ -135,6 +136,7 @@ class LiveStopTimetableUseCaseTest {
                 Time.parse("PT10H1M").addReference(scheduleStartOfDay),
                 "North",
                 0,
+                false,
                 Route(
                     "R1",
                     "R1",
@@ -154,7 +156,7 @@ class LiveStopTimetableUseCaseTest {
                     false,
                     null
                 ),
-                false
+                null
             )
         )
         val updates = StopRealtimeInformation(
@@ -191,6 +193,7 @@ class LiveStopTimetableUseCaseTest {
                 Time.parse("PT10H1M").addReference(scheduleStartOfDay),
                 "North",
                 0,
+                false,
                 Route(
                     "R1",
                     "R1",
@@ -210,7 +213,7 @@ class LiveStopTimetableUseCaseTest {
                     false,
                     null
                 ),
-                false
+                null
             )
         )
         val updates = StopRealtimeInformation(
@@ -247,6 +250,7 @@ class LiveStopTimetableUseCaseTest {
                 Time.parse("PT10H1M").addReference(scheduleStartOfDay),
                 "North",
                 0,
+                false,
                 Route(
                     "R1",
                     "R1",
@@ -266,7 +270,7 @@ class LiveStopTimetableUseCaseTest {
                     false,
                     null
                 ),
-                false
+                null
             )
         )
 
@@ -295,6 +299,7 @@ class LiveStopTimetableUseCaseTest {
                 Time.parse("PT10H1M").addReference(scheduleStartOfDay),
                 "North",
                 0,
+                false,
                 Route(
                     "R1",
                     "R1",
@@ -314,7 +319,7 @@ class LiveStopTimetableUseCaseTest {
                     false,
                     null
                 ),
-                false
+                null
             )
         )
         coEvery { liveServiceRepository.getStopRealtimeUpdates(any()) } throws Exception("Network error")
