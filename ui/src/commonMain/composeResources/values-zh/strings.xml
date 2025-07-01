@@ -198,7 +198,10 @@
   <string name="stops_title">站点</string>
 
   <string name="stop_detail_child_stations">附加车站</string>
-      
+
+  <string name="stop_detail_platform">%1$s号站台</string>
+  <string name="stop_detail_platform_lr">%1$s号站台 (LR)</string>
+
   <string name="current_stops_title">即将停靠的站点</string>
       
   <string name="past_stops_title">过去的站点</string>
