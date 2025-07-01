@@ -42,8 +42,9 @@ class StopTimetableTimeEntity(
             departureTime.time.referenced(startOfDay),
             heading,
             sequence,
+            last,
             null,
-            last
+            null
         )
     }
 
@@ -74,12 +75,18 @@ class StopTimetableTimeEntityWithRouteEntity(
         parentColumn = "routeId",
         entityColumn = "id"
     )
-    val route: RouteEntity?
+    val route: RouteEntity?,
+    @Relation(
+        parentColumn = "childStopId",
+        entityColumn = "id"
+    )
+    val childStop: StopEntity?
 ) {
 
     fun toModel(startOfDay: Instant? = null): StopTimetableTime {
         return stopTimetableTimeEntity.toModel(startOfDay).copy(
-            route = route?.toModel()
+            route = route?.toModel(),
+            childStop = childStop?.toModel()
         )
     }
 

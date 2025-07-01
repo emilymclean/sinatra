@@ -501,11 +501,7 @@ class RouteDetailScreen(
                 Modifier.fillMaxWidth(),
                 it.stationTime?.pick(route, it.sequence <= 1),
                 onClick = {
-                    navigator.push(
-                        StopDetailScreen(
-                        it.stopId
-                    )
-                    )
+                    navigator.push(StopDetailScreen(it.stopId))
                 }
             )
         }
