@@ -355,38 +355,40 @@ class RouteDetailScreen(
                     }
                     item { Box(Modifier.height(2.rdp)) }
                 }
-                info?.nullIf { !showAccessibility }?.let { info ->
-                    item {
-                        Subheading(stringResource(Res.string.accessibility_title))
-                    }
-                    item { Box(Modifier.height(1.rdp)) }
-                    item {
-                        Column(Modifier.padding(horizontal = 1.rdp)) {
-                            if (info.accessibility.wheelchairAccessible != ServiceWheelchairAccessible.UNKNOWN) {
-                                AccessibilityIconLockup(
-                                    {
-                                        WheelchairAccessibleIcon(info.accessibility.wheelchairAccessible == ServiceWheelchairAccessible.ACCESSIBLE)
+                info?.let { info ->
+                    if (showAccessibility) {
+                        item {
+                            Subheading(stringResource(Res.string.accessibility_title))
+                        }
+                        item { Box(Modifier.height(1.rdp)) }
+                        item {
+                            Column(Modifier.padding(horizontal = 1.rdp)) {
+                                if (info.accessibility.wheelchairAccessible != ServiceWheelchairAccessible.UNKNOWN) {
+                                    AccessibilityIconLockup(
+                                        {
+                                            WheelchairAccessibleIcon(info.accessibility.wheelchairAccessible == ServiceWheelchairAccessible.ACCESSIBLE)
+                                        }
+                                    ) {
+                                        Text(when(info.accessibility.wheelchairAccessible == ServiceWheelchairAccessible.ACCESSIBLE) {
+                                            true -> stringResource(Res.string.route_accessibility_wheelchair_accessible)
+                                            false -> stringResource(Res.string.route_accessibility_not_wheelchair_accessible)
+                                        })
                                     }
-                                ) {
-                                    Text(when(info.accessibility.wheelchairAccessible == ServiceWheelchairAccessible.ACCESSIBLE) {
-                                        true -> stringResource(Res.string.route_accessibility_wheelchair_accessible)
-                                        false -> stringResource(Res.string.route_accessibility_not_wheelchair_accessible)
-                                    })
                                 }
-                            }
-                            if (info.accessibility.bikesAllowed != ServiceBikesAllowed.UNKNOWN) {
-                                AccessibilityIconLockup(
-                                    { BikeIcon() }
-                                ) {
-                                    Text(when(info.accessibility.bikesAllowed == ServiceBikesAllowed.ALLOWED) {
-                                        true -> stringResource(Res.string.route_accessibility_bikes_allowed)
-                                        false -> stringResource(Res.string.route_accessibility_no_bikes_allowed)
-                                    })
+                                if (info.accessibility.bikesAllowed != ServiceBikesAllowed.UNKNOWN) {
+                                    AccessibilityIconLockup(
+                                        { BikeIcon() }
+                                    ) {
+                                        Text(when(info.accessibility.bikesAllowed == ServiceBikesAllowed.ALLOWED) {
+                                            true -> stringResource(Res.string.route_accessibility_bikes_allowed)
+                                            false -> stringResource(Res.string.route_accessibility_no_bikes_allowed)
+                                        })
+                                    }
                                 }
                             }
                         }
+                        item { Box(Modifier.height(2.rdp)) }
                     }
-                    item { Box(Modifier.height(2.rdp)) }
                 }
                 headings?.nullIf { it.size <= 1 }?.let { headings ->
                     item {
