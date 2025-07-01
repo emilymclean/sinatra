@@ -9,7 +9,9 @@ import cl.emilym.compose.requeststate.unwrap
 import cl.emilym.sinatra.data.models.Heading
 import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.data.models.RouteId
+import cl.emilym.sinatra.data.models.ServiceBikesAllowed
 import cl.emilym.sinatra.data.models.ServiceId
+import cl.emilym.sinatra.data.models.ServiceWheelchairAccessible
 import cl.emilym.sinatra.data.models.StopWithDistance
 import cl.emilym.sinatra.data.models.TripId
 import cl.emilym.sinatra.data.models.distance
@@ -105,6 +107,12 @@ class RouteDetailViewModel(
         }
     }.state(null)
     val selectedHeading = _heading.asStateFlow()
+
+    val showAccessibility = tripInformation.mapLatest {
+        val accessibility = it.unwrap()?.accessibility ?: return@mapLatest true
+        accessibility.wheelchairAccessible != ServiceWheelchairAccessible.UNKNOWN &&
+        accessibility.bikesAllowed != ServiceBikesAllowed.UNKNOWN
+    }.state(true)
 
     val nearestStop = combine(
         tripInformation,

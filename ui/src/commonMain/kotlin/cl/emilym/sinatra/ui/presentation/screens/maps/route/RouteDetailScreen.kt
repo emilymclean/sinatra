@@ -325,20 +325,20 @@ class RouteDetailScreen(
                             Modifier.fillMaxWidth().padding(horizontal = 1.rdp)
                         )
                     }
-                    item { Box(Modifier.height(2.rdp)) }
+                    item { Box(Modifier.height(1.rdp)) }
                 }
                 if (route.description != null && trigger == null) {
                     item {
                         Column(
-                            Modifier.fillMaxWidth().padding(1.rdp),
+                            Modifier.fillMaxWidth().padding(horizontal = 1.rdp),
                             verticalArrangement = Arrangement.spacedBy(1.rdp)
                         ) {
                             Markdown(route.description ?: "")
                         }
                     }
-                    if (route.moreLink == null) {
-                        item { Box(Modifier.height(1.rdp)) }
-                    }
+                    item { Box(Modifier.height(
+                        if (route.moreLink == null) 2.rdp else 1.rdp
+                    )) }
                 }
                 if (route.moreLink != null && trigger == null) {
                     item {
