@@ -55,7 +55,6 @@ class UpcomingRoutesForStopUseCase(
                     else -> filter { routeIds.contains(it.routeId) }
                 }
             }
-            println(times)
             val services = timesAndServices.item.services
 
             while (currentCoroutineContext().isActive) {
@@ -77,11 +76,20 @@ class UpcomingRoutesForStopUseCase(
                     }
                     if (active.size == number) break
                 }
-                active.distinctBy {
-                    it.routeId to it.arrivalTime.instant
-                }
 
-                emit(timesAndServices.map { active.toList() })
+                emit(timesAndServices.map { active
+                    .distinctBy { it.routeId to it.arrivalTime.instant }
+                    .map {
+                        when (it.childStopId) {
+                            stopId -> it.copy(
+                                childStop = null,
+                                childStopId = null
+                            )
+                            else -> it
+                        }
+                    }
+                    .toList()
+                })
                 delay(1.minutes)
             }
         }

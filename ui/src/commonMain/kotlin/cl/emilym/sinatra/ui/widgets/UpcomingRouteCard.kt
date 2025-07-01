@@ -46,7 +46,7 @@ fun UpcomingRouteCard(
         )
         stopStationTime?.let {
             Text(
-                when (timetableTime.childStop) {
+                when(timetableTime.childStop) {
                     null -> it.text
                     else -> stringResource(
                         Res.string.stop_detail_from,
@@ -62,7 +62,7 @@ fun UpcomingRouteCard(
 
 private fun String.platformName(): String {
     val lc = toLowerCase(Locale("en-AU"))
-    val idx = max(lc.indexOf("platform"), lc.indexOf("plt"))
+    val idx = listOf(lc.indexOf("platform"), lc.indexOf("plt"), 0).max()
 
     return substring(idx)
 }
