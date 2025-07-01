@@ -96,7 +96,7 @@ fun Route.color(): Color {
 }
 
 @Composable
-fun Route.onColor(): Color? {
+fun Route.onColor(): Color {
     return when {
         code == "8" && isSystemInDarkTheme() -> MaterialTheme.colorScheme.surface
         colors != null -> colors!!.onColor()

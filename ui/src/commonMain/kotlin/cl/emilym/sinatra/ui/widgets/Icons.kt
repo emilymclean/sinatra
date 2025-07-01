@@ -202,11 +202,12 @@ fun MapIcon(
 @Composable
 fun NavigateIcon(
     modifier: Modifier = Modifier,
-    tint: Color = LocalContentColor.current
+    tint: Color = LocalContentColor.current,
+    contentDescription: String? = null
 ) {
     Icon(
         painterResource(Res.drawable.navigate),
-        contentDescription = null,
+        contentDescription = contentDescription,
         modifier = modifier,
         tint = tint
     )

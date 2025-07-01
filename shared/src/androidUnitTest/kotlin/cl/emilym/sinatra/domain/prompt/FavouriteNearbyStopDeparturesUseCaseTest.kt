@@ -69,7 +69,8 @@ class FavouriteNearbyStopDeparturesUseCaseTest {
         departureTime = Time.parse("PT10H"),
         heading = "North",
         sequence = 1,
-        route = null
+        route = null,
+        false
     )
 
     private val cachableDepartures = Cachable(listOf(timetableTime as IStopTimetableTime), CacheState.LIVE)

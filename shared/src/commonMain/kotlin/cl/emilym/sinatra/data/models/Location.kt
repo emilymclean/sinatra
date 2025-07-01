@@ -113,7 +113,15 @@ fun List<MapLocation>.findMidpoint(): MapLocation {
     return MapLocation(oLat.radians.asDegrees, oLng.radians.asDegrees)
 }
 
-fun distance(m1: MapLocation, m2: MapLocation): Double {
+fun distanceLat(distance: Kilometer): Latitude {
+    return distance / 111.32
+}
+
+fun distanceLng(distance: Kilometer, position: MapLocation): Longitude {
+    return (360 / (40075 * cos(position.lat.asRadians))) * distance
+}
+
+fun distance(m1: MapLocation, m2: MapLocation): Kilometer {
     return acos(
         (sin(m1.lat.asRadians) * sin(m2.lat.asRadians)) +
                 (cos(m1.lat.asRadians) * cos(m2.lat.asRadians) * cos(m2.lng.asRadians - m1.lng.asRadians))) *

@@ -1,16 +1,40 @@
 package cl.emilym.sinatra.domain.navigation
 
 import cl.emilym.sinatra.RouterException
-import cl.emilym.sinatra.data.models.*
-import cl.emilym.sinatra.data.repository.*
+import cl.emilym.sinatra.data.models.Cachable
+import cl.emilym.sinatra.data.models.Journey
+import cl.emilym.sinatra.data.models.JourneyLeg
+import cl.emilym.sinatra.data.models.JourneySearchConfig
+import cl.emilym.sinatra.data.models.JourneySearchOption
+import cl.emilym.sinatra.data.models.MapLocation
+import cl.emilym.sinatra.data.models.Service
+import cl.emilym.sinatra.data.models.Stop
+import cl.emilym.sinatra.data.models.StopAccessibility
+import cl.emilym.sinatra.data.models.StopVisibility
+import cl.emilym.sinatra.data.models.StopWheelchairAccessibility
+import cl.emilym.sinatra.data.models.Time
+import cl.emilym.sinatra.data.repository.NetworkGraphRepository
+import cl.emilym.sinatra.data.repository.RoutingPreferencesRepository
+import cl.emilym.sinatra.data.repository.StopRepository
+import cl.emilym.sinatra.data.repository.TransportMetadataRepository
 import cl.emilym.sinatra.domain.ActiveServicesUseCase
-import cl.emilym.sinatra.router.*
+import cl.emilym.sinatra.router.DepartureBasedRouter
+import cl.emilym.sinatra.router.RaptorJourney
+import cl.emilym.sinatra.router.RaptorJourneyConnection
+import cl.emilym.sinatra.router.RaptorStop
 import cl.emilym.sinatra.router.data.NetworkGraph
-import io.mockk.*
+import io.mockk.coEvery
+import io.mockk.every
+import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withContext
-import kotlinx.datetime.*
-import kotlin.test.*
+import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
+import kotlinx.datetime.TimeZone
+import kotlin.test.BeforeTest
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
@@ -79,7 +103,9 @@ class CalculateJourneyUseCaseTest {
             )
         ))
         every { routerFactory(any(), any(), any(), any(), any()) } returns router
-        coEvery { reconstructJourneyUseCase(any(), any(), any(), any(), any()) } returns Journey(listOf())
+        coEvery { reconstructJourneyUseCase(any(), any(), any(), any(), any()) } returns Journey(listOf(
+            JourneyLeg.TransferPoint(1.seconds, Time.create(0.seconds, now), Time.create(1.seconds, now)
+        )))
 
         val result = useCase(
             JourneyLocation(location, exact = true),
