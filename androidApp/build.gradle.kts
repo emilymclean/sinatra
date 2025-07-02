@@ -18,7 +18,7 @@ android {
     defaultConfig {
         applicationId = "cl.emilym.sinatra"
         minSdk = 23
-        targetSdk = 34
+        targetSdk = 35
         versionCode = appVersionCode.toInt()
         versionName = appVersionName
     }
