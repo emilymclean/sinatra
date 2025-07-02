@@ -5,6 +5,7 @@ import cl.emilym.sinatra.data.models.Service
 import cl.emilym.sinatra.data.models.StopTimetable
 import cl.emilym.sinatra.data.models.StopTimetableTime
 import cl.emilym.sinatra.data.models.Time
+import cl.emilym.sinatra.data.repository.RemoteConfigRepository
 import cl.emilym.sinatra.data.repository.ServiceRepository
 import cl.emilym.sinatra.data.repository.StopRepository
 import cl.emilym.sinatra.data.repository.TransportMetadataRepository
@@ -31,6 +32,7 @@ class UpcomingRoutesForStopUseCaseTest {
     private lateinit var liveStopTimetableUseCase: LiveStopTimetableUseCase
     private lateinit var servicesAndTimesForStopUseCase: ServicesAndTimesForStopUseCase
     private lateinit var metadataRepository: TransportMetadataRepository
+    private lateinit var remoteConfigRepository: RemoteConfigRepository
     private lateinit var clock: Clock
     private lateinit var useCase: UpcomingRoutesForStopUseCase
     private lateinit var service: Service
@@ -40,16 +42,19 @@ class UpcomingRoutesForStopUseCaseTest {
         liveStopTimetableUseCase = mockk()
         servicesAndTimesForStopUseCase = mockk()
         metadataRepository = mockk()
+        remoteConfigRepository = mockk()
         clock = mockk()
         service = mockk()
         useCase = UpcomingRoutesForStopUseCase(
             liveStopTimetableUseCase,
             servicesAndTimesForStopUseCase,
             clock,
-            metadataRepository
+            metadataRepository,
+            remoteConfigRepository
         )
 
         every { service.id } returns "service-1"
+        coEvery { remoteConfigRepository.feature(any(), any()) } returns true
     }
 
     @Test

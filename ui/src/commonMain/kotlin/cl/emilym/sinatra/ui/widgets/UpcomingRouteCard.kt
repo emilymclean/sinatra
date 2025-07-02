@@ -6,13 +6,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.text.toLowerCase
+import cl.emilym.sinatra.FeatureFlags
 import cl.emilym.sinatra.data.models.IStopTimetableTime
+import cl.emilym.sinatra.data.models.StopId
 import org.jetbrains.compose.resources.stringResource
 import sinatra.ui.generated.resources.Res
 import sinatra.ui.generated.resources.route_code_name
 import sinatra.ui.generated.resources.route_with_heading
 import sinatra.ui.generated.resources.stop_detail_from
-import kotlin.math.max
+import sinatra.ui.generated.resources.stop_detail_platform
+import sinatra.ui.generated.resources.stop_detail_platform_lr
 
 @Composable
 fun UpcomingRouteCard(
@@ -51,7 +54,9 @@ fun UpcomingRouteCard(
                     else -> stringResource(
                         Res.string.stop_detail_from,
                         it.text,
-                            timetableTime.childStop?.name?.platformName() ?: "null"
+                            timetableTime.childStop?.name?.platformName(
+                                timetableTime.childStopId ?: ""
+                            ) ?: "null"
                         )
                 },
                 style = MaterialTheme.typography.bodySmall
@@ -60,9 +65,29 @@ fun UpcomingRouteCard(
     }
 }
 
-private fun String.platformName(): String {
-    val lc = toLowerCase(Locale("en-AU"))
-    val idx = listOf(lc.indexOf("platform"), lc.indexOf("plt"), 0).max()
+@Composable
+private fun String.platformName(
+    stopId: StopId
+): String {
+    if (!FeatureFlags.STOP_DETAIL_MANUALLY_ADJUST_PLATFORM_NAME) return this
 
-    return substring(idx)
+    val lc = toLowerCase(Locale("en-AU"))
+    val idx = listOf(lc.indexOf("platform"), lc.indexOf("plt")).max()
+    if (idx < 0) return this
+
+    val platformNumber = drop(idx).dropWhile { !it.isDigit() }.takeWhile { it.isDigit() }
+
+    if (platformNumber.isEmpty()) return this
+
+    return when {
+        listOf("8120", "8121", "8128", "8129").contains(stopId) ->
+            stringResource(
+                Res.string.stop_detail_platform_lr,
+                platformNumber
+            )
+        else -> stringResource(
+                Res.string.stop_detail_platform,
+                platformNumber
+            )
+    }
 }

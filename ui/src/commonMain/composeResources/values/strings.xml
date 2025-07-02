@@ -149,6 +149,8 @@
     <string name="stops_title">Stops</string>
     <string name="stop_detail_child_stations">Additional stops</string>
     <string name="stop_detail_from">%1$s ⋅ %2$s</string>
+    <string name="stop_detail_platform">Platform %1$s</string>
+    <string name="stop_detail_platform_lr">Platform %1$s (LR)</string>
     <string name="current_stops_title">Upcoming stops</string>
     <string name="past_stops_title">Past stops</string>
     <string name="stops_timing_approximate_title">Approximate Timings</string>

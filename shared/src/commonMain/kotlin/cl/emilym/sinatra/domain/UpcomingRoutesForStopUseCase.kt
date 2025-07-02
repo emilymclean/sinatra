@@ -1,5 +1,6 @@
 package cl.emilym.sinatra.domain
 
+import cl.emilym.sinatra.FeatureFlags
 import cl.emilym.sinatra.data.models.Cachable
 import cl.emilym.sinatra.data.models.Cachable.Companion.live
 import cl.emilym.sinatra.data.models.IStopTimetableTime
@@ -9,6 +10,7 @@ import cl.emilym.sinatra.data.models.StopTimetableTime
 import cl.emilym.sinatra.data.models.flatMap
 import cl.emilym.sinatra.data.models.map
 import cl.emilym.sinatra.data.models.startOfDay
+import cl.emilym.sinatra.data.repository.RemoteConfigRepository
 import cl.emilym.sinatra.data.repository.ServiceRepository
 import cl.emilym.sinatra.data.repository.StopRepository
 import cl.emilym.sinatra.data.repository.TransportMetadataRepository
@@ -36,7 +38,8 @@ class UpcomingRoutesForStopUseCase(
     private val liveStopTimetableUseCase: LiveStopTimetableUseCase,
     private val servicesAndTimesForStopUseCase: ServicesAndTimesForStopUseCase,
     private val clock: Clock,
-    private val metadataRepository: TransportMetadataRepository
+    private val metadataRepository: TransportMetadataRepository,
+    private val remoteConfigRepository: RemoteConfigRepository
 ) {
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -80,8 +83,11 @@ class UpcomingRoutesForStopUseCase(
                 emit(timesAndServices.map { active
                     .distinctBy { it.routeId to it.arrivalTime.instant }
                     .map {
-                        when (it.childStopId) {
-                            stopId -> it.copy(
+                        when {
+                            it.childStopId == stopId || (
+                                remoteConfigRepository.feature("stop_detail_hide_platform_for_synthetic", true) &&
+                                stopId.endsWith("-synthetic")
+                            ) -> it.copy(
                                 childStop = null,
                                 childStopId = null
                             )
