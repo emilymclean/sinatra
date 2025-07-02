@@ -80,7 +80,7 @@ private fun String.platformName(
     if (platformNumber.isEmpty()) return this
 
     return when {
-        listOf("8120", "8121", "8129").contains(stopId) ->
+        listOf("8120", "8121", "8128", "8129").contains(stopId) ->
             stringResource(
                 Res.string.stop_detail_platform_lr,
                 platformNumber
