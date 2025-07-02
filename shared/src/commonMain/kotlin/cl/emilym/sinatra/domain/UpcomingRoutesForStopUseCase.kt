@@ -1,5 +1,6 @@
 package cl.emilym.sinatra.domain
 
+import cl.emilym.sinatra.FeatureFlags
 import cl.emilym.sinatra.data.models.Cachable
 import cl.emilym.sinatra.data.models.Cachable.Companion.live
 import cl.emilym.sinatra.data.models.IStopTimetableTime
@@ -80,8 +81,11 @@ class UpcomingRoutesForStopUseCase(
                 emit(timesAndServices.map { active
                     .distinctBy { it.routeId to it.arrivalTime.instant }
                     .map {
-                        when (it.childStopId) {
-                            stopId -> it.copy(
+                        when {
+                            it.childStopId == stopId || (
+                                FeatureFlags.STOP_DETAIL_HIDE_PLATFORM_FOR_SYNTHETIC &&
+                                stopId.endsWith("-synthetic")
+                            ) -> it.copy(
                                 childStop = null,
                                 childStopId = null
                             )
