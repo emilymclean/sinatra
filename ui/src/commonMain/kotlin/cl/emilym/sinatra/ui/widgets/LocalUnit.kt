@@ -1,30 +1,48 @@
 package cl.emilym.sinatra.ui.widgets
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import cl.emilym.sinatra.data.models.Time24HSetting
 import cl.emilym.sinatra.data.repository.PreferencesRepository
 import cl.emilym.sinatra.data.repository.PreferencesUnit
 import org.koin.compose.getKoin
+import org.koin.compose.koinInject
 import org.koin.core.qualifier.StringQualifier
 
 @Composable
-fun isMetricUnits(): Boolean {
-    val koin = getKoin()
-    val metricPref = remember(koin) {
-        koin.get<PreferencesUnit<Boolean>>(StringQualifier(PreferencesRepository.DISPLAY_METRIC_UNITS_QUALIFIER))
+private fun <T> composablePreference(
+    qualifier: StringQualifier,
+    default: T
+): T {
+    val pref = koinInject<PreferencesUnit<T>>(qualifier)
+    var value by remember { mutableStateOf(default) }
+
+    LaunchedEffect(pref) {
+        pref.flow.collect {
+            value = it
+        }
     }
 
-    return metricPref.flow.collectAsState(true).value
+    return value
+}
+
+@Composable
+fun isMetricUnits(): Boolean {
+    return composablePreference(
+        StringQualifier(PreferencesRepository.DISPLAY_METRIC_UNITS_QUALIFIER),
+        true
+    )
 }
 
 @Composable
 fun override24HTimeSetting(): Time24HSetting {
-    val koin = getKoin()
-    val timePref = remember(koin) {
-        koin.get<PreferencesUnit<Time24HSetting>>(StringQualifier(PreferencesRepository.TIME_24H_QUALIFIER))
-    }
-
-    return timePref.flow.collectAsState(Time24HSetting.AUTOMATIC).value
+    return composablePreference(
+        StringQualifier(PreferencesRepository.TIME_24H_QUALIFIER),
+        Time24HSetting.AUTOMATIC
+    )
 }
