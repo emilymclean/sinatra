@@ -10,6 +10,7 @@ import cl.emilym.sinatra.data.models.StopTimetableTime
 import cl.emilym.sinatra.data.models.flatMap
 import cl.emilym.sinatra.data.models.map
 import cl.emilym.sinatra.data.models.startOfDay
+import cl.emilym.sinatra.data.repository.RemoteConfigRepository
 import cl.emilym.sinatra.data.repository.ServiceRepository
 import cl.emilym.sinatra.data.repository.StopRepository
 import cl.emilym.sinatra.data.repository.TransportMetadataRepository
@@ -37,7 +38,8 @@ class UpcomingRoutesForStopUseCase(
     private val liveStopTimetableUseCase: LiveStopTimetableUseCase,
     private val servicesAndTimesForStopUseCase: ServicesAndTimesForStopUseCase,
     private val clock: Clock,
-    private val metadataRepository: TransportMetadataRepository
+    private val metadataRepository: TransportMetadataRepository,
+    private val remoteConfigRepository: RemoteConfigRepository
 ) {
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -83,7 +85,7 @@ class UpcomingRoutesForStopUseCase(
                     .map {
                         when {
                             it.childStopId == stopId || (
-                                FeatureFlags.STOP_DETAIL_HIDE_PLATFORM_FOR_SYNTHETIC &&
+                                remoteConfigRepository.feature("stop_detail_hide_platform_for_synthetic", true) &&
                                 stopId.endsWith("-synthetic")
                             ) -> it.copy(
                                 childStop = null,
