@@ -8,6 +8,8 @@ import androidx.compose.runtime.rememberUpdatedState
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
+import cl.emilym.sinatra.ui.savedstate.ScreenModelStateParametersHolder
+import cl.emilym.sinatra.ui.savedstate.rememberScreenModelState
 import org.koin.compose.currentKoinScope
 import org.koin.core.parameter.ParametersDefinition
 import org.koin.core.parameter.emptyParametersHolder
@@ -20,11 +22,21 @@ inline fun <reified T : ScreenModel> Screen.koinScreenModel(
     scope: Scope = currentKoinScope(),
     noinline parameters: ParametersDefinition? = null
 ): T {
-    val currentParameters by rememberUpdatedState(parameters)
+    val screenModelState = rememberScreenModelState()
+    val holder = remember(
+        screenModelState,
+        parameters
+    ) {
+        ScreenModelStateParametersHolder(
+            parameters,
+            screenModelState
+        )
+    }
+//    val currentParameters by rememberUpdatedState(parameters)
     val tag = remember(qualifier, scope) { qualifier?.value }
     return rememberScreenModel(tag = tag) {
         scope.get(qualifier) {
-            currentParameters?.invoke() ?: emptyParametersHolder()
+            holder
         }
     }
 }

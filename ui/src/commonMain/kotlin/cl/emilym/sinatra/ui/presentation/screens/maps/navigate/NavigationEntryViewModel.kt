@@ -29,6 +29,7 @@ import cl.emilym.sinatra.nullIfEmpty
 import cl.emilym.sinatra.ui.presentation.screens.search.SearchScreenViewModel
 import cl.emilym.sinatra.ui.presentation.screens.search.searchHandler
 import cl.emilym.sinatra.ui.retryIfNeeded
+import cl.emilym.sinatra.ui.savedstate.ScreenModelState
 import cl.emilym.sinatra.ui.widgets.SinatraScreenModel
 import cl.emilym.sinatra.ui.widgets.createRequestStateFlowFlow
 import cl.emilym.sinatra.ui.widgets.defaultConfig
@@ -107,12 +108,18 @@ class NavigationEntryViewModel(
     private val routingPreferencesRepository: RoutingPreferencesRepository,
     private val preferencesRepository: PreferencesRepository,
     private val navigableFavouritesUseCase: NavigableFavouritesUseCase,
-    private val clock: Clock
+    private val clock: Clock,
+    private val screenModelState: ScreenModelState
 ): SinatraScreenModel, SearchScreenViewModel {
 
+    companion object {
+        private const val ORIGIN_KEY = "NavigationEntryViewModel_ORIGIN"
+        private const val DESTINATION_KEY = "NavigationEntryViewModel_DESTINATION"
+    }
+
     val currentLocation = MutableStateFlow<MapLocation?>(null)
-    val destination = MutableStateFlow<NavigationLocation>(NavigationLocation.None)
-    val origin = MutableStateFlow<NavigationLocation>(NavigationLocation.None)
+    val destination = screenModelState.getStateFlow<NavigationLocation>(DESTINATION_KEY, NavigationLocation.None)
+    val origin = screenModelState.getStateFlow<NavigationLocation>(ORIGIN_KEY, NavigationLocation.None)
     val anchorTime = MutableStateFlow<NavigationAnchorTime>(NavigationAnchorTime.Now)
     val wheelchairAccessible = MutableStateFlow<Boolean?>(null)
     val bikesAllowed = MutableStateFlow<Boolean?>(null)
@@ -303,8 +310,8 @@ class NavigationEntryViewModel(
     fun init(destination: NavigationLocation, origin: NavigationLocation) {
         retryLoadingGraph()
         retryRecentVisits()
-        setDestination(destination)
-        setOrigin(origin)
+//        setDestination(destination)
+//        setOrigin(origin)
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -339,7 +346,7 @@ class NavigationEntryViewModel(
     }
 
     private fun setDestination(navigationLocation: NavigationLocation) {
-        destination.value = navigationLocation
+        screenModelState.set(DESTINATION_KEY, navigationLocation)
         navigationLocation.recentVisit?.let {
             screenModelScope.launch {
                 recentVisitRepository.add(it)
@@ -348,7 +355,7 @@ class NavigationEntryViewModel(
     }
 
     private fun setOrigin(navigationLocation: NavigationLocation) {
-        origin.value = navigationLocation
+        screenModelState.set(ORIGIN_KEY, navigationLocation)
         navigationLocation.recentVisit?.let {
             screenModelScope.launch {
                 recentVisitRepository.add(it)
@@ -358,8 +365,8 @@ class NavigationEntryViewModel(
 
     fun swapOriginAndDestination() {
         val currentOrigin = origin.value
-        origin.value = destination.value
-        destination.value = currentOrigin
+        screenModelState.set(ORIGIN_KEY, destination.value)
+        screenModelState.set(DESTINATION_KEY, currentOrigin)
         _state.value = State.JourneySelection
     }
 
