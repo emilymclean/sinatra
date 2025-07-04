@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.asStateFlow
 
 interface ScreenModelState {
 
+    fun contains(key: String): Boolean
     fun <T> get(key: String): T?
     fun <T> set(key: String, value: T?)
 
@@ -29,6 +30,8 @@ private class DefaultScreenModelState(
         }
     }
 
+    override fun contains(key: String) = values.contains(key)
+
     override fun <T> get(key: String): T? {
         return values[key]?.value as T?
     }
@@ -46,6 +49,7 @@ private class DefaultScreenModelState(
             MutableStateFlow(value) as MutableStateFlow<Any?>
         } as MutableStateFlow<T?>
     }
+
 }
 
 private data class ScreenModelStateSaved(

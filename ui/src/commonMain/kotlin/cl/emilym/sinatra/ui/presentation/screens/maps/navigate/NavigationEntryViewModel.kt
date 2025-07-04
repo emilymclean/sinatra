@@ -310,8 +310,10 @@ class NavigationEntryViewModel(
     fun init(destination: NavigationLocation, origin: NavigationLocation) {
         retryLoadingGraph()
         retryRecentVisits()
-//        setDestination(destination)
-//        setOrigin(origin)
+        if (screenModelState.get<NavigationLocation>(DESTINATION_KEY) == NavigationLocation.None)
+            setDestination(destination)
+        if (screenModelState.get<NavigationLocation>(ORIGIN_KEY) == NavigationLocation.None)
+            setOrigin(origin)
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
