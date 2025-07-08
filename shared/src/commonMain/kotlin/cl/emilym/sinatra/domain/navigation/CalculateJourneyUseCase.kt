@@ -127,13 +127,10 @@ class CalculateJourneyUseCase(
 
                 options
                     .filter {
-                        it.departureTime.instant.epochSeconds >= min(
-                            now.epochSeconds,
-                            when (anchorTime) {
-                                is JourneyCalculationTime.DepartureTime -> it.departureTime.instant.epochSeconds
-                                else -> Long.MAX_VALUE
-                            }
-                        )
+                        it.departureTime.instant.epochSeconds >= when (anchorTime) {
+                            is JourneyCalculationTime.DepartureTime -> it.departureTime.instant.epochSeconds
+                            else -> clock.now().epochSeconds
+                        }
                     }
                     .also { if (it.isEmpty()) throw RouterException.noJourneyFound() }
                     .sortedWith(compareBy(
