@@ -230,6 +230,12 @@
     <string name="service_alert_region_woden">Woden, Weston Creek, and Molonglo</string>
     <string name="service_alert_region_other">Other</string>
 
+    <string name="information_for_developers_title">Information for Developers</string>
+    <string name="information_for_developers_build_version">Build version:</string>
+    <string name="information_for_developers_build_number">Build number:</string>
+    <string name="information_for_developers_endpoint">API Endpoint:</string>
+    <string name="information_for_developers_nominatim_endpoint">Nominatim Endpoint:</string>
+
     <string name="app_out_of_date_title">Sinatra needs to be updated</string>
     <string name="app_out_of_date_content">Sinatra is currently out of date and requires an update to function properly. Please update it to the latest version to restore compatibility and ensure reliable performance.</string>
     <string name="app_out_of_date_android_title">Sinatra on Google Play</string>
