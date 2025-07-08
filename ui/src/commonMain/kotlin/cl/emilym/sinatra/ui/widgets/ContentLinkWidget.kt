@@ -31,6 +31,7 @@ import cl.emilym.sinatra.ui.presentation.screens.AboutScreen
 import cl.emilym.sinatra.ui.presentation.screens.ContentScreen
 import cl.emilym.sinatra.ui.presentation.screens.FavouriteScreen
 import cl.emilym.sinatra.ui.presentation.screens.ServiceAlertScreen
+import cl.emilym.sinatra.ui.presentation.screens.content.InformationForDevelopersScreen
 import cl.emilym.sinatra.ui.presentation.screens.maps.navigate.NavigateEntryScreen
 import cl.emilym.sinatra.ui.presentation.screens.maps.search.MapSearchScreen
 import cl.emilym.sinatra.ui.presentation.screens.preferences.RootPreferencesScreen
@@ -43,6 +44,7 @@ fun contentRoute(id: ContentId): Screen {
         ContentRepository.ABOUT_ID -> AboutScreen()
         ContentRepository.MORE_ID -> AboutScreen()
         ContentRepository.SERVICE_ALERT_ID -> ServiceAlertScreen()
+        ContentRepository.INFORMATION_FOR_DEVELOPERS_ID -> InformationForDevelopersScreen()
         else -> ContentScreen(id)
     }
 }
