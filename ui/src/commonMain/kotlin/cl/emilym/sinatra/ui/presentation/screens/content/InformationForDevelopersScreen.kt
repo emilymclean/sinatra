@@ -3,8 +3,10 @@ package cl.emilym.sinatra.ui.presentation.screens.content
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -96,6 +98,14 @@ class InformationForDevelopersScreen: ContentScreen(ContentRepository.INFORMATIO
                         stringResource(Res.string.information_for_developers_nominatim_endpoint),
                         "$nominatimUrl"
                     )
+                }
+                (content as? RequestState.Success)?.value?.let {
+                    item {
+                        Column {
+                            Spacer(Modifier.height(1.rdp))
+                            RenderLinks(it)
+                        }
+                    }
                 }
             }
         }
