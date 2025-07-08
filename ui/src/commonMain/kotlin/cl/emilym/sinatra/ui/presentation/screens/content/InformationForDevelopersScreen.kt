@@ -13,6 +13,11 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -22,15 +27,19 @@ import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.BuildInformation
 import cl.emilym.sinatra.data.models.Content
 import cl.emilym.sinatra.data.repository.ContentRepository
+import cl.emilym.sinatra.data.repository.RemoteConfigRepository
+import cl.emilym.sinatra.e
 import cl.emilym.sinatra.network.apiUrl
 import cl.emilym.sinatra.ui.presentation.screens.ContentScreen
 import cl.emilym.sinatra.ui.widgets.NavigatorBackButton
+import io.github.aakira.napier.Napier
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import sinatra.ui.generated.resources.Res
 import sinatra.ui.generated.resources.information_for_developers_build_number
 import sinatra.ui.generated.resources.information_for_developers_build_version
 import sinatra.ui.generated.resources.information_for_developers_endpoint
+import sinatra.ui.generated.resources.information_for_developers_nominatim_endpoint
 import sinatra.ui.generated.resources.information_for_developers_title
 
 class InformationForDevelopersScreen: ContentScreen(ContentRepository.INFORMATION_FOR_DEVELOPERS_ID) {
@@ -48,6 +57,18 @@ class InformationForDevelopersScreen: ContentScreen(ContentRepository.INFORMATIO
             }
         ) { innerPadding ->
             val buildInformation = koinInject<BuildInformation>()
+            val remoteConfigRepository = koinInject<RemoteConfigRepository>()
+
+            // Bad practice but this isn't a real screen
+            var nominatimUrl by remember { mutableStateOf<String?>(null) }
+            LaunchedEffect(remoteConfigRepository) {
+                try {
+                    nominatimUrl = remoteConfigRepository.nominatimUrl()
+                } catch (e: Exception) {
+                    Napier.e(e)
+                }
+            }
+
             LazyColumn(
                 Modifier.fillMaxSize(),
                 contentPadding = innerPadding
@@ -72,8 +93,8 @@ class InformationForDevelopersScreen: ContentScreen(ContentRepository.INFORMATIO
                 }
                 item {
                     InformationRow(
-                        stringResource(Res.string.information_for_developers_endpoint),
-                        apiUrl
+                        stringResource(Res.string.information_for_developers_nominatim_endpoint),
+                        "$nominatimUrl"
                     )
                 }
             }
