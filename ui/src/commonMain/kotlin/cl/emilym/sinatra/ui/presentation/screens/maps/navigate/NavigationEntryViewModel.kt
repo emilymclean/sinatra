@@ -25,6 +25,7 @@ import cl.emilym.sinatra.domain.navigation.JourneyLocation
 import cl.emilym.sinatra.domain.NearbyStopsUseCase
 import cl.emilym.sinatra.domain.search.RouteStopSearchUseCase
 import cl.emilym.sinatra.domain.search.SearchResult
+import cl.emilym.sinatra.e
 import cl.emilym.sinatra.nullIfEmpty
 import cl.emilym.sinatra.ui.presentation.screens.search.SearchScreenViewModel
 import cl.emilym.sinatra.ui.presentation.screens.search.searchHandler
@@ -33,6 +34,7 @@ import cl.emilym.sinatra.ui.widgets.SinatraScreenModel
 import cl.emilym.sinatra.ui.widgets.createRequestStateFlowFlow
 import cl.emilym.sinatra.ui.widgets.defaultConfig
 import cl.emilym.sinatra.ui.widgets.handleFlowProperly
+import io.github.aakira.napier.Napier
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -193,6 +195,7 @@ class NavigationEntryViewModel(
                                         )
                                     ))
                                 } catch(e: Exception) {
+                                    Napier.e(e)
                                     emit(NavigationState.JourneyFailed(e))
                                 }
                             }
