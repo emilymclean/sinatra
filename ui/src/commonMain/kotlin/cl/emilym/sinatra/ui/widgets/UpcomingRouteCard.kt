@@ -1,11 +1,15 @@
 package cl.emilym.sinatra.ui.widgets
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.text.toLowerCase
+import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.FeatureFlags
 import cl.emilym.sinatra.data.models.IStopTimetableTime
 import cl.emilym.sinatra.data.models.StopId
@@ -48,19 +52,25 @@ fun UpcomingRouteCard(
             )
         )
         stopStationTime?.let {
-            Text(
-                when(timetableTime.childStop) {
-                    null -> it.text
-                    else -> stringResource(
-                        Res.string.stop_detail_from,
-                        it.text,
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(0.25.rdp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                LivenessIcon(it)
+                Text(
+                    when(timetableTime.childStop) {
+                        null -> it.text
+                        else -> stringResource(
+                            Res.string.stop_detail_from,
+                            it.text,
                             timetableTime.childStop?.name?.platformName(
                                 timetableTime.childStopId ?: ""
                             ) ?: "null"
                         )
-                },
-                style = MaterialTheme.typography.bodySmall
-            )
+                    },
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
         }
     }
 }

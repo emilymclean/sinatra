@@ -26,6 +26,8 @@ object FeatureFlags {
     val STOP_DETAIL_SHOW_ROUTE_FILTER by FeatureFlagDelegate(true)
     val STOP_DETAIL_MANUALLY_ADJUST_PLATFORM_NAME by FeatureFlagDelegate(true)
     val STOP_DETAIL_HIDE_PLATFORM_FOR_SYNTHETIC by FeatureFlagDelegate(true)
+    val STOP_DETAIL_CONCEAL_LIVENESS_STRING by FeatureFlagDelegate(true)
+    val STOP_DETAIL_LIVENESS_ICON by FeatureFlagDelegate(true)
     val STOP_CARD_SHOW_ACCESSIBILITY by FeatureFlagDelegate(false)
     val MAP_SEARCH_SCREEN_NEARBY_STOPS_SEARCH by FeatureFlagDelegate(true)
     val NAVIGATE_ENTRY_SCREEN_FAVOURITE_SEARCH by FeatureFlagDelegate(true)
