@@ -48,6 +48,7 @@ import cl.emilym.compose.requeststate.RequestState
 import cl.emilym.compose.requeststate.RequestStateWidget
 import cl.emilym.compose.requeststate.unwrap
 import cl.emilym.compose.units.rdp
+import cl.emilym.sinatra.FeatureFlag
 import cl.emilym.sinatra.FeatureFlags
 import cl.emilym.sinatra.data.models.IStopTimetableTime
 import cl.emilym.sinatra.data.models.ReferencedTime
@@ -79,6 +80,7 @@ import cl.emilym.sinatra.ui.widgets.UpcomingRouteCard
 import cl.emilym.sinatra.ui.widgets.WheelchairAccessibleIcon
 import cl.emilym.sinatra.ui.widgets.collectAsStateWithLifecycle
 import cl.emilym.sinatra.ui.widgets.pick
+import cl.emilym.sinatra.ui.widgets.value
 import org.jetbrains.compose.resources.stringResource
 import sinatra.ui.generated.resources.Res
 import sinatra.ui.generated.resources.accessibility_not_wheelchair_accessible
@@ -158,7 +160,10 @@ class StopDetailScreen(
                                                 style = MaterialTheme.typography.titleLarge,
                                                 modifier = Modifier.weight(1f, fill = false)
                                             )
-                                            if (FeatureFlags.STOP_DETAIL_SHOW_ACCESSIBILITY) {
+                                            if (
+                                                !FeatureFlag.GLOBAL_HIDE_TRANSPORT_ACCESSIBILITY.value() &&
+                                                FeatureFlag.STOP_DETAIL_SHOW_ACCESSIBILITY.value()
+                                            ) {
                                                 WheelchairAccessibleIcon(
                                                     stop.accessibility.wheelchair.isAccessible,
                                                     contentDescription = when (stop.accessibility.wheelchair.isAccessible) {

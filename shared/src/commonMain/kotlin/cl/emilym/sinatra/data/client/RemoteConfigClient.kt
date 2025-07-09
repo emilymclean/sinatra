@@ -10,6 +10,9 @@ class RemoteConfigClient(
     private val wrapper: RemoteConfigWrapper
 ) {
 
+    val loaded: Boolean
+        get() = wrapper.loaded
+
     suspend fun load(): Boolean {
         return try {
             wrapper.load()

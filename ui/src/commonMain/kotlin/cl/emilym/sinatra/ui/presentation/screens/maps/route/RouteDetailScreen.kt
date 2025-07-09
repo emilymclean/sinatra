@@ -54,6 +54,7 @@ import cl.emilym.compose.requeststate.RequestStateWidget
 import cl.emilym.compose.requeststate.map
 import cl.emilym.compose.requeststate.unwrap
 import cl.emilym.compose.units.rdp
+import cl.emilym.sinatra.FeatureFlag
 import cl.emilym.sinatra.FeatureFlags
 import cl.emilym.sinatra.bounds
 import cl.emilym.sinatra.data.models.IRouteTripInformation
@@ -103,6 +104,7 @@ import cl.emilym.sinatra.ui.widgets.WheelchairAccessibleIcon
 import cl.emilym.sinatra.ui.widgets.collectAsStateWithLifecycle
 import cl.emilym.sinatra.ui.widgets.currentLocation
 import cl.emilym.sinatra.ui.widgets.pick
+import cl.emilym.sinatra.ui.widgets.value
 import com.mikepenz.markdown.m3.Markdown
 import io.github.aakira.napier.Napier
 import kotlinx.datetime.Instant
@@ -210,7 +212,10 @@ class RouteDetailScreen(
         val heading by viewModel.heading.collectAsStateWithLifecycle()
         val headings by viewModel.headings.collectAsStateWithLifecycle()
         val isToday by viewModel.isToday.collectAsStateWithLifecycle()
-        val showAccessibility by viewModel.showAccessibility.collectAsStateWithLifecycle()
+        val showAccessibility =
+            viewModel.showAccessibility.collectAsStateWithLifecycle().value &&
+            !FeatureFlag.GLOBAL_HIDE_TRANSPORT_ACCESSIBILITY.value()
+
 
         val current = if (trigger != null) {
             remember(trigger) {

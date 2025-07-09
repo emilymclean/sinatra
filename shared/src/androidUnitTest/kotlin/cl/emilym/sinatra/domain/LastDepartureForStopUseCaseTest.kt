@@ -54,7 +54,7 @@ class LastDepartureForStopUseCaseTest {
     fun setup() {
         every { clock.now() } returns baseTime
         coEvery { metadataRepository.timeZone() } returns testTimeZone
-        coEvery { remoteConfigRepository.feature(any()) } returns false
+        coEvery { remoteConfigRepository.feature(any<String>()) } returns false
     }
 
     @AfterTest
