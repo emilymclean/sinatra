@@ -1,6 +1,7 @@
 package cl.emilym.sinatra.ui.presentation.screens.content
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -27,6 +28,7 @@ import cafe.adriel.voyager.core.screen.ScreenKey
 import cl.emilym.compose.requeststate.RequestState
 import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.BuildInformation
+import cl.emilym.sinatra.FeatureFlag
 import cl.emilym.sinatra.data.models.Content
 import cl.emilym.sinatra.data.repository.ContentRepository
 import cl.emilym.sinatra.data.repository.RemoteConfigRepository
@@ -99,6 +101,13 @@ class InformationForDevelopersScreen: ContentScreen(ContentRepository.INFORMATIO
                         "$nominatimUrl"
                     )
                 }
+                item {
+                    Column(Modifier.padding(horizontal = 1.rdp)) {
+                        Box(Modifier.height(1.rdp))
+                        Text(featureFlagValues())
+                        Box(Modifier.height(1.rdp))
+                    }
+                }
                 (content as? RequestState.Success)?.value?.let {
                     item {
                         Column {
@@ -136,5 +145,32 @@ class InformationForDevelopersScreen: ContentScreen(ContentRepository.INFORMATIO
             }
             HorizontalDivider(Modifier.padding(horizontal = 1.rdp))
         }
+    }
+
+    @Composable
+    private fun featureFlagValues(): String {
+        fun FeatureFlag.str(value: Boolean? = null): String {
+            return "${this.name}=${value ?: "?"}"
+        }
+
+        val flags = FeatureFlag.entries
+        if (flags.isEmpty()) return "No flags"
+        var value by remember { mutableStateOf(flags.map { it.str() }) }
+        val remoteConfigRepository = koinInject<RemoteConfigRepository>()
+
+        LaunchedEffect(Unit) {
+            val first = flags.first()
+            val rest = flags.drop(1)
+            try {
+                val firstValue = remoteConfigRepository.feature(first)
+                value = listOf(first.str(firstValue)) + rest.map {
+                    it.str(remoteConfigRepository.feature(it))
+                }
+            } catch(e: Exception) {
+                Napier.e(e)
+            }
+        }
+
+        return value.joinToString("; ")
     }
 }
