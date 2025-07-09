@@ -17,12 +17,32 @@ private class FeatureFlagDelegate(
 
 }
 
+private class EnumFeatureFlagDelegate(
+    val flag: FeatureFlag
+) {
+    private val remoteConfigRepository by lazy { KoinPlatform.getKoin().get<RemoteConfigRepository>() }
+
+    operator fun getValue(thisRef: Any?, property: KProperty<*>): Boolean {
+        return remoteConfigRepository.featureImmediate(flag)
+    }
+}
+
+enum class FeatureFlag(
+    val default: Boolean,
+    val overrideName: String? = null
+) {
+    GLOBAL_HIDE_TRANSPORT_ACCESSIBILITY(false),
+    STOP_DETAIL_SHOW_ACCESSIBILITY(true)
+}
+
+val FeatureFlag.flagName: String
+    get() = overrideName ?: this.name.lowercase()
+
 object FeatureFlags {
     val ROUTE_DETAIL_CLICKABLE_STOPS by FeatureFlagDelegate(true)
     val ROUTE_DETAIL_HIGHLIGHT_SOURCE_STOP by FeatureFlagDelegate(false)
     val ROUTE_DETAIL_PREVENT_ZOOM_WHEN_HAVE_SOURCE_STOP by FeatureFlagDelegate(false)
     val ROUTE_DETAIL_NEAREST_STOP by FeatureFlagDelegate(true)
-    val STOP_DETAIL_SHOW_ACCESSIBILITY by FeatureFlagDelegate(true)
     val STOP_DETAIL_SHOW_ROUTE_FILTER by FeatureFlagDelegate(true)
     val STOP_DETAIL_MANUALLY_ADJUST_PLATFORM_NAME by FeatureFlagDelegate(true)
     val STOP_DETAIL_HIDE_PLATFORM_FOR_SYNTHETIC by FeatureFlagDelegate(true)

@@ -1,8 +1,10 @@
 package cl.emilym.sinatra.data.repository
 
+import cl.emilym.sinatra.FeatureFlag
 import cl.emilym.sinatra.data.client.RemoteConfigClient
 import cl.emilym.sinatra.data.models.VersionName
 import cl.emilym.sinatra.e
+import cl.emilym.sinatra.flagName
 import io.github.aakira.napier.Napier
 import org.koin.core.annotation.Factory
 
@@ -53,10 +55,12 @@ class RemoteConfigRepository(
         return remoteConfigClient.string(MINIMUM_VERSION_KEY)
     }
 
+    @Deprecated("Use FeatureFlag enum")
     suspend fun feature(name: String, default: Boolean = true): Boolean {
         return remoteConfigClient.boolean("$FEATURE_FLAG_PREFIX$name") ?: default
     }
 
+    @Deprecated("Use FeatureFlag enum")
     fun featureImmediate(name: String, default: Boolean = true): Boolean {
         return try {
             remoteConfigClient.booleanImmediate("$FEATURE_FLAG_PREFIX$name") ?: default
@@ -65,5 +69,9 @@ class RemoteConfigRepository(
             default
         }
     }
+
+    suspend fun feature(flag: FeatureFlag): Boolean = feature(flag.flagName, flag.default)
+
+    fun featureImmediate(flag: FeatureFlag): Boolean = featureImmediate(flag.flagName, flag.default)
 
 }
