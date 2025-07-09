@@ -26,7 +26,7 @@ class SpecialAddUseCaseTest {
 
     @Test
     fun `should emit empty list if feature flag is disabled`() = runTest {
-        coEvery { remoteConfigRepository.feature(SpecialAddUseCase.QUICK_ADD_NAVIGATION_FEATURE_FLAG) } returns false
+        coEvery { remoteConfigRepository.feature(any()) } returns false
 
         val result = useCase().first()
 
@@ -35,7 +35,7 @@ class SpecialAddUseCaseTest {
 
     @Test
     fun `should emit all special types when user has none favourited`() = runTest {
-        coEvery { remoteConfigRepository.feature(SpecialAddUseCase.QUICK_ADD_NAVIGATION_FEATURE_FLAG) } returns true
+        coEvery { remoteConfigRepository.feature(any()) } returns true
         coEvery { favouriteRepository.all() } returns flowOf(emptyList())
 
         val result = useCase().first()
@@ -45,7 +45,7 @@ class SpecialAddUseCaseTest {
 
     @Test
     fun `should emit only unfavourited special types`() = runTest {
-        coEvery { remoteConfigRepository.feature(SpecialAddUseCase.QUICK_ADD_NAVIGATION_FEATURE_FLAG) } returns true
+        coEvery { remoteConfigRepository.feature(any()) } returns true
         coEvery { favouriteRepository.all() } returns flowOf(
             listOf(
                 Favourite.Place(
@@ -62,7 +62,7 @@ class SpecialAddUseCaseTest {
 
     @Test
     fun `should emit no special types if all are already favourited`() = runTest {
-        coEvery { remoteConfigRepository.feature(SpecialAddUseCase.QUICK_ADD_NAVIGATION_FEATURE_FLAG) } returns true
+        coEvery { remoteConfigRepository.feature(any()) } returns true
         coEvery { favouriteRepository.all() } returns flowOf(
             listOf(
                 Favourite.Place(

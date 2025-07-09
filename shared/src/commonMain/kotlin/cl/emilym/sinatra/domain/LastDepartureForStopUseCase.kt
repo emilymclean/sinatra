@@ -1,5 +1,6 @@
 package cl.emilym.sinatra.domain
 
+import cl.emilym.sinatra.FeatureFlag
 import cl.emilym.sinatra.data.models.IStopTimetableTime
 import cl.emilym.sinatra.data.models.RouteId
 import cl.emilym.sinatra.data.models.StopId
@@ -70,7 +71,7 @@ class LastDepartureForStopUseCase(
                 .map {
                     when {
                         it.childStopId == stopId || (
-                                remoteConfigRepository.feature("stop_detail_hide_platform_for_synthetic", true) &&
+                                remoteConfigRepository.feature(FeatureFlag.STOP_DETAIL_HIDE_PLATFORM_FOR_SYNTHETIC) &&
                                         stopId.endsWith("-synthetic")
                                 ) -> it.copy(
                             childStop = null,

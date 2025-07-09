@@ -54,7 +54,7 @@ class UpcomingRoutesForStopUseCaseTest {
         )
 
         every { service.id } returns "service-1"
-        coEvery { remoteConfigRepository.feature(any(), any()) } returns true
+        coEvery { remoteConfigRepository.feature(any()) } returns true
     }
 
     @Test

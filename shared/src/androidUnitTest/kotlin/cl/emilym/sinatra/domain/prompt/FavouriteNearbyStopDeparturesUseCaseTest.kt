@@ -78,7 +78,7 @@ class FavouriteNearbyStopDeparturesUseCaseTest {
 
     @Test
     fun `should emit null if feature flag is disabled`() = runTest {
-        coEvery { remoteConfigRepository.feature(FavouriteNearbyStopDeparturesUseCase.FAVOURITE_NEARBY_STOPS_FEATURE_FLAG) } returns false
+        coEvery { remoteConfigRepository.feature(any()) } returns false
 
         val result = useCase(MapLocation(0.0, 0.0)).first()
 
@@ -87,7 +87,7 @@ class FavouriteNearbyStopDeparturesUseCaseTest {
 
     @Test
     fun `should emit null if no favourite stop nearby`() = runTest {
-        coEvery { remoteConfigRepository.feature(any<String>()) } returns true
+        coEvery { remoteConfigRepository.feature(any()) } returns true
         coEvery { nearbyStopsUseCase(any(), any(), any()) } returns listOf(StopWithDistance(stop, 0.0))
         coEvery { favouriteRepository.favouritedStops(listOf(stop.id)) } returns flowOf(emptyList())
 
@@ -98,7 +98,7 @@ class FavouriteNearbyStopDeparturesUseCaseTest {
 
     @Test
     fun `should emit null if upcoming departures are empty`() = runTest {
-        coEvery { remoteConfigRepository.feature(any<String>()) } returns true
+        coEvery { remoteConfigRepository.feature(any()) } returns true
         coEvery { nearbyStopsUseCase(any(), any(), any()) } returns listOf(StopWithDistance(stop, 0.0))
         coEvery { favouriteRepository.favouritedStops(listOf(stop.id)) } returns flowOf(listOf(stop.id))
         coEvery { upcomingRoutesForStopUseCase(stop.id) } returns flowOf(Cachable(emptyList(), CacheState.LIVE))
@@ -110,7 +110,7 @@ class FavouriteNearbyStopDeparturesUseCaseTest {
 
     @Test
     fun `should emit StopDepartures if favourite nearby stop and upcoming departures exist`() = runTest {
-        coEvery { remoteConfigRepository.feature(any<String>()) } returns true
+        coEvery { remoteConfigRepository.feature(any()) } returns true
         coEvery { nearbyStopsUseCase(any(), any(), any()) } returns listOf(StopWithDistance(stop, 0.0))
         coEvery { favouriteRepository.favouritedStops(listOf(stop.id)) } returns flowOf(listOf(stop.id))
         coEvery { upcomingRoutesForStopUseCase(stop.id) } returns flowOf(cachableDepartures)
@@ -123,7 +123,7 @@ class FavouriteNearbyStopDeparturesUseCaseTest {
 
     @Test
     fun `should emit closest StopDepartures`() = runTest {
-        coEvery { remoteConfigRepository.feature(any<String>()) } returns true
+        coEvery { remoteConfigRepository.feature(any()) } returns true
         coEvery { nearbyStopsUseCase(any(), any(), any()) } returns listOf(
             StopWithDistance(stop, 0.0),
             StopWithDistance(stop2, 1.0),

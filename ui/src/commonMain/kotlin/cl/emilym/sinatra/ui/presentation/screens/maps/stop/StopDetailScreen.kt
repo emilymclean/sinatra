@@ -49,7 +49,6 @@ import cl.emilym.compose.requeststate.RequestStateWidget
 import cl.emilym.compose.requeststate.unwrap
 import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.FeatureFlag
-import cl.emilym.sinatra.FeatureFlags
 import cl.emilym.sinatra.data.models.IStopTimetableTime
 import cl.emilym.sinatra.data.models.ReferencedTime
 import cl.emilym.sinatra.data.models.StopId
@@ -265,10 +264,10 @@ class StopDetailScreen(
 
                                 if (
                                     routes.size > 1 &&
-                                    FeatureFlags.STOP_DETAIL_SHOW_ROUTE_FILTER &&
                                     state !is StopDetailState.Children
                                 ) {
                                     item {
+                                        if (!FeatureFlag.STOP_DETAIL_SHOW_ROUTE_FILTER.value()) return@item
                                         val allUnselected = remember(routes) { routes.all { !it.selected } }
                                         LazyRow(
                                             Modifier.fillMaxWidth(),
@@ -293,8 +292,8 @@ class StopDetailScreen(
                                                 }
                                             }
                                         }
+                                        Box(Modifier.height(1.rdp))
                                     }
-                                    item { Box(Modifier.height(1.rdp)) }
                                 }
 
                                 val state = state

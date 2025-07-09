@@ -50,7 +50,7 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.CurrentScreen
 import cafe.adriel.voyager.navigator.Navigator
 import cl.emilym.compose.units.px
-import cl.emilym.sinatra.FeatureFlags
+import cl.emilym.sinatra.FeatureFlag
 import cl.emilym.sinatra.ui.maps.MapControl
 import cl.emilym.sinatra.ui.maps.rememberMapControl
 import cl.emilym.sinatra.ui.navigation.CurrentBottomSheetContent
@@ -76,13 +76,14 @@ import cl.emilym.sinatra.ui.widgets.bottomsheet.SinatraBottomSheetScaffoldState
 import cl.emilym.sinatra.ui.widgets.bottomsheet.SinatraSheetValue
 import cl.emilym.sinatra.ui.widgets.bottomsheet.rememberSinatraBottomSheetScaffoldState
 import cl.emilym.sinatra.ui.widgets.bottomsheet.rememberSinatraBottomSheetState
+import cl.emilym.sinatra.ui.widgets.value
 import cl.emilym.sinatra.ui.widgets.viewportHeight
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import sinatra.ui.generated.resources.Res
-import sinatra.ui.generated.resources.navigation_bar_more
 import sinatra.ui.generated.resources.navigation_bar_favourites
 import sinatra.ui.generated.resources.navigation_bar_map
+import sinatra.ui.generated.resources.navigation_bar_more
 import sinatra.ui.generated.resources.navigation_bar_navigate
 import sinatra.ui.generated.resources.service_alert_title
 
@@ -92,11 +93,12 @@ expect fun Map(
     modifier: Modifier = Modifier
 )
 
+@get:Composable
 @OptIn(ExperimentalComposeUiApi::class)
 val mapModifier get() = Modifier
     .fillMaxSize()
     .then(
-        if (FeatureFlags.HIDE_MAPS_FROM_ACCESSIBILITY)
+        if (FeatureFlag.HIDE_MAPS_FROM_ACCESSIBILITY.value())
             Modifier.clearAndSetSemantics {
                 invisibleToUser()
             }
@@ -186,7 +188,13 @@ class RootMapScreen: Screen {
             var selected by rememberSaveable { mutableStateOf(0) }
             val selectedCallback: (Int) -> Unit = remember { { selected = it } }
 
-            val items = remember(navigator) {
+            val navigateTabBar = FeatureFlag.NAVIGATE_BUTTON_TAB_BAR.value()
+            val serviceAlertTabBar = FeatureFlag.SERVICE_ALERT_BUTTON_TAB_BAR.value()
+            val items = remember(
+                navigator,
+                navigateTabBar,
+                serviceAlertTabBar
+            ) {
                 var index = 0
                 listOfNotNull(
                     NavigationItem(
@@ -197,7 +205,7 @@ class RootMapScreen: Screen {
                         { MapIcon() },
                         { Text(stringResource(Res.string.navigation_bar_map)) }
                     ),
-                    if (FeatureFlags.NAVIGATE_BUTTON_TAB_BAR) {
+                    if (navigateTabBar) {
                         NavigationItem(
                             index++,
                             {
@@ -215,7 +223,7 @@ class RootMapScreen: Screen {
                         { StarOutlineIcon() },
                         { Text(stringResource(Res.string.navigation_bar_favourites)) }
                     ),
-                    if (FeatureFlags.SERVICE_ALERT_BUTTON_TAB_BAR) {
+                    if (serviceAlertTabBar) {
                         NavigationItem(
                             index++,
                             {

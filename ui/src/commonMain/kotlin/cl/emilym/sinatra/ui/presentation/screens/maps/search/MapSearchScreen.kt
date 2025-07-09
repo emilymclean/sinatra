@@ -25,7 +25,7 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import cl.emilym.compose.requeststate.RequestState
 import cl.emilym.compose.units.rdp
-import cl.emilym.sinatra.FeatureFlags
+import cl.emilym.sinatra.FeatureFlag
 import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.ui.canberraRegion
 import cl.emilym.sinatra.ui.maps.MapCallbackItem
@@ -48,6 +48,7 @@ import cl.emilym.sinatra.ui.widgets.SearchIcon
 import cl.emilym.sinatra.ui.widgets.bottomsheet.SinatraSheetValue
 import cl.emilym.sinatra.ui.widgets.collectAsStateWithLifecycle
 import cl.emilym.sinatra.ui.widgets.currentLocation
+import cl.emilym.sinatra.ui.widgets.value
 import cl.emilym.sinatra.ui.widgets.viewportHeight
 import org.jetbrains.compose.resources.stringResource
 import sinatra.ui.generated.resources.Res
@@ -101,7 +102,7 @@ class MapSearchScreen: MapScreen, NativeMapScreen {
                                 mapControl.moveToPoint(it, currentLocationZoom)
                             },
                             Modifier.then(
-                                if (FeatureFlags.HIDE_MAPS_FROM_ACCESSIBILITY)
+                                if (FeatureFlag.HIDE_MAPS_FROM_ACCESSIBILITY.value())
                                     Modifier.clearAndSetSemantics { invisibleToUser() }
                                 else
                                     Modifier.semantics {
@@ -185,7 +186,7 @@ class MapSearchScreen: MapScreen, NativeMapScreen {
         val navigator = LocalNavigator.currentOrThrow
 
         return mapSearchScreenMapItems(stops) + listOfNotNull(
-            if (FeatureFlags.HOLD_MAP_POINT_DETAIL) MapCallbackItem(onLongClick = { pos, zoom ->
+            if (FeatureFlag.HOLD_MAP_POINT_DETAIL.value()) MapCallbackItem(onLongClick = { pos, zoom ->
                 if (!canberraRegion.contains(pos)) return@MapCallbackItem
                 navigator.push(PointDetailScreen(pos, zoom + 2))
             }

@@ -1,5 +1,6 @@
 package cl.emilym.sinatra.domain.prompt
 
+import cl.emilym.sinatra.FeatureFlag
 import cl.emilym.sinatra.data.models.Favourite
 import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.data.models.NavigationObject
@@ -35,7 +36,7 @@ class QuickNavigateUseCase(
 
     operator fun invoke(currentLocation: MapLocation?): Flow<List<QuickNavigation>> {
         return flow {
-            if (!remoteConfigRepository.feature(QUICK_NAVIGATION_FEATURE_FLAG)) {
+            if (!remoteConfigRepository.feature(FeatureFlag.QUICK_NAVIGATION_HOME_SCREEN)) {
                 emit(listOf())
                 return@flow
             }

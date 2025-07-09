@@ -2,6 +2,7 @@ package cl.emilym.sinatra.domain
 
 import cl.emilym.sinatra.DefaultService
 import cl.emilym.sinatra.DefaultStopTimetableTime
+import cl.emilym.sinatra.FeatureFlag
 import cl.emilym.sinatra.data.models.Cachable
 import cl.emilym.sinatra.data.models.Service
 import cl.emilym.sinatra.data.models.StopId
@@ -54,7 +55,7 @@ class LastDepartureForStopUseCaseTest {
     fun setup() {
         every { clock.now() } returns baseTime
         coEvery { metadataRepository.timeZone() } returns testTimeZone
-        coEvery { remoteConfigRepository.feature(any<String>()) } returns false
+        coEvery { remoteConfigRepository.feature(any<FeatureFlag>()) } returns false
     }
 
     @AfterTest

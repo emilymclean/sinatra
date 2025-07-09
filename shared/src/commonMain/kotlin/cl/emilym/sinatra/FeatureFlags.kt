@@ -4,19 +4,6 @@ import cl.emilym.sinatra.data.repository.RemoteConfigRepository
 import org.koin.mp.KoinPlatform
 import kotlin.reflect.KProperty
 
-private class FeatureFlagDelegate(
-    val default: Boolean = true,
-    val name: String? = null
-) {
-
-    private val remoteConfigRepository by lazy { KoinPlatform.getKoin().get<RemoteConfigRepository>() }
-
-    operator fun getValue(thisRef: Any?, property: KProperty<*>): Boolean {
-        return remoteConfigRepository.featureImmediate(name ?: property.name.lowercase(), default)
-    }
-
-}
-
 private class EnumFeatureFlagDelegate(
     val flag: FeatureFlag
 ) {
@@ -31,33 +18,36 @@ enum class FeatureFlag(
     val default: Boolean,
     val overrideName: String? = null
 ) {
-    GLOBAL_HIDE_TRANSPORT_ACCESSIBILITY(false),
-    STOP_DETAIL_SHOW_ACCESSIBILITY(true)
+    ROUTE_DETAIL_CLICKABLE_STOPS(true),
+    ROUTE_DETAIL_HIGHLIGHT_SOURCE_STOP(false),
+    ROUTE_DETAIL_PREVENT_ZOOM_WHEN_HAVE_SOURCE_STOP(false),
+    ROUTE_DETAIL_NEAREST_STOP(true),
+    STOP_DETAIL_SHOW_ROUTE_FILTER(true),
+    STOP_DETAIL_MANUALLY_ADJUST_PLATFORM_NAME(true),
+    STOP_DETAIL_HIDE_PLATFORM_FOR_SYNTHETIC(true),
+    STOP_DETAIL_CONCEAL_LIVENESS_STRING(true),
+    STOP_DETAIL_LIVENESS_ICON(false),
+    STOP_DETAIL_SHOW_ACCESSIBILITY(true),
+    STOP_CARD_SHOW_ACCESSIBILITY(false),
+    MAP_SEARCH_SCREEN_NEARBY_STOPS_SEARCH(true),
+    NAVIGATE_ENTRY_SCREEN_FAVOURITE_SEARCH(true),
+    IOS_APPLE_MAP_LOGO_FOLLOW_BOTTOM_SHEET(false),
+    RAPTOR_ARRIVAL_BASED_ROUTING(true),
+    RAPTOR_SWAP_BUTTON(true),
+    NAVIGATE_BUTTON_TAB_BAR(true),
+    SERVICE_ALERT_BUTTON_TAB_BAR(false),
+    PLACE_DETAIL_ENABLED(true),
+    FAVOURITE_NEARBY_STOP_HOME_SCREEN(true),
+    NEW_SERVICE_HOME_SCREEN(true),
+    QUICK_NAVIGATION_HOME_SCREEN(true),
+    QUICK_ADD_FAVOURITE_HOME_SCREEN(true),
+    SPECIFY_TIMEZONE_WHEN_DIFFERENT(true),
+    HIDE_MAPS_FROM_ACCESSIBILITY(false),
+    HOLD_MAP_POINT_DETAIL(true),
+    GLOBAL_HIDE_TRANSPORT_ACCESSIBILITY(false);
+
+    val immediate by EnumFeatureFlagDelegate(this)
 }
 
 val FeatureFlag.flagName: String
     get() = overrideName ?: this.name.lowercase()
-
-object FeatureFlags {
-    val ROUTE_DETAIL_CLICKABLE_STOPS by FeatureFlagDelegate(true)
-    val ROUTE_DETAIL_HIGHLIGHT_SOURCE_STOP by FeatureFlagDelegate(false)
-    val ROUTE_DETAIL_PREVENT_ZOOM_WHEN_HAVE_SOURCE_STOP by FeatureFlagDelegate(false)
-    val ROUTE_DETAIL_NEAREST_STOP by FeatureFlagDelegate(true)
-    val STOP_DETAIL_SHOW_ROUTE_FILTER by FeatureFlagDelegate(true)
-    val STOP_DETAIL_MANUALLY_ADJUST_PLATFORM_NAME by FeatureFlagDelegate(true)
-    val STOP_DETAIL_HIDE_PLATFORM_FOR_SYNTHETIC by FeatureFlagDelegate(true)
-    val STOP_DETAIL_CONCEAL_LIVENESS_STRING by FeatureFlagDelegate(true)
-    val STOP_DETAIL_LIVENESS_ICON by FeatureFlagDelegate(false)
-    val STOP_CARD_SHOW_ACCESSIBILITY by FeatureFlagDelegate(false)
-    val MAP_SEARCH_SCREEN_NEARBY_STOPS_SEARCH by FeatureFlagDelegate(true)
-    val NAVIGATE_ENTRY_SCREEN_FAVOURITE_SEARCH by FeatureFlagDelegate(true)
-    val IOS_APPLE_MAP_LOGO_FOLLOW_BOTTOM_SHEET by FeatureFlagDelegate(false)
-    val RAPTOR_ARRIVAL_BASED_ROUTING by FeatureFlagDelegate(true)
-    val RAPTOR_SWAP_BUTTON by FeatureFlagDelegate(true)
-    val NAVIGATE_BUTTON_TAB_BAR by FeatureFlagDelegate(true)
-    val SERVICE_ALERT_BUTTON_TAB_BAR by FeatureFlagDelegate(false)
-    val PLACE_DETAIL_ENABLED by FeatureFlagDelegate(true)
-    val SPECIFY_TIMEZONE_WHEN_DIFFERENT by FeatureFlagDelegate(true)
-    val HIDE_MAPS_FROM_ACCESSIBILITY by FeatureFlagDelegate(false)
-    val HOLD_MAP_POINT_DETAIL by FeatureFlagDelegate(true)
-}

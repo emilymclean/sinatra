@@ -1,5 +1,6 @@
 package cl.emilym.sinatra.domain.prompt
 
+import cl.emilym.sinatra.FeatureFlag
 import cl.emilym.sinatra.data.models.IStopTimetableTime
 import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.data.models.Stop
@@ -29,14 +30,10 @@ class FavouriteNearbyStopDeparturesUseCase(
     private val remoteConfigRepository: RemoteConfigRepository
 ) {
 
-    companion object {
-        const val FAVOURITE_NEARBY_STOPS_FEATURE_FLAG = "favourite_nearby_stop_home_screen"
-    }
-
     @OptIn(ExperimentalCoroutinesApi::class)
     operator fun invoke(currentLocation: MapLocation): Flow<StopDepartures?> {
         return flow {
-            if (!remoteConfigRepository.feature(FAVOURITE_NEARBY_STOPS_FEATURE_FLAG)) {
+            if (!remoteConfigRepository.feature(FeatureFlag.FAVOURITE_NEARBY_STOP_HOME_SCREEN)) {
                 emit(null)
                 return@flow
             }

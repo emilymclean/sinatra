@@ -34,7 +34,7 @@ import cl.emilym.compose.requeststate.flatRequestStateFlow
 import cl.emilym.compose.requeststate.handle
 import cl.emilym.compose.requeststate.requestStateFlow
 import cl.emilym.compose.units.rdp
-import cl.emilym.sinatra.FeatureFlags
+import cl.emilym.sinatra.FeatureFlag
 import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.data.models.Place
 import cl.emilym.sinatra.data.models.RecentVisit
@@ -208,7 +208,7 @@ fun LazyListScope.BaseSearchWidget(
             }
             extraPlaceholderContent()
             nearbyStops?.nullIfEmpty()?.let { nearbyStops ->
-                if (!FeatureFlags.MAP_SEARCH_SCREEN_NEARBY_STOPS_SEARCH) return@let
+                if (!FeatureFlag.MAP_SEARCH_SCREEN_NEARBY_STOPS_SEARCH.immediate) return@let
                 if (searchTypes.isNotEmpty() && !searchTypes.contains(SearchType.STOP)) return@let
                 item {
                     Subheading(stringResource(Res.string.map_search_nearby_stops))

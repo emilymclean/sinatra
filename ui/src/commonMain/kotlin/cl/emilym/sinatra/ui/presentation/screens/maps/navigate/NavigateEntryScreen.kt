@@ -42,7 +42,6 @@ import cl.emilym.compose.errorwidget.ErrorWidget
 import cl.emilym.compose.requeststate.unwrap
 import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.FeatureFlag
-import cl.emilym.sinatra.FeatureFlags
 import cl.emilym.sinatra.bounds
 import cl.emilym.sinatra.data.models.Favourite
 import cl.emilym.sinatra.data.models.Journey
@@ -323,7 +322,7 @@ class NavigateEntryScreen(
                     }
                 }
                 favourites.unwrap()?.let { favourites ->
-                    if (!FeatureFlags.NAVIGATE_ENTRY_SCREEN_FAVOURITE_SEARCH) return@let
+                    if (!FeatureFlag.NAVIGATE_ENTRY_SCREEN_FAVOURITE_SEARCH.immediate) return@let
                     item {
                         Subheading(stringResource(Res.string.map_search_favourites))
                     }
@@ -404,7 +403,7 @@ class NavigateEntryScreen(
                                     modifier = Modifier.clickable { viewModel.onDestinationClick() }
                                 )
                             }
-                            if (FeatureFlags.RAPTOR_SWAP_BUTTON) {
+                            if (FeatureFlag.RAPTOR_SWAP_BUTTON.value()) {
                                 IconButton(
                                     onClick = { viewModel.swapOriginAndDestination() }
                                 ) {
