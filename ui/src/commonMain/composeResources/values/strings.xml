@@ -254,6 +254,7 @@
     <string name="information_for_developers_build_number">Build number:</string>
     <string name="information_for_developers_endpoint">API Endpoint:</string>
     <string name="information_for_developers_nominatim_endpoint">Nominatim Endpoint:</string>
+    <string name="information_for_developers_flags">Active Flags:</string>
 
     <string name="app_out_of_date_title">Sinatra needs to be updated</string>
     <string name="app_out_of_date_content">Sinatra is currently out of date and requires an update to function properly. Please update it to the latest version to restore compatibility and ensure reliable performance.</string>
