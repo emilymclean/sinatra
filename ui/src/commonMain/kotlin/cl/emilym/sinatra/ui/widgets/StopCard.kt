@@ -14,7 +14,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import cl.emilym.compose.units.rdp
-import cl.emilym.sinatra.FeatureFlags
+import cl.emilym.sinatra.FeatureFlag
 import cl.emilym.sinatra.data.models.Route
 import cl.emilym.sinatra.data.models.ServiceAccessibility
 import cl.emilym.sinatra.data.models.ServiceBikesAllowed
@@ -127,7 +127,10 @@ fun IconStopCard(
                 modifier = Modifier.weight(1f, fill = false),
             )
             // Every stop is marked as not wheelchair accessible, so there isn't any point having this :/, thanks Transport Canberra
-            if (FeatureFlags.STOP_CARD_SHOW_ACCESSIBILITY) {
+            if (
+                FeatureFlag.STOP_CARD_SHOW_ACCESSIBILITY.value() &&
+                !FeatureFlag.GLOBAL_HIDE_TRANSPORT_ACCESSIBILITY.value()
+            ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(0.25.rdp)
@@ -186,7 +189,7 @@ fun LivenessIcon(
     stopStationTime: StopStationTime,
     modifier: Modifier = Modifier
 ) {
-    if (!FeatureFlags.STOP_DETAIL_LIVENESS_ICON) return
+    if (!FeatureFlag.STOP_DETAIL_LIVENESS_ICON.value()) return
     when (stopStationTime.stationTime) {
         !is StationTime.Live -> return
         else -> {
@@ -205,7 +208,7 @@ val StopStationTime.text: String
         val stationTime = stationTime
         val isInPast = stationTime.time.isInPast()
         val hasDay = !stationTime.time.isSameDay(LocalScheduleTimeZone.current)
-        return when (FeatureFlags.STOP_DETAIL_CONCEAL_LIVENESS_STRING) {
+        return when (FeatureFlag.STOP_DETAIL_CONCEAL_LIVENESS_STRING.value()) {
             true -> stringResource(when (this) {
                 is StopStationTime.Arrival -> when (hasDay) {
                     true -> Res.string.generic_arrival_day

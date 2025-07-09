@@ -1,5 +1,6 @@
 package cl.emilym.sinatra.domain.prompt
 
+import cl.emilym.sinatra.FeatureFlag
 import cl.emilym.sinatra.data.models.ServiceAlert
 import cl.emilym.sinatra.data.repository.RemoteConfigRepository
 import cl.emilym.sinatra.data.repository.ServiceAlertRepository
@@ -27,7 +28,7 @@ class NewServiceUpdateUseCase(
     operator fun invoke(): Flow<List<ServiceAlert>> {
         return flow {
             val now = clock.now()
-            if (!remoteConfigRepository.feature(NEW_SERVICE_FEATURE_FLAG)) {
+            if (!remoteConfigRepository.feature(FeatureFlag.NEW_SERVICE_HOME_SCREEN)) {
                 emit(listOf())
                 return@flow
             }

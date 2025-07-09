@@ -43,6 +43,7 @@ import sinatra.ui.generated.resources.Res
 import sinatra.ui.generated.resources.information_for_developers_build_number
 import sinatra.ui.generated.resources.information_for_developers_build_version
 import sinatra.ui.generated.resources.information_for_developers_endpoint
+import sinatra.ui.generated.resources.information_for_developers_flags
 import sinatra.ui.generated.resources.information_for_developers_nominatim_endpoint
 import sinatra.ui.generated.resources.information_for_developers_title
 
@@ -104,6 +105,10 @@ class InformationForDevelopersScreen: ContentScreen(ContentRepository.INFORMATIO
                 item {
                     Column(Modifier.padding(horizontal = 1.rdp)) {
                         Box(Modifier.height(1.rdp))
+                        Text(
+                            stringResource(Res.string.information_for_developers_flags),
+                            fontWeight = FontWeight.Bold
+                        )
                         Text(featureFlagValues())
                         Box(Modifier.height(1.rdp))
                     }
@@ -149,28 +154,29 @@ class InformationForDevelopersScreen: ContentScreen(ContentRepository.INFORMATIO
 
     @Composable
     private fun featureFlagValues(): String {
-        fun FeatureFlag.str(value: Boolean? = null): String {
-            return "${this.name}=${value ?: "?"}"
-        }
-
         val flags = FeatureFlag.entries
         if (flags.isEmpty()) return "No flags"
-        var value by remember { mutableStateOf(flags.map { it.str() }) }
+        var value by remember { mutableStateOf("Loading flags") }
         val remoteConfigRepository = koinInject<RemoteConfigRepository>()
 
         LaunchedEffect(Unit) {
-            val first = flags.first()
-            val rest = flags.drop(1)
             try {
-                val firstValue = remoteConfigRepository.feature(first)
-                value = listOf(first.str(firstValue)) + rest.map {
-                    it.str(remoteConfigRepository.feature(it))
-                }
+                value = flags.map {
+                    FeatureFlagValue(
+                        it,
+                        remoteConfigRepository.feature(it),
+                    )
+                }.filter { it.value }.joinToString("\n") { it.flag.name }
             } catch(e: Exception) {
                 Napier.e(e)
             }
         }
 
-        return value.joinToString("; ")
+        return value
     }
+
+    private data class FeatureFlagValue(
+        val flag: FeatureFlag,
+        val value: Boolean
+    )
 }

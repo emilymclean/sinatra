@@ -1,5 +1,6 @@
 package cl.emilym.sinatra.domain.prompt
 
+import cl.emilym.sinatra.FeatureFlag
 import cl.emilym.sinatra.data.models.SpecialFavouriteType
 import cl.emilym.sinatra.data.models.specialType
 import cl.emilym.sinatra.data.repository.FavouriteRepository
@@ -22,7 +23,7 @@ class SpecialAddUseCase(
 
     operator fun invoke(): Flow<List<SpecialFavouriteType>> {
         return flow {
-            if (!remoteConfigRepository.feature(QUICK_ADD_NAVIGATION_FEATURE_FLAG)) {
+            if (!remoteConfigRepository.feature(FeatureFlag.QUICK_ADD_FAVOURITE_HOME_SCREEN)) {
                 emit(listOf())
                 return@flow
             }

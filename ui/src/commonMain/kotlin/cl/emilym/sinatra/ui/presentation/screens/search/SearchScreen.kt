@@ -25,7 +25,6 @@ import androidx.compose.ui.focus.focusRequester
 import cl.emilym.compose.requeststate.RequestState
 import cl.emilym.compose.requeststate.RequestStateWidget
 import cl.emilym.compose.units.rdp
-import cl.emilym.sinatra.FeatureFlags
 import cl.emilym.sinatra.data.models.Place
 import cl.emilym.sinatra.data.models.RecentVisit
 import cl.emilym.sinatra.data.models.Route

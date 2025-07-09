@@ -48,7 +48,7 @@ class QuickNavigateUseCaseTest {
 
     @Test
     fun `should emit empty list if feature flag is disabled`() = runTest {
-        coEvery { remoteConfigRepository.feature(QuickNavigateUseCase.QUICK_NAVIGATION_FEATURE_FLAG) } returns false
+        coEvery { remoteConfigRepository.feature(any()) } returns false
 
         val result = useCase(currentLocation = null).first()
 
@@ -57,7 +57,7 @@ class QuickNavigateUseCaseTest {
 
     @Test
     fun `should emit favourites sorted with WORK first if near start of work day`() = runTest {
-        coEvery { remoteConfigRepository.feature(QuickNavigateUseCase.QUICK_NAVIGATION_FEATURE_FLAG) } returns true
+        coEvery { remoteConfigRepository.feature(any()) } returns true
         coEvery { favouriteRepository.all() } returns flowOf(listOf(homeStop, workPlace))
         coEvery { nearWorkdayPeriodUseCase() } returns WorkdayPeriodStatus(
             inWorkPeriod = false,
@@ -87,7 +87,7 @@ class QuickNavigateUseCaseTest {
 
     @Test
     fun `should emit favourites sorted with HOME first if not near start of work day`() = runTest {
-        coEvery { remoteConfigRepository.feature(QuickNavigateUseCase.QUICK_NAVIGATION_FEATURE_FLAG) } returns true
+        coEvery { remoteConfigRepository.feature(any()) } returns true
         coEvery { favouriteRepository.all() } returns flowOf(listOf(homeStop, workPlace))
         coEvery { nearWorkdayPeriodUseCase() } returns WorkdayPeriodStatus(
             inWorkPeriod = true,
@@ -119,7 +119,7 @@ class QuickNavigateUseCaseTest {
     fun `should filter out favourites that are too close to current location`() = runTest {
         val currentLocation = MapLocation(lat = 0.0, lng = 0.0) // Same as `homeLocation`
 
-        coEvery { remoteConfigRepository.feature(QuickNavigateUseCase.QUICK_NAVIGATION_FEATURE_FLAG) } returns true
+        coEvery { remoteConfigRepository.feature(any()) } returns true
         coEvery { favouriteRepository.all() } returns flowOf(listOf(homeStop, workPlace))
         coEvery { nearWorkdayPeriodUseCase() } returns WorkdayPeriodStatus(
             inWorkPeriod = false,

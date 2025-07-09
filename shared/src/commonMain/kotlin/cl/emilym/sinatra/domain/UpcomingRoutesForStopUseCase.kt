@@ -1,18 +1,14 @@
 package cl.emilym.sinatra.domain
 
-import cl.emilym.sinatra.FeatureFlags
+import cl.emilym.sinatra.FeatureFlag
 import cl.emilym.sinatra.data.models.Cachable
-import cl.emilym.sinatra.data.models.Cachable.Companion.live
 import cl.emilym.sinatra.data.models.IStopTimetableTime
 import cl.emilym.sinatra.data.models.RouteId
 import cl.emilym.sinatra.data.models.StopId
 import cl.emilym.sinatra.data.models.StopTimetableTime
-import cl.emilym.sinatra.data.models.flatMap
 import cl.emilym.sinatra.data.models.map
 import cl.emilym.sinatra.data.models.startOfDay
 import cl.emilym.sinatra.data.repository.RemoteConfigRepository
-import cl.emilym.sinatra.data.repository.ServiceRepository
-import cl.emilym.sinatra.data.repository.StopRepository
 import cl.emilym.sinatra.data.repository.TransportMetadataRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -24,13 +20,11 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.isActive
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.isActive
 import kotlinx.datetime.Clock
 import org.koin.core.annotation.Factory
-import kotlin.text.Typography.times
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.minutes
 
@@ -86,7 +80,7 @@ class UpcomingRoutesForStopUseCase(
                     .map {
                         when {
                             it.childStopId == stopId || (
-                                remoteConfigRepository.feature("stop_detail_hide_platform_for_synthetic", true) &&
+                                remoteConfigRepository.feature(FeatureFlag.STOP_DETAIL_HIDE_PLATFORM_FOR_SYNTHETIC) &&
                                 stopId.endsWith("-synthetic")
                             ) -> it.copy(
                                 childStop = null,

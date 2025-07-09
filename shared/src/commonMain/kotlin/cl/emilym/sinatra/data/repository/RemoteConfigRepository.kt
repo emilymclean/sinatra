@@ -57,23 +57,17 @@ class RemoteConfigRepository(
         return remoteConfigClient.string(MINIMUM_VERSION_KEY)
     }
 
-    @Deprecated("Use FeatureFlag enum")
-    suspend fun feature(name: String, default: Boolean = true): Boolean {
-        return remoteConfigClient.boolean("$FEATURE_FLAG_PREFIX$name") ?: default
+    suspend fun feature(flag: FeatureFlag): Boolean {
+        return remoteConfigClient.boolean("$FEATURE_FLAG_PREFIX${flag.flagName}") ?: flag.default
     }
 
-    @Deprecated("Use FeatureFlag enum")
-    fun featureImmediate(name: String, default: Boolean = true): Boolean {
+    fun featureImmediate(flag: FeatureFlag): Boolean {
         return try {
-            remoteConfigClient.booleanImmediate("$FEATURE_FLAG_PREFIX$name") ?: default
+            remoteConfigClient.booleanImmediate("$FEATURE_FLAG_PREFIX${flag.flagName}") ?: flag.default
         } catch (e: Exception) {
             Napier.e(e)
-            default
+            flag.default
         }
     }
-
-    suspend fun feature(flag: FeatureFlag): Boolean = feature(flag.flagName, flag.default)
-
-    fun featureImmediate(flag: FeatureFlag): Boolean = featureImmediate(flag.flagName, flag.default)
 
 }

@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
@@ -21,7 +20,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedButton
@@ -40,8 +38,6 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.rememberTextMeasurer
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.annotation.ExperimentalVoyagerApi
 import cafe.adriel.voyager.core.lifecycle.LifecycleEffectOnce
 import cafe.adriel.voyager.core.screen.ScreenKey
@@ -51,11 +47,9 @@ import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import cl.emilym.compose.requeststate.RequestState
 import cl.emilym.compose.requeststate.RequestStateWidget
-import cl.emilym.compose.requeststate.map
 import cl.emilym.compose.requeststate.unwrap
 import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.FeatureFlag
-import cl.emilym.sinatra.FeatureFlags
 import cl.emilym.sinatra.bounds
 import cl.emilym.sinatra.data.models.IRouteTripInformation
 import cl.emilym.sinatra.data.models.IRouteTripStop
@@ -106,7 +100,6 @@ import cl.emilym.sinatra.ui.widgets.currentLocation
 import cl.emilym.sinatra.ui.widgets.pick
 import cl.emilym.sinatra.ui.widgets.value
 import com.mikepenz.markdown.m3.Markdown
-import io.github.aakira.napier.Napier
 import kotlinx.datetime.Instant
 import org.jetbrains.compose.resources.stringResource
 import sinatra.ui.generated.resources.Res
@@ -118,7 +111,6 @@ import sinatra.ui.generated.resources.route_accessibility_no_bikes_allowed
 import sinatra.ui.generated.resources.route_accessibility_not_wheelchair_accessible
 import sinatra.ui.generated.resources.route_accessibility_wheelchair_accessible
 import sinatra.ui.generated.resources.route_heading
-import sinatra.ui.generated.resources.route_not_found
 import sinatra.ui.generated.resources.route_not_operating
 import sinatra.ui.generated.resources.route_see_more
 import sinatra.ui.generated.resources.semantics_favourite_route
@@ -160,7 +152,7 @@ class RouteDetailScreen(
             viewModel.init(routeId, serviceId, tripId, startOfDay)
         }
 
-        if (FeatureFlags.ROUTE_DETAIL_NEAREST_STOP) {
+        if (FeatureFlag.ROUTE_DETAIL_NEAREST_STOP.value()) {
             val currentLocation = currentLocation()
             LaunchedEffect(currentLocation) {
                 viewModel.updateLocation(currentLocation ?: return@LaunchedEffect)
@@ -236,7 +228,7 @@ class RouteDetailScreen(
 
         val zoomPadding = zoomPadding
         LaunchedEffect(info?.stops) {
-            if (FeatureFlags.ROUTE_DETAIL_PREVENT_ZOOM_WHEN_HAVE_SOURCE_STOP && stopId != null)
+            if (FeatureFlag.ROUTE_DETAIL_PREVENT_ZOOM_WHEN_HAVE_SOURCE_STOP.immediate && stopId != null)
                 return@LaunchedEffect
             info?.stops?.let {
                 mapControl.zoomToArea(info.stops.mapNotNull { it.stop?.location }.bounds(), zoomPadding)
@@ -447,8 +439,8 @@ class RouteDetailScreen(
                     item { Box(Modifier.height(2.rdp)) }
                 }
                 nearestStop?.let { nearestStop ->
-                    if (!FeatureFlags.ROUTE_DETAIL_NEAREST_STOP) return@let
                     item {
+                        if (!FeatureFlag.ROUTE_DETAIL_NEAREST_STOP.value()) return@item
                         Column {
                             Subheading(stringResource(Res.string.stop_detail_nearest_stop))
                             StopCard(
@@ -531,12 +523,12 @@ class RouteDetailScreen(
         ) + stops.mapNotNull {
             MarkerItem(
                 it.stop?.location ?: return@mapNotNull null,
-                when (it.stopId == stopId && FeatureFlags.ROUTE_DETAIL_HIGHLIGHT_SOURCE_STOP) {
+                when (it.stopId == stopId && FeatureFlag.ROUTE_DETAIL_HIGHLIGHT_SOURCE_STOP.value()) {
                     true -> highlightedRouteStopMarkerIcon(route, it.stop)
                     false -> icon
                 },
                 id = "routeDetail-${it.stopId}",
-                onClick = when (FeatureFlags.ROUTE_DETAIL_CLICKABLE_STOPS) {
+                onClick = when (FeatureFlag.ROUTE_DETAIL_CLICKABLE_STOPS.value()) {
                     true -> { { navigator.push(StopDetailScreen(it.stopId)) } }
                     false -> null
                 }

@@ -3,16 +3,16 @@ package cl.emilym.sinatra.ui
 import cafe.adriel.voyager.core.registry.ScreenProvider
 import cafe.adriel.voyager.navigator.Navigator
 import cl.emilym.kmp.serializable.Serializable
-import cl.emilym.sinatra.FeatureFlags
+import cl.emilym.sinatra.FeatureFlag
 import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.data.models.Place
 import cl.emilym.sinatra.data.models.Route
 import cl.emilym.sinatra.data.models.Stop
+import cl.emilym.sinatra.ui.presentation.screens.maps.navigate.NavigateEntryScreen
+import cl.emilym.sinatra.ui.presentation.screens.maps.navigate.NavigationLocation
 import cl.emilym.sinatra.ui.presentation.screens.maps.place.PlaceDetailScreen
 import cl.emilym.sinatra.ui.presentation.screens.maps.route.RouteDetailScreen
 import cl.emilym.sinatra.ui.presentation.screens.maps.stop.StopDetailScreen
-import cl.emilym.sinatra.ui.presentation.screens.maps.navigate.NavigateEntryScreen
-import cl.emilym.sinatra.ui.presentation.screens.maps.navigate.NavigationLocation
 
 sealed interface ScreenRoute: ScreenProvider, Serializable {}
 
@@ -31,7 +31,7 @@ fun Navigator.pointJourneyNavigation(point: MapLocation) {
 }
 
 fun Navigator.placeCardDefaultNavigation(place: Place) {
-    when (FeatureFlags.PLACE_DETAIL_ENABLED) {
+    when (FeatureFlag.PLACE_DETAIL_ENABLED.immediate) {
         true -> push(PlaceDetailScreen(place.id))
         else -> placeJourneyNavigation(place)
     }
