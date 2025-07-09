@@ -26,6 +26,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.isActive
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.isActive
 import kotlinx.datetime.Clock
 import org.koin.core.annotation.Factory
@@ -109,10 +110,12 @@ class UpcomingRoutesForStopUseCase(
                 ).map { live -> original.map { live } }
             }
         }
-        .flowOn(Dispatchers.IO)
-        // Literally does nothing but change Cachable<out List<IStopTimetableTime>> to not out
-        .map {
-            it.map { it.map { it } }
+        .mapLatest {
+            it.map {
+                it
+                    .sortedBy { it.arrivalTime }
+                    .filter { it.departureTime > clock.now() }
+            }
         }
     }
 
