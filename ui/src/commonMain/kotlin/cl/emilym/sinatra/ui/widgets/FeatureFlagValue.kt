@@ -14,8 +14,9 @@ import org.koin.compose.koinInject
 
 @Composable
 fun FeatureFlag.value(): Boolean {
-    var value by remember { mutableStateOf(default) }
     val remoteConfigRepository = koinInject<RemoteConfigRepository>()
+    if (remoteConfigRepository.loaded) return remoteConfigRepository.featureImmediate(this@value)
+    var value by remember { mutableStateOf(default) }
 
     LaunchedEffect(name) {
         try {
@@ -23,6 +24,7 @@ fun FeatureFlag.value(): Boolean {
         } catch(e: Exception) {
             Napier.e(e)
         }
+
     }
 
     return value

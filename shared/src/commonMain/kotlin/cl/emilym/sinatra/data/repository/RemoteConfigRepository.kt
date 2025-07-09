@@ -23,6 +23,8 @@ class RemoteConfigRepository(
         const val FEATURE_FLAG_PREFIX = "feature_"
     }
 
+    val loaded: Boolean get() = remoteConfigClient.loaded
+
     suspend fun load() {
         remoteConfigClient.load()
     }
