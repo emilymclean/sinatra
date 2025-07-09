@@ -188,6 +188,25 @@
     <string name="future_estimated_departure_early">Expected to depart at %1$s (%2$s early)</string>
     <string name="future_estimated_departure_early_day">Expected to depart on %1$s (%2$s early)</string>
 
+    <string name="generic_arrival">Arriving at %1$s</string>
+    <string name="generic_arrival_day">Arriving on %1$s</string>
+    <string name="generic_arrival_late">Arriving at %1$s (%2$s late)</string>
+    <string name="generic_arrival_late_day">Arriving on %1$s (%2$s late)</string>
+    <string name="generic_arrival_early">Arriving at %1$s (%2$s early)</string>
+    <string name="generic_arrival_early_day">Arriving on %1$s (%2$s early)</string>
+    <string name="generic_departure">Departing at %1$s</string>
+    <string name="generic_departure_day">Departing on %1$s</string>
+    <string name="generic_departure_late">Departing at %1$s (%2$s late)</string>
+    <string name="generic_departure_late_day">Departing on %1$s (%2$s late)</string>
+    <string name="generic_departure_early">Departing at %1$s (%2$s early)</string>
+    <string name="generic_departure_early_day">Departing on %1$s (%2$s early)</string>
+    <string name="generic_departure_past">Departed at %1$s</string>
+    <string name="generic_departure_past_day">Departed on %1$s</string>
+    <string name="generic_departure_past_late">Departed at %1$s (%2$s late)</string>
+    <string name="generic_departure_past_late_day">Departed on %1$s (%2$s late)</string>
+    <string name="generic_departure_past_early">Departed at %1$s (%2$s early)</string>
+    <string name="generic_departure_past_early_day">Departed on %1$s (%2$s early)</string>
+
     <string name="route_with_heading">%1$s towards %2$s</string>
     <string name="route_heading">Towards %1$s</string>
     <string name="route_code_name">Route %1$s</string>
