@@ -8,6 +8,7 @@ import cl.emilym.compose.requeststate.RequestState
 import cl.emilym.compose.requeststate.flatRequestStateFlow
 import cl.emilym.compose.requeststate.handle
 import cl.emilym.compose.requeststate.requestStateFlow
+import cl.emilym.sinatra.FeatureFlag
 import cl.emilym.sinatra.data.models.Journey
 import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.data.models.RecentVisit
@@ -16,6 +17,7 @@ import cl.emilym.sinatra.data.models.StopWithDistance
 import cl.emilym.sinatra.data.repository.NetworkGraphRepository
 import cl.emilym.sinatra.data.repository.PreferencesRepository
 import cl.emilym.sinatra.data.repository.RecentVisitRepository
+import cl.emilym.sinatra.data.repository.RemoteConfigRepository
 import cl.emilym.sinatra.data.repository.RoutingPreferencesRepository
 import cl.emilym.sinatra.data.repository.StopRepository
 import cl.emilym.sinatra.domain.NavigableFavouritesUseCase
@@ -109,6 +111,7 @@ class NavigationEntryViewModel(
     private val routingPreferencesRepository: RoutingPreferencesRepository,
     private val preferencesRepository: PreferencesRepository,
     private val navigableFavouritesUseCase: NavigableFavouritesUseCase,
+    private val remoteConfigRepository: RemoteConfigRepository,
     private val clock: Clock
 ): SinatraScreenModel, SearchScreenViewModel {
 
@@ -293,12 +296,14 @@ class NavigationEntryViewModel(
     init {
         screenModelScope.launch {
             wheelchairAccessible.value = try {
-                routingPreferencesRepository.requiresWheelchair()
+                routingPreferencesRepository.requiresWheelchair() &&
+                !remoteConfigRepository.feature(FeatureFlag.GLOBAL_HIDE_TRANSPORT_ACCESSIBILITY)
             } catch (e: Exception) { false }
         }
         screenModelScope.launch {
             bikesAllowed.value = try {
-                routingPreferencesRepository.requiresBikes()
+                routingPreferencesRepository.requiresBikes() &&
+                !remoteConfigRepository.feature(FeatureFlag.GLOBAL_HIDE_TRANSPORT_ACCESSIBILITY)
             } catch (e: Exception) { false }
         }
     }
