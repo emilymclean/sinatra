@@ -2,10 +2,11 @@ package cl.emilym.sinatra.ui.localization
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.staticCompositionLocalOf
-import cl.emilym.sinatra.FeatureFlags
+import cl.emilym.sinatra.FeatureFlag
 import cl.emilym.sinatra.data.models.Time
 import cl.emilym.sinatra.data.models.isSameDay
 import cl.emilym.sinatra.data.models.startOfDay
+import cl.emilym.sinatra.ui.widgets.value
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDateTime
@@ -53,7 +54,8 @@ fun Instant.format(): String {
 
     val scheduleTime = format(scheduleTimeZone)
     return when {
-        localTimeZone.id != scheduleTimeZone.id && FeatureFlags.SPECIFY_TIMEZONE_WHEN_DIFFERENT ->
+        localTimeZone.id != scheduleTimeZone.id &&
+        FeatureFlag.SPECIFY_TIMEZONE_WHEN_DIFFERENT.value() ->
             stringResource(Res.string.time_local_timezone, scheduleTime)
         else -> scheduleTime
     }

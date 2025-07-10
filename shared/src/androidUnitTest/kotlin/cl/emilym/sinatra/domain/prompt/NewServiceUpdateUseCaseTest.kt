@@ -72,7 +72,7 @@ class NewServiceUpdateUseCaseTest {
     @Test
     fun `should emit empty list if feature flag is disabled`() = runTest {
         coEvery { clock.now() } returns now
-        coEvery { remoteConfigRepository.feature(NewServiceUpdateUseCase.NEW_SERVICE_FEATURE_FLAG) } returns false
+        coEvery { remoteConfigRepository.feature(any()) } returns false
 
         val result = useCase().first()
 
@@ -82,7 +82,7 @@ class NewServiceUpdateUseCaseTest {
     @Test
     fun `should filter only recent alerts`() = runTest {
         coEvery { clock.now() } returns now
-        coEvery { remoteConfigRepository.feature(NewServiceUpdateUseCase.NEW_SERVICE_FEATURE_FLAG) } returns true
+        coEvery { remoteConfigRepository.feature(any()) } returns true
         coEvery { serviceAlertRepository.alertsLive() } returns flowOf(allAlerts)
 
         val result = useCase().first()
@@ -93,7 +93,7 @@ class NewServiceUpdateUseCaseTest {
     @Test
     fun `should filter out viewed alerts`() = runTest {
         coEvery { clock.now() } returns now
-        coEvery { remoteConfigRepository.feature(NewServiceUpdateUseCase.NEW_SERVICE_FEATURE_FLAG) } returns true
+        coEvery { remoteConfigRepository.feature(any()) } returns true
         coEvery { serviceAlertRepository.alertsLive() } returns flowOf(listOf(recentAlert, viewedAlert))
 
         val result = useCase().first()
@@ -104,7 +104,7 @@ class NewServiceUpdateUseCaseTest {
     @Test
     fun `should emit empty list when no alerts are recent`() = runTest {
         coEvery { clock.now() } returns now
-        coEvery { remoteConfigRepository.feature(NewServiceUpdateUseCase.NEW_SERVICE_FEATURE_FLAG) } returns true
+        coEvery { remoteConfigRepository.feature(any()) } returns true
         coEvery { serviceAlertRepository.alertsLive() } returns flowOf(listOf(oldAlert, noDateAlert))
 
         val result = useCase().first()

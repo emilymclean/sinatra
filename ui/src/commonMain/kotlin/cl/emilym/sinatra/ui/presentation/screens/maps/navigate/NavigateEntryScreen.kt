@@ -41,7 +41,7 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import cl.emilym.compose.errorwidget.ErrorWidget
 import cl.emilym.compose.requeststate.unwrap
 import cl.emilym.compose.units.rdp
-import cl.emilym.sinatra.FeatureFlags
+import cl.emilym.sinatra.FeatureFlag
 import cl.emilym.sinatra.bounds
 import cl.emilym.sinatra.data.models.Favourite
 import cl.emilym.sinatra.data.models.Journey
@@ -92,6 +92,7 @@ import cl.emilym.sinatra.ui.widgets.currentLocation
 import cl.emilym.sinatra.ui.widgets.hasLocationPermission
 import cl.emilym.sinatra.ui.widgets.noRippleClickable
 import cl.emilym.sinatra.ui.widgets.routeRandleSize
+import cl.emilym.sinatra.ui.widgets.value
 import com.mikepenz.markdown.m3.Markdown
 import org.jetbrains.compose.resources.stringResource
 import sinatra.ui.generated.resources.Res
@@ -321,7 +322,7 @@ class NavigateEntryScreen(
                     }
                 }
                 favourites.unwrap()?.let { favourites ->
-                    if (!FeatureFlags.NAVIGATE_ENTRY_SCREEN_FAVOURITE_SEARCH) return@let
+                    if (!FeatureFlag.NAVIGATE_ENTRY_SCREEN_FAVOURITE_SEARCH.immediate) return@let
                     item {
                         Subheading(stringResource(Res.string.map_search_favourites))
                     }
@@ -402,7 +403,7 @@ class NavigateEntryScreen(
                                     modifier = Modifier.clickable { viewModel.onDestinationClick() }
                                 )
                             }
-                            if (FeatureFlags.RAPTOR_SWAP_BUTTON) {
+                            if (FeatureFlag.RAPTOR_SWAP_BUTTON.value()) {
                                 IconButton(
                                     onClick = { viewModel.swapOriginAndDestination() }
                                 ) {
@@ -417,6 +418,7 @@ class NavigateEntryScreen(
 
                 if (state !is NavigationEntryState.JourneySelected || journeyCount == 1) {
                     item {
+                        val showAccessibilityButtons = !FeatureFlag.GLOBAL_HIDE_TRANSPORT_ACCESSIBILITY.value()
                         LazyRow(
                             contentPadding = PaddingValues(horizontal = 1.rdp),
                             horizontalArrangement = Arrangement.spacedBy(0.5.rdp),
@@ -457,24 +459,27 @@ class NavigateEntryScreen(
                                     }
                                 }
                             }
-                            item {
-                                val bikesAllowed by viewModel.bikesAllowed.collectAsStateWithLifecycle()
-                                Chip(
-                                    selected = bikesAllowed ?: false,
-                                    onToggle = { viewModel.bikesAllowed.value = it },
-                                    contentDescription = stringResource(Res.string.navigate_chip_bikes_allowed)
-                                ) {
-                                    BikeIcon()
+
+                            if (showAccessibilityButtons) {
+                                item {
+                                    val bikesAllowed by viewModel.bikesAllowed.collectAsStateWithLifecycle()
+                                    Chip(
+                                        selected = bikesAllowed ?: false,
+                                        onToggle = { viewModel.bikesAllowed.value = it },
+                                        contentDescription = stringResource(Res.string.navigate_chip_bikes_allowed)
+                                    ) {
+                                        BikeIcon()
+                                    }
                                 }
-                            }
-                            item {
-                                val wheelchairAccessibility by viewModel.wheelchairAccessible.collectAsStateWithLifecycle()
-                                Chip(
-                                    selected = wheelchairAccessibility ?: false,
-                                    onToggle = { viewModel.wheelchairAccessible.value = it },
-                                    contentDescription = stringResource(Res.string.navigate_chip_wheelchair_accessible)
-                                ) {
-                                    AccessibleIcon()
+                                item {
+                                    val wheelchairAccessibility by viewModel.wheelchairAccessible.collectAsStateWithLifecycle()
+                                    Chip(
+                                        selected = wheelchairAccessibility ?: false,
+                                        onToggle = { viewModel.wheelchairAccessible.value = it },
+                                        contentDescription = stringResource(Res.string.navigate_chip_wheelchair_accessible)
+                                    ) {
+                                        AccessibleIcon()
+                                    }
                                 }
                             }
                         }
@@ -642,13 +647,16 @@ class NavigateEntryScreen(
                 else -> {}
             }
 
-            val showAccessibilityIcons by viewModel.showAccessibilityIcons.collectAsStateWithLifecycle()
+            val showAccessibilityIcons =
+                viewModel.showAccessibilityIcons.collectAsStateWithLifecycle().value &&
+                        !FeatureFlag.GLOBAL_HIDE_TRANSPORT_ACCESSIBILITY.value()
             for (legI in journey.legs.indices) {
                 val leg = journey.legs[legI]
                 when (leg) {
                     is JourneyLeg.Transfer -> TransferLeg(leg)
                     is JourneyLeg.Travel -> TravelLeg(
-                        leg, showAccessibilityIcons
+                        leg,
+                        showAccessibilityIcons
                     )
                     else -> {
                         when (legI) {

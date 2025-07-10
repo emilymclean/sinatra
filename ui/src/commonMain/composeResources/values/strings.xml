@@ -148,11 +148,15 @@
 
     <string name="stops_title">Stops</string>
     <string name="stop_detail_child_stations">Additional stops</string>
+    <string name="stop_detail_from">%1$s ⋅ %2$s</string>
+    <string name="stop_detail_platform">Platform %1$s</string>
+    <string name="stop_detail_platform_lr">Platform %1$s (LR)</string>
     <string name="current_stops_title">Upcoming stops</string>
     <string name="past_stops_title">Past stops</string>
     <string name="stops_timing_approximate_title">Approximate Timings</string>
     <string name="stops_timing_approximate">This service does not follow a fixed timetable and arrival times may vary.</string>
     <string name="accessibility_title">Accessibility</string>
+
 
     <string name="scheduled_arrival">Scheduled to arrive at %1$s</string>
     <string name="scheduled_arrival_day">Scheduled to arrive on %1$s</string>
@@ -183,6 +187,25 @@
     <string name="future_estimated_departure_late_day">Expected to depart on %1$s (%2$s late)</string>
     <string name="future_estimated_departure_early">Expected to depart at %1$s (%2$s early)</string>
     <string name="future_estimated_departure_early_day">Expected to depart on %1$s (%2$s early)</string>
+
+    <string name="generic_arrival">Arriving at %1$s</string>
+    <string name="generic_arrival_day">Arriving on %1$s</string>
+    <string name="generic_arrival_late">Arriving at %1$s (%2$s late)</string>
+    <string name="generic_arrival_late_day">Arriving on %1$s (%2$s late)</string>
+    <string name="generic_arrival_early">Arriving at %1$s (%2$s early)</string>
+    <string name="generic_arrival_early_day">Arriving on %1$s (%2$s early)</string>
+    <string name="generic_departure">Departing at %1$s</string>
+    <string name="generic_departure_day">Departing on %1$s</string>
+    <string name="generic_departure_late">Departing at %1$s (%2$s late)</string>
+    <string name="generic_departure_late_day">Departing on %1$s (%2$s late)</string>
+    <string name="generic_departure_early">Departing at %1$s (%2$s early)</string>
+    <string name="generic_departure_early_day">Departing on %1$s (%2$s early)</string>
+    <string name="generic_departure_past">Departed at %1$s</string>
+    <string name="generic_departure_past_day">Departed on %1$s</string>
+    <string name="generic_departure_past_late">Departed at %1$s (%2$s late)</string>
+    <string name="generic_departure_past_late_day">Departed on %1$s (%2$s late)</string>
+    <string name="generic_departure_past_early">Departed at %1$s (%2$s early)</string>
+    <string name="generic_departure_past_early_day">Departed on %1$s (%2$s early)</string>
 
     <string name="route_with_heading">%1$s towards %2$s</string>
     <string name="route_heading">Towards %1$s</string>
@@ -225,6 +248,13 @@
     <string name="service_alert_region_tuggeranong">Tuggeranong</string>
     <string name="service_alert_region_woden">Woden, Weston Creek, and Molonglo</string>
     <string name="service_alert_region_other">Other</string>
+
+    <string name="information_for_developers_title">Information for Developers</string>
+    <string name="information_for_developers_build_version">Build version:</string>
+    <string name="information_for_developers_build_number">Build number:</string>
+    <string name="information_for_developers_endpoint">API Endpoint:</string>
+    <string name="information_for_developers_nominatim_endpoint">Nominatim Endpoint:</string>
+    <string name="information_for_developers_flags">Active Flags:</string>
 
     <string name="app_out_of_date_title">Sinatra needs to be updated</string>
     <string name="app_out_of_date_content">Sinatra is currently out of date and requires an update to function properly. Please update it to the latest version to restore compatibility and ensure reliable performance.</string>

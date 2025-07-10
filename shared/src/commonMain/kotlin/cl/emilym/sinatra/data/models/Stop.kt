@@ -136,8 +136,9 @@ data class StopTimetableTime(
     override val departureTime: Time,
     override val heading: String,
     override val sequence: Int,
+    override val last: Boolean,
     override val route: Route?,
-    override val last: Boolean
+    override val childStop: Stop?,
 ): IStopTimetableTime {
 
     companion object {
@@ -152,8 +153,9 @@ data class StopTimetableTime(
                 Time.parse(pb.departureTime),
                 pb.heading,
                 pb.sequence,
+                pb.last == true,
                 null,
-                pb.last == true
+                null,
             )
         }
     }

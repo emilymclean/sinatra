@@ -26,9 +26,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.window.Dialog
 import cl.emilym.compose.units.rdp
-import cl.emilym.sinatra.FeatureFlags
+import cl.emilym.sinatra.FeatureFlag
 import cl.emilym.sinatra.ui.localization.LocalClock
 import cl.emilym.sinatra.ui.localization.LocalLocalTimeZone
+import cl.emilym.sinatra.ui.widgets.value
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDateTime
@@ -89,7 +90,7 @@ fun TimeSelectionDialog(
                     ) {
                         Text(stringResource(Res.string.time_select_tab_depart))
                     }
-                    if (FeatureFlags.RAPTOR_ARRIVAL_BASED_ROUTING) {
+                    if (FeatureFlag.RAPTOR_ARRIVAL_BASED_ROUTING.value()) {
                         Tab(
                             selectedTabIndex == 1,
                             onClick = { selectedTabIndex = 1 },

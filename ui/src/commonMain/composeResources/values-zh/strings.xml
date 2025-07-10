@@ -198,7 +198,10 @@
   <string name="stops_title">站点</string>
 
   <string name="stop_detail_child_stations">附加车站</string>
-      
+
+  <string name="stop_detail_platform">%1$s号站台</string>
+  <string name="stop_detail_platform_lr">%1$s号站台 (LR)</string>
+
   <string name="current_stops_title">即将停靠的站点</string>
       
   <string name="past_stops_title">过去的站点</string>
@@ -264,6 +267,42 @@
   <string name="future_estimated_departure_early">预计于%1$s出发（提前%2$s）</string>
 
   <string name="future_estimated_departure_early_day">预计于%1$s出发（提前%2$s）</string>
+
+  <string name="generic_arrival">将于%1$s抵达</string>
+
+  <string name="generic_arrival_day">将于%1$s抵达</string>
+
+  <string name="generic_arrival_late">将于%1$s抵达（延迟%2$s）</string>
+
+  <string name="generic_arrival_late_day">将于%1$s抵达（延迟%2$s）</string>
+
+  <string name="generic_arrival_early">将于%1$s抵达（提前%2$s）</string>
+
+  <string name="generic_arrival_early_day">将于%1$s抵达（提前%2$s）</string>
+
+  <string name="generic_departure">将于%1$s出发</string>
+
+  <string name="generic_departure_day">将于%1$s出发</string>
+
+  <string name="generic_departure_late">将于%1$s出发（延迟%2$s）</string>
+
+  <string name="generic_departure_late_day">将于%1$s出发（延迟%2$s）</string>
+
+  <string name="generic_departure_early">将于%1$s出发（提前%2$s）</string>
+
+  <string name="generic_departure_early_day">将于%1$s出发（提前%2$s）</string>
+
+  <string name="generic_departure_past">已于%1$s出发</string>
+
+  <string name="generic_departure_past_day">已于%1$s出发</string>
+
+  <string name="generic_departure_past_late">已于%1$s出发（延迟%2$s）</string>
+
+  <string name="generic_departure_past_late_day">已于%1$s出发（延迟%2$s）</string>
+
+  <string name="generic_departure_past_early">已于%1$s出发（提前%2$s）</string>
+
+  <string name="generic_departure_past_early_day">已于%1$s出发（提前%2$s）</string>
 
   <string name="route_with_heading">%1$s 至 %2$s</string>
       
