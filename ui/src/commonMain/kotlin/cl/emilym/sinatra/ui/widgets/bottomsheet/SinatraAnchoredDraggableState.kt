@@ -2,19 +2,18 @@ package cl.emilym.sinatra.ui.widgets.bottomsheet
 
 import androidx.annotation.FloatRange
 import androidx.compose.animation.core.AnimationSpec
-import androidx.compose.animation.core.AnimationState
-import androidx.compose.animation.core.DecayAnimationSpec
 import androidx.compose.animation.core.animate
-import androidx.compose.animation.core.animateDecay
-import androidx.compose.animation.core.calculateTargetValue
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.MutatePriority
 import androidx.compose.foundation.MutatorMutex
 import androidx.compose.foundation.gestures.AnchoredDragScope
 import androidx.compose.foundation.gestures.AnchoredDraggableState
+import androidx.compose.foundation.gestures.DragScope
 import androidx.compose.foundation.gestures.DraggableAnchors
+import androidx.compose.foundation.gestures.DraggableState
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.gestures.snapTo
-import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -24,6 +23,7 @@ import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.structuralEqualityPolicy
+import androidx.compose.ui.Modifier
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Job
@@ -31,23 +31,34 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlin.math.abs
-import kotlin.math.max
-import kotlin.math.min
-import kotlin.math.sign
 
-private fun Float.coerceToTarget(target: Float): Float {
-    if (target == 0f) return 0f
-    return if (target > 0) coerceAtMost(target) else coerceAtLeast(target)
-}
+internal fun <T> Modifier.sinatraAnchoredDraggable(
+    state: SinatraAnchoredDraggableState<T>,
+    orientation: Orientation,
+    enabled: Boolean = true,
+    reverseDirection: Boolean = false,
+    interactionSource: MutableInteractionSource? = null,
+) =
+    this then draggable(
+        state = state.draggableState,
+        orientation = orientation,
+        enabled = enabled,
+        interactionSource = interactionSource,
+        reverseDirection = reverseDirection,
+        startDragImmediately = state.isAnimationRunning,
+        onDragStopped = { velocity -> launch { state.settle(velocity) } },
+    )
 
-@OptIn(ExperimentalFoundationApi::class)
-suspend fun <T> SinatraAnchoredDraggableState<T>.animateTo(targetValue: T) {
-    anchoredDrag(targetValue = targetValue) { anchors, latestTarget ->
-        animateTo(lastVelocity, this, anchors, latestTarget)
-    }
-}
 
-@OptIn(ExperimentalFoundationApi::class)
+/**
+ * Snap to a [targetValue] without any animation. If the [targetValue] is not in the set of anchors,
+ * the [AnchoredDraggableState.currentValue] will be updated to the [targetValue] without updating
+ * the offset.
+ *
+ * @param targetValue The target value of the animation
+ * @throws CancellationException if the interaction interrupted by another interaction like a
+ *   gesture interaction or another programmatic interaction like a [animateTo] or [snapTo] call.
+ */
 suspend fun <T> SinatraAnchoredDraggableState<T>.snapTo(targetValue: T) {
     anchoredDrag(targetValue = targetValue) { anchors, latestTarget ->
         val targetOffset = anchors.positionOf(latestTarget)
@@ -55,18 +66,15 @@ suspend fun <T> SinatraAnchoredDraggableState<T>.snapTo(targetValue: T) {
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
-private suspend fun <T> SinatraAnchoredDraggableState<T>.animateTo(
-    velocity: Float,
-    anchoredDragScope: AnchoredDragScope,
-    anchors: DraggableAnchors<T>,
-    latestTarget: T
+internal suspend fun <T> SinatraAnchoredDraggableState<T>.animateTo(
+    targetValue: T,
+    velocity: Float = this.lastVelocity,
 ) {
-    with(anchoredDragScope) {
+    anchoredDrag(targetValue = targetValue) { anchors, latestTarget ->
         val targetOffset = anchors.positionOf(latestTarget)
-        var prev = if (offset.isNaN()) 0f else offset
-        if (!targetOffset.isNaN() && prev != targetOffset) {
-            animate(prev, targetOffset, velocity, snapAnimationSpec) { value, velocity ->
+        if (!targetOffset.isNaN()) {
+            var prev = if (offset.isNaN()) 0f else offset
+            animate(prev, targetOffset, velocity, animationSpec.invoke()) { value, velocity ->
                 // Our onDrag coerces the value within the bounds, but an animation may
                 // overshoot, for example a spring animation or an overshooting interpolator
                 // We respect the user's intention and allow the overshoot, but still use
@@ -78,69 +86,13 @@ private suspend fun <T> SinatraAnchoredDraggableState<T>.animateTo(
     }
 }
 
-@ExperimentalFoundationApi
-suspend fun <T> SinatraAnchoredDraggableState<T>.animateToWithDecay(
-    targetValue: T,
-    velocity: Float,
-): Float {
-    var remainingVelocity = velocity
-    anchoredDrag(targetValue = targetValue) { anchors, latestTarget ->
-        val targetOffset = anchors.positionOf(latestTarget)
-        if (!targetOffset.isNaN()) {
-            var prev = if (offset.isNaN()) 0f else offset
-            if (prev != targetOffset) {
-                // If targetOffset is not in the same direction as the direction of the drag (sign
-                // of the velocity) we fall back to using target animation.
-                // If the component is at the target offset already, we use decay animation that will
-                // not consume any velocity.
-                if (velocity * (targetOffset - prev) < 0f || velocity == 0f) {
-                    animateTo(velocity, this, anchors, latestTarget)
-                    remainingVelocity = 0f
-                } else {
-                    val projectedDecayOffset =
-                        decayAnimationSpec.calculateTargetValue(prev, velocity)
-
-                    val canDecayToTarget = if (velocity > 0) {
-                        projectedDecayOffset >= targetOffset
-                    } else {
-                        projectedDecayOffset <= targetOffset
-                    }
-                    if (canDecayToTarget) {
-                        AnimationState(prev, velocity)
-                            .animateDecay(decayAnimationSpec) {
-                                if (abs(value) >= abs(targetOffset)) {
-                                    val finalValue = value.coerceToTarget(targetOffset)
-                                    dragTo(finalValue, this.velocity)
-                                    remainingVelocity =
-                                        if (this.velocity.isNaN()) 0f else this.velocity
-                                    prev = finalValue
-                                    cancelAnimation()
-                                } else {
-                                    dragTo(value, this.velocity)
-                                    remainingVelocity = this.velocity
-                                    prev = value
-                                }
-                            }
-                    } else {
-                        animateTo(velocity, this, anchors, latestTarget)
-                        remainingVelocity = 0f
-                    }
-                }
-            }
-        }
-    }
-    return velocity - remainingVelocity
-}
-
 @Stable
-@ExperimentalFoundationApi
 class SinatraAnchoredDraggableState<T>(
     initialValue: T,
     internal val positionalThreshold: (totalDistance: Float) -> Float,
     internal val velocityThreshold: () -> Float,
-    val snapAnimationSpec: AnimationSpec<Float>,
-    val decayAnimationSpec: DecayAnimationSpec<Float>,
-    internal val confirmValueChange: (newValue: T) -> Boolean = { true }
+    val animationSpec: () -> AnimationSpec<Float>,
+    internal val confirmValueChange: (newValue: T) -> Boolean = { true },
 ) {
 
     /**
@@ -148,37 +100,31 @@ class SinatraAnchoredDraggableState<T>(
      *
      * @param initialValue The initial value of the state.
      * @param anchors The anchors of the state. Use [updateAnchors] to update the anchors later.
-     * @param snapAnimationSpec The default animation spec that will be used to animate to a new
-     * state.
-     * @param decayAnimationSpec The animation spec that will be used when flinging with a large
-     * enough velocity to reach or cross the target state.
+     * @param animationSpec The default animation that will be used to animate to a new state.
      * @param confirmValueChange Optional callback invoked to confirm or veto a pending state
-     * change.
+     *   change.
      * @param positionalThreshold The positional threshold, in px, to be used when calculating the
-     * target state while a drag is in progress and when settling after the drag ends. This is the
-     * distance from the start of a transition. It will be, depending on the direction of the
-     * interaction, added or subtracted from/to the origin offset. It should always be a positive
-     * value.
+     *   target state while a drag is in progress and when settling after the drag ends. This is the
+     *   distance from the start of a transition. It will be, depending on the direction of the
+     *   interaction, added or subtracted from/to the origin offset. It should always be a positive
+     *   value.
      * @param velocityThreshold The velocity threshold (in px per second) that the end velocity has
-     * to exceed in order to animate to the next state, even if the [positionalThreshold] has not
-     * been reached.
+     *   to exceed in order to animate to the next state, even if the [positionalThreshold] has not
+     *   been reached.
      */
-    @ExperimentalFoundationApi
     constructor(
         initialValue: T,
         anchors: DraggableAnchors<T>,
         positionalThreshold: (totalDistance: Float) -> Float,
         velocityThreshold: () -> Float,
-        snapAnimationSpec: AnimationSpec<Float>,
-        decayAnimationSpec: DecayAnimationSpec<Float>,
-        confirmValueChange: (newValue: T) -> Boolean = { true }
+        animationSpec: () -> AnimationSpec<Float>,
+        confirmValueChange: (newValue: T) -> Boolean = { true },
     ) : this(
         initialValue,
         positionalThreshold,
         velocityThreshold,
-        snapAnimationSpec,
-        decayAnimationSpec,
-        confirmValueChange
+        animationSpec,
+        confirmValueChange,
     ) {
         this.anchors = anchors
         trySnapTo(initialValue)
@@ -186,34 +132,62 @@ class SinatraAnchoredDraggableState<T>(
 
     private val dragMutex = MutatorMutex()
 
-    /**
-     * The current value of the [AnchoredDraggableState].
-     *
-     * That is the closest anchor point that the state has passed through.
-     */
+    internal val draggableState =
+        object : DraggableState {
+
+            private val dragScope =
+                object : DragScope {
+                    override fun dragBy(pixels: Float) {
+                        with(anchoredDragScope) { dragTo(newOffsetForDelta(pixels)) }
+                    }
+                }
+
+            override suspend fun drag(
+                dragPriority: MutatePriority,
+                block: suspend DragScope.() -> Unit,
+            ) {
+                this@SinatraAnchoredDraggableState.anchoredDrag(dragPriority) {
+                    with(dragScope) { block() }
+                }
+            }
+
+            override fun dispatchRawDelta(delta: Float) {
+                this@SinatraAnchoredDraggableState.dispatchRawDelta(delta)
+            }
+        }
+
+    /** The current value of the [AnchoredDraggableState]. */
     var currentValue: T by mutableStateOf(initialValue)
         private set
 
     /**
-     * The value the [AnchoredDraggableState] is currently settled at.
-     *
-     * When progressing through multiple anchors, e.g. `A -> B -> C`, [settledValue] will stay the
-     * same until settled at an anchor, while [currentValue] will update to the closest anchor.
-     */
-    var settledValue: T by mutableStateOf(initialValue)
-        private set
-
-    /**
-     * The target value. This is the closest value to the current offset. If no interactions like
-     * animations or drags are in progress, this will be the current value.
+     * The target value. This is the closest value to the current offset, taking into account
+     * positional thresholds. If no interactions like animations or drags are in progress, this will
+     * be the current value.
      */
     val targetValue: T by derivedStateOf {
-        dragTarget ?: run {
-            val currentOffset = offset
-            if (!currentOffset.isNaN()) {
-                anchors.closestAnchor(offset) ?: currentValue
-            } else currentValue
-        }
+        dragTarget
+            ?: run {
+                val currentOffset = offset
+                if (!currentOffset.isNaN()) {
+                    computeTarget(currentOffset, currentValue, velocity = 0f)
+                } else currentValue
+            }
+    }
+
+    /**
+     * The closest value in the swipe direction from the current offset, not considering thresholds.
+     * If an [anchoredDrag] is in progress, this will be the target of that anchoredDrag (if
+     * specified).
+     */
+    internal val closestValue: T by derivedStateOf {
+        dragTarget
+            ?: run {
+                val currentOffset = offset
+                if (!currentOffset.isNaN()) {
+                    computeTargetWithoutThresholds(currentOffset, currentValue)
+                } else currentValue
+            }
     }
 
     /**
@@ -230,9 +204,8 @@ class SinatraAnchoredDraggableState<T>(
     /**
      * Require the current offset.
      *
-     * @see offset
-     *
      * @throws IllegalStateException If the offset has not been initialized yet
+     * @see offset
      */
     fun requireOffset(): Float {
         check(!offset.isNaN()) {
@@ -242,46 +215,19 @@ class SinatraAnchoredDraggableState<T>(
         return offset
     }
 
-    /**
-     * Whether an animation is currently in progress.
-     */
-    val isAnimationRunning: Boolean get() = dragTarget != null
+    /** Whether an animation is currently in progress. */
+    val isAnimationRunning: Boolean
+        get() = dragTarget != null
 
     /**
-     * The fraction of the offset between [from] and [to], as a fraction between [0f..1f], or 1f if
-     * [from] is equal to [to].
-     *
-     * @param from The starting value used to calculate the distance
-     * @param to The end value used to calculate the distance
-     */
-    @FloatRange(from = 0.0, to = 1.0)
-    fun progress(from: T, to: T): Float {
-        val fromOffset = anchors.positionOf(from)
-        val toOffset = anchors.positionOf(to)
-        val currentOffset = offset.coerceIn(
-            min(fromOffset, toOffset), // fromOffset might be > toOffset
-            max(fromOffset, toOffset)
-        )
-        val fraction = (currentOffset - fromOffset) / (toOffset - fromOffset)
-        return if (!fraction.isNaN()) {
-            // If we are very close to 0f or 1f, we round to the closest
-            if (fraction < 1e-6f) 0f else if (fraction > 1 - 1e-6f) 1f else abs(fraction)
-        } else 1f
-    }
-
-    /**
-     * The fraction of the progress going from [settledValue] to [targetValue], within [0f..1f]
+     * The fraction of the progress going from [currentValue] to [closestValue], within [0f..1f]
      * bounds, or 1f if the [AnchoredDraggableState] is in a settled state.
      */
-    @Deprecated(
-        message = "Use the progress function to query the progress between two specified " +
-                "anchors.",
-        replaceWith = ReplaceWith("progress(state.settledValue, state.targetValue)")
-    )
     @get:FloatRange(from = 0.0, to = 1.0)
-    val progress: Float by derivedStateOf(structuralEqualityPolicy()) {
-        val a = anchors.positionOf(settledValue)
-        val b = anchors.positionOf(targetValue)
+    val progress: Float by
+    derivedStateOf(structuralEqualityPolicy()) {
+        val a = anchors.positionOf(currentValue)
+        val b = anchors.positionOf(closestValue)
         val distance = abs(b - a)
         if (!distance.isNaN() && distance > 1e-6f) {
             val progress = (this.requireOffset() - a) / (b - a)
@@ -292,16 +238,15 @@ class SinatraAnchoredDraggableState<T>(
 
     /**
      * The velocity of the last known animation. Gets reset to 0f when an animation completes
-     * successfully, but does not get reset when an animation gets interrupted.
-     * You can use this value to provide smooth reconciliation behavior when re-targeting an
-     * animation.
+     * successfully, but does not get reset when an animation gets interrupted. You can use this
+     * value to provide smooth reconciliation behavior when re-targeting an animation.
      */
     var lastVelocity: Float by mutableFloatStateOf(0f)
         private set
 
     private var dragTarget: T? by mutableStateOf(null)
 
-    var anchors: DraggableAnchors<T> by mutableStateOf(SinatraDraggableAnchors(mapOf()))
+    var anchors: DraggableAnchors<T> by mutableStateOf(emptyDraggableAnchors())
         private set
 
     /**
@@ -311,19 +256,19 @@ class SinatraAnchoredDraggableState<T>(
      *
      * <b>If your anchors depend on the size of the layout, updateAnchors should be called in the
      * layout (placement) phase, e.g. through Modifier.onSizeChanged.</b> This ensures that the
-     * state is set up within the same frame.
-     * For static anchors, or anchors with different data dependencies, [updateAnchors] is safe to
-     * be called from side effects or layout.
+     * state is set up within the same frame. For static anchors, or anchors with different data
+     * dependencies, [updateAnchors] is safe to be called from side effects or layout.
      *
      * @param newAnchors The new anchors.
      * @param newTarget The new target, by default the closest anchor or the current target if there
-     * are no anchors.
+     *   are no anchors.
      */
     fun updateAnchors(
         newAnchors: DraggableAnchors<T>,
-        newTarget: T = if (!offset.isNaN()) {
-            newAnchors.closestAnchor(offset) ?: targetValue
-        } else targetValue
+        newTarget: T =
+            if (!offset.isNaN()) {
+                newAnchors.closestAnchor(offset) ?: targetValue
+            } else targetValue,
     ) {
         if (anchors != newAnchors) {
             anchors = newAnchors
@@ -345,114 +290,87 @@ class SinatraAnchoredDraggableState<T>(
      * [positionalThreshold] will be the target. If the [velocity] is higher than the
      * [velocityThreshold], the [positionalThreshold] will <b>not</b> be considered and the next
      * anchor in the direction indicated by the sign of the [velocity] will be the target.
-     *
-     * Based on the [velocity], either [snapAnimationSpec] or [decayAnimationSpec] will be used
-     * to animate towards the target.
-     *
-     * @return The velocity consumed in the animation
      */
-    suspend fun settle(velocity: Float): Float {
+    suspend fun settle(velocity: Float) {
         val previousValue = this.currentValue
-        val targetValue = computeTarget(
-            offset = requireOffset(),
-            currentValue = previousValue,
-            velocity = velocity
-        )
-        return if (confirmValueChange(targetValue)) {
-            animateToWithDecay(targetValue, velocity)
+        val targetValue =
+            computeTarget(
+                offset = requireOffset(),
+                currentValue = previousValue,
+                velocity = velocity,
+            )
+        if (confirmValueChange(targetValue)) {
+            animateTo(targetValue, velocity)
         } else {
             // If the user vetoed the state change, rollback to the previous state.
-            animateToWithDecay(previousValue, velocity)
+            animateTo(previousValue, velocity)
         }
     }
 
-    private fun computeTarget(
-        offset: Float,
-        currentValue: T,
-        velocity: Float
-    ): T {
+    private fun computeTarget(offset: Float, currentValue: T, velocity: Float): T {
         val currentAnchors = anchors
         val currentAnchorPosition = currentAnchors.positionOf(currentValue)
         val velocityThresholdPx = velocityThreshold()
         return if (currentAnchorPosition == offset || currentAnchorPosition.isNaN()) {
             currentValue
-        } else {
-            if (abs(velocity) >= abs(velocityThresholdPx)) {
-                currentAnchors.closestAnchor(
-                    offset,
-                    sign(velocity) > 0
-                )!!
+        } else if (currentAnchorPosition < offset) {
+            // Swiping from lower to upper (positive).
+            if (velocity >= velocityThresholdPx) {
+                currentAnchors.closestAnchor(offset, true)!!
             } else {
-                val neighborAnchor =
-                    currentAnchors.closestAnchor(
-                        offset,
-                        offset - currentAnchorPosition > 0
-                    )!!
-                val neighborAnchorPosition = currentAnchors.positionOf(neighborAnchor)
-                val distance = abs(currentAnchorPosition - neighborAnchorPosition)
+                val upper = currentAnchors.closestAnchor(offset, true)!!
+                val distance = abs(currentAnchors.positionOf(upper) - currentAnchorPosition)
                 val relativeThreshold = abs(positionalThreshold(distance))
-                val relativePosition = abs(currentAnchorPosition - offset)
-                if (relativePosition <= relativeThreshold) currentValue else neighborAnchor
+                val absoluteThreshold = abs(currentAnchorPosition + relativeThreshold)
+                if (offset < absoluteThreshold) currentValue else upper
             }
-        }
-    }
-
-    private val anchoredDragScope = object : AnchoredDragScope {
-        var leftBound: T? = null
-        var rightBound: T? = null
-        var distance = Float.NaN
-
-        override fun dragTo(newOffset: Float, lastKnownVelocity: Float) {
-            val previousOffset = offset
-            offset = newOffset
-            lastVelocity = lastKnownVelocity
-            if (previousOffset.isNaN()) return
-            val isMovingForward = newOffset >= previousOffset
-            updateIfNeeded(isMovingForward)
-        }
-
-        fun updateIfNeeded(isMovingForward: Boolean) {
-            updateBounds(isMovingForward)
-            val distanceToCurrentAnchor = abs(offset - anchors.positionOf(currentValue))
-            val crossedThreshold = distanceToCurrentAnchor >= distance / 2f
-            if (crossedThreshold) {
-                val closestAnchor = (if (isMovingForward) rightBound else leftBound) ?: currentValue
-                if (confirmValueChange(closestAnchor)) {
-                    currentValue = closestAnchor
-                }
-            }
-        }
-
-        fun updateBounds(isMovingForward: Boolean) {
-            val currentAnchorPosition = anchors.positionOf(currentValue)
-            if (offset == currentAnchorPosition) {
-                val searchStartPosition = offset + (if (isMovingForward) 1f else -1f)
-                val closestExcludingCurrent =
-                    anchors.closestAnchor(searchStartPosition, isMovingForward) ?: currentValue
-                if (isMovingForward) {
-                    leftBound = currentValue
-                    rightBound = closestExcludingCurrent
-                } else {
-                    leftBound = closestExcludingCurrent
-                    rightBound = currentValue
-                }
+        } else {
+            // Swiping from upper to lower (negative).
+            if (velocity <= -velocityThresholdPx) {
+                currentAnchors.closestAnchor(offset, false)!!
             } else {
-                val closestLeft = anchors.closestAnchor(offset, false) ?: currentValue
-                val closestRight = anchors.closestAnchor(offset, true) ?: currentValue
-                leftBound = closestLeft
-                rightBound = closestRight
+                val lower = currentAnchors.closestAnchor(offset, false)!!
+                val distance = abs(currentAnchorPosition - currentAnchors.positionOf(lower))
+                val relativeThreshold = abs(positionalThreshold(distance))
+                val absoluteThreshold = abs(currentAnchorPosition - relativeThreshold)
+                if (offset < 0) {
+                    // For negative offsets, larger absolute thresholds are closer to lower anchors
+                    // than smaller ones.
+                    if (abs(offset) < absoluteThreshold) currentValue else lower
+                } else {
+                    if (offset > absoluteThreshold) currentValue else lower
+                }
             }
-            distance = abs(anchors.positionOf(leftBound!!) - anchors.positionOf(rightBound!!))
         }
     }
+
+    private fun computeTargetWithoutThresholds(offset: Float, currentValue: T): T {
+        val currentAnchors = anchors
+        val currentAnchorPosition = currentAnchors.positionOf(currentValue)
+        return if (currentAnchorPosition == offset || currentAnchorPosition.isNaN()) {
+            currentValue
+        } else if (currentAnchorPosition < offset) {
+            currentAnchors.closestAnchor(offset, true) ?: currentValue
+        } else {
+            currentAnchors.closestAnchor(offset, false) ?: currentValue
+        }
+    }
+
+    private val anchoredDragScope: AnchoredDragScope =
+        object : AnchoredDragScope {
+            override fun dragTo(newOffset: Float, lastKnownVelocity: Float) {
+                offset = newOffset
+                lastVelocity = lastKnownVelocity
+            }
+        }
 
     /**
      * Call this function to take control of drag logic and perform anchored drag with the latest
      * anchors.
      *
      * All actions that change the [offset] of this [AnchoredDraggableState] must be performed
-     * within an [anchoredDrag] block (even if they don't call any other methods on this object)
-     * in order to guarantee that mutual exclusion is enforced.
+     * within an [anchoredDrag] block (even if they don't call any other methods on this object) in
+     * order to guarantee that mutual exclusion is enforced.
      *
      * If [anchoredDrag] is called from elsewhere with the [dragPriority] higher or equal to ongoing
      * drag, the ongoing drag will be cancelled.
@@ -466,20 +384,22 @@ class SinatraAnchoredDraggableState<T>(
      */
     suspend fun anchoredDrag(
         dragPriority: MutatePriority = MutatePriority.Default,
-        block: suspend AnchoredDragScope.(anchors: DraggableAnchors<T>) -> Unit
+        block: suspend AnchoredDragScope.(anchors: DraggableAnchors<T>) -> Unit,
     ) {
-        dragMutex.mutate(dragPriority) {
-            restartable(inputs = { anchors }) { latestAnchors ->
-                anchoredDragScope.block(latestAnchors)
-            }
-            val closest = anchors.closestAnchor(offset)
-            if (closest != null) {
-                val closestAnchorOffset = anchors.positionOf(closest)
-                val isAtClosestAnchor = abs(offset - closestAnchorOffset) < 0.5f
-                if (isAtClosestAnchor && confirmValueChange.invoke(closest)) {
-                    settledValue = closest
-                    currentValue = closest
+        try {
+            dragMutex.mutateWith(dragPriority) {
+                restartable(inputs = { anchors }) { latestAnchors ->
+                    anchoredDragScope.block(latestAnchors)
                 }
+            }
+        } finally {
+            val closest = anchors.closestAnchor(offset)
+            if (
+                closest != null &&
+                abs(offset - anchors.positionOf(closest)) <= 0.5f &&
+                confirmValueChange.invoke(closest)
+            ) {
+                currentValue = closest
             }
         }
     }
@@ -489,8 +409,8 @@ class SinatraAnchoredDraggableState<T>(
      * anchors and target.
      *
      * All actions that change the [offset] of this [AnchoredDraggableState] must be performed
-     * within an [anchoredDrag] block (even if they don't call any other methods on this object)
-     * in order to guarantee that mutual exclusion is enforced.
+     * within an [anchoredDrag] block (even if they don't call any other methods on this object) in
+     * order to guarantee that mutual exclusion is enforced.
      *
      * This overload allows the caller to hint the target value that this [anchoredDrag] is intended
      * to arrive to. This will set [AnchoredDraggableState.targetValue] to provided value so
@@ -510,38 +430,39 @@ class SinatraAnchoredDraggableState<T>(
     suspend fun anchoredDrag(
         targetValue: T,
         dragPriority: MutatePriority = MutatePriority.Default,
-        block: suspend AnchoredDragScope.(anchor: DraggableAnchors<T>, targetValue: T) -> Unit
+        block: suspend AnchoredDragScope.(anchors: DraggableAnchors<T>, targetValue: T) -> Unit,
     ) {
-        if (anchors.hasAnchorFor(targetValue)) {
+        if (anchors.hasPositionFor(targetValue)) {
             try {
-                dragMutex.mutate(dragPriority) {
+                dragMutex.mutateWith(dragPriority) {
                     dragTarget = targetValue
-                    restartable(
-                        inputs = { anchors to this.targetValue }
-                    ) { (anchors, latestTarget) ->
-                        anchoredDragScope.block(anchors, latestTarget)
-                    }
-                    if (confirmValueChange(targetValue)) {
-                        val latestTargetOffset = anchors.positionOf(targetValue)
-                        anchoredDragScope.dragTo(latestTargetOffset, lastVelocity)
-                        settledValue = targetValue
-                        currentValue = targetValue
+                    restartable(inputs = { anchors to this@SinatraAnchoredDraggableState.targetValue }) {
+                            (latestAnchors, latestTarget) ->
+                        anchoredDragScope.block(latestAnchors, latestTarget)
                     }
                 }
             } finally {
                 dragTarget = null
+                val closest = anchors.closestAnchor(offset)
+                if (
+                    closest != null &&
+                    abs(offset - anchors.positionOf(closest)) <= 0.5f &&
+                    confirmValueChange.invoke(closest)
+                ) {
+                    currentValue = closest
+                }
             }
         } else {
-            if (confirmValueChange(targetValue)) {
-                settledValue = targetValue
-                currentValue = targetValue
-            }
+            // Todo: b/283467401, revisit this behavior
+            currentValue = targetValue
         }
     }
 
     internal fun newOffsetForDelta(delta: Float) =
-        ((if (offset.isNaN()) 0f else offset) + delta)
-            .coerceIn(anchors.minAnchor(), anchors.maxAnchor())
+        ((if (offset.isNaN()) 0f else offset) + delta).coerceIn(
+            anchors.minPosition(),
+            anchors.maxPosition(),
+        )
 
     /**
      * Drag by the [delta], coerce it in the bounds and dispatch it to the [AnchoredDraggableState].
@@ -562,44 +483,42 @@ class SinatraAnchoredDraggableState<T>(
      *
      * @return true if the synchronous snap was successful, or false if we couldn't snap synchronous
      */
-    private fun trySnapTo(targetValue: T): Boolean = dragMutex.tryMutate {
-        with(anchoredDragScope) {
-            val targetOffset = anchors.positionOf(targetValue)
-            if (!targetOffset.isNaN()) {
-                dragTo(targetOffset)
-                dragTarget = null
+    private fun trySnapTo(targetValue: T): Boolean =
+        dragMutex.tryMutate {
+            with(anchoredDragScope) {
+                val targetOffset = anchors.positionOf(targetValue)
+                if (!targetOffset.isNaN()) {
+                    dragTo(targetOffset)
+                    dragTarget = null
+                }
+                currentValue = targetValue
             }
-            currentValue = targetValue
-            settledValue = targetValue
         }
-    }
 
     companion object {
-        /**
-         * The default [Saver] implementation for [AnchoredDraggableState].
-         */
-        @ExperimentalFoundationApi
+        /** The default [Saver] implementation for [AnchoredDraggableState]. */
         fun <T : Any> Saver(
-            snapAnimationSpec: AnimationSpec<Float>,
-            decayAnimationSpec: DecayAnimationSpec<Float>,
+            animationSpec: () -> AnimationSpec<Float>,
+            confirmValueChange: (T) -> Boolean,
             positionalThreshold: (distance: Float) -> Float,
             velocityThreshold: () -> Float,
-            confirmValueChange: (T) -> Boolean = { true },
-        ) = Saver<AnchoredDraggableState<T>, T>(
-            save = { it.currentValue },
-            restore = {
-                AnchoredDraggableState(
-                    initialValue = it,
-                    snapAnimationSpec = snapAnimationSpec,
-                    decayAnimationSpec = decayAnimationSpec,
-                    confirmValueChange = confirmValueChange,
-                    positionalThreshold = positionalThreshold,
-                    velocityThreshold = velocityThreshold
-                )
-            }
-        )
+        ) =
+            Saver<SinatraAnchoredDraggableState<T>, T>(
+                save = { it.currentValue },
+                restore = {
+                    SinatraAnchoredDraggableState(
+                        initialValue = it,
+                        animationSpec = animationSpec,
+                        confirmValueChange = confirmValueChange,
+                        positionalThreshold = positionalThreshold,
+                        velocityThreshold = velocityThreshold,
+                    )
+                },
+            )
     }
 }
+
+private fun <T> emptyDraggableAnchors() = SinatraDraggableAnchors<T>(emptyMap())
 
 private suspend fun <I> restartable(inputs: () -> I, block: suspend (I) -> Unit) {
     try {

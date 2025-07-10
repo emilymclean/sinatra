@@ -12,6 +12,10 @@ plugins {
 }
 
 kotlin {
+    compilerOptions {
+        optIn.add("kotlin.time.ExperimentalTime")
+    }
+
     androidTarget {
         compilations.all {
             compileTaskProvider.configure {
@@ -79,6 +83,7 @@ kotlin {
             implementation(libs.emily.serializable)
             implementation(libs.emily.units)
             implementation(libs.emily.errorwidget)
+            implementation(libs.emily.standardbutton)
             implementation(libs.emily.requeststate)
 
             // Coil
@@ -120,8 +125,14 @@ dependencies {
     add("kspIosSimulatorArm64", libs.koin.ksp.compiler)
 }
 
-project.tasks.withType(KotlinCompilationTask::class.java).configureEach {
-    if(name != "kspCommonMainKotlinMetadata") {
+tasks.withType(KotlinCompilationTask::class).configureEach {
+    if (name != "kspCommonMainKotlinMetadata") {
+        dependsOn("kspCommonMainKotlinMetadata")
+    }
+}
+
+tasks.withType().configureEach {
+    if (name == "kspKotlinIosArm64") {
         dependsOn("kspCommonMainKotlinMetadata")
     }
 }
