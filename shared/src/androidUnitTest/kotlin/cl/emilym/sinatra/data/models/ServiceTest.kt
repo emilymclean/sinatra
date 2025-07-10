@@ -1,8 +1,11 @@
 package cl.emilym.sinatra.data.models
 
 import kotlinx.datetime.*
+import java.time.temporal.ChronoField
 import java.time.temporal.ChronoUnit
+import java.time.temporal.TemporalField
 import kotlin.test.*
+import kotlin.time.Clock
 import kotlin.time.Duration.Companion.days
 
 class ServiceTest {
@@ -13,7 +16,7 @@ class ServiceTest {
     private fun dateAt(hour: Int, minute: Int, dayOfWeek: DayOfWeek): Instant {
         val today = now.toLocalDateTime(tz).date
         val targetDate = today.toJavaLocalDate()
-            .with(DayOfWeek.MONDAY)
+            .with(java.time.DayOfWeek.MONDAY)
             .plus((dayOfWeek.ordinal).toLong(), ChronoUnit.DAYS)
             .toKotlinLocalDate()
         return LocalDateTime(targetDate, LocalTime(hour, minute)).toInstant(tz)

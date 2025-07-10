@@ -19,7 +19,7 @@ import sinatra.ui.generated.resources.time_local_timezone
 
 val LocalScheduleTimeZone = staticCompositionLocalOf<TimeZone> { error("Schedule time zone not provided!") }
 val LocalLocalTimeZone = staticCompositionLocalOf<TimeZone> { TimeZone.currentSystemDefault() }
-val LocalClock = staticCompositionLocalOf<Clock> { Clock.System }
+val LocalClock = staticCompositionLocalOf<Clock> { kotlin.time.Clock.System }
 
 @Composable
 fun scheduleStartOfDay(): Instant {

@@ -10,5 +10,5 @@ import org.koin.dsl.module
 class SharedModule
 
 val manualModule = module {
-    factory<Clock> { Clock.System }
+    factory<Clock> { kotlin.time.Clock.System }
 }

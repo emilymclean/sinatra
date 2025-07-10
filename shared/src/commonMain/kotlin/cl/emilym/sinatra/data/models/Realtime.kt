@@ -32,7 +32,7 @@ data class RouteRealtimeInformation(
             return RouteRealtimeInformation(
                 pb.updates.map { RouteRealtimeUpdate.fromPb(it) },
                 pb.expireTimestamp?.let { Instant.parse(pb.expireTimestamp) }
-                    ?: (Clock.System.now() + 2.minutes)
+                    ?: (kotlin.time.Clock.System.now() + 2.minutes)
             )
         }
     }
@@ -70,7 +70,7 @@ data class StopRealtimeInformation(
             return StopRealtimeInformation(
                 pb.updates.map { StopRealtimeUpdate.fromPb(it) },
                 pb.expireTimestamp?.let { Instant.parse(pb.expireTimestamp) }
-                    ?: (Clock.System.now() + 2.minutes)
+                    ?: (kotlin.time.Clock.System.now() + 2.minutes)
             )
         }
     }
