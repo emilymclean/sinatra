@@ -125,6 +125,18 @@ dependencies {
     add("kspIosSimulatorArm64", libs.koin.ksp.compiler)
 }
 
+tasks.withType(KotlinCompilationTask::class).configureEach {
+    if (name != "kspCommonMainKotlinMetadata") {
+        dependsOn("kspCommonMainKotlinMetadata")
+    }
+}
+
+tasks.withType().configureEach {
+    if (name == "kspKotlinIosArm64") {
+        dependsOn("kspCommonMainKotlinMetadata")
+    }
+}
+
 ksp {
     arg("KOIN_USE_COMPOSE_VIEWMODEL","true")
 }
