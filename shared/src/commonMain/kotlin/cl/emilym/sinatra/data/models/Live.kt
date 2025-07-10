@@ -80,9 +80,10 @@ data class LiveStopTimetableTime(
     override val departureTime: Time,
     override val heading: String,
     override val sequence: Int,
+    override val last: Boolean,
     override val route: Route?,
+    override val childStop: Stop?,
     override val stationTime: TimetableStationTime,
-    override val last: Boolean
 ): IStopTimetableTime {
 
     companion object {
@@ -97,9 +98,10 @@ data class LiveStopTimetableTime(
                 item.departureTime,
                 item.heading,
                 item.sequence,
+                item.last,
                 item.route,
+                item.childStop,
                 stationTime,
-                last = item.last
             )
         }
     }

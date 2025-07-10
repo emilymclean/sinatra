@@ -32,6 +32,7 @@ import cl.emilym.sinatra.nullIfEmpty
 import cl.emilym.sinatra.ui.widgets.ContentLinkWidget
 import cl.emilym.sinatra.ui.widgets.NavigatorBackButton
 import org.koin.compose.getKoin
+import org.koin.compose.koinInject
 
 data class PreferencesCollection(
     val requiresWheelchair: StatefulPreferencesUnit<Boolean>,
@@ -67,8 +68,7 @@ abstract class PreferencesScreen: Screen {
                         .verticalScroll(rememberScrollState())
                         .padding(innerPadding),
                 ) {
-                    val koin = getKoin()
-                    val preferencesRepository = remember(koin) { koin.get<PreferencesRepository>() }
+                    val preferencesRepository = koinInject<PreferencesRepository>()
                     val scope = rememberCoroutineScope()
 
                     Column(

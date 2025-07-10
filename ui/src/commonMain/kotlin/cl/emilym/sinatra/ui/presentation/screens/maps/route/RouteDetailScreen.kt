@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
@@ -21,7 +20,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedButton
@@ -40,8 +38,6 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.rememberTextMeasurer
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.annotation.ExperimentalVoyagerApi
 import cafe.adriel.voyager.core.lifecycle.LifecycleEffectOnce
 import cafe.adriel.voyager.core.screen.ScreenKey
@@ -53,7 +49,7 @@ import cl.emilym.compose.requeststate.RequestState
 import cl.emilym.compose.requeststate.RequestStateWidget
 import cl.emilym.compose.requeststate.unwrap
 import cl.emilym.compose.units.rdp
-import cl.emilym.sinatra.FeatureFlags
+import cl.emilym.sinatra.FeatureFlag
 import cl.emilym.sinatra.bounds
 import cl.emilym.sinatra.data.models.IRouteTripInformation
 import cl.emilym.sinatra.data.models.IRouteTripStop
@@ -87,7 +83,9 @@ import cl.emilym.sinatra.ui.widgets.AlertScaffold
 import cl.emilym.sinatra.ui.widgets.BikeIcon
 import cl.emilym.sinatra.ui.widgets.ExternalLinkIcon
 import cl.emilym.sinatra.ui.widgets.FavouriteButton
+import cl.emilym.sinatra.ui.widgets.ListHint
 import cl.emilym.sinatra.ui.widgets.LocalMapControl
+import cl.emilym.sinatra.ui.widgets.NoBusIcon
 import cl.emilym.sinatra.ui.widgets.RouteLine
 import cl.emilym.sinatra.ui.widgets.RouteRandle
 import cl.emilym.sinatra.ui.widgets.SegmentedButtonHeight
@@ -100,8 +98,8 @@ import cl.emilym.sinatra.ui.widgets.WheelchairAccessibleIcon
 import cl.emilym.sinatra.ui.widgets.collectAsStateWithLifecycle
 import cl.emilym.sinatra.ui.widgets.currentLocation
 import cl.emilym.sinatra.ui.widgets.pick
+import cl.emilym.sinatra.ui.widgets.value
 import com.mikepenz.markdown.m3.Markdown
-import io.github.aakira.napier.Napier
 import kotlinx.datetime.Instant
 import org.jetbrains.compose.resources.stringResource
 import sinatra.ui.generated.resources.Res
@@ -113,7 +111,7 @@ import sinatra.ui.generated.resources.route_accessibility_no_bikes_allowed
 import sinatra.ui.generated.resources.route_accessibility_not_wheelchair_accessible
 import sinatra.ui.generated.resources.route_accessibility_wheelchair_accessible
 import sinatra.ui.generated.resources.route_heading
-import sinatra.ui.generated.resources.route_not_found
+import sinatra.ui.generated.resources.route_not_operating
 import sinatra.ui.generated.resources.route_see_more
 import sinatra.ui.generated.resources.semantics_favourite_route
 import sinatra.ui.generated.resources.stop_detail_distance
@@ -154,7 +152,7 @@ class RouteDetailScreen(
             viewModel.init(routeId, serviceId, tripId, startOfDay)
         }
 
-        if (FeatureFlags.ROUTE_DETAIL_NEAREST_STOP) {
+        if (FeatureFlag.ROUTE_DETAIL_NEAREST_STOP.value()) {
             val currentLocation = currentLocation()
             LaunchedEffect(currentLocation) {
                 viewModel.updateLocation(currentLocation ?: return@LaunchedEffect)
@@ -167,22 +165,23 @@ class RouteDetailScreen(
             Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
-            RequestStateWidget(tripInformation, { viewModel.retry() }) { tripInformation ->
-                val route = route
-                when {
-                    route == null -> { Text(stringResource(Res.string.route_not_found)) }
-                    tripInformation == null -> { Text(stringResource(Res.string.trip_not_found)) }
-                    else -> {
-                        val info = tripInformation
-                        val triggers = info.stationTimes?.asInstants()
-                        when {
-                            triggers != null -> {
-                                SpecificRecomposeOnInstants(triggers) { trigger ->
-                                    TripDetails(route, info, trigger)
+            RequestStateWidget(route, { viewModel.retry() }) { route ->
+                // Jank as hell but good enough
+                RequestStateWidget(tripInformation, { viewModel.retry() }) { tripInformation ->
+                    when {
+                        route == null -> { Text(stringResource(Res.string.trip_not_found)) }
+                        else -> {
+                            val info = tripInformation
+                            val triggers = info?.stationTimes?.asInstants()
+                            when {
+                                triggers != null -> {
+                                    SpecificRecomposeOnInstants(triggers) { trigger ->
+                                        TripDetails(route, info, trigger)
+                                    }
                                 }
-                            }
-                            else -> {
-                                TripDetails(route, info, null)
+                                else -> {
+                                    TripDetails(route, info, null)
+                                }
                             }
                         }
                     }
@@ -192,7 +191,7 @@ class RouteDetailScreen(
     }
 
     @Composable
-    fun TripDetails(route: Route, info: IRouteTripInformation, trigger: Int?) {
+    fun TripDetails(route: Route, info: IRouteTripInformation?, trigger: Int?) {
         val viewModel = koinScreenModel<RouteDetailViewModel>()
         val navigator = LocalNavigator.currentOrThrow
         val clock = LocalClock.current
@@ -204,29 +203,36 @@ class RouteDetailScreen(
         val selectedHeading by viewModel.selectedHeading.collectAsStateWithLifecycle()
         val heading by viewModel.heading.collectAsStateWithLifecycle()
         val headings by viewModel.headings.collectAsStateWithLifecycle()
+        val isToday by viewModel.isToday.collectAsStateWithLifecycle()
+        val showAccessibility =
+            viewModel.showAccessibility.collectAsStateWithLifecycle().value &&
+            !FeatureFlag.GLOBAL_HIDE_TRANSPORT_ACCESSIBILITY.value()
+
 
         val current = if (trigger != null) {
             remember(trigger) {
                 val now = clock.now()
-                info.stops.current(now, startOfDay ?: now.startOfDay(timeZone)).nullIfEmpty()
+                info?.stops?.current(now, startOfDay ?: now.startOfDay(timeZone)).nullIfEmpty()
             }
         } else {
-            info.stops
+            info?.stops
         }
         val past = if (trigger != null) {
             remember(trigger) {
                 val now = clock.now()
-                info.stops.past(now, startOfDay ?: now.startOfDay(timeZone)).nullIfEmpty()?.reversed()
+                info?.stops?.past(now, startOfDay ?: now.startOfDay(timeZone))?.nullIfEmpty()?.reversed()
             }
         } else {
             null
         }
 
         val zoomPadding = zoomPadding
-        LaunchedEffect(info.stops) {
-            if (FeatureFlags.ROUTE_DETAIL_PREVENT_ZOOM_WHEN_HAVE_SOURCE_STOP && stopId != null)
+        LaunchedEffect(info?.stops) {
+            if (FeatureFlag.ROUTE_DETAIL_PREVENT_ZOOM_WHEN_HAVE_SOURCE_STOP.immediate && stopId != null)
                 return@LaunchedEffect
-            mapControl.zoomToArea(info.stops.mapNotNull { it.stop?.location }.bounds(), zoomPadding)
+            info?.stops?.let {
+                mapControl.zoomToArea(info.stops.mapNotNull { it.stop?.location }.bounds(), zoomPadding)
+            }
         }
 
         Scaffold { innerPadding ->
@@ -270,60 +276,67 @@ class RouteDetailScreen(
                     }
                 }
                 item { Box(Modifier.height(0.5.rdp)) }
-                item { Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                    RouteLine(
-                        route,
-                        info.stops.mapNotNull { it.stop },
-                        info.stops.mapNotNull { it.stationTime }.nullIfEmpty()
-                    )
-                } }
-                item { Box(Modifier.height(2.rdp)) }
+                info?.stops?.nullIfEmpty()?.let {
+                    item {
+                        Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                            RouteLine(
+                                route,
+                                info.stops.mapNotNull { it.stop },
+                                info.stops.mapNotNull { it.stationTime }.nullIfEmpty()
+                            )
+                        }
+                    }
+                    item { Box(Modifier.height(2.rdp)) }
+                }
                 item {
                     AlertScaffold((alerts as? RequestState.Success)?.value)
                 }
-                if (route.approximateTimings) {
+                if (info == null) {
+                    item { Box(Modifier.height(2.rdp)) }
                     item {
-                        Column(
-                            Modifier.padding(horizontal = 1.rdp)
+                        ListHint(
+                            stringResource(Res.string.route_not_operating),
+                            modifier = Modifier.padding(horizontal = 1.rdp)
                         ) {
-                            Card(
-                                Modifier.fillMaxWidth(),
-                                colors = CardDefaults.cardColors(
-                                    containerColor = MaterialTheme.colorScheme.secondaryContainer
-                                )
-                            ) {
-                                Row(
-                                    modifier = Modifier.padding(1.rdp),
-                                    horizontalArrangement = Arrangement.spacedBy(0.5.rdp)
-                                ) {
-                                    WarningIcon()
-                                    Column {
-                                        Text(
-                                            stringResource(Res.string.stops_timing_approximate_title),
-                                            style = MaterialTheme.typography.titleMedium
-                                        )
-                                        Text(
-                                            stringResource(Res.string.stops_timing_approximate),
-                                        )
-                                    }
-                                }
-                            }
-                            Box(Modifier.height(2.rdp))
+                            NoBusIcon(
+                                tint = MaterialTheme.colorScheme.primary
+                            )
                         }
                     }
+                    item { Box(Modifier.height(1.rdp)) }
+                }
+                if (!isToday) {
+                    item {
+                        WarningCard(
+                            stringResource(Res.string.route_not_operating),
+                            null,
+                            Modifier.fillMaxWidth().padding(horizontal = 1.rdp)
+                        )
+                    }
+                    item { Box(Modifier.height(1.rdp)) }
+                }
+                if (route.approximateTimings && isToday) {
+                    item {
+                        WarningCard(
+                            stringResource(Res.string.stops_timing_approximate_title),
+                            stringResource(Res.string.stops_timing_approximate),
+                            Modifier.fillMaxWidth().padding(horizontal = 1.rdp)
+                        )
+                    }
+                    item { Box(Modifier.height(1.rdp)) }
                 }
                 if (route.description != null && trigger == null) {
                     item {
                         Column(
-                            Modifier.fillMaxWidth().padding(1.rdp),
+                            Modifier.fillMaxWidth().padding(horizontal = 1.rdp),
                             verticalArrangement = Arrangement.spacedBy(1.rdp)
                         ) {
                             Markdown(route.description ?: "")
                         }
                     }
-                    if (route.moreLink == null) {
-                        item { Box(Modifier.height(1.rdp)) }
-                    }
+                    item { Box(Modifier.height(
+                        if (route.moreLink == null) 2.rdp else 1.rdp
+                    )) }
                 }
                 if (route.moreLink != null && trigger == null) {
                     item {
@@ -339,33 +352,41 @@ class RouteDetailScreen(
                     }
                     item { Box(Modifier.height(2.rdp)) }
                 }
-                item {
-                    Subheading(stringResource(Res.string.accessibility_title))
-                }
-                item { Box(Modifier.height(1.rdp)) }
-                item {
-                    Column(Modifier.padding(horizontal = 1.rdp)) {
-                        AccessibilityIconLockup(
-                            {
-                                WheelchairAccessibleIcon(info.accessibility.wheelchairAccessible == ServiceWheelchairAccessible.ACCESSIBLE)
+                info?.let { info ->
+                    if (showAccessibility) {
+                        item {
+                            Subheading(stringResource(Res.string.accessibility_title))
+                        }
+                        item { Box(Modifier.height(1.rdp)) }
+                        item {
+                            Column(Modifier.padding(horizontal = 1.rdp)) {
+                                if (info.accessibility.wheelchairAccessible != ServiceWheelchairAccessible.UNKNOWN) {
+                                    AccessibilityIconLockup(
+                                        {
+                                            WheelchairAccessibleIcon(info.accessibility.wheelchairAccessible == ServiceWheelchairAccessible.ACCESSIBLE)
+                                        }
+                                    ) {
+                                        Text(when(info.accessibility.wheelchairAccessible == ServiceWheelchairAccessible.ACCESSIBLE) {
+                                            true -> stringResource(Res.string.route_accessibility_wheelchair_accessible)
+                                            false -> stringResource(Res.string.route_accessibility_not_wheelchair_accessible)
+                                        })
+                                    }
+                                }
+                                if (info.accessibility.bikesAllowed != ServiceBikesAllowed.UNKNOWN) {
+                                    AccessibilityIconLockup(
+                                        { BikeIcon() }
+                                    ) {
+                                        Text(when(info.accessibility.bikesAllowed == ServiceBikesAllowed.ALLOWED) {
+                                            true -> stringResource(Res.string.route_accessibility_bikes_allowed)
+                                            false -> stringResource(Res.string.route_accessibility_no_bikes_allowed)
+                                        })
+                                    }
+                                }
                             }
-                        ) {
-                            Text(when(info.accessibility.wheelchairAccessible == ServiceWheelchairAccessible.ACCESSIBLE) {
-                                true -> stringResource(Res.string.route_accessibility_wheelchair_accessible)
-                                false -> stringResource(Res.string.route_accessibility_not_wheelchair_accessible)
-                            })
                         }
-                        AccessibilityIconLockup(
-                            { BikeIcon() }
-                        ) {
-                            Text(when(info.accessibility.bikesAllowed == ServiceBikesAllowed.ALLOWED) {
-                                true -> stringResource(Res.string.route_accessibility_bikes_allowed)
-                                false -> stringResource(Res.string.route_accessibility_no_bikes_allowed)
-                            })
-                        }
+                        item { Box(Modifier.height(2.rdp)) }
                     }
                 }
-                item { Box(Modifier.height(2.rdp)) }
                 headings?.nullIf { it.size <= 1 }?.let { headings ->
                     item {
                         val textMeasurer = rememberTextMeasurer()
@@ -418,8 +439,8 @@ class RouteDetailScreen(
                     item { Box(Modifier.height(2.rdp)) }
                 }
                 nearestStop?.let { nearestStop ->
-                    if (!FeatureFlags.ROUTE_DETAIL_NEAREST_STOP) return@let
                     item {
+                        if (!FeatureFlag.ROUTE_DETAIL_NEAREST_STOP.value()) return@item
                         Column {
                             Subheading(stringResource(Res.string.stop_detail_nearest_stop))
                             StopCard(
@@ -438,23 +459,25 @@ class RouteDetailScreen(
                         }
                     }
                 }
-                when {
-                    trigger == null -> {
-                        item { Subheading(stringResource(Res.string.stops_title)) }
-                        Cards(navigator, current ?: listOf(), route)
-                    }
-                    else -> {
-                        if (current != null) {
-                            item {
-                                Subheading(stringResource(Res.string.current_stops_title))
-                            }
+                info?.stops?.nullIfEmpty()?.let {
+                    when {
+                        trigger == null -> {
+                            item { Subheading(stringResource(Res.string.stops_title)) }
                             Cards(navigator, current ?: listOf(), route)
                         }
-                        if (past != null) {
-                            item {
-                                Subheading(stringResource(Res.string.past_stops_title))
+                        else -> {
+                            if (current != null) {
+                                item {
+                                    Subheading(stringResource(Res.string.current_stops_title))
+                                }
+                                Cards(navigator, current ?: listOf(), route)
                             }
-                            Cards(navigator, past ?: listOf(), route)
+                            if (past != null) {
+                                item {
+                                    Subheading(stringResource(Res.string.past_stops_title))
+                                }
+                                Cards(navigator, past ?: listOf(), route)
+                            }
                         }
                     }
                 }
@@ -475,11 +498,7 @@ class RouteDetailScreen(
                 Modifier.fillMaxWidth(),
                 it.stationTime?.pick(route, it.sequence <= 1),
                 onClick = {
-                    navigator.push(
-                        StopDetailScreen(
-                        it.stopId
-                    )
-                    )
+                    navigator.push(StopDetailScreen(it.stopId))
                 }
             )
         }
@@ -490,7 +509,7 @@ class RouteDetailScreen(
         val viewModel = koinScreenModel<RouteDetailViewModel>()
         val navigator = LocalNavigator.currentOrThrow
         val info = viewModel.tripInformation.collectAsStateWithLifecycle().value.unwrap() ?: return emptyList()
-        val route = viewModel.route.collectAsStateWithLifecycle().value ?: return emptyList()
+        val route = viewModel.route.collectAsStateWithLifecycle().value.unwrap() ?: return emptyList()
 
         val icon = routeStopMarkerIcon(route)
         val stops = info.stops
@@ -504,12 +523,12 @@ class RouteDetailScreen(
         ) + stops.mapNotNull {
             MarkerItem(
                 it.stop?.location ?: return@mapNotNull null,
-                when (it.stopId == stopId && FeatureFlags.ROUTE_DETAIL_HIGHLIGHT_SOURCE_STOP) {
+                when (it.stopId == stopId && FeatureFlag.ROUTE_DETAIL_HIGHLIGHT_SOURCE_STOP.value()) {
                     true -> highlightedRouteStopMarkerIcon(route, it.stop)
                     false -> icon
                 },
                 id = "routeDetail-${it.stopId}",
-                onClick = when (FeatureFlags.ROUTE_DETAIL_CLICKABLE_STOPS) {
+                onClick = when (FeatureFlag.ROUTE_DETAIL_CLICKABLE_STOPS.value()) {
                     true -> { { navigator.push(StopDetailScreen(it.stopId)) } }
                     false -> null
                 }
@@ -517,4 +536,32 @@ class RouteDetailScreen(
         }
     }
 
+}
+
+@Composable
+fun WarningCard(
+    title: String,
+    description: String?,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        Modifier.then(modifier),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.secondaryContainer
+        )
+    ) {
+        Row(
+            modifier = Modifier.padding(1.rdp),
+            horizontalArrangement = Arrangement.spacedBy(0.5.rdp)
+        ) {
+            WarningIcon()
+            Column {
+                Text(
+                    title,
+                    style = MaterialTheme.typography.titleMedium
+                )
+                description?.let { Text(description) }
+            }
+        }
+    }
 }

@@ -14,7 +14,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.UIKitInteropInteractionMode
 import androidx.compose.ui.viewinterop.UIKitInteropProperties
 import androidx.compose.ui.viewinterop.UIKitView
-import cl.emilym.sinatra.FeatureFlags
+import cl.emilym.sinatra.FeatureFlag
 import cl.emilym.sinatra.ui.maps.AppleMapControl
 import cl.emilym.sinatra.ui.maps.MapControl
 import cl.emilym.sinatra.ui.maps.MarkerItem
@@ -28,6 +28,7 @@ import cl.emilym.sinatra.ui.maps.rememberMapKitState
 import cl.emilym.sinatra.ui.navigation.bottomSheetHalfHeight
 import cl.emilym.sinatra.ui.plus
 import cl.emilym.sinatra.ui.widgets.currentLocation
+import cl.emilym.sinatra.ui.widgets.value
 import cl.emilym.sinatra.ui.widgets.viewportSize
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.coroutines.launch
@@ -48,12 +49,12 @@ actual fun Map(
 
     val state = rememberMapKitState {}
 
-    val insets = when {
-        FeatureFlags.IOS_APPLE_MAP_LOGO_FOLLOW_BOTTOM_SHEET -> mapInsets + PaddingValues(bottom = bottomSheetContentPadding)
+    val insets = when(FeatureFlag.IOS_APPLE_MAP_LOGO_FOLLOW_BOTTOM_SHEET.value()) {
+        true -> mapInsets + PaddingValues(bottom = bottomSheetContentPadding)
         else -> mapInsets
     }
-    val bottomSheetContentPadding = when {
-        FeatureFlags.IOS_APPLE_MAP_LOGO_FOLLOW_BOTTOM_SHEET -> PaddingValues(bottom = bottomSheetContentPadding)
+    val bottomSheetContentPadding = when(FeatureFlag.IOS_APPLE_MAP_LOGO_FOLLOW_BOTTOM_SHEET.value()) {
+        true -> PaddingValues(bottom = bottomSheetContentPadding)
         else -> PaddingValues(0.dp)
     }.precomputeDp()
     val viewportSize = viewportSize()

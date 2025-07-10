@@ -1,9 +1,11 @@
 package cl.emilym.sinatra.domain
 
+import cl.emilym.sinatra.FeatureFlag
 import cl.emilym.sinatra.data.models.IStopTimetableTime
 import cl.emilym.sinatra.data.models.RouteId
 import cl.emilym.sinatra.data.models.StopId
 import cl.emilym.sinatra.data.models.startOfDay
+import cl.emilym.sinatra.data.repository.RemoteConfigRepository
 import cl.emilym.sinatra.data.repository.TransportMetadataRepository
 import io.github.aakira.napier.Napier.i
 import kotlinx.coroutines.flow.Flow
@@ -17,6 +19,7 @@ import kotlin.time.Duration.Companion.days
 class LastDepartureForStopUseCase(
     private val servicesAndTimesForStopUseCase: ServicesAndTimesForStopUseCase,
     private val metadataRepository: TransportMetadataRepository,
+    private val remoteConfigRepository: RemoteConfigRepository,
     private val clock: Clock
 ) {
 
@@ -63,6 +66,18 @@ class LastDepartureForStopUseCase(
                     it.firstOrNull { it.departureTime >= now } ?: when {
                         it.size > 1 -> it[1]
                         else -> null
+                    }
+                }
+                .map {
+                    when {
+                        it.childStopId == stopId || (
+                                remoteConfigRepository.feature(FeatureFlag.STOP_DETAIL_HIDE_PLATFORM_FOR_SYNTHETIC) &&
+                                        stopId.endsWith("-synthetic")
+                                ) -> it.copy(
+                            childStop = null,
+                            childStopId = null
+                        )
+                        else -> it
                     }
                 }
                 .sortedWith(compareBy(

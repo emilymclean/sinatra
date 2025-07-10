@@ -99,12 +99,14 @@ fun ktorfitBuilderDependency(
     converterFactories(protobufResponseConverterFactory)
 }
 
+val apiUrl: String get() = BuildKonfig.apiUrl
+
 @Factory
 fun gtfsApi(
     ktorfitBuilder: Ktorfit.Builder,
 ): GtfsApi {
     return ktorfitBuilder.build {
-        baseUrl(BuildKonfig.apiUrl)
+        baseUrl(apiUrl)
     }.createGtfsApi()
 }
 

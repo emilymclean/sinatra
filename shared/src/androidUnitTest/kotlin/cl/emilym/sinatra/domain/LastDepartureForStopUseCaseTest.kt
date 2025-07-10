@@ -2,11 +2,13 @@ package cl.emilym.sinatra.domain
 
 import cl.emilym.sinatra.DefaultService
 import cl.emilym.sinatra.DefaultStopTimetableTime
+import cl.emilym.sinatra.FeatureFlag
 import cl.emilym.sinatra.data.models.Cachable
 import cl.emilym.sinatra.data.models.Service
 import cl.emilym.sinatra.data.models.StopId
 import cl.emilym.sinatra.data.models.StopTimetableTime
 import cl.emilym.sinatra.data.models.Time
+import cl.emilym.sinatra.data.repository.RemoteConfigRepository
 import cl.emilym.sinatra.data.repository.TransportMetadataRepository
 import io.mockk.clearAllMocks
 import io.mockk.coEvery
@@ -32,11 +34,13 @@ class LastDepartureForStopUseCaseTest {
 
     private val servicesAndTimesForStopUseCase = mockk<ServicesAndTimesForStopUseCase>()
     private val metadataRepository = mockk<TransportMetadataRepository>()
+    private val remoteConfigRepository = mockk<RemoteConfigRepository>()
     private val clock = mockk<Clock>()
 
     private val useCase = LastDepartureForStopUseCase(
         servicesAndTimesForStopUseCase,
         metadataRepository,
+        remoteConfigRepository,
         clock
     )
 
@@ -51,6 +55,7 @@ class LastDepartureForStopUseCaseTest {
     fun setup() {
         every { clock.now() } returns baseTime
         coEvery { metadataRepository.timeZone() } returns testTimeZone
+        coEvery { remoteConfigRepository.feature(any<FeatureFlag>()) } returns false
     }
 
     @AfterTest

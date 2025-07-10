@@ -69,15 +69,16 @@ class FavouriteNearbyStopDeparturesUseCaseTest {
         departureTime = Time.parse("PT10H"),
         heading = "North",
         sequence = 1,
+        last = false,
         route = null,
-        false
+        childStop = null
     )
 
     private val cachableDepartures = Cachable(listOf(timetableTime as IStopTimetableTime), CacheState.LIVE)
 
     @Test
     fun `should emit null if feature flag is disabled`() = runTest {
-        coEvery { remoteConfigRepository.feature(FavouriteNearbyStopDeparturesUseCase.FAVOURITE_NEARBY_STOPS_FEATURE_FLAG) } returns false
+        coEvery { remoteConfigRepository.feature(any()) } returns false
 
         val result = useCase(MapLocation(0.0, 0.0)).first()
 

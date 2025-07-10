@@ -1,8 +1,10 @@
 package cl.emilym.sinatra.data.repository
 
+import cl.emilym.sinatra.FeatureFlag
 import cl.emilym.sinatra.data.client.RemoteConfigClient
 import cl.emilym.sinatra.data.models.VersionName
 import cl.emilym.sinatra.e
+import cl.emilym.sinatra.flagName
 import io.github.aakira.napier.Napier
 import org.koin.core.annotation.Factory
 
@@ -20,6 +22,8 @@ class RemoteConfigRepository(
         const val MINIMUM_VERSION_KEY = "minimum_version"
         const val FEATURE_FLAG_PREFIX = "feature_"
     }
+
+    val loaded: Boolean get() = remoteConfigClient.loaded
 
     suspend fun load() {
         remoteConfigClient.load()
@@ -53,16 +57,16 @@ class RemoteConfigRepository(
         return remoteConfigClient.string(MINIMUM_VERSION_KEY)
     }
 
-    suspend fun feature(name: String, default: Boolean = true): Boolean {
-        return remoteConfigClient.boolean("$FEATURE_FLAG_PREFIX$name") ?: default
+    suspend fun feature(flag: FeatureFlag): Boolean {
+        return remoteConfigClient.boolean("$FEATURE_FLAG_PREFIX${flag.flagName}") ?: flag.default
     }
 
-    fun featureImmediate(name: String, default: Boolean = true): Boolean {
+    fun featureImmediate(flag: FeatureFlag): Boolean {
         return try {
-            remoteConfigClient.booleanImmediate("$FEATURE_FLAG_PREFIX$name") ?: default
+            remoteConfigClient.booleanImmediate("$FEATURE_FLAG_PREFIX${flag.flagName}") ?: flag.default
         } catch (e: Exception) {
             Napier.e(e)
-            default
+            flag.default
         }
     }
 
