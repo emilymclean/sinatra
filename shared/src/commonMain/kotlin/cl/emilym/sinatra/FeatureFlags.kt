@@ -44,7 +44,8 @@ enum class FeatureFlag(
     SPECIFY_TIMEZONE_WHEN_DIFFERENT(true),
     HIDE_MAPS_FROM_ACCESSIBILITY(false),
     HOLD_MAP_POINT_DETAIL(true),
-    GLOBAL_HIDE_TRANSPORT_ACCESSIBILITY(false);
+    GLOBAL_HIDE_TRANSPORT_ACCESSIBILITY(false),
+    UPCOMING_ROUTES_INCLUDE_NEXT_DAY(true);
 
     val immediate by EnumFeatureFlagDelegate(this)
 }

@@ -24,6 +24,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.isActive
 import kotlinx.datetime.Clock
+import kotlinx.datetime.toLocalDateTime
 import org.koin.core.annotation.Factory
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.minutes
@@ -57,13 +58,22 @@ class UpcomingRoutesForStopUseCase(
 
             while (currentCoroutineContext().isActive) {
                 val now = clock.now()
-                val checkTimes = listOf(now - 1.days, now)
+                val startOfDay = now.startOfDay(scheduleTimeZone)
+                val checkTimes = listOfNotNull(
+                    startOfDay - 1.days,
+                    startOfDay,
+                    // If it is after 10pm (and the feature flag is enabled) search next day
+                    if(
+                        now.toLocalDateTime(scheduleTimeZone).hour >= 22 &&
+                        remoteConfigRepository.feature(FeatureFlag.UPCOMING_ROUTES_INCLUDE_NEXT_DAY)
+                    ) startOfDay + 1.days else null
+                )
 
                 val active = mutableListOf<StopTimetableTime>()
 
                 for (checkTime in checkTimes) {
                     for (time in times) {
-                        val time = time.withTimeReference(checkTime.startOfDay(metadataRepository.timeZone()))
+                        val time = time.withTimeReference(checkTime)
 
                         val service = services.firstOrNull { it.id == time.serviceId } ?: continue
                         if (!service.active(checkTime, scheduleTimeZone)) continue
