@@ -58,21 +58,22 @@ class UpcomingRoutesForStopUseCase(
 
             while (currentCoroutineContext().isActive) {
                 val now = clock.now()
+                val startOfDay = now.startOfDay(scheduleTimeZone)
                 val checkTimes = listOfNotNull(
-                    now - 1.days,
-                    now,
+                    startOfDay - 1.days,
+                    startOfDay,
                     // If it is after 10pm (and the feature flag is enabled) search next day
                     if(
                         now.toLocalDateTime(scheduleTimeZone).hour >= 22 &&
                         remoteConfigRepository.feature(FeatureFlag.UPCOMING_ROUTES_INCLUDE_NEXT_DAY)
-                    ) now + 1.days else null
+                    ) startOfDay + 1.days else null
                 )
 
                 val active = mutableListOf<StopTimetableTime>()
 
                 for (checkTime in checkTimes) {
                     for (time in times) {
-                        val time = time.withTimeReference(checkTime.startOfDay(metadataRepository.timeZone()))
+                        val time = time.withTimeReference(checkTime)
 
                         val service = services.firstOrNull { it.id == time.serviceId } ?: continue
                         if (!service.active(checkTime, scheduleTimeZone)) continue
