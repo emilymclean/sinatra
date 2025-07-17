@@ -7,6 +7,8 @@ import cl.emilym.sinatra.nullIfEmpty
 import cl.emilym.sinatra.router.data.EdgeType
 import cl.emilym.sinatra.router.data.NetworkGraph
 import cl.emilym.sinatra.router.data.NetworkGraphEdge
+import cl.emilym.sinatra.router.data.headingIndexCompat
+import cl.emilym.sinatra.router.data.routeIndexCompat
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 
@@ -131,20 +133,6 @@ abstract class Router {
                     Q.add(v, altP)
                     checked.remove(v)
                 }
-                if (neighbour.edge.type == EdgeType.TRAVEL) {
-                    val tV = getNode(neighbour.edge.connectedNodeIndex.toInt()).stopIndex.toInt()
-                    val addedPenalty = config.changeOverPenalty
-                    val addedTime = config.changeOverTime
-                    if ((altP + addedPenalty) < distP[tV]) {
-                        prev[tV] = u
-                        prevEdge[tV] = neighbour.edge
-                        distP[tV] = altP + addedPenalty
-                        dist[tV] = alt + addedTime
-                        dayIndex[v] = neighbour.dayIndex
-                        Q.add(tV, altP)
-                        checked.remove(v)
-                    }
-                }
             }
             currentCoroutineContext().ensureActive()
         }
@@ -208,7 +196,7 @@ abstract class Router {
                     edges.toList(),
                     dayIndicies.toList()
                 )
-                EdgeType.TRANSFER, EdgeType.TRANSFER_NON_ADJUSTABLE ->
+                EdgeType.TRANSFER ->
                     GroupedGraphEdges.Transfer(
                         stops.toList(),
                         edges.toList()
@@ -275,10 +263,19 @@ abstract class Router {
 
         return edges.flatMap {
             when (it.type) {
-                EdgeType.UNWEIGHTED -> listOf(
+                EdgeType.TO_ROUTE_NODE -> listOf(
                     NodeCost(it.connectedNodeIndex.toInt(), 0L, 0L, it, null)
                 )
-                EdgeType.TRANSFER, EdgeType.TRANSFER_NON_ADJUSTABLE -> {
+                EdgeType.TO_STOP_NODE -> listOf(
+                    NodeCost(
+                        it.connectedNodeIndex.toInt(),
+                        config.changeOverTime,
+                        config.changeOverPenalty.toLong(),
+                        it,
+                        null
+                    )
+                )
+                EdgeType.TRANSFER -> {
                     if (ignoreTransfer) return@flatMap emptyList()
                     if (it.cost.toLong() > (config.maximumWalkingTime)) return@flatMap emptyList()
                     listOf(NodeCost(
@@ -341,8 +338,8 @@ abstract class Router {
 
         return RaptorJourneyConnection.Travel(
             stops,
-            graph.mappings.routeIds[firstNode.routeIndex.toInt()],
-            graph.mappings.headings[firstNode.headingIndex.toInt()],
+            graph.mappings.routeIds[firstNode.routeIndexCompat.toInt()],
+            graph.mappings.headings[firstNode.headingIndexCompat.toInt()],
             departure - fencepostDepartureCost,
             arrival + fencepostArrivalCost,
             dayIndicies[departureEdgeIndex] ?: 0,

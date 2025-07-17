@@ -65,6 +65,18 @@ interface RouteNetworkGraphNode: NetworkGraphNode {
     val headingIndex: UInt
 }
 
+val NetworkGraphNode.routeIndexCompat: UInt
+    get() = when (this) {
+        is RouteNetworkGraphNode -> routeIndex
+        else -> 0U
+    }
+
+val NetworkGraphNode.headingIndexCompat: UInt
+    get() = when (this) {
+        is RouteNetworkGraphNode -> headingIndex
+        else -> 0U
+    }
+
 enum class EdgeType {
     TRAVEL, TRANSFER, TO_STOP_NODE, TO_ROUTE_NODE
 }
