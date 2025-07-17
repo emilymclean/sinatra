@@ -18,6 +18,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
@@ -64,6 +65,7 @@ class FeedMessageLiveServiceRepository(
             RealtimeInformationImpl(
                 update.entity.mapNotNull {
                     if (it.tripUpdate == null) return@mapNotNull null
+                    if (it.isDeleted == true) return@mapNotNull null
                     val specific = it.tripUpdate.stopTimeUpdate.firstOrNull { it.stopId == stopId }
                     var delay: Duration? = null
                     if (specific != null && stopId != null) {
@@ -76,6 +78,11 @@ class FeedMessageLiveServiceRepository(
                             ) - clock.now()
                             it.tripUpdate.delay != null -> it.tripUpdate.delay.seconds
                             else -> null
+                        }
+                    }
+                    if (delay == null) {
+                        delay = it.tripUpdate.stopTimeUpdate.firstNotNullOf {
+                            parseStopTimeUpdate(it)
                         }
                     }
 
@@ -108,7 +115,7 @@ class FeedMessageLiveServiceRepository(
     }
 
     override fun getStopRealtimeUpdates(stopId: StopId): Flow<StopRealtimeInformation> {
-        return shared(null)
+        return shared(stopId)
     }
 }
 
