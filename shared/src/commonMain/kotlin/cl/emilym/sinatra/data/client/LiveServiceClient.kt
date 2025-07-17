@@ -1,6 +1,5 @@
 package cl.emilym.sinatra.data.client
 
-import cl.emilym.gtfs.RealtimeEndpoint
 import cl.emilym.sinatra.data.models.RouteId
 import cl.emilym.sinatra.data.models.RouteRealtimeInformation
 import cl.emilym.sinatra.data.models.StopId
@@ -14,9 +13,8 @@ class LiveServiceClient(
     private val api: GtfsApi
 ) {
 
-    @Deprecated("Use new live.pb implementation")
-    suspend fun getLiveUpdates(url: String): FeedMessage {
-        return api.getLiveUpdates(url)
+    suspend fun tripUpdates(): FeedMessage {
+        return api.tripUpdates()
     }
 
     suspend fun getRouteRealtime(routeId: RouteId): RouteRealtimeInformation {

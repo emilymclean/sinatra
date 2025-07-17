@@ -45,7 +45,8 @@ enum class FeatureFlag(
     HIDE_MAPS_FROM_ACCESSIBILITY(false),
     HOLD_MAP_POINT_DETAIL(true),
     GLOBAL_HIDE_TRANSPORT_ACCESSIBILITY(false),
-    UPCOMING_ROUTES_INCLUDE_NEXT_DAY(true);
+    UPCOMING_ROUTES_INCLUDE_NEXT_DAY(true),
+    REALTIME_USE_GLOBAL(true);
 
     val immediate by EnumFeatureFlagDelegate(this)
 }

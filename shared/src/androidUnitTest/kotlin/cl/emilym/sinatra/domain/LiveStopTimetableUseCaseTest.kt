@@ -102,12 +102,13 @@ class LiveStopTimetableUseCaseTest {
             updates = listOf(
                 StopRealtimeUpdate(
                     "trip-1",
-                    DelayInformation.Fixed(10.seconds)
+                    DelayInformation.Fixed(10.seconds),
+                    emptyList()
                 )
             ),
             expire = Instant.DISTANT_FUTURE
         )
-        coEvery { liveServiceRepository.getStopRealtimeUpdates(any()) } returns updates
+        coEvery { liveServiceRepository.getStopRealtimeUpdates(any()) } returns flowOf(updates)
         coEvery { stopRepository.stop(sId) } returns Cachable.live(Stop("stop1", null, "Stop 1", "Stop 1",
             MapLocation(0.0,0.0,), StopAccessibility(StopWheelchairAccessibility.FULL), StopVisibility(false, false, false, null), true
         ))
@@ -163,12 +164,13 @@ class LiveStopTimetableUseCaseTest {
             updates = listOf(
                 StopRealtimeUpdate(
                     "trip-1",
-                    DelayInformation.Unknown
+                    DelayInformation.Unknown,
+                    emptyList()
                 )
             ),
             expire = Instant.DISTANT_FUTURE
         )
-        coEvery { liveServiceRepository.getStopRealtimeUpdates(any()) } returns updates
+        coEvery { liveServiceRepository.getStopRealtimeUpdates(any()) } returns flowOf(updates)
         coEvery { stopRepository.stop(stopId) } returns Cachable.live(Stop("stop1", null, "Stop 1", "Stop 1",
             MapLocation(0.0,0.0,), StopAccessibility(StopWheelchairAccessibility.FULL), StopVisibility(false, false, false, null), true
         ))
@@ -220,12 +222,13 @@ class LiveStopTimetableUseCaseTest {
             updates = listOf(
                 StopRealtimeUpdate(
                     "trip-1",
-                    DelayInformation.Fixed(10.seconds)
+                    DelayInformation.Fixed(10.seconds),
+                    emptyList()
                 )
             ),
             expire = Instant.fromEpochMilliseconds(0)
         )
-        coEvery { liveServiceRepository.getStopRealtimeUpdates(any()) } returns updates
+        coEvery { liveServiceRepository.getStopRealtimeUpdates(any()) } returns flowOf(updates)
         coEvery { stopRepository.stop(stopId) } returns Cachable.live(Stop("stop1", null, "Stop 1", "Stop 1",
             MapLocation(0.0,0.0,), StopAccessibility(StopWheelchairAccessibility.FULL), StopVisibility(false, false, false, null), true
         ))
