@@ -7,6 +7,8 @@ import cl.emilym.sinatra.nullIfEmpty
 import cl.emilym.sinatra.router.data.EdgeType
 import cl.emilym.sinatra.router.data.NetworkGraph
 import cl.emilym.sinatra.router.data.NetworkGraphEdge
+import cl.emilym.sinatra.router.data.NetworkGraphNode
+import cl.emilym.sinatra.router.data.RouteNetworkGraphNode
 import cl.emilym.sinatra.router.data.headingIndexCompat
 import cl.emilym.sinatra.router.data.routeIndexCompat
 import kotlinx.coroutines.currentCoroutineContext
@@ -277,7 +279,7 @@ abstract class Router {
                 )
                 EdgeType.TRANSFER -> {
                     if (ignoreTransfer) return@flatMap emptyList()
-                    if (it.cost.toLong() > (config.maximumWalkingTime)) return@flatMap emptyList()
+                    if (it.cost.toLong() > config.maximumWalkingTime) return@flatMap emptyList()
                     listOf(NodeCost(
                         it.connectedNodeIndex.toInt(),
                         it.cost.toLong() + config.transferTime,
@@ -335,7 +337,6 @@ abstract class Router {
 
         val fencepostDepartureCost = if (departureEdgeIndex == 0) departureEdge.cost.toLong() else 0
         val fencepostArrivalCost = if (arrivalEdgeIndex == 0) arrivalEdge.cost.toLong() else 0
-
         return RaptorJourneyConnection.Travel(
             stops,
             graph.mappings.routeIds[firstNode.routeIndexCompat.toInt()],

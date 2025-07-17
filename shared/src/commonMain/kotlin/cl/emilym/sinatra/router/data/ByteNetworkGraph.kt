@@ -6,10 +6,30 @@ import cl.emilym.sinatra.data.models.StopId
 import cl.emilym.sinatra.data.models.TripId
 import kotlin.experimental.and
 
+const val METADATA_BYTE_SIZE =
+    5 + // Magic Number
+    1 + // Version
+    1 + // Available Services Length
+    4 + // Nodes Start
+    4 + // Edges Start
+    4 + // Penalty Multiplier
+    4 + // assumedWalkingSecondsPerKilometer
+    4   // Node count
 // The number of bytes used to represent an edge, excluding available services
-const val METADATA_BYTE_SIZE = 5 + 1 + 1 + 4 + 4 + 4 + 4 + 4
-const val EDGE_BYTE_SIZE = 4 + 4 + 4 + 4 + 1
-const val NODE_BYTE_SIZE = 4 + 4 + 4 + 1 + 4 + 4
+const val EDGE_BYTE_SIZE =
+    4 + // Connected Node Index
+    4 + // Cost
+    4 + // Departure Time
+    4 + // Trip Index
+    1   // Flags
+        // Available Services not here
+const val NODE_BYTE_SIZE =
+    4 + // Stop Index
+    4 + // Latitude/Route Index
+    4 + // Longitude/Heading Index
+    1 + // Flags
+    4 + // Edge Pointer
+    4   // Edge Count
 
 class ByteNetworkGraph(
     private val data: RandomByteReader
@@ -21,6 +41,13 @@ class ByteNetworkGraph(
             METADATA_BYTE_SIZE,
             data
         )
+    }
+
+    init {
+        if (MagicNumberByteNetworkGraphEntry(data).magicNumber != "emily")
+            throw IllegalStateException("Invalid network graph format")
+        if (metadata.version != 2u)
+            throw IllegalStateException("Invalid network graph version")
     }
 
     override fun node(index: Int): ByteNetworkGraphNode {
@@ -96,6 +123,14 @@ abstract class ByteNetworkGraphEntry(
 
 }
 
+private class MagicNumberByteNetworkGraphEntry(
+    data: RandomByteReader
+): ByteNetworkGraphEntry(0, data) {
+
+    val magicNumber by lazy { readBytes(0x00, 5).decodeToString() }
+
+}
+
 class ByteNetworkGraphMappings(
     position: Int,
     data: RandomByteReader
@@ -129,7 +164,7 @@ class ByteNetworkGraphMappings(
             servicesCount to serviceIds,
         )
 
-        var cursor = 0x10
+        var cursor = 0x14
         for (pi in paired.indices) {
             val p = paired[pi]
             val out = p.second

@@ -50,7 +50,7 @@ class RaptorTest {
             changeOverPenalty = 50 * 60 * 100
         )
         graph = NetworkGraph.byteFormatForByteArray(
-            this::class.java.classLoader.getResource("network_graph.eng").readBytes()
+            this::class.java.classLoader.getResource("network-graph.eng").readBytes()
         )
         raptor = Raptor(graph, List(3) { graph.mappings.serviceIds }, config)
         graphReverse = NetworkGraph.byteFormatForByteArray(
