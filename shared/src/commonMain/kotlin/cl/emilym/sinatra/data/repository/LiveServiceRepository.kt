@@ -18,7 +18,6 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
@@ -50,7 +49,7 @@ class FeedMessageLiveServiceRepository(
     private fun parseStopTimeEvent(event: TripUpdate.StopTimeEvent?): Duration? {
         return when {
             event == null -> null
-            event.time != null -> Instant.fromEpochMilliseconds(
+            event.time != null -> Instant.fromEpochSeconds(
                 event.time
             ) - clock.now()
             event.delay != null -> event.delay.seconds
@@ -104,7 +103,7 @@ class FeedMessageLiveServiceRepository(
                 },
                 when (update.header.timestamp) {
                     null, 0L -> clock.now()
-                    else -> Instant.fromEpochMilliseconds(update.header.timestamp)
+                    else -> Instant.fromEpochSeconds(update.header.timestamp)
                 } + 2.minutes
             )
         }
