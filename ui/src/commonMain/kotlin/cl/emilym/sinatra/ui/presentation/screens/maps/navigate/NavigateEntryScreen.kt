@@ -50,7 +50,10 @@ import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.data.models.ServiceBikesAllowed
 import cl.emilym.sinatra.data.models.ServiceWheelchairAccessible
 import cl.emilym.sinatra.data.models.Time
+import cl.emilym.sinatra.data.models.startOfDay
 import cl.emilym.sinatra.ui.color
+import cl.emilym.sinatra.ui.localization.LocalClock
+import cl.emilym.sinatra.ui.localization.LocalLocalTimeZone
 import cl.emilym.sinatra.ui.localization.format
 import cl.emilym.sinatra.ui.maps.LineItem
 import cl.emilym.sinatra.ui.maps.MapItem
@@ -65,6 +68,7 @@ import cl.emilym.sinatra.ui.presentation.screens.search.SearchScreen
 import cl.emilym.sinatra.ui.presentation.theme.Container
 import cl.emilym.sinatra.ui.presentation.theme.walkingColor
 import cl.emilym.sinatra.ui.routeCardDefaultNavigation
+import cl.emilym.sinatra.ui.routeDetailNavigation
 import cl.emilym.sinatra.ui.stopCardDefaultNavigation
 import cl.emilym.sinatra.ui.text
 import cl.emilym.sinatra.ui.widgets.AccessibleIcon
@@ -120,6 +124,7 @@ import sinatra.ui.generated.resources.navigate_travel_journey_depart
 import sinatra.ui.generated.resources.navigate_walk
 import sinatra.ui.generated.resources.route_accessibility_bikes_allowed
 import sinatra.ui.generated.resources.route_accessibility_wheelchair_accessible
+import kotlin.time.Duration.Companion.days
 
 
 class NavigateEntryScreen(
@@ -747,6 +752,9 @@ fun TravelLeg(
     showAccessibilityIcons: Boolean = true
 ) {
     val navigator = LocalNavigator.currentOrThrow
+    val clock = LocalClock.current
+    val timeZone = LocalLocalTimeZone.current
+
     LegScaffold({ RouteRandle(leg.route) }) {
         Column(
             Modifier.fillMaxWidth(),
@@ -760,7 +768,11 @@ fun TravelLeg(
                 stringResource(Res.string.navigate_travel, leg.travelTime.text, leg.route.name, leg.heading),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .noRippleClickable { navigator.routeCardDefaultNavigation(leg.route) }
+                    .noRippleClickable { navigator.routeDetailNavigation(
+                        leg.route.id,
+                        tripId = leg.tripId,
+                        startOfDay = clock.now().startOfDay(timeZone) + leg.dayIndex.days
+                    ) }
             )
             if (
                 (leg.routeAccessibility?.wheelchairAccessible == ServiceWheelchairAccessible.ACCESSIBLE ||
