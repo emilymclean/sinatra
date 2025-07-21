@@ -58,6 +58,7 @@ class ReconstructJourneyUseCase(
                         (connection.endTime - connection.startTime).seconds,
                         routes.item.first { it?.id == connection.routeId }!!,
                         connection.heading,
+                        connection.tripId,
                         Time.create(connection.startTime.seconds, lastStartOfDay),
                         Time.create(connection.endTime.seconds, lastStartOfDay),
                         RouteServiceAccessibility(

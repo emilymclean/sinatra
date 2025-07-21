@@ -44,7 +44,8 @@ sealed interface JourneyLeg {
         override val stops: List<Stop>,
         override val travelTime: Duration,
         val route: Route,
-        val heading: String,
+        val heading: Heading,
+        val tripId: TripId,
         override val departureTime: Time,
         override val arrivalTime: Time,
         val routeAccessibility: RouteServiceAccessibility? = null

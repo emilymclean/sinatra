@@ -331,6 +331,7 @@ abstract class Router {
         val firstNode = getNode(edges.first().connectedNodeIndex)
         val departureEdge = edges[departureEdgeIndex]
         val arrivalEdge = edges[arrivalEdgeIndex]
+        require(departureEdge.tripIndex == arrivalEdge.tripIndex)
 
         val arrival = arrivalEdge.departureTime.toLong()
         val departure = departureEdge.departureTime.toLong()
@@ -341,6 +342,7 @@ abstract class Router {
             stops,
             graph.mappings.routeIds[firstNode.routeIndexCompat.toInt()],
             graph.mappings.headings[firstNode.headingIndexCompat.toInt()],
+            graph.mappings.tripIds[departureEdge.tripIndex.toInt()],
             departure - fencepostDepartureCost,
             arrival + fencepostArrivalCost,
             dayIndicies[departureEdgeIndex] ?: 0,
