@@ -331,7 +331,6 @@ abstract class Router {
         val firstNode = getNode(edges.first().connectedNodeIndex)
         val departureEdge = edges[departureEdgeIndex]
         val arrivalEdge = edges[arrivalEdgeIndex]
-        require(departureEdge.tripIndex == arrivalEdge.tripIndex)
 
         val arrival = arrivalEdge.departureTime.toLong()
         val departure = departureEdge.departureTime.toLong()
