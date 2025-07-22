@@ -341,6 +341,7 @@ abstract class Router {
             stops,
             graph.mappings.routeIds[firstNode.routeIndexCompat.toInt()],
             graph.mappings.headings[firstNode.headingIndexCompat.toInt()],
+            graph.mappings.tripIds[departureEdge.tripIndex.toInt()],
             departure - fencepostDepartureCost,
             arrival + fencepostArrivalCost,
             dayIndicies[departureEdgeIndex] ?: 0,

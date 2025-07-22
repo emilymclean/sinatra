@@ -1,7 +1,9 @@
 package cl.emilym.sinatra.router
 
+import cl.emilym.sinatra.data.models.Heading
 import cl.emilym.sinatra.data.models.RouteId
 import cl.emilym.sinatra.data.models.StopId
+import cl.emilym.sinatra.data.models.TripId
 import cl.emilym.sinatra.router.data.NetworkGraphEdge
 import cl.emilym.sinatra.router.data.NetworkGraphNode
 
@@ -84,7 +86,8 @@ sealed interface RaptorJourneyConnection {
     data class Travel(
         override val stops: List<StopId>,
         val routeId: RouteId,
-        val heading: String,
+        val heading: Heading,
+        val tripId: TripId,
         val startTime: DaySeconds,
         val endTime: DaySeconds,
         val dayIndex: Int,

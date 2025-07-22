@@ -1,5 +1,6 @@
 package cl.emilym.sinatra.data.models
 
+import kotlinx.datetime.Instant
 import kotlin.time.Duration
 
 data class Journey(
@@ -44,10 +45,12 @@ sealed interface JourneyLeg {
         override val stops: List<Stop>,
         override val travelTime: Duration,
         val route: Route,
-        val heading: String,
+        val heading: Heading,
+        val tripId: TripId,
         override val departureTime: Time,
         override val arrivalTime: Time,
-        val routeAccessibility: RouteServiceAccessibility? = null
+        val startOfDay: Instant,
+        val routeAccessibility: RouteServiceAccessibility? = null,
     ): JourneyLeg, RouteJourneyLeg {
 
         override val deduplicationKey get() =

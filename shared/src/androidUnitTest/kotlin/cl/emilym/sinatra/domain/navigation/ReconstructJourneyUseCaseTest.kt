@@ -69,7 +69,8 @@ class ReconstructJourneyUseCaseTest {
                 startTime = 3600 * 3,
                 endTime = 7200 * 4,
                 travelTime = 3600,
-                dayIndex = 1
+                dayIndex = 1,
+                tripId = ""
             )
         ))
 
@@ -118,7 +119,8 @@ class ReconstructJourneyUseCaseTest {
                 startTime = 0,
                 endTime = 3600,
                 travelTime = 3600,
-                dayIndex = 1
+                dayIndex = 1,
+                tripId = ""
             ),
             RaptorJourneyConnection.Transfer(
                 stops = listOf(endStop.id),
@@ -180,7 +182,8 @@ class ReconstructJourneyUseCaseTest {
                 startTime = 100,
                 endTime = 200,
                 travelTime = 100,
-                dayIndex = 0
+                dayIndex = 0,
+                tripId = ""
             ),
             RaptorJourneyConnection.Travel(
                 stops = listOf(stop2.id, stop3.id),
@@ -189,7 +192,8 @@ class ReconstructJourneyUseCaseTest {
                 startTime = 100,
                 endTime = 200,
                 travelTime = 100,
-                dayIndex = 1
+                dayIndex = 1,
+                tripId = ""
             ),
             RaptorJourneyConnection.Transfer(
                 stops = listOf(stop3.id, stop4.id),
@@ -202,7 +206,8 @@ class ReconstructJourneyUseCaseTest {
                 startTime = 500,
                 endTime = 600,
                 travelTime = 100,
-                dayIndex = 1
+                dayIndex = 1,
+                tripId = ""
             ),
         ))
 
@@ -258,7 +263,8 @@ class ReconstructJourneyUseCaseTest {
                 startTime = 100,
                 endTime = 200,
                 travelTime = 100,
-                dayIndex = 0
+                dayIndex = 0,
+                tripId = ""
             )
         ))
 
@@ -299,7 +305,8 @@ class ReconstructJourneyUseCaseTest {
                 startTime = 100,
                 endTime = 200,
                 travelTime = 100,
-                dayIndex = 0
+                dayIndex = 0,
+                tripId = ""
             )
         ))
 
@@ -341,7 +348,8 @@ class ReconstructJourneyUseCaseTest {
                 travelTime = 100,
                 dayIndex = 0,
                 bikesAllowed = true,
-                wheelchairAccessible = true
+                wheelchairAccessible = true,
+                tripId = ""
             ),
             RaptorJourneyConnection.Travel(
                 stops = listOf(startStop.id, endStop.id),
@@ -352,7 +360,8 @@ class ReconstructJourneyUseCaseTest {
                 travelTime = 100,
                 dayIndex = 0,
                 bikesAllowed = false,
-                wheelchairAccessible = true
+                wheelchairAccessible = true,
+                tripId = ""
             ),
             RaptorJourneyConnection.Travel(
                 stops = listOf(startStop.id, endStop.id),
@@ -363,7 +372,8 @@ class ReconstructJourneyUseCaseTest {
                 travelTime = 100,
                 dayIndex = 0,
                 bikesAllowed = true,
-                wheelchairAccessible = false
+                wheelchairAccessible = false,
+                tripId = ""
             )
         ))
 
