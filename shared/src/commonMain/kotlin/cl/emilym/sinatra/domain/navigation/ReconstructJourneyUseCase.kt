@@ -61,7 +61,7 @@ class ReconstructJourneyUseCase(
                         connection.tripId,
                         Time.create(connection.startTime.seconds, lastStartOfDay),
                         Time.create(connection.endTime.seconds, lastStartOfDay),
-                        connection.dayIndex,
+                        lastStartOfDay,
                         RouteServiceAccessibility(
                             if (connection.bikesAllowed) ServiceBikesAllowed.ALLOWED else ServiceBikesAllowed.DISALLOWED,
                             if (connection.wheelchairAccessible) ServiceWheelchairAccessible.ACCESSIBLE else ServiceWheelchairAccessible.INACCESSIBLE,

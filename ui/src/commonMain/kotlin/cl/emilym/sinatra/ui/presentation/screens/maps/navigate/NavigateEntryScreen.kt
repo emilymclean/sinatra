@@ -752,8 +752,6 @@ fun TravelLeg(
     showAccessibilityIcons: Boolean = true
 ) {
     val navigator = LocalNavigator.currentOrThrow
-    val clock = LocalClock.current
-    val timeZone = LocalLocalTimeZone.current
 
     LegScaffold({ RouteRandle(leg.route) }) {
         Column(
@@ -771,7 +769,7 @@ fun TravelLeg(
                     .noRippleClickable { navigator.routeDetailNavigation(
                         leg.route.id,
                         tripId = leg.tripId,
-                        startOfDay = clock.now().startOfDay(timeZone) + leg.dayIndex.days
+                        startOfDay = leg.startOfDay
                     ) }
             )
             if (
