@@ -55,6 +55,7 @@ abstract class BaseCacheWorker<T, E> {
 
     protected suspend fun run(pair: EndpointDigestPair<T>, resource: ResourceKey, extras: E): Cachable<T> {
         val info = shaRepository.cached(cacheCategory, resource)
+        shaRepository.markAccessed(cacheCategory, resource)
 
         if (!info.shouldCheckForUpdate(resource))
             return getCached(resource, extras)

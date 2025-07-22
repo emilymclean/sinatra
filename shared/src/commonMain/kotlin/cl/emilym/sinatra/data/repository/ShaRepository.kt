@@ -10,6 +10,7 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import org.koin.core.annotation.Factory
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.hours
 
 internal val DEFAULT_EXPIRE_TIME = 24.hours
@@ -31,7 +32,16 @@ sealed interface CacheInformation {
 data class CachedResource(
     val resource: ResourceKey,
     val added: Instant
-)
+) {
+
+    companion object {
+        internal fun fromShaEntity(entity: ShaEntity) = CachedResource(
+            entity.resource,
+            Instant.fromEpochMilliseconds(entity.added)
+        )
+    }
+
+}
 
 @Factory
 class ShaRepository(
@@ -39,32 +49,45 @@ class ShaRepository(
     private val clock: Clock
 ) {
 
+    companion object {
+        private val DEFAULT_MAX_LAST_ACCESSED = 14.days
+    }
+
     suspend fun save(digest: ShaDigest, category: CacheCategory, resource: ResourceKey) {
+        val now = clock.now().toEpochMilliseconds()
         shaDao.shaByTypeAndResource(category.db, resource)?.let { shaDao.delete(it) }
         shaDao.save(ShaEntity(
             0,
             digest,
             category.db,
             resource,
-            clock.now().toEpochMilliseconds(),
+            now,
+            now
         ))
     }
 
+    suspend fun markAccessed(category: CacheCategory, resource: ResourceKey) {
+        shaDao.updateLastAccessed(category.db, resource, clock.now().toEpochMilliseconds())
+    }
+
     suspend fun cached(category: CacheCategory, resource: ResourceKey): CacheInformation {
-        return shaDao.shaByTypeAndResource(category.db, resource).also {
-            Napier.d("State of sha = ${it} (category = $category, resource = $resource)")
-        }?.let {
+        return shaDao.shaByTypeAndResource(category.db, resource)?.let {
             CacheInformation.Available(it.sha, Instant.fromEpochMilliseconds(it.added))
         } ?: CacheInformation.Unavailable
     }
 
     suspend fun cached(category: CacheCategory): List<CachedResource> {
-        return shaDao.shaByType(category.db).map {
-            CachedResource(
-                it.resource,
-                Instant.fromEpochMilliseconds(it.added)
-            )
-        }
+        return shaDao.shaByType(category.db).map { CachedResource.fromShaEntity(it) }
+    }
+
+    suspend fun unused(
+        category: CacheCategory,
+        maxLastAccessed: Duration = DEFAULT_MAX_LAST_ACCESSED
+    ): List<CachedResource> {
+        return shaDao.unusedByType(
+            category.db,
+            (clock.now() - maxLastAccessed).toEpochMilliseconds()
+        ).map { CachedResource.fromShaEntity(it) }
     }
 
     suspend fun remove(category: CacheCategory, resource: ResourceKey) {

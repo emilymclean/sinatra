@@ -1,5 +1,6 @@
 package cl.emilym.sinatra.room.entities
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import cl.emilym.sinatra.data.models.ShaDigest
@@ -11,4 +12,6 @@ data class ShaEntity(
     val type: String,
     val resource: String,
     val added: Long,
+    @ColumnInfo(defaultValue = "0")
+    val lastAccessed: Long
 )

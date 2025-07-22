@@ -27,4 +27,10 @@ interface ShaDao {
     @Query("SELECT * FROM shaEntity WHERE type = :type")
     suspend fun shaByType(type: String): List<ShaEntity>
 
+    @Query("UPDATE shaEntity SET lastAccessed = :lastAccessed WHERE type = :type AND resource = :resource")
+    suspend fun updateLastAccessed(type: String, resource: String, lastAccessed: Long)
+
+    @Query("SELECT * FROM shaEntity WHERE type = :type AND lastAccessed < :lastAccessedLimit")
+    suspend fun unusedByType(type: String, lastAccessedLimit: Long): List<ShaEntity>
+
 }
