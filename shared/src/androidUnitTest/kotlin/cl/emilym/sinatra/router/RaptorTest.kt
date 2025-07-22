@@ -50,7 +50,7 @@ class RaptorTest {
             changeOverPenalty = 50 * 60 * 100
         )
         graph = NetworkGraph.byteFormatForByteArray(
-            this::class.java.classLoader.getResource("network_graph.eng").readBytes()
+            this::class.java.classLoader.getResource("network-graph.eng").readBytes()
         )
         raptor = Raptor(graph, List(3) { graph.mappings.serviceIds }, config)
         graphReverse = NetworkGraph.byteFormatForByteArray(
@@ -299,7 +299,7 @@ class RaptorTest {
             ),
             RaptorJourneyConnection.Travel(
                 listOf("8889", "3356", "3406"),
-                routeId = "5-10647",
+                routeId = "7-10647",
                 heading = "City ANU",
                 startTime = 33360,
                 endTime = 33540,
@@ -354,15 +354,26 @@ class RaptorTest {
                 wheelchairAccessible = true
             ),
             RaptorJourneyConnection.Travel(
-                listOf("2373", "2376", "2258", "3261", "3259", "8889"),
+                listOf("2373", "2376", "2258"),
+                routeId = "56-10647",
+                heading = "City",
+                startTime = 33600,
+                endTime = 33840,
+                travelTime = 240,
+                dayIndex = 0,
+                bikesAllowed = true,
+                wheelchairAccessible = true
+            ),
+            RaptorJourneyConnection.Travel(
+                listOf("2258", "3261", "3259", "8889"),
                 routeId = "6-10647",
                 heading = "City ANU",
-                startTime = 33600,
+                startTime = 33780,
                 endTime = 34140,
-                travelTime = 540,
+                travelTime = 360,
                 dayIndex = 0,
-                bikesAllowed = false,
-                wheelchairAccessible = false
+                bikesAllowed = true,
+                wheelchairAccessible = true
             ),
             RaptorJourneyConnection.Travel(
                 listOf("8889", "3356", "3406"),
