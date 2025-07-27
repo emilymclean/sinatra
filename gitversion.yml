@@ -120,6 +120,20 @@ branches:
     is-release-branch: false
     is-mainline: true
     pre-release-weight: 55000
+  rc:
+    mode: ContinuousDelivery
+    tag: rc
+    increment: None
+    prevent-increment-of-merged-branch-version: true
+    track-merge-target: false
+    regex: ^rc[/-]
+    source-branches:
+      - develop
+      - main
+    tracks-release-branches: false
+    is-release-branch: true
+    is-mainline: false
+    pre-release-weight: 25000
 ignore:
   sha: []
 commit-date-format: yyyy-MM-dd
