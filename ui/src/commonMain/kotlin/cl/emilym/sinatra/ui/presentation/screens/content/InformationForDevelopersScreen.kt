@@ -42,6 +42,7 @@ import org.koin.compose.koinInject
 import sinatra.ui.generated.resources.Res
 import sinatra.ui.generated.resources.information_for_developers_build_number
 import sinatra.ui.generated.resources.information_for_developers_build_version
+import sinatra.ui.generated.resources.information_for_developers_content_endpoint
 import sinatra.ui.generated.resources.information_for_developers_endpoint
 import sinatra.ui.generated.resources.information_for_developers_flags
 import sinatra.ui.generated.resources.information_for_developers_nominatim_endpoint
@@ -74,6 +75,15 @@ class InformationForDevelopersScreen: ContentScreen(ContentRepository.INFORMATIO
                 }
             }
 
+            var contentUrl by remember { mutableStateOf<String?>(null) }
+            LaunchedEffect(remoteConfigRepository) {
+                try {
+                    contentUrl = remoteConfigRepository.contentUrl()
+                } catch (e: Exception) {
+                    Napier.e(e)
+                }
+            }
+
             LazyColumn(
                 Modifier.fillMaxSize(),
                 contentPadding = innerPadding
@@ -100,6 +110,12 @@ class InformationForDevelopersScreen: ContentScreen(ContentRepository.INFORMATIO
                     InformationRow(
                         stringResource(Res.string.information_for_developers_nominatim_endpoint),
                         "$nominatimUrl"
+                    )
+                }
+                item {
+                    InformationRow(
+                        stringResource(Res.string.information_for_developers_content_endpoint),
+                        "$contentUrl"
                     )
                 }
                 item {
