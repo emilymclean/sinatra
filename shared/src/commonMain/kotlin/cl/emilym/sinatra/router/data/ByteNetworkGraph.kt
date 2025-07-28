@@ -14,22 +14,9 @@ const val METADATA_BYTE_SIZE =
     4 + // Edges Start
     4 + // Penalty Multiplier
     4 + // assumedWalkingSecondsPerKilometer
-    4   // Node count
-// The number of bytes used to represent an edge, excluding available services
-const val EDGE_BYTE_SIZE =
-    4 + // Connected Node Index
-    4 + // Cost
-    4 + // Departure Time
-    4 + // Trip Index
-    1   // Flags
-        // Available Services not here
-const val NODE_BYTE_SIZE =
-    4 + // Stop Index
-    4 + // Latitude/Route Index
-    4 + // Longitude/Heading Index
-    1 + // Flags
-    4 + // Edge Pointer
-    4   // Edge Count
+    4 + // Node count
+    1 + // Node Length
+    1   // Edge Length
 
 class ByteNetworkGraph(
     private val data: RandomByteReader
@@ -51,21 +38,19 @@ class ByteNetworkGraph(
     }
 
     override fun node(index: Int): ByteNetworkGraphNode {
-        val start = metadata.nodesStart.toInt() + (NODE_BYTE_SIZE * index)
+        val start = metadata.nodesStart.toInt() + (metadata.alignment.nodeLength * index)
         val type = data.read(start + 0x0C) and 0b1
 
         return when (type) {
             0b0.toByte() -> ByteStopNetworkGraphNode(
                 start,
                 data,
-                metadata.availableServicesLength.toInt(),
-                metadata.edgesStart.toInt()
+                metadata.alignment
             )
             else -> ByteRouteNetworkGraphNode(
                 start,
                 data,
-                metadata.availableServicesLength.toInt(),
-                metadata.edgesStart.toInt()
+                metadata.alignment
             )
         }
     }
@@ -198,25 +183,42 @@ class ByteNetworkGraphMetadata(
     data: RandomByteReader,
 ): ByteNetworkGraphEntry(5, data), NetworkGraphMetadata {
 
-    override val version by lazy { readUInt(0x00, 1) }
-    override val availableServicesLength by lazy { readUInt(0x01, 1) }
-    override val nodesStart by lazy { readUInt(0x02) }
-    override val edgesStart by lazy { readUInt(0x06) }
-    override val penaltyMultiplier by lazy { readFloat(0x0A) }
-    override val assumedWalkingSecondsPerKilometer by lazy { readUInt(0x0E) }
-    override val nodeCount: UInt by lazy { readUInt(0x12) }
+    override val version = readUInt(0x00, 1)
+    override val availableServicesLength = readUInt(0x01, 1)
+    override val nodesStart = readUInt(0x02)
+    override val edgesStart = readUInt(0x06)
+    override val penaltyMultiplier = readFloat(0x0A)
+    override val assumedWalkingSecondsPerKilometer = readUInt(0x0E)
+    override val nodeCount: UInt = readUInt(0x12)
+    override val nodeLength: UInt = readUInt(0x16, 1)
+    override val edgeLength: UInt = readUInt(0x17, 1)
+
+    val alignment: ByteNetworkGraphAlignment by lazy {
+        ByteNetworkGraphAlignment(
+            nodeLength.toInt(),
+            edgeLength.toInt(),
+            edgesStart.toInt(),
+            availableServicesLength.toInt()
+        )
+    }
 
     override fun toString(): String {
-        return "ByteNetworkGraphMetadata(version=$version, availableServicesLength=$availableServicesLength, nodesStart=$nodesStart, edgesStart=$edgesStart, penaltyMultiplier=$penaltyMultiplier, assumedWalkingSecondsPerKilometer=$assumedWalkingSecondsPerKilometer, nodeCount=$nodeCount)"
+        return "ByteNetworkGraphMetadata(version=$version, availableServicesLength=$availableServicesLength, nodesStart=$nodesStart, edgesStart=$edgesStart, penaltyMultiplier=$penaltyMultiplier, assumedWalkingSecondsPerKilometer=$assumedWalkingSecondsPerKilometer, nodeCount=$nodeCount, nodeLength=$nodeLength, edgeLength=$edgeLength)"
     }
 
 }
 
+data class ByteNetworkGraphAlignment(
+    val nodeLength: Int,
+    val edgeLength: Int,
+    val edgesStartPosition: Int,
+    val availableServicesLength: Int
+)
+
 abstract class ByteNetworkGraphNode(
     position: Int,
     data: RandomByteReader,
-    private val availableServicesLength: Int,
-    private val edgesStartPosition: Int,
+    private val alignment: ByteNetworkGraphAlignment,
 ): ByteNetworkGraphEntry(position, data), NetworkGraphNode {
 
     override val stopIndex by lazy { readUInt(0x00) }
@@ -234,9 +236,9 @@ abstract class ByteNetworkGraphNode(
     override val edges: List<ByteNetworkGraphEdge> by lazy {
         List(edgeCount) { i ->
             ByteNetworkGraphEdge(
-                edgesStartPosition + edgePointer + ((EDGE_BYTE_SIZE + availableServicesLength) * i),
+                alignment.edgesStartPosition + edgePointer + (alignment.edgeLength * i),
                 data,
-                availableServicesLength
+                alignment
             )
         }
     }
@@ -245,11 +247,11 @@ abstract class ByteNetworkGraphNode(
 class ByteStopNetworkGraphNode(
     position: Int,
     data: RandomByteReader,
-    availableServicesLength: Int,
-    edgesStartPosition: Int,
+    alignment: ByteNetworkGraphAlignment,
 ): ByteNetworkGraphNode(
-    position, data, availableServicesLength, edgesStartPosition
+    position, data, alignment
 ), StopNetworkGraphNode {
+
     override val lat by lazy { readFloat(0x04) }
     override val lng by lazy { readFloat(0x08) }
 
@@ -263,11 +265,11 @@ class ByteStopNetworkGraphNode(
 class ByteRouteNetworkGraphNode(
     position: Int,
     data: RandomByteReader,
-    availableServicesLength: Int,
-    edgesStartPosition: Int,
+    alignment: ByteNetworkGraphAlignment,
 ): ByteNetworkGraphNode(
-    position, data, availableServicesLength, edgesStartPosition
+    position, data, alignment
 ), RouteNetworkGraphNode {
+
     override val routeIndex by lazy { readUInt(0x04) }
     override val headingIndex by lazy { readUInt(0x08) }
 
@@ -279,16 +281,16 @@ class ByteRouteNetworkGraphNode(
 class ByteNetworkGraphEdge(
     position: Int,
     data: RandomByteReader,
-    private val availableServicesLength: Int
+    private val alignment: ByteNetworkGraphAlignment
 ): ByteNetworkGraphEntry(position, data), NetworkGraphEdge {
     override val connectedNodeIndex by lazy { readUInt(0x00) }
     override val cost by lazy { readUInt(0x04) }
     override val departureTime by lazy { readUInt(0x08) }
     override val tripIndex by lazy { readUInt(0x0C) }
-    private val flags by lazy { readByte(0x10 + availableServicesLength) }
+    private val flags by lazy { readByte(0x10 + alignment.availableServicesLength) }
 
     override val availableServices: List<UInt> by lazy {
-        val bytes = readBytes(0x10, availableServicesLength)
+        val bytes = readBytes(0x10, alignment.availableServicesLength)
         val active = mutableListOf<UInt>()
         for (byteIndex in bytes.indices) {
             for (bitIndex in 0.until(8)) {
