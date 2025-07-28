@@ -12,6 +12,7 @@ build-metadata-padding: 4
 commits-since-version-source-padding: 4
 tag-pre-release-weight: 60000
 commit-message-incrementing: Enabled
+next-version: 0.15.0
 branches:
   develop:
     mode: ContinuousDeployment
