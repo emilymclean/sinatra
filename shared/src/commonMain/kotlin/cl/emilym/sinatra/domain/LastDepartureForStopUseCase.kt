@@ -1,9 +1,11 @@
 package cl.emilym.sinatra.domain
 
 import cl.emilym.sinatra.FeatureFlag
+import cl.emilym.sinatra.data.models.Heading
 import cl.emilym.sinatra.data.models.IStopTimetableTime
 import cl.emilym.sinatra.data.models.RouteId
 import cl.emilym.sinatra.data.models.StopId
+import cl.emilym.sinatra.data.models.StopTimetableTime
 import cl.emilym.sinatra.data.models.startOfDay
 import cl.emilym.sinatra.data.repository.RemoteConfigRepository
 import cl.emilym.sinatra.data.repository.TransportMetadataRepository
@@ -14,6 +16,12 @@ import kotlinx.datetime.Clock
 import org.koin.core.annotation.Factory
 import kotlin.text.Typography.times
 import kotlin.time.Duration.Companion.days
+import kotlin.time.Duration.Companion.hours
+
+private data class RouteAndHeading(
+    val routeId: RouteId,
+    val heading: Heading
+)
 
 @Factory
 class LastDepartureForStopUseCase(
@@ -29,7 +37,7 @@ class LastDepartureForStopUseCase(
     ): Flow<List<IStopTimetableTime>> = flow {
         val scheduleTimeZone = metadataRepository.timeZone()
         val now = clock.now()
-        val days = listOf(now - 1.days, now)
+        val days = listOf(now - 1.days, now + 1.days, now)
 
         val timesAndServices = servicesAndTimesForStopUseCase(stopId)
         val activeServices = days.map { now ->
@@ -41,9 +49,12 @@ class LastDepartureForStopUseCase(
 
         if (activeServices.all { it.isEmpty() }) return@flow emit(emptyList())
 
-        val lastByDay = activeServices.mapIndexed { i, activeServices ->
-            activeServices.map { activeService ->
-                timesAndServices.item.times
+        val lasts = mutableMapOf<RouteAndHeading, Array<StopTimetableTime?>>()
+
+        activeServices.forEachIndexed { i, activeServices ->
+            val startOfDay = days[i].startOfDay(scheduleTimeZone)
+            activeServices.forEach { activeService ->
+                val relevant = timesAndServices.item.times
                     .filter { it.serviceId == activeService.id }
                     .filterNot { it.last }
                     .run {
@@ -52,28 +63,36 @@ class LastDepartureForStopUseCase(
                             else -> filter { it.routeId == routeId }
                         }
                     }
-                    .groupBy { it.routeId to it.heading }
-                    .values
-                    .map { it.last().withTimeReference(days[i].startOfDay(scheduleTimeZone)) }
-            }.flatten()
-        }.flatten()
+                    .run {
+                        when (i) {
+                            1 -> filter { it.departureTime.durationThroughDay < 3.hours }
+                            else -> this
+                        }
+                    }
+
+                relevant.forEach { stopTime ->
+                    val key = RouteAndHeading(stopTime.routeId, stopTime.heading)
+                    val referenced = stopTime.withTimeReference(startOfDay)
+                    val current = lasts.getOrPut(key){ Array(3) { null } }
+
+                    if (current[i] == null || current[i]!!.departureTime < referenced.departureTime)
+                        current[i] = referenced
+                }
+            }
+        }
 
         emit(
-            lastByDay
-                .groupBy { it.routeId to it.heading }
+            lasts
                 .values
                 .mapNotNull {
-                    it.firstOrNull { it.departureTime >= now } ?: when {
-                        it.size > 1 -> it[1]
-                        else -> null
-                    }
+                    it.filterNotNull().firstOrNull { it.departureTime >= now } ?: it[2]
                 }
                 .map {
                     when {
                         it.childStopId == stopId || (
-                                remoteConfigRepository.feature(FeatureFlag.STOP_DETAIL_HIDE_PLATFORM_FOR_SYNTHETIC) &&
-                                        stopId.endsWith("-synthetic")
-                                ) -> it.copy(
+                        remoteConfigRepository.feature(FeatureFlag.STOP_DETAIL_HIDE_PLATFORM_FOR_SYNTHETIC) &&
+                                stopId.endsWith("-synthetic")
+                        ) -> it.copy(
                             childStop = null,
                             childStopId = null
                         )

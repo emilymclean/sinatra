@@ -100,6 +100,7 @@ class CalculateJourneyUseCaseTest {
                 endTime=33307,
                 travelTime=831,
                 dayIndex = 0,
+                tripId = ""
             )
         ))
         every { routerFactory(any(), any(), any(), any(), any()) } returns router

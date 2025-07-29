@@ -50,7 +50,7 @@ class RaptorTest {
             changeOverPenalty = 50 * 60 * 100
         )
         graph = NetworkGraph.byteFormatForByteArray(
-            this::class.java.classLoader.getResource("network_graph.eng").readBytes()
+            this::class.java.classLoader.getResource("network-graph.eng").readBytes()
         )
         raptor = Raptor(graph, List(3) { graph.mappings.serviceIds }, config)
         graphReverse = NetworkGraph.byteFormatForByteArray(
@@ -88,7 +88,8 @@ class RaptorTest {
                 travelTime=831,
                 dayIndex = 0,
                 bikesAllowed = true,
-                wheelchairAccessible = true
+                wheelchairAccessible = true,
+                tripId = "2537"
             )
         )), result)
     }
@@ -110,7 +111,8 @@ class RaptorTest {
                 travelTime=1475,
                 dayIndex = 0,
                 bikesAllowed = true,
-                wheelchairAccessible = true
+                wheelchairAccessible = true,
+                tripId = "185"
             )
         )), result)
     }
@@ -133,7 +135,8 @@ class RaptorTest {
                 travelTime=871,
                 dayIndex = 0,
                 bikesAllowed = true,
-                wheelchairAccessible = true
+                wheelchairAccessible = true,
+                tripId = "2535"
             )
         )), result)
     }
@@ -155,7 +158,8 @@ class RaptorTest {
                 travelTime=1475,
                 dayIndex = 0,
                 bikesAllowed = true,
-                wheelchairAccessible = true
+                wheelchairAccessible = true,
+                tripId = "185"
             )
         )), result)
     }
@@ -183,7 +187,8 @@ class RaptorTest {
                 travelTime=831,
                 dayIndex = 0,
                 bikesAllowed = true,
-                wheelchairAccessible = true
+                wheelchairAccessible = true,
+                tripId = "2537"
             ),
             RaptorJourneyConnection.Transfer(
                 listOf("8105", "MCK"),
@@ -215,7 +220,8 @@ class RaptorTest {
                 travelTime=871,
                 dayIndex = 0,
                 bikesAllowed = true,
-                wheelchairAccessible = true
+                wheelchairAccessible = true,
+                tripId = "2543"
             ),
             RaptorJourneyConnection.Transfer(
                 listOf("8105", "MCK"),
@@ -245,7 +251,8 @@ class RaptorTest {
                 travelTime=1560,
                 dayIndex = 0,
                 bikesAllowed = true,
-                wheelchairAccessible = true
+                wheelchairAccessible = true,
+                tripId = "66394783-2023-COMBNXT-Weekday-10"
             )
         )), result)
     }
@@ -270,6 +277,7 @@ class RaptorTest {
                 endTime=49860,
                 travelTime=1680,
                 dayIndex = 0,
+                tripId = "65132706-2023-COMBNXT-Saturday-05"
             )
         )), result)
     }
@@ -295,18 +303,20 @@ class RaptorTest {
                 travelTime = 720,
                 dayIndex = 0,
                 bikesAllowed = false,
-                wheelchairAccessible = true
+                wheelchairAccessible = true,
+                tripId = "66391224-2023-COMBNXT-Weekday-10"
             ),
             RaptorJourneyConnection.Travel(
                 listOf("8889", "3356", "3406"),
-                routeId = "5-10647",
+                routeId = "7-10647",
                 heading = "City ANU",
                 startTime = 33360,
                 endTime = 33540,
                 travelTime = 180,
                 dayIndex = 0,
                 bikesAllowed = true,
-                wheelchairAccessible = true
+                wheelchairAccessible = true,
+                tripId = "66392099-2023-COMBNXT-Weekday-10"
             ),
             RaptorJourneyConnection.Transfer(
                 listOf("3406", "8129"),
@@ -321,7 +331,8 @@ class RaptorTest {
                 travelTime=1357,
                 dayIndex = 0,
                 bikesAllowed = true,
-                wheelchairAccessible = true
+                wheelchairAccessible = true,
+                tripId = "52"
             ),
             RaptorJourneyConnection.Transfer(
                 listOf("8105", "MCK"),
@@ -351,18 +362,32 @@ class RaptorTest {
                 travelTime = 120,
                 dayIndex = 0,
                 bikesAllowed = true,
-                wheelchairAccessible = true
+                wheelchairAccessible = true,
+                tripId = "66391355-2023-COMBNXT-Weekday-10"
             ),
             RaptorJourneyConnection.Travel(
-                listOf("2373", "2376", "2258", "3261", "3259", "8889"),
+                listOf("2373", "2376", "2258"),
+                routeId = "56-10647",
+                heading = "City",
+                startTime = 33600,
+                endTime = 33840,
+                travelTime = 240,
+                dayIndex = 0,
+                bikesAllowed = true,
+                wheelchairAccessible = true,
+                tripId = "66393527-2023-COMBNXT-Weekday-10"
+            ),
+            RaptorJourneyConnection.Travel(
+                listOf("2258", "3261", "3259", "8889"),
                 routeId = "6-10647",
                 heading = "City ANU",
-                startTime = 33600,
+                startTime = 33780,
                 endTime = 34140,
-                travelTime = 540,
+                travelTime = 360,
                 dayIndex = 0,
-                bikesAllowed = false,
-                wheelchairAccessible = false
+                bikesAllowed = true,
+                wheelchairAccessible = true,
+                tripId = "66392164-2023-COMBNXT-Weekday-10"
             ),
             RaptorJourneyConnection.Travel(
                 listOf("8889", "3356", "3406"),
@@ -373,7 +398,8 @@ class RaptorTest {
                 travelTime = 180,
                 dayIndex = 0,
                 bikesAllowed = true,
-                wheelchairAccessible = true
+                wheelchairAccessible = true,
+                tripId = "66392100-2023-COMBNXT-Weekday-10"
             ),
             RaptorJourneyConnection.Transfer(
                 listOf("3406", "8129"),
@@ -388,7 +414,8 @@ class RaptorTest {
                 travelTime=1377,
                 dayIndex = 0,
                 bikesAllowed = true,
-                wheelchairAccessible = true
+                wheelchairAccessible = true,
+                tripId = "2543"
             ),
             RaptorJourneyConnection.Transfer(
                 listOf("8105", "MCK"),
@@ -419,7 +446,8 @@ class RaptorTest {
                 travelTime=831,
                 dayIndex = 0,
                 bikesAllowed = true,
-                wheelchairAccessible = true
+                wheelchairAccessible = true,
+                tripId = "45"
             ),
             RaptorJourneyConnection.Transfer(
                 listOf("8105", "MCK"),
@@ -478,7 +506,8 @@ class RaptorTest {
                 travelTime=423,
                 dayIndex=0,
                 bikesAllowed = true,
-                wheelchairAccessible = true
+                wheelchairAccessible = true,
+                tripId = "932"
             ),
         )), result)
     }
@@ -547,7 +576,8 @@ class RaptorTest {
                 travelTime=840,
                 dayIndex = 0,
                 bikesAllowed = false,
-                wheelchairAccessible = true
+                wheelchairAccessible = true,
+                tripId = "69825262-2023-COMBVAC-Weekday-05"
             ),
         )), result)
     }

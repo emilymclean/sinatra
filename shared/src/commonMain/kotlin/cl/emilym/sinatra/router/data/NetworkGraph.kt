@@ -3,6 +3,7 @@ package cl.emilym.sinatra.router.data
 import cl.emilym.sinatra.data.models.RouteId
 import cl.emilym.sinatra.data.models.ServiceId
 import cl.emilym.sinatra.data.models.StopId
+import cl.emilym.sinatra.data.models.TripId
 
 data class DataAndSize<T>(
     val data: T,
@@ -29,6 +30,7 @@ interface NetworkGraphMappings {
     val stopIdToIndex: Map<StopId, Int>
     val routeIds: List<RouteId>
     val headings: List<String>
+    val tripIds: List<TripId>
     val serviceIds: List<ServiceId>
 }
 
@@ -40,6 +42,8 @@ interface NetworkGraphMetadata {
     val penaltyMultiplier: Float
     val assumedWalkingSecondsPerKilometer: UInt
     val nodeCount: UInt
+    val nodeLength: UInt
+    val edgeLength: UInt
 }
 
 enum class NodeType {
@@ -48,21 +52,42 @@ enum class NodeType {
 
 interface NetworkGraphNode {
     val stopIndex: UInt
-    val routeIndex: UInt
-    val headingIndex: UInt
     val type: NodeType
-    val wheelchairAccessible: Boolean
     val edges: List<NetworkGraphEdge>
 }
 
+interface StopNetworkGraphNode: NetworkGraphNode {
+    val lat: Float
+    val lng: Float
+    val wheelchairAccessible: Boolean
+}
+
+interface RouteNetworkGraphNode: NetworkGraphNode {
+    val routeIndex: UInt
+    val headingIndex: UInt
+}
+
+val NetworkGraphNode.routeIndexCompat: UInt
+    get() = when (this) {
+        is RouteNetworkGraphNode -> routeIndex
+        else -> 0U
+    }
+
+val NetworkGraphNode.headingIndexCompat: UInt
+    get() = when (this) {
+        is RouteNetworkGraphNode -> headingIndex
+        else -> 0U
+    }
+
 enum class EdgeType {
-    TRAVEL, UNWEIGHTED, TRANSFER, TRANSFER_NON_ADJUSTABLE
+    TRAVEL, TRANSFER, TO_STOP_NODE, TO_ROUTE_NODE
 }
 
 interface NetworkGraphEdge {
     val connectedNodeIndex: UInt
     val cost: UInt
     val departureTime: UInt
+    val tripIndex: UInt
     val availableServices: List<UInt>
     val type: EdgeType
     val wheelchairAccessible: Boolean
