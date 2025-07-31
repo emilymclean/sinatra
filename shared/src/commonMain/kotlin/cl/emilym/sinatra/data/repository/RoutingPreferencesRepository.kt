@@ -10,15 +10,15 @@ class RoutingPreferencesRepository(
 ) {
 
     suspend fun maximumWalkingTime(): Duration {
-        return preferencesRepository.maximumWalkingTime.current().toDouble().minutes
+        return preferencesRepository.preference(Preference.MaximumWalkingTime).current().toDouble().minutes
     }
 
     suspend fun requiresWheelchair(): Boolean {
-        return preferencesRepository.requiresWheelchair.current()
+        return preferencesRepository.preference(Preference.RequiresWheelchair).current()
     }
 
     suspend fun requiresBikes(): Boolean {
-        return preferencesRepository.requiresBikes.current()
+        return preferencesRepository.preference(Preference.RequiresBikes).current()
     }
 
 }

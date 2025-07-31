@@ -29,13 +29,14 @@ import cl.emilym.sinatra.data.models.Place
 import cl.emilym.sinatra.data.models.Route
 import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.data.models.TimetableStationTime
+import cl.emilym.sinatra.data.repository.Preference
 import cl.emilym.sinatra.ui.localization.LocalClock
 import cl.emilym.sinatra.ui.localization.LocalLocalTimeZone
 import cl.emilym.sinatra.ui.localization.dateFormat
 import cl.emilym.sinatra.ui.localization.format
 import cl.emilym.sinatra.ui.localization.toTodayInstant
 import cl.emilym.sinatra.ui.presentation.screens.maps.navigate.NavigationLocation
-import cl.emilym.sinatra.ui.widgets.isMetricUnits
+import cl.emilym.sinatra.ui.widgets.rememberPreferenceState
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.format
@@ -128,7 +129,7 @@ internal expect val Res.string.open_maps: StringResource
 val Kilometer.text: String
     @Composable
     get() {
-        val unit = isMetricUnits()
+        val unit by rememberPreferenceState(Preference.MetricUnits)
         return when (unit) {
             true -> when {
                 this < 1 -> {
