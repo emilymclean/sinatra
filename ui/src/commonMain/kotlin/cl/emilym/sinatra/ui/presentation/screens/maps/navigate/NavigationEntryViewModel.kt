@@ -15,6 +15,7 @@ import cl.emilym.sinatra.data.models.RecentVisit
 import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.data.models.StopWithDistance
 import cl.emilym.sinatra.data.repository.NetworkGraphRepository
+import cl.emilym.sinatra.data.repository.Preference
 import cl.emilym.sinatra.data.repository.PreferencesRepository
 import cl.emilym.sinatra.data.repository.RecentVisitRepository
 import cl.emilym.sinatra.data.repository.RemoteConfigRepository
@@ -133,7 +134,9 @@ class NavigationEntryViewModel(
     private val _state = MutableStateFlow<State>(State.JourneySelection)
     private val retryGraphLoad = Channel<Unit>(Channel.CONFLATED)
 
-    val showAccessibilityIcons = preferencesRepository.showAccessibilityIconsNavigation.flow
+    val showAccessibilityIcons = preferencesRepository
+        .preference(Preference.ShowAccessibilityIconsNavigation)
+        .flow
         .state(true)
 
     @OptIn(ExperimentalCoroutinesApi::class)
