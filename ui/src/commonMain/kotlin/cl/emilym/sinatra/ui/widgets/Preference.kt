@@ -51,9 +51,11 @@ fun <T> rememberPreferenceState(
         }
     }
 
-    return MutableStatePreferenceState(current) {
-        scope.launch {
-            unit.save(it)
+    return remember(current, unit, scope) {
+        MutableStatePreferenceState(current) {
+            scope.launch {
+                unit.save(it)
+            }
         }
     }
 }
