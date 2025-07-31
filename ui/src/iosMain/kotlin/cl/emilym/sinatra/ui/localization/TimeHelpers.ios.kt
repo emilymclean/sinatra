@@ -1,8 +1,6 @@
 package cl.emilym.sinatra.ui.localization
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import io.github.aakira.napier.Napier
 import platform.Foundation.NSDateFormatter
 import platform.Foundation.NSLocale
 import platform.Foundation.currentLocale
