@@ -121,12 +121,15 @@ class FavouritePersistence(
                         null
                     }
                 }
+                val id = it.favourite.id
 
                 when (type) {
                     FavouriteType.ROUTE -> it.route?.let { Favourite.Route(
+                        id,
                         it.toModel()
                     ) }
                     FavouriteType.STOP -> it.stop?.let { stop -> Favourite.Stop(
+                        id,
                         stop.toModel(),
                         special
                     ) }
@@ -134,6 +137,7 @@ class FavouritePersistence(
                         it.stop?.let { stop ->
                             it.route?.let { route ->
                                 Favourite.StopOnRoute(
+                                    id,
                                     stop.toModel(),
                                     route.toModel(),
                                     it.favourite.heading
@@ -142,6 +146,7 @@ class FavouritePersistence(
                         }
                     FavouriteType.PLACE -> it.place?.let {
                         Favourite.Place(
+                            id,
                             it.toModel(),
                             special
                         )

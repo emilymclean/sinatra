@@ -17,6 +17,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -51,16 +53,21 @@ import cl.emilym.sinatra.ui.widgets.FavouriteCard
 import cl.emilym.sinatra.ui.widgets.HomeIcon
 import cl.emilym.sinatra.ui.widgets.ListCard
 import cl.emilym.sinatra.ui.widgets.ListHint
+import cl.emilym.sinatra.ui.widgets.Mutator
 import cl.emilym.sinatra.ui.widgets.QuickSelectCard
 import cl.emilym.sinatra.ui.widgets.SearchWidget
 import cl.emilym.sinatra.ui.widgets.SinatraScreenModel
 import cl.emilym.sinatra.ui.widgets.StarOutlineIcon
 import cl.emilym.sinatra.ui.widgets.WorkIcon
+import cl.emilym.sinatra.ui.widgets.collectAsMutatorStateWithLifecycle
 import cl.emilym.sinatra.ui.widgets.collectAsStateWithLifecycle
 import cl.emilym.sinatra.ui.widgets.defaultConfig
+import cl.emilym.sinatra.ui.widgets.rememberMutatorState
+import io.github.aakira.napier.Napier
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
@@ -87,6 +94,11 @@ sealed interface FavouriteState {
 data class SpecialFavourite(
     val type: SpecialFavouriteType,
     val favourite: Favourite?
+)
+
+data class SwapMutation(
+    val id: Long,
+    val to: Int
 )
 
 @Factory
@@ -213,8 +225,33 @@ class FavouriteScreen: Screen {
                 )
             }
         ) { innerPadding ->
-            val favourites by viewModel.favourites.collectAsStateWithLifecycle()
+            val favouritesMutator = viewModel.favourites.collectAsMutatorStateWithLifecycle(
+                mutator = object : Mutator<RequestState<List<Favourite>>, SwapMutation> {
+                    override fun apply(
+                        current: RequestState<List<Favourite>>,
+                        mutation: SwapMutation
+                    ): RequestState<List<Favourite>> = current.map {
+                        it.toMutableList().apply {
+                            add(mutation.to, removeAt(indexOfFirst { it.id == mutation.id }))
+                        }
+                    }
+
+                    override fun commit(
+                        current: RequestState<List<Favourite>>,
+                        mutations: List<SwapMutation>
+                    ) {}
+                }
+            )
+            val favourites by favouritesMutator
             val anyFavourites by viewModel.anyFavourites.collectAsStateWithLifecycle()
+
+            LaunchedEffect(favourites) {
+                favouritesMutator.locked = true
+                delay(1000)
+                val favourite = (favourites as? RequestState.Success)?.value?.lastOrNull() ?: return@LaunchedEffect
+                favouritesMutator.mutate(SwapMutation(favourite.id, 0))
+            }
+
             Box(
                 Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center

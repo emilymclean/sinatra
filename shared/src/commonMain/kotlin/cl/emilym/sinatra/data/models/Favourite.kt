@@ -5,19 +5,25 @@ enum class SpecialFavouriteType {
 }
 
 sealed interface Favourite {
+    val id: Long
+
     data class Route(
+        override val id: Long,
         val route: cl.emilym.sinatra.data.models.Route
     ): Favourite
     data class Stop(
+        override val id: Long,
         val stop: cl.emilym.sinatra.data.models.Stop,
         val specialType: SpecialFavouriteType? = null
     ): Favourite
     data class StopOnRoute(
+        override val id: Long,
         val stop: cl.emilym.sinatra.data.models.Stop,
         val route: cl.emilym.sinatra.data.models.Route,
         val heading: String?
     ): Favourite
     data class Place(
+        override val id: Long,
         val place: cl.emilym.sinatra.data.models.Place,
         val specialType: SpecialFavouriteType? = null
     ): Favourite
