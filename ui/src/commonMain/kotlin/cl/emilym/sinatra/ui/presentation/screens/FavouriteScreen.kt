@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
@@ -22,6 +23,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.CustomAccessibilityAction
+import androidx.compose.ui.semantics.customActions
+import androidx.compose.ui.semantics.semantics
 import cafe.adriel.voyager.core.model.screenModelScope
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.core.screen.ScreenKey
@@ -86,6 +90,8 @@ import sinatra.ui.generated.resources.favourites_no_home
 import sinatra.ui.generated.resources.favourites_no_work
 import sinatra.ui.generated.resources.favourites_nothing_favourited
 import sinatra.ui.generated.resources.navigation_bar_favourites
+import sinatra.ui.generated.resources.semantics_move_down
+import sinatra.ui.generated.resources.semantics_move_up
 
 sealed interface FavouriteState {
     data object Favourite: FavouriteState
@@ -268,6 +274,8 @@ class FavouriteScreen: Screen {
                 ))
                 haptics.perform(SinatraHapticFeedbackType.FREQUENT_TICK)
             }
+            val semanticsMoveUp = stringResource(Res.string.semantics_move_up)
+            val semanticsMoveDown = stringResource(Res.string.semantics_move_down)
 
             Box(
                 Modifier.fillMaxSize(),
@@ -314,12 +322,37 @@ class FavouriteScreen: Screen {
                             Spacer(Modifier.height(1.rdp))
                         }
                         if (anyFavourites) {
-                            items(favourites, key = { "favourite-${it.id}" }) { favourite ->
+                            itemsIndexed(favourites, key = { i, f -> "favourite-${f.id}" }) { index, favourite ->
                                 ReorderableItem(reorderableLazyListState, key = "favourite-${favourite.id}") {
                                     FavouriteCard(
                                         favourite,
                                         onClick = { favourite.navigate(navigator) },
-                                        modifier = Modifier.fillMaxWidth(),
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .semantics {
+                                                customActions = listOfNotNull(
+                                                    if (index > 0) CustomAccessibilityAction(
+                                                        label = semanticsMoveUp,
+                                                        action = {
+                                                            favouritesMutator.mutate(SwapMutation(
+                                                                favourite.id,
+                                                                index - 1
+                                                            ))
+                                                            true
+                                                        }
+                                                    ) else null,
+                                                    if (index < favourites.lastIndex) CustomAccessibilityAction(
+                                                        label = semanticsMoveDown,
+                                                        action = {
+                                                            SwapMutation(
+                                                                favourite.id,
+                                                                index + 1
+                                                            )
+                                                            true
+                                                        }
+                                                    ) else null
+                                                )
+                                            },
                                         endIcon = {
                                             IconButton(
                                                 onClick = {},
