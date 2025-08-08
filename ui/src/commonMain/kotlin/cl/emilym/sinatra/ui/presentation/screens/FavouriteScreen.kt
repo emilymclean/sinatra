@@ -55,6 +55,7 @@ import cl.emilym.sinatra.ui.presentation.screens.maps.stop.StopDetailScreen
 import cl.emilym.sinatra.ui.retryIfNeeded
 import cl.emilym.sinatra.ui.widgets.ClearIcon
 import cl.emilym.sinatra.ui.widgets.DragIndicatorIcon
+import cl.emilym.sinatra.ui.widgets.EditingIcon
 import cl.emilym.sinatra.ui.widgets.FavouriteCard
 import cl.emilym.sinatra.ui.widgets.HomeIcon
 import cl.emilym.sinatra.ui.widgets.ListCard
@@ -75,6 +76,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.mapLatest
@@ -154,6 +156,9 @@ class FavouriteViewModel(
         }
     }.state(FavouriteState.Favourite)
 
+    private val _isEditing = MutableStateFlow(false)
+    val isEditing = _isEditing.asStateFlow()
+
     fun retry() {
         screenModelScope.launch { allFavourites.retryIfNeeded(favourites.value) }
     }
@@ -164,6 +169,10 @@ class FavouriteViewModel(
 
     fun closeSearch() {
         searchType.value = null
+    }
+
+    fun setEditing(editing: Boolean) {
+        _isEditing.value = editing
     }
 
     fun selectSpecialFavourite(favourite: NavigationObject?) {
@@ -237,7 +246,19 @@ class FavouriteScreen: Screen {
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text(stringResource(Res.string.navigation_bar_favourites)) }
+                    title = { Text(stringResource(Res.string.navigation_bar_favourites)) },
+                    actions = {
+                        val isEditing by viewModel.isEditing.collectAsStateWithLifecycle()
+                        IconButton(
+                            onClick = {
+                                viewModel.setEditing(!isEditing)
+                            }
+                        ) {
+                            EditingIcon(
+                                isEditing
+                            )
+                        }
+                    }
                 )
             }
         ) { innerPadding ->
@@ -264,6 +285,7 @@ class FavouriteScreen: Screen {
             val favourites by favouritesMutator
             val anyFavourites by viewModel.anyFavourites.collectAsStateWithLifecycle()
 
+            val isEditing by viewModel.isEditing.collectAsStateWithLifecycle()
             val haptics = rememberHapticFeedback()
             val lazyListState = rememberLazyListState()
             val reorderableLazyListState = rememberReorderableLazyListState(lazyListState) { from, to ->
@@ -352,20 +374,23 @@ class FavouriteScreen: Screen {
                                                     ) else null
                                                 )
                                             },
-                                        endIcon = {
-                                            IconButton(
-                                                onClick = {},
-                                                modifier = Modifier.draggableHandle(
-                                                    onDragStarted = {
-                                                        haptics.perform(SinatraHapticFeedbackType.GESTURE_START)
-                                                    },
-                                                    onDragStopped = {
-                                                        haptics.perform(SinatraHapticFeedbackType.GESTURE_END)
-                                                    }
-                                                )
-                                            ) {
-                                                DragIndicatorIcon()
-                                            }
+                                        endIcon = when (isEditing) {
+                                            true -> { {
+                                                IconButton(
+                                                    onClick = {},
+                                                    modifier = Modifier.draggableHandle(
+                                                        onDragStarted = {
+                                                            haptics.perform(SinatraHapticFeedbackType.GESTURE_START)
+                                                        },
+                                                        onDragStopped = {
+                                                            haptics.perform(SinatraHapticFeedbackType.GESTURE_END)
+                                                        }
+                                                    )
+                                                ) {
+                                                    DragIndicatorIcon()
+                                                }
+                                            } }
+                                            else -> null
                                         }
                                     )
                                 }

@@ -13,6 +13,7 @@ import sinatra.ui.generated.resources.accessible
 import sinatra.ui.generated.resources.back
 import sinatra.ui.generated.resources.bike
 import sinatra.ui.generated.resources.bus
+import sinatra.ui.generated.resources.check
 import sinatra.ui.generated.resources.clock
 import sinatra.ui.generated.resources.external_link
 import sinatra.ui.generated.resources.forward
@@ -41,6 +42,7 @@ import sinatra.ui.generated.resources.drag_indicator
 import sinatra.ui.generated.resources.no_place
 import sinatra.ui.generated.resources.dropdown_up
 import sinatra.ui.generated.resources.dropdown_down
+import sinatra.ui.generated.resources.edit
 
 @Composable
 fun AccessibleIcon(
@@ -501,4 +503,53 @@ fun DragIndicatorIcon(
         modifier = modifier,
         tint = tint
     )
+}
+
+@Composable
+fun EditIcon(
+    modifier: Modifier = Modifier,
+    tint: Color = LocalContentColor.current,
+    contentDescription: String? = null
+) {
+    Icon(
+        painterResource(Res.drawable.edit),
+        contentDescription = contentDescription,
+        modifier = modifier,
+        tint = tint
+    )
+}
+
+@Composable
+fun CheckIcon(
+    modifier: Modifier = Modifier,
+    tint: Color = LocalContentColor.current,
+    contentDescription: String? = null
+) {
+    Icon(
+        painterResource(Res.drawable.check),
+        contentDescription = contentDescription,
+        modifier = modifier,
+        tint = tint
+    )
+}
+
+@Composable
+fun EditingIcon(
+    editing: Boolean,
+    modifier: Modifier = Modifier,
+    tint: Color = LocalContentColor.current,
+    contentDescription: String? = null
+) {
+    when (editing) {
+        true -> CheckIcon(
+            modifier,
+            tint,
+            contentDescription
+        )
+        else -> EditIcon(
+            modifier,
+            tint,
+            contentDescription
+        )
+    }
 }
