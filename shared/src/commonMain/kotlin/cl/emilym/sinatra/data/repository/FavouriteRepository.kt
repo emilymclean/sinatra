@@ -1,6 +1,7 @@
 package cl.emilym.sinatra.data.repository
 
 import cl.emilym.sinatra.data.models.Favourite
+import cl.emilym.sinatra.data.models.FavouriteId
 import cl.emilym.sinatra.data.models.PlaceId
 import cl.emilym.sinatra.data.models.RouteId
 import cl.emilym.sinatra.data.models.StopId
@@ -87,6 +88,10 @@ class FavouriteRepository(
 
     suspend fun clearSpecial(type: SpecialFavouriteType) {
         favouritePersistence.removeSpecial(type)
+    }
+
+    suspend fun updateOrder(favouriteId: FavouriteId, order: Int) {
+        favouritePersistence.updateOrder(favouriteId, order)
     }
 
 }

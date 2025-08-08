@@ -77,6 +77,7 @@ fun IconRouteCard(
     route: Route,
     modifier: Modifier = Modifier,
     onClick: (() -> Unit)? = null,
+    endIcon: (@Composable () -> Unit)? = null,
     icon: (@Composable () -> Unit)?
 ) {
     val routeListingSemantics = stringResource(Res.string.semantics_route_listing, route.displayCode)
@@ -84,6 +85,7 @@ fun IconRouteCard(
         icon?.let {
             { RandleScaffold { icon() } }
         },
+        endIcon = endIcon ?: onClick?.let { { DefaultListCardEndIcon() } },
         Modifier
             .semantics {
                 contentDescription = routeListingSemantics
