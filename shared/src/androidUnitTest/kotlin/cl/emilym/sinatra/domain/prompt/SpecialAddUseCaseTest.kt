@@ -50,7 +50,8 @@ class SpecialAddUseCaseTest {
             listOf(
                 Favourite.Place(
                     place = mockk(),
-                    specialType = SpecialFavouriteType.HOME
+                    specialType = SpecialFavouriteType.HOME,
+                    id = 0
                 )
             )
         )
@@ -67,11 +68,13 @@ class SpecialAddUseCaseTest {
             listOf(
                 Favourite.Place(
                     place = mockk(),
-                    specialType = SpecialFavouriteType.HOME
+                    specialType = SpecialFavouriteType.HOME,
+                    id = 0
                 ),
                 Favourite.Place(
                     place = mockk(),
-                    specialType = SpecialFavouriteType.WORK
+                    specialType = SpecialFavouriteType.WORK,
+                    id = 0
                 )
             )
         )
