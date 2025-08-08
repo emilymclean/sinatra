@@ -21,6 +21,9 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
+import kotlin.time.ComparableTimeMark
+import kotlin.time.TimeMark
+import kotlin.time.TimeSource
 
 interface Mutator<T,M> {
     fun apply(current: T, mutation: M): T
@@ -33,14 +36,14 @@ interface MutatorState<T,M>: State<T> {
 
 private data class Value<T>(
     val value: T,
-    val timestamp: Instant
+    val timestamp: ComparableTimeMark
 ) {
 
     companion object {
         fun <T> create(value: T): Value<T> {
             return Value(
                 value,
-                Clock.System.now()
+                TimeSource.Monotonic.markNow()
             )
         }
     }
