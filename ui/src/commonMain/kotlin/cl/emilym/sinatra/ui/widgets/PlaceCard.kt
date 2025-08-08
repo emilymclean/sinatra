@@ -24,6 +24,7 @@ fun IconPlaceCard(
     place: Place,
     modifier: Modifier = Modifier,
     onClick: (() -> Unit)? = null,
+    endIcon: (@Composable () -> Unit)? = null,
     icon: (@Composable () -> Unit)?,
 ) {
     val placeListingSemantics = stringResource(Res.string.semantics_place_listing, place.displayName)
@@ -35,6 +36,7 @@ fun IconPlaceCard(
                 }
             }
         },
+        endIcon = endIcon ?: onClick?.let { { DefaultListCardEndIcon() } },
         Modifier
             .semantics {
                 contentDescription = placeListingSemantics
@@ -65,7 +67,7 @@ fun PlaceCard(
         place,
         modifier,
         onClick,
-        when (showPlaceIcon) {
+        icon = when (showPlaceIcon) {
             true -> { { DefaultPlaceCardIcon(place) } }
             else -> null
         }

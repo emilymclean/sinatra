@@ -14,7 +14,8 @@ import cl.emilym.sinatra.data.models.specialType
 fun FavouriteCard(
     favourite: Favourite,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    endIcon: (@Composable () -> Unit)? = null
 ) {
     val icon: @Composable () -> Unit = {
         when (favourite.specialType) {
@@ -34,28 +35,32 @@ fun FavouriteCard(
             favourite.stop,
             onClick = { onClick() },
             modifier = modifier,
-            icon = icon
+            icon = icon,
+            endIcon = endIcon,
         )
 
         is Favourite.Route -> IconRouteCard(
             favourite.route,
             onClick = { onClick() },
             modifier = modifier,
-            icon = icon
+            icon = icon,
+            endIcon = endIcon,
         )
 
         is Favourite.StopOnRoute -> IconStopCard(
             favourite.stop,
             onClick = { onClick() },
             modifier = modifier,
-            icon = icon
+            icon = icon,
+            endIcon = endIcon,
         )
 
         is Favourite.Place -> IconPlaceCard(
             favourite.place,
             onClick = { onClick() },
             modifier = modifier,
-            icon = icon
+            icon = icon,
+            endIcon = endIcon,
         )
     }
 }

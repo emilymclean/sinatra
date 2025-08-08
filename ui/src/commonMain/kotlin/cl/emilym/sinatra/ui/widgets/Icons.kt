@@ -37,6 +37,7 @@ import sinatra.ui.generated.resources.warning
 import sinatra.ui.generated.resources.home
 import sinatra.ui.generated.resources.work
 import sinatra.ui.generated.resources.clear
+import sinatra.ui.generated.resources.drag_indicator
 import sinatra.ui.generated.resources.no_place
 import sinatra.ui.generated.resources.dropdown_up
 import sinatra.ui.generated.resources.dropdown_down
@@ -482,6 +483,20 @@ fun DropdownUpIcon(
 ) {
     Icon(
         painterResource(Res.drawable.dropdown_up),
+        contentDescription = contentDescription,
+        modifier = modifier,
+        tint = tint
+    )
+}
+
+@Composable
+fun DragIndicatorIcon(
+    modifier: Modifier = Modifier,
+    tint: Color = LocalContentColor.current,
+    contentDescription: String? = null
+) {
+    Icon(
+        painterResource(Res.drawable.drag_indicator),
         contentDescription = contentDescription,
         modifier = modifier,
         tint = tint

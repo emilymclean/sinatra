@@ -52,6 +52,7 @@ import cl.emilym.sinatra.ui.presentation.screens.maps.stop.StopDetailScreen
 import cl.emilym.sinatra.ui.retryIfNeeded
 import cl.emilym.sinatra.ui.widgets.BusIcon
 import cl.emilym.sinatra.ui.widgets.ClearIcon
+import cl.emilym.sinatra.ui.widgets.DragIndicatorIcon
 import cl.emilym.sinatra.ui.widgets.FavouriteCard
 import cl.emilym.sinatra.ui.widgets.HomeIcon
 import cl.emilym.sinatra.ui.widgets.ListCard
@@ -313,19 +314,19 @@ class FavouriteScreen: Screen {
                         if (anyFavourites) {
                             items(favourites, key = { "favourite-${it.id}" }) { favourite ->
                                 ReorderableItem(reorderableLazyListState, key = "favourite-${favourite.id}") {
-                                    Row {
-                                        IconButton(
-                                            onClick = {},
-                                            modifier = Modifier.draggableHandle()
-                                        ) {
-                                            BusIcon()
+                                    FavouriteCard(
+                                        favourite,
+                                        onClick = { favourite.navigate(navigator) },
+                                        modifier = Modifier.fillMaxWidth(),
+                                        endIcon = {
+                                            IconButton(
+                                                onClick = {},
+                                                modifier = Modifier.draggableHandle()
+                                            ) {
+                                                DragIndicatorIcon()
+                                            }
                                         }
-                                        FavouriteCard(
-                                            favourite,
-                                            onClick = { favourite.navigate(navigator) },
-                                            modifier = Modifier.fillMaxWidth()
-                                        )
-                                    }
+                                    )
                                 }
                             }
                         } else {

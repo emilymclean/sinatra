@@ -31,11 +31,39 @@ fun RandleScaffold(
 }
 
 @Composable
+fun DefaultListCardEndIcon() {
+    ForwardIcon(
+        tint = MaterialTheme.colorScheme.primary
+    )
+}
+
+@Composable
 fun ListCard(
     icon: (@Composable () -> Unit)?,
     modifier: Modifier = Modifier,
     onClick: (() -> Unit)? = null,
     hideForwardIcon: Boolean = false,
+    content: @Composable () -> Unit,
+) {
+    ListCard(
+        icon,
+        if (onClick != null && !hideForwardIcon) {
+            {
+                DefaultListCardEndIcon()
+            }
+        } else null,
+        modifier,
+        onClick,
+        content
+    )
+}
+
+@Composable
+fun ListCard(
+    icon: (@Composable () -> Unit)?,
+    endIcon: (@Composable () -> Unit)?,
+    modifier: Modifier = Modifier,
+    onClick: (() -> Unit)? = null,
     content: @Composable () -> Unit,
 ) {
     Row(
@@ -68,11 +96,7 @@ fun ListCard(
             content()
         }
         Box(Modifier.clearAndSetSemantics {  }) {
-            if (onClick != null && !hideForwardIcon) {
-                ForwardIcon(
-                    tint = MaterialTheme.colorScheme.primary
-                )
-            }
+            endIcon?.invoke()
         }
     }
 }
