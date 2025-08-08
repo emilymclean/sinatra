@@ -111,7 +111,6 @@ class FavouritePersistence(
 
     fun all(): Flow<List<Favourite>> {
         return favouriteDao.get().map {
-            Napier.d("${it.map { "${it.favourite.id}-${it.favourite.order}" }}")
             it.mapNotNull {
                 val type = FavouriteType.valueOf(it.favourite.type)
                 val special = it.favourite.extra?.let {
