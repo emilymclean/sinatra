@@ -247,7 +247,6 @@ class FavouriteScreen: Screen {
                         current: RequestState<List<Favourite>>,
                         mutation: SwapMutation
                     ): RequestState<List<Favourite>> {
-                        Napier.d("Applying mutation ${mutation}")
                         return current.map {
                             it.toMutableList().apply {
                                 add(mutation.to, removeAt(indexOfFirst { it.id == mutation.from }))
