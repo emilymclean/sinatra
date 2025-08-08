@@ -20,6 +20,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import cafe.adriel.voyager.core.model.screenModelScope
@@ -62,6 +63,7 @@ import cl.emilym.sinatra.ui.widgets.WorkIcon
 import cl.emilym.sinatra.ui.widgets.collectAsMutatorStateWithLifecycle
 import cl.emilym.sinatra.ui.widgets.collectAsStateWithLifecycle
 import cl.emilym.sinatra.ui.widgets.defaultConfig
+import cl.emilym.sinatra.ui.widgets.rememberMutator
 import cl.emilym.sinatra.ui.widgets.rememberMutatorState
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.Dispatchers
@@ -226,7 +228,7 @@ class FavouriteScreen: Screen {
             }
         ) { innerPadding ->
             val favouritesMutator = viewModel.favourites.collectAsMutatorStateWithLifecycle(
-                mutator = object : Mutator<RequestState<List<Favourite>>, SwapMutation> {
+                mutator = remember { object: Mutator<RequestState<List<Favourite>>, SwapMutation> {
                     override fun apply(
                         current: RequestState<List<Favourite>>,
                         mutation: SwapMutation
@@ -240,7 +242,7 @@ class FavouriteScreen: Screen {
                         current: RequestState<List<Favourite>>,
                         mutations: List<SwapMutation>
                     ) {}
-                }
+                } }
             )
             val favourites by favouritesMutator
             val anyFavourites by viewModel.anyFavourites.collectAsStateWithLifecycle()

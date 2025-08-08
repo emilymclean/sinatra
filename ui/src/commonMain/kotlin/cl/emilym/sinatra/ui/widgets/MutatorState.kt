@@ -10,7 +10,6 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import io.github.aakira.napier.Napier
 import kotlinx.coroutines.flow.StateFlow
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
@@ -30,6 +29,7 @@ private abstract class SingleMutatorState<T,M>: MutatorState<T,M> {
     override var locked: Boolean = false
         set(value) {
             field = value
+            commitIfNeeded()
         }
 
     abstract val mutator: Mutator<T,M>
@@ -37,25 +37,23 @@ private abstract class SingleMutatorState<T,M>: MutatorState<T,M> {
     abstract var currentValue: T
     override val value: T by derivedStateOf {
         val size = mutations.size
-        Napier.d("Size = $size")
         mutations.fold(currentValue) { acc, m -> mutator.apply(acc, m) }
     }
 
     @MainThread
     override fun mutate(mutation: M) {
         mutations.add(mutation)
-        Napier.d("Mutations = $mutations")
-//        commitIfNeeded()
+        commitIfNeeded()
     }
 
     fun clearMutations() {
-//        mutations.clear()
+        mutations.clear()
     }
 
     private fun commitIfNeeded() {
         if (locked) return
         if (mutations.isEmpty()) return
-//        mutator.commit(currentValue, mutations.toList())
+        mutator.commit(currentValue, mutations.toList())
     }
 }
 
@@ -78,11 +76,23 @@ fun <T,M> rememberMutatorState(
     }
 
     LaunchedEffect(value) {
-//        mutatorState.currentValue = value
-//        mutatorState.clearMutations()
+        mutatorState.currentValue = value
+        mutatorState.clearMutations()
     }
 
     return mutatorState
+}
+
+@Composable
+fun <T,M> rememberMutator(
+    apply: (current: T, mutation: M) -> T,
+    vararg keys: Any,
+    commit: (current: T, mutations: List<M>) -> Unit,
+): Mutator<T,M> {
+    return remember(keys) { object : Mutator<T, M> {
+        override fun apply(current: T, mutation: M) = apply(current, mutation)
+        override fun commit(current: T, mutations: List<M>) = commit(current, mutations)
+    } }
 }
 
 @Composable
