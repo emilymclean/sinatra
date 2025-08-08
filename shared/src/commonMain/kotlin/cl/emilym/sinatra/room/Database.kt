@@ -37,6 +37,7 @@ import cl.emilym.sinatra.room.entities.StopTimetableTimeEntity
 import cl.emilym.sinatra.room.entities.TimetableServiceExceptionEntity
 import cl.emilym.sinatra.room.entities.TimetableServiceRegularEntity
 import cl.emilym.sinatra.room.migration.Migration7to8
+import cl.emilym.sinatra.room.migration.Migration9to10
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import org.koin.core.annotation.Factory
@@ -82,13 +83,15 @@ expect object AppDatabaseConstructor : RoomDatabaseConstructor<AppDatabase> {
             to = 8,
             spec = Migration7to8::class
         ),
+        AutoMigration(from = 8, to = 9),
         AutoMigration(
-            from = 8,
-            to = 9
-        )
+            from = 9,
+            to = 10,
+            spec = Migration9to10::class
+        ),
     ],
     exportSchema = true,
-    version = 9
+    version = 10
 )
 @ConstructedBy(AppDatabaseConstructor::class)
 abstract class AppDatabase: RoomDatabase() {
