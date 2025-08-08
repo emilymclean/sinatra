@@ -10,10 +10,13 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.withContext
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlin.coroutines.CoroutineContext
@@ -21,7 +24,7 @@ import kotlin.coroutines.EmptyCoroutineContext
 
 interface Mutator<T,M> {
     fun apply(current: T, mutation: M): T
-    fun commit(mutation: M)
+    suspend fun commit(mutation: M)
 }
 
 interface MutatorState<T,M>: State<T> {
@@ -84,7 +87,8 @@ private class DefaultSingleMutatorState<T,M>(
 @Composable
 fun <T,M> rememberMutatorState(
     value: T,
-    mutator: Mutator<T,M>
+    mutator: Mutator<T,M>,
+    context: CoroutineContext = Dispatchers.IO
 ): MutatorState<T,M> {
     val mutations = remember { Channel<M>(Channel.UNLIMITED) }
     val mutatorState = remember(mutator) {
@@ -96,8 +100,10 @@ fun <T,M> rememberMutatorState(
     }
 
     LaunchedEffect(mutations) {
-        mutations.consumeAsFlow().collect {
-            mutator.commit(it)
+        withContext(context) {
+            mutations.consumeAsFlow().collect {
+                mutator.commit(it)
+            }
         }
     }
 

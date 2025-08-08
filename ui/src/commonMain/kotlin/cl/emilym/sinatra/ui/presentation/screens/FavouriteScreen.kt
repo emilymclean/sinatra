@@ -190,10 +190,8 @@ class FavouriteViewModel(
         }
     }
 
-    fun move(id: FavouriteId, order: Int) {
-        screenModelScope.launch {
-            favouriteRepository.updateOrder(id, order)
-        }
+    suspend fun move(id: FavouriteId, order: Int) {
+        favouriteRepository.updateOrder(id, order)
     }
 
 }
@@ -275,7 +273,7 @@ class FavouriteScreen: Screen {
                         }
                     }
 
-                    override fun commit(
+                    override suspend fun commit(
                         mutation: SwapMutation
                     ) {
                         viewModel.move(mutation.from, mutation.to)
