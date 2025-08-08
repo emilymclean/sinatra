@@ -36,7 +36,6 @@ private abstract class SingleMutatorState<T,M>: MutatorState<T,M> {
 
     abstract var currentValue: T
     override val value: T by derivedStateOf {
-        val size = mutations.size
         mutations.fold(currentValue) { acc, m -> mutator.apply(acc, m) }
     }
 
@@ -76,6 +75,7 @@ fun <T,M> rememberMutatorState(
     }
 
     LaunchedEffect(value) {
+        if (mutatorState.locked) return@LaunchedEffect
         mutatorState.currentValue = value
         mutatorState.clearMutations()
     }
