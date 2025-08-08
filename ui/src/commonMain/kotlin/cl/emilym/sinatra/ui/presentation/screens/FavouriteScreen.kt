@@ -3,6 +3,7 @@ package cl.emilym.sinatra.ui.presentation.screens
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -11,7 +12,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -49,6 +52,7 @@ import cl.emilym.sinatra.ui.placeCardDefaultNavigation
 import cl.emilym.sinatra.ui.presentation.screens.maps.route.RouteDetailScreen
 import cl.emilym.sinatra.ui.presentation.screens.maps.stop.StopDetailScreen
 import cl.emilym.sinatra.ui.retryIfNeeded
+import cl.emilym.sinatra.ui.widgets.BusIcon
 import cl.emilym.sinatra.ui.widgets.ClearIcon
 import cl.emilym.sinatra.ui.widgets.FavouriteCard
 import cl.emilym.sinatra.ui.widgets.HomeIcon
@@ -78,6 +82,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.jetbrains.compose.resources.stringResource
 import org.koin.core.annotation.Factory
+import sh.calvin.reorderable.ReorderableItem
+import sh.calvin.reorderable.rememberReorderableLazyListState
 import sinatra.ui.generated.resources.Res
 import sinatra.ui.generated.resources.favourites_no_home
 import sinatra.ui.generated.resources.favourites_no_work
@@ -99,7 +105,7 @@ data class SpecialFavourite(
 )
 
 data class SwapMutation(
-    val id: Long,
+    val from: Long,
     val to: Int
 )
 
@@ -232,9 +238,12 @@ class FavouriteScreen: Screen {
                     override fun apply(
                         current: RequestState<List<Favourite>>,
                         mutation: SwapMutation
-                    ): RequestState<List<Favourite>> = current.map {
-                        it.toMutableList().apply {
-                            add(mutation.to, removeAt(indexOfFirst { it.id == mutation.id }))
+                    ): RequestState<List<Favourite>> {
+                        Napier.d("Applying mutation ${mutation}")
+                        return current.map {
+                            it.toMutableList().apply {
+                                add(mutation.to, removeAt(indexOfFirst { it.id == mutation.from }))
+                            }
                         }
                     }
 
@@ -247,11 +256,12 @@ class FavouriteScreen: Screen {
             val favourites by favouritesMutator
             val anyFavourites by viewModel.anyFavourites.collectAsStateWithLifecycle()
 
-            LaunchedEffect(favourites) {
-                favouritesMutator.locked = true
-                delay(1000)
-                val favourite = (favourites as? RequestState.Success)?.value?.lastOrNull() ?: return@LaunchedEffect
-                favouritesMutator.mutate(SwapMutation(favourite.id, 0))
+            val lazyListState = rememberLazyListState()
+            val reorderableLazyListState = rememberReorderableLazyListState(lazyListState) { from, to ->
+                favouritesMutator.mutate(SwapMutation(
+                    (from.key as String).drop("favourite-".length).toLong(),
+                    to.index - 2
+                ))
             }
 
             Box(
@@ -264,7 +274,8 @@ class FavouriteScreen: Screen {
                 ) { favourites ->
                     LazyColumn(
                         Modifier.fillMaxSize(),
-                        contentPadding = innerPadding
+                        contentPadding = innerPadding,
+                        state = lazyListState
                     ) {
                         item {
                             val specials by viewModel.special.collectAsStateWithLifecycle()
@@ -298,12 +309,22 @@ class FavouriteScreen: Screen {
                             Spacer(Modifier.height(1.rdp))
                         }
                         if (anyFavourites) {
-                            items(favourites) {
-                                FavouriteCard(
-                                    it,
-                                    onClick = { it.navigate(navigator) },
-                                    modifier = Modifier.fillMaxWidth()
-                                )
+                            items(favourites, key = { "favourite-${it.id}" }) { favourite ->
+                                ReorderableItem(reorderableLazyListState, key = "favourite-${favourite.id}") {
+                                    Row {
+                                        IconButton(
+                                            onClick = {},
+                                            modifier = Modifier.draggableHandle()
+                                        ) {
+                                            BusIcon()
+                                        }
+                                        FavouriteCard(
+                                            favourite,
+                                            onClick = { favourite.navigate(navigator) },
+                                            modifier = Modifier.fillMaxWidth()
+                                        )
+                                    }
+                                }
                             }
                         } else {
                             item {

@@ -10,7 +10,10 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
@@ -20,50 +23,56 @@ interface Mutator<T,M> {
 }
 
 interface MutatorState<T,M>: State<T> {
-    var locked: Boolean
     fun mutate(mutation: M)
 }
 
-private abstract class SingleMutatorState<T,M>: MutatorState<T,M> {
-    private val mutations = mutableStateListOf<M>()
-    override var locked: Boolean = false
+private data class Value<T>(
+    val value: T,
+    val timestamp: Instant
+) {
+
+    companion object {
+        fun <T> create(value: T): Value<T> {
+            return Value(
+                value,
+                Clock.System.now()
+            )
+        }
+    }
+
+}
+
+private abstract class SingleMutatorState<T,M>(
+    initialValue: T
+): MutatorState<T,M> {
+    abstract val mutator: Mutator<T,M>
+    private val mutations = Channel<M>(Channel.UNLIMITED)
+
+    var currentValue: T
+        get() = current.value
         set(value) {
-            field = value
-            commitIfNeeded()
+            current = Value.create(value)
+            if (mutations.isEmpty) { working = Value.create(value) }
         }
 
-    abstract val mutator: Mutator<T,M>
+    private var working: Value<T> by mutableStateOf(Value.create(initialValue))
+    private var current: Value<T> by mutableStateOf(Value.create(initialValue))
 
-    abstract var currentValue: T
     override val value: T by derivedStateOf {
-        mutations.fold(currentValue) { acc, m -> mutator.apply(acc, m) }
+        listOf(working, current).maxBy { it.timestamp }.value
     }
 
     @MainThread
     override fun mutate(mutation: M) {
-        mutations.add(mutation)
-        commitIfNeeded()
-    }
-
-    fun clearMutations() {
-        mutations.clear()
-    }
-
-    private fun commitIfNeeded() {
-        if (locked) return
-        if (mutations.isEmpty()) return
-        mutator.commit(currentValue, mutations.toList())
+        working = Value.create(mutator.apply(working.value, mutation))
+        mutations.trySend(mutation)
     }
 }
 
 private class DefaultSingleMutatorState<T,M>(
     initialValue: T,
     override val mutator: Mutator<T, M>
-): SingleMutatorState<T,M>() {
-
-    override var currentValue: T by mutableStateOf(initialValue)
-
-}
+): SingleMutatorState<T,M>(initialValue)
 
 @Composable
 fun <T,M> rememberMutatorState(
@@ -75,9 +84,7 @@ fun <T,M> rememberMutatorState(
     }
 
     LaunchedEffect(value) {
-        if (mutatorState.locked) return@LaunchedEffect
         mutatorState.currentValue = value
-        mutatorState.clearMutations()
     }
 
     return mutatorState
