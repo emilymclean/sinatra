@@ -1,6 +1,7 @@
 package cl.emilym.sinatra.data.persistence
 
 import cl.emilym.sinatra.data.models.Favourite
+import cl.emilym.sinatra.data.models.FavouriteId
 import cl.emilym.sinatra.data.models.Heading
 import cl.emilym.sinatra.data.models.PlaceId
 import cl.emilym.sinatra.data.models.RouteId
@@ -121,15 +122,14 @@ class FavouritePersistence(
                         null
                     }
                 }
-                val id = it.favourite.id
 
                 when (type) {
-                    FavouriteType.ROUTE -> it.route?.let { Favourite.Route(
-                        id,
-                        it.toModel()
+                    FavouriteType.ROUTE -> it.route?.let { route -> Favourite.Route(
+                        it.favourite.id,
+                        route.toModel()
                     ) }
                     FavouriteType.STOP -> it.stop?.let { stop -> Favourite.Stop(
-                        id,
+                        it.favourite.id,
                         stop.toModel(),
                         special
                     ) }
@@ -137,23 +137,27 @@ class FavouritePersistence(
                         it.stop?.let { stop ->
                             it.route?.let { route ->
                                 Favourite.StopOnRoute(
-                                    id,
+                                    it.favourite.id,
                                     stop.toModel(),
                                     route.toModel(),
                                     it.favourite.heading
                                 )
                             }
                         }
-                    FavouriteType.PLACE -> it.place?.let {
+                    FavouriteType.PLACE -> it.place?.let { place ->
                         Favourite.Place(
-                            id,
-                            it.toModel(),
+                            it.favourite.id,
+                            place.toModel(),
                             special
                         )
                     }
                 }
             }
         }
+    }
+
+    suspend fun updateOrder(id: FavouriteId, order: Int) {
+        favouriteDao.reorder(id, order)
     }
 
     fun exists(

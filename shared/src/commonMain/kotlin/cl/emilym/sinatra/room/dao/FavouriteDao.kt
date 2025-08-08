@@ -11,46 +11,58 @@ import cl.emilym.sinatra.room.entities.FavouriteEntityEntityWithStopAndRoute
 import kotlinx.coroutines.flow.Flow
 
 @Dao
-interface FavouriteDao {
+abstract class FavouriteDao {
 
     @Insert
-    suspend fun insert(favourite: FavouriteEntity)
+    abstract suspend fun insert(favourite: FavouriteEntity)
 
     @Delete
-    suspend fun delete(favourite: FavouriteEntity)
+    abstract suspend fun delete(favourite: FavouriteEntity)
 
     @Query("DELETE FROM favouriteEntity WHERE type = \"ROUTE\" AND routeId = :routeId")
-    suspend fun deleteRoute(routeId: String)
+    abstract suspend fun deleteRoute(routeId: String)
 
     @Query("DELETE FROM favouriteEntity WHERE type = \"STOP\" AND stopId = :stopId")
-    suspend fun deleteStop(stopId: String)
+    abstract suspend fun deleteStop(stopId: String)
 
     @Query("DELETE FROM favouriteEntity WHERE type = \"STOP_ON_ROUTE\" AND stopId = :stopId AND routeId = :routeId")
-    suspend fun deleteStopOnRoute(stopId: String, routeId: String)
+    abstract suspend fun deleteStopOnRoute(stopId: String, routeId: String)
 
     @Query("DELETE FROM favouriteEntity WHERE type = \"PLACE\" AND placeId = :placeId")
-    suspend fun deletePlace(placeId: String)
+    abstract suspend fun deletePlace(placeId: String)
 
     @Query("DELETE FROM favouriteEntity WHERE extra = :specialFavouriteType")
-    suspend fun deleteSpecial(specialFavouriteType: String)
+    abstract suspend fun deleteSpecial(specialFavouriteType: String)
 
     @Transaction
     @Query("SELECT * FROM favouriteEntity")
-    fun get(): Flow<List<FavouriteEntityEntityWithStopAndRoute>>
+    abstract fun get(): Flow<List<FavouriteEntityEntityWithStopAndRoute>>
 
     @Query("SELECT * FROM favouriteEntity WHERE type = \"ROUTE\" AND routeId = :routeId")
-    fun getRoute(routeId: String): Flow<FavouriteEntity?>
+    abstract fun getRoute(routeId: String): Flow<FavouriteEntity?>
 
     @Query("SELECT * FROM favouriteEntity WHERE type = \"STOP\" AND stopId = :stopId")
-    fun getStop(stopId: String): Flow<FavouriteEntity?>
+    abstract fun getStop(stopId: String): Flow<FavouriteEntity?>
 
     @Query("SELECT stopId FROM favouriteEntity WHERE type = \"STOP\" AND stopId in (:stopIds)")
-    fun getStopIdExistence(stopIds: List<String>): Flow<List<String>>
+    abstract fun getStopIdExistence(stopIds: List<String>): Flow<List<String>>
 
     @Query("SELECT * FROM favouriteEntity WHERE type = \"STOP_ON_ROUTE\" AND routeId = :routeId AND stopId = :stopId AND heading = :heading")
-    fun getStopOnRoute(stopId: String, routeId: String, heading: String?): Flow<FavouriteEntity?>
+    abstract fun getStopOnRoute(stopId: String, routeId: String, heading: String?): Flow<FavouriteEntity?>
 
     @Query("SELECT * FROM favouriteEntity WHERE type = \"PLACE\" AND placeId = :placeId")
-    fun getPlace(placeId: String): Flow<FavouriteEntity?>
+    abstract fun getPlace(placeId: String): Flow<FavouriteEntity?>
+
+    @Query("UPDATE favouriteEntity SET `order` = :order WHERE id = :id")
+    protected abstract suspend fun updateOrder(id: Long, order: Int)
+
+    @Query("UPDATE favouriteEntity SET `order` = `order` + 1 WHERE `order` >= :start")
+    protected abstract suspend fun bumpOrder(start: Int)
+
+    @Transaction
+    open suspend fun reorder(id: Long, order: Int) {
+        bumpOrder(order)
+        updateOrder(id, order)
+    }
 
 }

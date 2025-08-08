@@ -37,6 +37,7 @@ import cl.emilym.compose.requeststate.map
 import cl.emilym.compose.requeststate.unwrap
 import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.data.models.Favourite
+import cl.emilym.sinatra.data.models.FavouriteId
 import cl.emilym.sinatra.data.models.NavigationObject
 import cl.emilym.sinatra.data.models.Place
 import cl.emilym.sinatra.data.models.SpecialFavouriteType
@@ -99,7 +100,7 @@ data class SpecialFavourite(
 )
 
 data class SwapMutation(
-    val from: Long,
+    val from: FavouriteId,
     val to: Int
 )
 
@@ -173,6 +174,12 @@ class FavouriteViewModel(
         }
     }
 
+    fun move(id: FavouriteId, order: Int) {
+        screenModelScope.launch {
+            favouriteRepository.updateOrder(id, order)
+        }
+    }
+
 }
 
 class FavouriteScreen: Screen {
@@ -243,7 +250,9 @@ class FavouriteScreen: Screen {
 
                     override fun commit(
                         mutation: SwapMutation
-                    ) {}
+                    ) {
+                        viewModel.move(mutation.from, mutation.to)
+                    }
                 } }
             )
             val favourites by favouritesMutator
