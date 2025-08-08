@@ -14,6 +14,7 @@ import cl.emilym.sinatra.data.models.specialType
 import cl.emilym.sinatra.data.models.stopId
 import cl.emilym.sinatra.room.dao.FavouriteDao
 import cl.emilym.sinatra.room.entities.FavouriteEntity
+import io.github.aakira.napier.Napier
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import org.koin.core.annotation.Factory
@@ -111,9 +112,8 @@ class FavouritePersistence(
 
     fun all(): Flow<List<Favourite>> {
         return favouriteDao.get().map {
-            it.sortedWith(
-                compareBy({ it.favourite.order }, { -it.favourite.id })
-            ).mapNotNull {
+            Napier.d("${it.map { "${it.favourite.id}-${it.favourite.order}" }}")
+            it.mapNotNull {
                 val type = FavouriteType.valueOf(it.favourite.type)
                 val special = it.favourite.extra?.let {
                     try {

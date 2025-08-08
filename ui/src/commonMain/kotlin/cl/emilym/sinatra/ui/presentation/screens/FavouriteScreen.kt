@@ -39,6 +39,7 @@ import cl.emilym.compose.requeststate.flatRequestStateFlow
 import cl.emilym.compose.requeststate.map
 import cl.emilym.compose.requeststate.unwrap
 import cl.emilym.compose.units.rdp
+import cl.emilym.sinatra.FeatureFlag
 import cl.emilym.sinatra.data.models.Favourite
 import cl.emilym.sinatra.data.models.FavouriteId
 import cl.emilym.sinatra.data.models.NavigationObject
@@ -71,6 +72,7 @@ import cl.emilym.sinatra.ui.widgets.collectAsMutatorStateWithLifecycle
 import cl.emilym.sinatra.ui.widgets.collectAsStateWithLifecycle
 import cl.emilym.sinatra.ui.widgets.defaultConfig
 import cl.emilym.sinatra.ui.widgets.rememberHapticFeedback
+import cl.emilym.sinatra.ui.widgets.value
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -247,14 +249,16 @@ class FavouriteScreen: Screen {
                     title = { Text(stringResource(Res.string.navigation_bar_favourites)) },
                     actions = {
                         val isEditing by viewModel.isEditing.collectAsStateWithLifecycle()
-                        IconButton(
-                            onClick = {
-                                viewModel.setEditing(!isEditing)
+                        if (FeatureFlag.FAVOURITE_REORDER_ENABLED.value()) {
+                            IconButton(
+                                onClick = {
+                                    viewModel.setEditing(!isEditing)
+                                }
+                            ) {
+                                EditingIcon(
+                                    isEditing
+                                )
                             }
-                        ) {
-                            EditingIcon(
-                                isEditing
-                            )
                         }
                     }
                 )

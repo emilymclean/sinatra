@@ -5,6 +5,7 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Transaction
+import cl.emilym.sinatra.data.models.Favourite
 import cl.emilym.sinatra.data.models.StopId
 import cl.emilym.sinatra.room.entities.FavouriteEntity
 import cl.emilym.sinatra.room.entities.FavouriteEntityEntityWithStopAndRoute
@@ -13,8 +14,14 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 abstract class FavouriteDao {
 
+    @Transaction
+    open suspend fun insert(favourite: FavouriteEntity) {
+        bumpOrder()
+        _insert(favourite)
+    }
+
     @Insert
-    abstract suspend fun insert(favourite: FavouriteEntity)
+    protected abstract suspend fun _insert(favourite: FavouriteEntity)
 
     @Delete
     abstract suspend fun delete(favourite: FavouriteEntity)
@@ -35,7 +42,7 @@ abstract class FavouriteDao {
     abstract suspend fun deleteSpecial(specialFavouriteType: String)
 
     @Transaction
-    @Query("SELECT * FROM favouriteEntity")
+    @Query("SELECT * FROM favouriteEntity ORDER BY `order` ASC, `id` DESC")
     abstract fun get(): Flow<List<FavouriteEntityEntityWithStopAndRoute>>
 
     @Query("SELECT * FROM favouriteEntity WHERE type = \"ROUTE\" AND routeId = :routeId")
@@ -53,15 +60,26 @@ abstract class FavouriteDao {
     @Query("SELECT * FROM favouriteEntity WHERE type = \"PLACE\" AND placeId = :placeId")
     abstract fun getPlace(placeId: String): Flow<FavouriteEntity?>
 
+    @Query("SELECT `order` FROM favouriteEntity WHERE id = :id")
+    protected abstract fun currentOrder(id: Long): Int
+
+    @Query("UPDATE favouriteEntity SET `order` = `order` - 1 WHERE `order` > :oldOrder AND `order` <= :newOrder AND `order` >= 0")
+    protected abstract suspend fun moveOrderDown(newOrder: Int, oldOrder: Int)
+
+    @Query("UPDATE favouriteEntity SET `order` = `order` + 1 WHERE `order` >= :newOrder AND `order` < :oldOrder AND `order` >= 0")
+    protected abstract suspend fun moveOrderUp(newOrder: Int, oldOrder: Int)
+
     @Query("UPDATE favouriteEntity SET `order` = :order WHERE id = :id")
     protected abstract suspend fun updateOrder(id: Long, order: Int)
 
-    @Query("UPDATE favouriteEntity SET `order` = `order` + 1 WHERE `order` >= :start")
-    protected abstract suspend fun bumpOrder(start: Int)
+    @Query("UPDATE favouriteEntity SET `order` = `order` + 1")
+    protected abstract suspend fun bumpOrder()
 
     @Transaction
     open suspend fun reorder(id: Long, order: Int) {
-        bumpOrder(order)
+        val oldOrder = currentOrder(id)
+        moveOrderDown(order, oldOrder)
+        moveOrderUp(order, oldOrder)
         updateOrder(id, order)
     }
 
