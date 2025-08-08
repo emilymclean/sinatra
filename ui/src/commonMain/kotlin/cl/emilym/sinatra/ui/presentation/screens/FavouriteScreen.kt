@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -20,8 +19,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -67,13 +64,10 @@ import cl.emilym.sinatra.ui.widgets.WorkIcon
 import cl.emilym.sinatra.ui.widgets.collectAsMutatorStateWithLifecycle
 import cl.emilym.sinatra.ui.widgets.collectAsStateWithLifecycle
 import cl.emilym.sinatra.ui.widgets.defaultConfig
-import cl.emilym.sinatra.ui.widgets.rememberMutator
-import cl.emilym.sinatra.ui.widgets.rememberMutatorState
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
@@ -85,11 +79,11 @@ import org.koin.core.annotation.Factory
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
 import sinatra.ui.generated.resources.Res
+import sinatra.ui.generated.resources.favourites_clear_favourite
 import sinatra.ui.generated.resources.favourites_no_home
 import sinatra.ui.generated.resources.favourites_no_work
 import sinatra.ui.generated.resources.favourites_nothing_favourited
 import sinatra.ui.generated.resources.navigation_bar_favourites
-import sinatra.ui.generated.resources.favourites_clear_favourite
 
 sealed interface FavouriteState {
     data object Favourite: FavouriteState
@@ -248,8 +242,7 @@ class FavouriteScreen: Screen {
                     }
 
                     override fun commit(
-                        current: RequestState<List<Favourite>>,
-                        mutations: List<SwapMutation>
+                        mutation: SwapMutation
                     ) {}
                 } }
             )

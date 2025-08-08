@@ -12,6 +12,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.consumeAsFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlin.coroutines.CoroutineContext
@@ -19,7 +21,7 @@ import kotlin.coroutines.EmptyCoroutineContext
 
 interface Mutator<T,M> {
     fun apply(current: T, mutation: M): T
-    fun commit(current: T, mutations: List<M>)
+    fun commit(mutation: M)
 }
 
 interface MutatorState<T,M>: State<T> {
@@ -46,7 +48,7 @@ private abstract class SingleMutatorState<T,M>(
     initialValue: T
 ): MutatorState<T,M> {
     abstract val mutator: Mutator<T,M>
-    private val mutations = Channel<M>(Channel.UNLIMITED)
+    abstract val mutations: Channel<M>
 
     var currentValue: T
         get() = current.value
@@ -59,7 +61,11 @@ private abstract class SingleMutatorState<T,M>(
     private var current: Value<T> by mutableStateOf(Value.create(initialValue))
 
     override val value: T by derivedStateOf {
-        listOf(working, current).maxBy { it.timestamp }.value
+        if (mutations.isEmpty) {
+            listOf(working, current).maxBy { it.timestamp }
+        } else {
+            working
+        }.value
     }
 
     @MainThread
@@ -71,7 +77,8 @@ private abstract class SingleMutatorState<T,M>(
 
 private class DefaultSingleMutatorState<T,M>(
     initialValue: T,
-    override val mutator: Mutator<T, M>
+    override val mutator: Mutator<T, M>,
+    override val mutations: Channel<M>
 ): SingleMutatorState<T,M>(initialValue)
 
 @Composable
@@ -79,27 +86,22 @@ fun <T,M> rememberMutatorState(
     value: T,
     mutator: Mutator<T,M>
 ): MutatorState<T,M> {
+    val mutations = remember { Channel<M>(Channel.UNLIMITED) }
     val mutatorState = remember(mutator) {
-        DefaultSingleMutatorState(value, mutator)
+        DefaultSingleMutatorState(value, mutator, mutations)
     }
 
     LaunchedEffect(value) {
         mutatorState.currentValue = value
     }
 
-    return mutatorState
-}
+    LaunchedEffect(mutations) {
+        mutations.consumeAsFlow().collect {
+            mutator.commit(it)
+        }
+    }
 
-@Composable
-fun <T,M> rememberMutator(
-    apply: (current: T, mutation: M) -> T,
-    vararg keys: Any,
-    commit: (current: T, mutations: List<M>) -> Unit,
-): Mutator<T,M> {
-    return remember(keys) { object : Mutator<T, M> {
-        override fun apply(current: T, mutation: M) = apply(current, mutation)
-        override fun commit(current: T, mutations: List<M>) = commit(current, mutations)
-    } }
+    return mutatorState
 }
 
 @Composable
