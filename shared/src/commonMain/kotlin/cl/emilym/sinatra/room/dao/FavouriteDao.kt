@@ -16,15 +16,22 @@ abstract class FavouriteDao {
 
     @Transaction
     open suspend fun insert(favourite: FavouriteEntity) {
-        bumpOrder()
+        if (favourite.order >= 0) bumpOrder()
         _insert(favourite)
     }
 
     @Insert
     protected abstract suspend fun _insert(favourite: FavouriteEntity)
 
+    @Transaction
+    open suspend fun delete(favourite: FavouriteEntity) {
+        val currentOrder = currentOrder(favourite.id)
+        moveOrderDown(Int.MAX_VALUE, currentOrder)
+        _delete(favourite)
+    }
+
     @Delete
-    abstract suspend fun delete(favourite: FavouriteEntity)
+    protected abstract suspend fun _delete(favourite: FavouriteEntity)
 
     @Query("DELETE FROM favouriteEntity WHERE type = \"ROUTE\" AND routeId = :routeId")
     abstract suspend fun deleteRoute(routeId: String)
@@ -72,7 +79,7 @@ abstract class FavouriteDao {
     @Query("UPDATE favouriteEntity SET `order` = :order WHERE id = :id")
     protected abstract suspend fun updateOrder(id: Long, order: Int)
 
-    @Query("UPDATE favouriteEntity SET `order` = `order` + 1")
+    @Query("UPDATE favouriteEntity SET `order` = `order` + 1 WHERE `order` >= 0")
     protected abstract suspend fun bumpOrder()
 
     @Transaction

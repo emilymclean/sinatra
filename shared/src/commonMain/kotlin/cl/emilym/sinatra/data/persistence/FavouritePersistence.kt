@@ -66,7 +66,6 @@ class FavouritePersistence(
         placeId: PlaceId? = null,
         heading: Heading? = null,
         extra: String? = null,
-        order: Int = 0
     ) {
         validate(type, routeId, stopId, placeId, heading, extra)
         remove(type, routeId, stopId, placeId)
@@ -83,7 +82,7 @@ class FavouritePersistence(
             placeId,
             heading,
             extra,
-            order
+            if (extra != null) -1 else 0
         )
         favouriteDao.insert(entity)
     }
