@@ -3,7 +3,6 @@ package cl.emilym.sinatra.ui.presentation.screens
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -50,7 +49,6 @@ import cl.emilym.sinatra.ui.placeCardDefaultNavigation
 import cl.emilym.sinatra.ui.presentation.screens.maps.route.RouteDetailScreen
 import cl.emilym.sinatra.ui.presentation.screens.maps.stop.StopDetailScreen
 import cl.emilym.sinatra.ui.retryIfNeeded
-import cl.emilym.sinatra.ui.widgets.BusIcon
 import cl.emilym.sinatra.ui.widgets.ClearIcon
 import cl.emilym.sinatra.ui.widgets.DragIndicatorIcon
 import cl.emilym.sinatra.ui.widgets.FavouriteCard
@@ -60,12 +58,14 @@ import cl.emilym.sinatra.ui.widgets.ListHint
 import cl.emilym.sinatra.ui.widgets.Mutator
 import cl.emilym.sinatra.ui.widgets.QuickSelectCard
 import cl.emilym.sinatra.ui.widgets.SearchWidget
+import cl.emilym.sinatra.ui.widgets.SinatraHapticFeedbackType
 import cl.emilym.sinatra.ui.widgets.SinatraScreenModel
 import cl.emilym.sinatra.ui.widgets.StarOutlineIcon
 import cl.emilym.sinatra.ui.widgets.WorkIcon
 import cl.emilym.sinatra.ui.widgets.collectAsMutatorStateWithLifecycle
 import cl.emilym.sinatra.ui.widgets.collectAsStateWithLifecycle
 import cl.emilym.sinatra.ui.widgets.defaultConfig
+import cl.emilym.sinatra.ui.widgets.rememberHapticFeedback
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -259,12 +259,14 @@ class FavouriteScreen: Screen {
             val favourites by favouritesMutator
             val anyFavourites by viewModel.anyFavourites.collectAsStateWithLifecycle()
 
+            val haptics = rememberHapticFeedback()
             val lazyListState = rememberLazyListState()
             val reorderableLazyListState = rememberReorderableLazyListState(lazyListState) { from, to ->
                 favouritesMutator.mutate(SwapMutation(
                     (from.key as String).drop("favourite-".length).toLong(),
                     to.index - 2
                 ))
+                haptics.perform(SinatraHapticFeedbackType.FREQUENT_TICK)
             }
 
             Box(
@@ -321,7 +323,14 @@ class FavouriteScreen: Screen {
                                         endIcon = {
                                             IconButton(
                                                 onClick = {},
-                                                modifier = Modifier.draggableHandle()
+                                                modifier = Modifier.draggableHandle(
+                                                    onDragStarted = {
+                                                        haptics.perform(SinatraHapticFeedbackType.GESTURE_START)
+                                                    },
+                                                    onDragStopped = {
+                                                        haptics.perform(SinatraHapticFeedbackType.GESTURE_END)
+                                                    }
+                                                )
                                             ) {
                                                 DragIndicatorIcon()
                                             }
