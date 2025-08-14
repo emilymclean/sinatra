@@ -27,7 +27,8 @@ val DefaultRoute get() = Route(
         true
     ),
     false,
-    null
+    null,
+    false,
 )
 
 val DefaultTimetableServiceRegular get() = TimetableServiceRegular(

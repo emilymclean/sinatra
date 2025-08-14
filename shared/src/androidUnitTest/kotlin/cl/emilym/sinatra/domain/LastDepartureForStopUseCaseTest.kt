@@ -8,6 +8,9 @@ import cl.emilym.sinatra.data.models.Service
 import cl.emilym.sinatra.data.models.StopId
 import cl.emilym.sinatra.data.models.StopTimetableTime
 import cl.emilym.sinatra.data.models.Time
+import cl.emilym.sinatra.data.repository.Preference
+import cl.emilym.sinatra.data.repository.PreferencesRepository
+import cl.emilym.sinatra.data.repository.PreferencesUnit
 import cl.emilym.sinatra.data.repository.RemoteConfigRepository
 import cl.emilym.sinatra.data.repository.TransportMetadataRepository
 import io.mockk.clearAllMocks
@@ -17,6 +20,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkObject
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
@@ -36,12 +40,14 @@ class LastDepartureForStopUseCaseTest {
     private val metadataRepository = mockk<TransportMetadataRepository>()
     private val remoteConfigRepository = mockk<RemoteConfigRepository>()
     private val clock = mockk<Clock>()
+    private val preferencesRepository = mockk<PreferencesRepository>()
 
     private val useCase = LastDepartureForStopUseCase(
         servicesAndTimesForStopUseCase,
         metadataRepository,
         remoteConfigRepository,
-        clock
+        clock,
+        preferencesRepository
     )
 
     private val testTimeZone = TimeZone.of("Australia/Sydney")
@@ -57,6 +63,9 @@ class LastDepartureForStopUseCaseTest {
         every { clock.now() } returns baseTime
         coEvery { metadataRepository.timeZone() } returns testTimeZone
         coEvery { remoteConfigRepository.feature(any<FeatureFlag>()) } returns false
+        every { preferencesRepository.preference(Preference.ShowSchoolServices) } returns mockk<PreferencesUnit<Boolean>>().apply {
+            every { flow } returns flowOf(false)
+        }
     }
 
     @AfterTest

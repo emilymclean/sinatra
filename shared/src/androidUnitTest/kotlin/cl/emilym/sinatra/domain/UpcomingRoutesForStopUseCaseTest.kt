@@ -1,5 +1,6 @@
 package cl.emilym.sinatra.domain
 
+import cl.emilym.sinatra.DefaultRoute
 import cl.emilym.sinatra.FeatureFlag
 import cl.emilym.sinatra.data.models.Cachable
 import cl.emilym.sinatra.data.models.Service
@@ -7,6 +8,9 @@ import cl.emilym.sinatra.data.models.StopTimetable
 import cl.emilym.sinatra.data.models.StopTimetableTime
 import cl.emilym.sinatra.data.models.Time
 import cl.emilym.sinatra.data.models.startOfDay
+import cl.emilym.sinatra.data.repository.Preference
+import cl.emilym.sinatra.data.repository.PreferencesRepository
+import cl.emilym.sinatra.data.repository.PreferencesUnit
 import cl.emilym.sinatra.data.repository.RemoteConfigRepository
 import cl.emilym.sinatra.data.repository.ServiceRepository
 import cl.emilym.sinatra.data.repository.StopRepository
@@ -36,6 +40,7 @@ class UpcomingRoutesForStopUseCaseTest {
     private lateinit var servicesAndTimesForStopUseCase: ServicesAndTimesForStopUseCase
     private lateinit var metadataRepository: TransportMetadataRepository
     private lateinit var remoteConfigRepository: RemoteConfigRepository
+    private lateinit var preferencesRepository: PreferencesRepository
     private lateinit var clock: Clock
     private lateinit var useCase: UpcomingRoutesForStopUseCase
     private lateinit var service: Service
@@ -46,6 +51,7 @@ class UpcomingRoutesForStopUseCaseTest {
         servicesAndTimesForStopUseCase = mockk()
         metadataRepository = mockk()
         remoteConfigRepository = mockk()
+        preferencesRepository = mockk()
         clock = mockk()
         service = mockk()
         useCase = UpcomingRoutesForStopUseCase(
@@ -53,11 +59,15 @@ class UpcomingRoutesForStopUseCaseTest {
             servicesAndTimesForStopUseCase,
             clock,
             metadataRepository,
-            remoteConfigRepository
+            preferencesRepository,
+            remoteConfigRepository,
         )
 
         every { service.id } returns "service-1"
         coEvery { remoteConfigRepository.feature(any()) } returns true
+        every { preferencesRepository.preference(Preference.ShowSchoolServices) } returns mockk<PreferencesUnit<Boolean>>().apply {
+            every { flow } returns flowOf(false)
+        }
     }
 
     @Test
@@ -78,7 +88,7 @@ class UpcomingRoutesForStopUseCaseTest {
                 heading = "North",
                 sequence = 1,
                 last = false,
-                route = null,
+                route = DefaultRoute,
                 childStop = null
             )
         )
@@ -153,7 +163,7 @@ class UpcomingRoutesForStopUseCaseTest {
                 heading = "North",
                 sequence = 1,
                 last = false,
-                route = null,
+                route = DefaultRoute,
                 childStop = null
             )
         )
@@ -170,7 +180,7 @@ class UpcomingRoutesForStopUseCaseTest {
                 heading = "South",
                 sequence = 2,
                 last = false,
-                route = null,
+                route = DefaultRoute,
                 childStop = null
             )
         )
@@ -218,7 +228,7 @@ class UpcomingRoutesForStopUseCaseTest {
                 heading = "North",
                 sequence = 1,
                 last = false,
-                route = null,
+                route = DefaultRoute,
                 childStop = null
             ),
             StopTimetableTime(
@@ -232,7 +242,7 @@ class UpcomingRoutesForStopUseCaseTest {
                 heading = "North",
                 sequence = 1,
                 last = false,
-                route = null,
+                route = DefaultRoute,
                 childStop = null
             )
         )
@@ -283,7 +293,7 @@ class UpcomingRoutesForStopUseCaseTest {
                 heading = "South",
                 sequence = 1,
                 last = false,
-                route = null,
+                route = DefaultRoute,
                 childStop = null
             ),
             // Current day time that has already passed
@@ -298,7 +308,7 @@ class UpcomingRoutesForStopUseCaseTest {
                 heading = "North",
                 sequence = 1,
                 last = false,
-                route = null,
+                route = DefaultRoute,
                 childStop = null
             ),
         )
@@ -349,7 +359,7 @@ class UpcomingRoutesForStopUseCaseTest {
                 heading = "North",
                 sequence = 1,
                 last = false,
-                route = null,
+                route = DefaultRoute,
                 childStop = null
             ),
             // Next day time
@@ -364,7 +374,7 @@ class UpcomingRoutesForStopUseCaseTest {
                 heading = "South",
                 sequence = 1,
                 last = false,
-                route = null,
+                route = DefaultRoute,
                 childStop = null
             )
         )
@@ -412,7 +422,7 @@ class UpcomingRoutesForStopUseCaseTest {
                 heading = "North",
                 sequence = 1,
                 last = false,
-                route = null,
+                route = DefaultRoute,
                 childStop = null
             ),
             // Next day time
@@ -427,7 +437,7 @@ class UpcomingRoutesForStopUseCaseTest {
                 heading = "South",
                 sequence = 1,
                 last = false,
-                route = null,
+                route = DefaultRoute,
                 childStop = null
             )
         )
@@ -477,7 +487,7 @@ class UpcomingRoutesForStopUseCaseTest {
                 heading = "South",
                 sequence = 1,
                 last = false,
-                route = null,
+                route = DefaultRoute,
                 childStop = null
             ),
             // Current day time that is still upcoming
@@ -492,7 +502,7 @@ class UpcomingRoutesForStopUseCaseTest {
                 heading = "North",
                 sequence = 1,
                 last = false,
-                route = null,
+                route = DefaultRoute,
                 childStop = null
             ),
         )
@@ -547,7 +557,7 @@ class UpcomingRoutesForStopUseCaseTest {
                 heading = "South",
                 sequence = 1,
                 last = false,
-                route = null,
+                route = DefaultRoute,
                 childStop = null
             ),
             StopTimetableTime(
@@ -561,7 +571,7 @@ class UpcomingRoutesForStopUseCaseTest {
                 heading = "East",
                 sequence = 1,
                 last = false,
-                route = null,
+                route = DefaultRoute,
                 childStop = null
             ),
             // Current day time
@@ -576,7 +586,7 @@ class UpcomingRoutesForStopUseCaseTest {
                 heading = "North",
                 sequence = 1,
                 last = false,
-                route = null,
+                route = DefaultRoute,
                 childStop = null
             ),
         )
