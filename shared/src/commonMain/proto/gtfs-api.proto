@@ -129,7 +129,7 @@ message Route {
   optional string description = 13;
   optional string moreLink = 14;
   optional RouteVisibility routeVisibility = 9;
-  optional bool schoolService = 15;
+  optional bool schoolServiceOnly = 15;
 }
 
 message RouteVisibility {

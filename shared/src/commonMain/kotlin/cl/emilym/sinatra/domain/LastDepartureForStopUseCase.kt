@@ -11,13 +11,11 @@ import cl.emilym.sinatra.data.repository.Preference
 import cl.emilym.sinatra.data.repository.PreferencesRepository
 import cl.emilym.sinatra.data.repository.RemoteConfigRepository
 import cl.emilym.sinatra.data.repository.TransportMetadataRepository
-import io.github.aakira.napier.Napier.i
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flow
 import kotlinx.datetime.Clock
 import org.koin.core.annotation.Factory
-import kotlin.text.Typography.times
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.hours
 
@@ -113,7 +111,7 @@ class LastDepartureForStopUseCase(
     }.combine(preferencesRepository.preference(Preference.ShowSchoolServices).flow) { last, school ->
         when (school) {
             true -> last
-            else -> last.filter { it.route?.schoolService == false }
+            else -> last.filter { it.route?.schoolServiceOnly == false }
         }
     }
 

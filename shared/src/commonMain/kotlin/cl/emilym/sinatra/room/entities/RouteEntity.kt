@@ -4,7 +4,6 @@ import androidx.room.ColumnInfo
 import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.ForeignKey
-import androidx.room.Index
 import androidx.room.PrimaryKey
 import androidx.room.Relation
 import cl.emilym.sinatra.data.models.ColorPair
@@ -51,7 +50,7 @@ data class RouteEntity(
     @ColumnInfo(defaultValue = "0")
     val hasRealtime: Boolean,
     @ColumnInfo(defaultValue = "0")
-    val schoolService: Boolean
+    val schoolServiceOnly: Boolean
 ) {
 
     fun toModel(): Route {
@@ -75,7 +74,7 @@ data class RouteEntity(
             ),
             eventRoute,
             moreLink,
-            schoolService
+            schoolServiceOnly
         )
     }
 
@@ -98,7 +97,7 @@ data class RouteEntity(
                 m.eventRoute,
                 m.moreLink,
                 m.hasRealtime,
-                m.schoolService
+                m.schoolServiceOnly
             )
         }
     }

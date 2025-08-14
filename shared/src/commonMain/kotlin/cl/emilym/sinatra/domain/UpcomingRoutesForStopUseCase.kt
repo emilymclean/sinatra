@@ -29,7 +29,6 @@ import kotlinx.coroutines.isActive
 import kotlinx.datetime.Clock
 import kotlinx.datetime.toLocalDateTime
 import org.koin.core.annotation.Factory
-import kotlin.text.Typography.times
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.minutes
 
@@ -130,7 +129,7 @@ class UpcomingRoutesForStopUseCase(
             timetable.map {
                 when (school) {
                     true -> it
-                    else -> it.filter { it.route?.schoolService == false }
+                    else -> it.filter { it.route?.schoolServiceOnly == false }
                 }
             }
         }
