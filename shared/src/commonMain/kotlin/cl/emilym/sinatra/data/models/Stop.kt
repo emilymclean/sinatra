@@ -15,7 +15,8 @@ data class Stop(
     val location: MapLocation,
     val accessibility: StopAccessibility,
     val visibility: StopVisibility,
-    val hasRealtime: Boolean
+    val hasRealtime: Boolean,
+    val schoolServiceOnly: Boolean,
 ): Serializable, Identifiable<StopId>, NavigationObject {
 
     companion object {
@@ -29,7 +30,8 @@ data class Stop(
                 MapLocation.fromPB(pb.location),
                 StopAccessibility.fromPB(pb.accessibility),
                 StopVisibility.fromPB(pb, pb.visibility),
-                pb.hasRealtime == true
+                pb.hasRealtime == true,
+                pb.schoolServiceOnly == true,
             )
         }
     }
