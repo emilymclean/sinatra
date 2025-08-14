@@ -11,6 +11,7 @@ sealed interface Preference<T> {
     data object RequiresWheelchair: Preference<Boolean>
     data object RequiresBikes: Preference<Boolean>
     data object MaximumWalkingTime: Preference<Float>
+    data object ShowSchoolServices: Preference<Boolean>
     data object ShowAccessibilityIconsNavigation: Preference<Boolean>
     data object MetricUnits: Preference<Boolean>
     data object Use24HourUnits: Preference<Time24HSetting>
@@ -25,6 +26,7 @@ class PreferencesRepository(
         internal val REQUIRES_WHEELCHAIR_KEY = booleanPreferencesKey("ROUTER_REQUIRES_WHEELCHAIR")
         internal val ROUTER_REQUIRES_BIKE_KEY = booleanPreferencesKey("ROUTER_REQUIRES_BIKE")
         internal val ROUTER_MAXIMUM_WALKING_TIME_KEY = floatPreferencesKey("ROUTER_MAXIMUM_WALKING_TIME")
+        internal val SHOW_SCHOOL_SERVICES_KEY = booleanPreferencesKey("SHOW_SCHOOL_SERVICES_KEY")
         internal val ROUTER_SHOW_ACCESSIBILITY_ICONS = booleanPreferencesKey("ROUTER_SHOW_ACCESSIBILITY_ICONS")
         internal val DISPLAY_METRIC_UNITS_KEY = booleanPreferencesKey("DISPLAY_METRIC_UNITS")
         internal val TIME_24H_KEY = stringPreferencesKey("TIME_24H")
@@ -45,6 +47,12 @@ class PreferencesRepository(
     private val maximumWalkingTime: PreferencesUnit<Float> = SimplePreferencesUnit(
         ROUTER_MAXIMUM_WALKING_TIME_KEY,
         30f,
+        preferencesPersistence
+    )
+
+    private val showSchoolServices: PreferencesUnit<Boolean> = SimplePreferencesUnit(
+        SHOW_SCHOOL_SERVICES_KEY,
+        false,
         preferencesPersistence
     )
 
@@ -71,6 +79,7 @@ class PreferencesRepository(
     fun <T> preference(preference: Preference<T>): PreferencesUnit<T> = when (preference) {
         is Preference.MaximumWalkingTime -> maximumWalkingTime
         is Preference.MetricUnits -> metric
+        is Preference.ShowSchoolServices -> showSchoolServices
         is Preference.RequiresBikes -> requiresBikes
         is Preference.RequiresWheelchair -> requiresWheelchair
         is Preference.ShowAccessibilityIconsNavigation -> showAccessibilityIconsNavigation
