@@ -49,7 +49,9 @@ data class RouteEntity(
     @ColumnInfo(defaultValue = "NULL")
     val moreLink: String?,
     @ColumnInfo(defaultValue = "0")
-    val hasRealtime: Boolean
+    val hasRealtime: Boolean,
+    @ColumnInfo(defaultValue = "0")
+    val schoolService: Boolean
 ) {
 
     fun toModel(): Route {
@@ -72,7 +74,8 @@ data class RouteEntity(
                 showOnBrowse
             ),
             eventRoute,
-            moreLink
+            moreLink,
+            schoolService
         )
     }
 
@@ -94,7 +97,8 @@ data class RouteEntity(
                 m.routeVisibility.showOnBrowse,
                 m.eventRoute,
                 m.moreLink,
-                m.hasRealtime
+                m.hasRealtime,
+                m.schoolService
             )
         }
     }

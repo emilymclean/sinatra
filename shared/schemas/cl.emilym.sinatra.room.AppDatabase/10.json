@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 10,
-    "identityHash": "700eafebe4af5e7f4dabc47adb958e5f",
+    "identityHash": "1d8bd16987da4d1e87eaf49f8372b439",
     "entities": [
       {
         "tableName": "ShaEntity",
@@ -216,7 +216,7 @@
       },
       {
         "tableName": "RouteEntity",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `code` TEXT NOT NULL, `displayCode` TEXT NOT NULL, `color` TEXT, `onColor` TEXT, `name` TEXT NOT NULL, `description` TEXT DEFAULT NULL, `approximateTimings` INTEGER NOT NULL DEFAULT 0, `type` TEXT NOT NULL, `designation` TEXT, `hidden` INTEGER NOT NULL DEFAULT 0, `searchWeight` REAL DEFAULT NULL, `showOnBrowse` INTEGER NOT NULL DEFAULT 0, `eventRoute` INTEGER NOT NULL DEFAULT 0, `moreLink` TEXT DEFAULT NULL, `hasRealtime` INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `code` TEXT NOT NULL, `displayCode` TEXT NOT NULL, `color` TEXT, `onColor` TEXT, `name` TEXT NOT NULL, `description` TEXT DEFAULT NULL, `approximateTimings` INTEGER NOT NULL DEFAULT 0, `type` TEXT NOT NULL, `designation` TEXT, `hidden` INTEGER NOT NULL DEFAULT 0, `searchWeight` REAL DEFAULT NULL, `showOnBrowse` INTEGER NOT NULL DEFAULT 0, `eventRoute` INTEGER NOT NULL DEFAULT 0, `moreLink` TEXT DEFAULT NULL, `hasRealtime` INTEGER NOT NULL DEFAULT 0, `schoolService` INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -312,6 +312,13 @@
           {
             "fieldPath": "hasRealtime",
             "columnName": "hasRealtime",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "schoolService",
+            "columnName": "schoolService",
             "affinity": "INTEGER",
             "notNull": true,
             "defaultValue": "0"
@@ -892,7 +899,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '700eafebe4af5e7f4dabc47adb958e5f')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '1d8bd16987da4d1e87eaf49f8372b439')"
     ]
   }
 }

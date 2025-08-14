@@ -1012,6 +1012,7 @@ public data class Route(
     val description: String? = null,
     val moreLink: String? = null,
     val routeVisibility: cl.emilym.gtfs.RouteVisibility? = null,
+    val schoolService: Boolean? = null,
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
 ) : pbandk.Message {
     override operator fun plus(other: pbandk.Message?): cl.emilym.gtfs.Route = protoMergeImpl(other)
@@ -1024,7 +1025,7 @@ public data class Route(
             fullName = "proto.Route",
             messageClass = cl.emilym.gtfs.Route::class,
             messageCompanion = this,
-            fields = buildList(14) {
+            fields = buildList(15) {
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
@@ -1163,6 +1164,16 @@ public data class Route(
                         type = pbandk.FieldDescriptor.Type.Primitive.String(hasPresence = true),
                         jsonName = "moreLink",
                         value = cl.emilym.gtfs.Route::moreLink
+                    )
+                )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "schoolService",
+                        number = 15,
+                        type = pbandk.FieldDescriptor.Type.Primitive.Bool(hasPresence = true),
+                        jsonName = "schoolService",
+                        value = cl.emilym.gtfs.Route::schoolService
                     )
                 )
             }
@@ -2598,6 +2609,7 @@ private fun Route.protoMergeImpl(plus: pbandk.Message?): Route = (plus as? Route
         description = plus.description ?: description,
         moreLink = plus.moreLink ?: moreLink,
         routeVisibility = routeVisibility?.plus(plus.routeVisibility) ?: plus.routeVisibility,
+        schoolService = plus.schoolService ?: schoolService,
         unknownFields = unknownFields + plus.unknownFields
     )
 } ?: this
@@ -2618,6 +2630,7 @@ private fun Route.Companion.decodeWithImpl(u: pbandk.MessageDecoder): Route {
     var description: String? = null
     var moreLink: String? = null
     var routeVisibility: cl.emilym.gtfs.RouteVisibility? = null
+    var schoolService: Boolean? = null
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
@@ -2635,6 +2648,7 @@ private fun Route.Companion.decodeWithImpl(u: pbandk.MessageDecoder): Route {
             12 -> eventRoute = _fieldValue as Boolean
             13 -> description = _fieldValue as String
             14 -> moreLink = _fieldValue as String
+            15 -> schoolService = _fieldValue as Boolean
         }
     }
 
@@ -2653,7 +2667,7 @@ private fun Route.Companion.decodeWithImpl(u: pbandk.MessageDecoder): Route {
     return Route(id!!, code!!, displayCode, colors,
         name!!, designation, type!!, realTimeUrl,
         hasRealtime, approximateTimings, eventRoute, description,
-        moreLink, routeVisibility, unknownFields)
+        moreLink, routeVisibility, schoolService, unknownFields)
 }
 
 @pbandk.Export

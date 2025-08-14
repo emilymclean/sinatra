@@ -13,7 +13,8 @@ data class Route(
     val designation: String?,
     val routeVisibility: RouteVisibility,
     val eventRoute: Boolean,
-    val moreLink: String?
+    val moreLink: String?,
+    val schoolService: Boolean,
 ): Identifiable<RouteId>, NavigationObject {
 
     companion object {
@@ -31,7 +32,8 @@ data class Route(
                 pb.designation,
                 RouteVisibility.fromPB(pb.routeVisibility),
                 pb.eventRoute == true,
-                pb.moreLink
+                pb.moreLink,
+                pb.schoolService == true
             )
         }
     }
