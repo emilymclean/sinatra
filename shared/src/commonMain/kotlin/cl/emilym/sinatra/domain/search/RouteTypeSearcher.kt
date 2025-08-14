@@ -2,11 +2,13 @@ package cl.emilym.sinatra.domain.search
 
 import cl.emilym.sinatra.data.models.Route
 import cl.emilym.sinatra.data.repository.RouteRepository
+import cl.emilym.sinatra.domain.GetFilteredRoutesUseCase
+import kotlinx.coroutines.flow.first
 import org.koin.core.annotation.Factory
 
 @Factory
 class RouteTypeSearcher(
-    private val routeRepository: RouteRepository
+    private val getFilteredRoutesUseCase: GetFilteredRoutesUseCase
 ): LocalTypeSearcher<Route>() {
 
     override fun fields(t: Route) = listOf(t.name, t.displayCode)
@@ -21,7 +23,7 @@ class RouteTypeSearcher(
     }
 
     override suspend fun load(): List<Route> {
-        return routeRepository.routes().item
+        return getFilteredRoutesUseCase().first().item
     }
 
     override fun wrap(item: Route): SearchResult {

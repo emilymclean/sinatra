@@ -7,10 +7,13 @@ import cl.emilym.sinatra.data.models.RouteId
 import cl.emilym.sinatra.data.models.StopId
 import cl.emilym.sinatra.data.models.StopTimetableTime
 import cl.emilym.sinatra.data.models.startOfDay
+import cl.emilym.sinatra.data.repository.Preference
+import cl.emilym.sinatra.data.repository.PreferencesRepository
 import cl.emilym.sinatra.data.repository.RemoteConfigRepository
 import cl.emilym.sinatra.data.repository.TransportMetadataRepository
 import io.github.aakira.napier.Napier.i
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flow
 import kotlinx.datetime.Clock
 import org.koin.core.annotation.Factory
@@ -28,7 +31,8 @@ class LastDepartureForStopUseCase(
     private val servicesAndTimesForStopUseCase: ServicesAndTimesForStopUseCase,
     private val metadataRepository: TransportMetadataRepository,
     private val remoteConfigRepository: RemoteConfigRepository,
-    private val clock: Clock
+    private val clock: Clock,
+    private val preferencesRepository: PreferencesRepository
 ) {
 
     operator fun invoke(
@@ -106,6 +110,11 @@ class LastDepartureForStopUseCase(
                     { it.heading }
                 ))
         )
+    }.combine(preferencesRepository.preference(Preference.ShowSchoolServices).flow) { last, school ->
+        when (school) {
+            true -> last
+            else -> last.filter { it.route?.schoolService == false }
+        }
     }
 
 }

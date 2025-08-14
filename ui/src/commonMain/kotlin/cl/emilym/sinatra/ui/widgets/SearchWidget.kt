@@ -43,6 +43,7 @@ import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.data.models.StopWithDistance
 import cl.emilym.sinatra.data.repository.RecentVisitRepository
 import cl.emilym.sinatra.data.repository.StopRepository
+import cl.emilym.sinatra.domain.GetFilteredStopsUseCase
 import cl.emilym.sinatra.domain.NearbyStopsUseCase
 import cl.emilym.sinatra.domain.search.RouteStopSearchUseCase
 import cl.emilym.sinatra.domain.search.SearchResult
@@ -73,11 +74,11 @@ internal class DefaultSearchScreenViewModel(
     private val routeStopSearchUseCase: RouteStopSearchUseCase,
     private val recentVisitRepository: RecentVisitRepository,
     private val nearbyStopsUseCase: NearbyStopsUseCase,
-    private val stopRepository: StopRepository
+    private val getFilteredStopsUseCase: GetFilteredStopsUseCase
 ): SinatraScreenModel, SearchScreenViewModel {
 
     val lastLocation = MutableStateFlow<MapLocation?>(null)
-    private val stops = requestStateFlow(defaultConfig) { stopRepository.stops() }
+    private val stops = flatRequestStateFlow(defaultConfig) { getFilteredStopsUseCase() }
 
     override var query by mutableStateOf("")
     private val searchTypes = MutableStateFlow<List<SearchType>>(listOf())

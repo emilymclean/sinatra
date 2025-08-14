@@ -8,6 +8,8 @@ import cl.emilym.sinatra.data.models.StopId
 import cl.emilym.sinatra.data.models.StopTimetableTime
 import cl.emilym.sinatra.data.models.map
 import cl.emilym.sinatra.data.models.startOfDay
+import cl.emilym.sinatra.data.repository.Preference
+import cl.emilym.sinatra.data.repository.PreferencesRepository
 import cl.emilym.sinatra.data.repository.RemoteConfigRepository
 import cl.emilym.sinatra.data.repository.TransportMetadataRepository
 import kotlinx.coroutines.Dispatchers
@@ -16,6 +18,7 @@ import kotlinx.coroutines.IO
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
@@ -26,6 +29,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.datetime.Clock
 import kotlinx.datetime.toLocalDateTime
 import org.koin.core.annotation.Factory
+import kotlin.text.Typography.times
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.minutes
 
@@ -35,6 +39,7 @@ class UpcomingRoutesForStopUseCase(
     private val servicesAndTimesForStopUseCase: ServicesAndTimesForStopUseCase,
     private val clock: Clock,
     private val metadataRepository: TransportMetadataRepository,
+    private val preferencesRepository: PreferencesRepository,
     private val remoteConfigRepository: RemoteConfigRepository
 ) {
 
@@ -119,6 +124,14 @@ class UpcomingRoutesForStopUseCase(
                 it
                     .sortedBy { it.arrivalTime }
                     .filter { it.departureTime > clock.now() }
+            }
+        }
+        .combine(preferencesRepository.preference(Preference.ShowSchoolServices).flow) { timetable, school ->
+            timetable.map {
+                when (school) {
+                    true -> it
+                    else -> it.filter { it.route?.schoolService == false }
+                }
             }
         }
     }
