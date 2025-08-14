@@ -92,5 +92,6 @@ interface NetworkGraphEdge {
     val type: EdgeType
     val wheelchairAccessible: Boolean
     val bikesAllowed: Boolean
+    val schoolOnly: Boolean
 }
 

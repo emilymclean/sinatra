@@ -311,6 +311,7 @@ class ByteNetworkGraphEdge(
 
     override val wheelchairAccessible: Boolean get() = (flags and 0b100) == 0b100.toByte()
     override val bikesAllowed: Boolean get() = (flags and 0b1000) == 0b1000.toByte()
+    override val schoolOnly: Boolean get() = (flags and 0b10000) == 0b10000.toByte()
 
     override fun toString(): String {
         return "NetworkGraphEdge(connectedNodeIndex=$connectedNodeIndex, cost=$cost, departureTime=$departureTime, availableServices=$availableServices, type=$type, wheelchairAccessible=$wheelchairAccessible, bikesAllowed=$bikesAllowed)"
