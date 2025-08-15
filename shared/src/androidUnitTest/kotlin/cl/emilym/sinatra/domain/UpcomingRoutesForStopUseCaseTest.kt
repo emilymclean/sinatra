@@ -1,6 +1,7 @@
 package cl.emilym.sinatra.domain
 
 import cl.emilym.sinatra.DefaultRoute
+import cl.emilym.sinatra.DefaultStopTimetableTime
 import cl.emilym.sinatra.FeatureFlag
 import cl.emilym.sinatra.data.models.Cachable
 import cl.emilym.sinatra.data.models.Service
@@ -31,6 +32,8 @@ import kotlinx.datetime.TimeZone
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 import kotlin.time.Duration.Companion.days
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -619,4 +622,289 @@ class UpcomingRoutesForStopUseCaseTest {
         coVerify { remoteConfigRepository.feature(FeatureFlag.UPCOMING_ROUTES_INCLUDE_NEXT_DAY) }
         verify { clock.now() }
     }
+
+    @Test
+    fun `should filter out school services when ShowSchoolServices is false`() = runTest {
+        val stopId = "stop-123"
+        val timeZone = TimeZone.UTC
+        val currentTime = Instant.parse("2024-01-01T01:00:00Z")
+
+        val schoolRoute = mockk<cl.emilym.sinatra.data.models.Route>()
+        val regularRoute = mockk<cl.emilym.sinatra.data.models.Route>()
+
+        every { schoolRoute.schoolServiceOnly } returns true
+        every { regularRoute.schoolServiceOnly } returns false
+
+        val timetable = listOf(
+            DefaultStopTimetableTime.copy(
+                routeId = "school-route-1",
+                routeCode = "S1",
+                serviceId = "service-1",
+                tripId = "trip-1",
+                arrivalTime = Time.parse("PT13H"),
+                departureTime = Time.parse("PT13H5M"),
+                heading = "School",
+                route = schoolRoute
+            ),
+            DefaultStopTimetableTime.copy(
+                routeId = "regular-route-1",
+                routeCode = "R1",
+                serviceId = "service-1",
+                tripId = "trip-2",
+                arrivalTime = Time.parse("PT14H"),
+                departureTime = Time.parse("PT14H5M"),
+                heading = "City",
+                route = regularRoute
+            )
+        )
+
+        val services = listOf(service)
+
+        every { service.active(any(), any(), any()) } returns true
+        coEvery { metadataRepository.timeZone() } returns timeZone
+        coEvery { servicesAndTimesForStopUseCase.invoke(stopId) } returns Cachable.live(
+            ServicesAndTimes(
+                services = services,
+                times = timetable
+            )
+        )
+        coEvery { clock.now() } returns currentTime
+
+        // Mock ShowSchoolServices preference as false
+        every { preferencesRepository.preference(Preference.ShowSchoolServices) } returns mockk<PreferencesUnit<Boolean>>().apply {
+            every { flow } returns flowOf(false)
+        }
+
+        val result = useCase(stopId, number = 10, live = false).take(1).first()
+
+        assertEquals(1, result.item.size)
+        assertEquals("R1", result.item.first().routeCode)
+        assertEquals("regular-route-1", result.item.first().routeId)
+    }
+
+    @Test
+    fun `should include school services when ShowSchoolServices is true`() = runTest {
+        val stopId = "stop-123"
+        val timeZone = TimeZone.UTC
+        val currentTime = Instant.parse("2024-01-01T01:00:00Z")
+
+        val schoolRoute = mockk<cl.emilym.sinatra.data.models.Route>()
+        val regularRoute = mockk<cl.emilym.sinatra.data.models.Route>()
+
+        every { schoolRoute.schoolServiceOnly } returns true
+        every { regularRoute.schoolServiceOnly } returns false
+
+        val timetable = listOf(
+            DefaultStopTimetableTime.copy(
+                routeId = "school-route-1",
+                routeCode = "S1",
+                serviceId = "service-1",
+                tripId = "trip-1",
+                arrivalTime = Time.parse("PT13H"),
+                departureTime = Time.parse("PT13H5M"),
+                heading = "School",
+                route = schoolRoute
+            ),
+            DefaultStopTimetableTime.copy(
+                routeId = "regular-route-1",
+                routeCode = "R1",
+                serviceId = "service-1",
+                tripId = "trip-2",
+                arrivalTime = Time.parse("PT14H"),
+                departureTime = Time.parse("PT14H5M"),
+                heading = "City",
+                route = regularRoute
+            )
+        )
+
+        val services = listOf(service)
+
+        every { service.active(any(), any(), any()) } returns true
+        coEvery { metadataRepository.timeZone() } returns timeZone
+        coEvery { servicesAndTimesForStopUseCase.invoke(stopId) } returns Cachable.live(
+            ServicesAndTimes(
+                services = services,
+                times = timetable
+            )
+        )
+        coEvery { clock.now() } returns currentTime
+
+        // Mock ShowSchoolServices preference as true
+        every { preferencesRepository.preference(Preference.ShowSchoolServices) } returns mockk<PreferencesUnit<Boolean>>().apply {
+            every { flow } returns flowOf(true)
+        }
+
+        val result = useCase(stopId, number = 10, live = false).take(1).first()
+
+        assertEquals(2, result.item.size)
+        val routeCodes = result.item.map { it.routeCode }.toSet()
+        assertTrue(routeCodes.contains("S1"))
+        assertTrue(routeCodes.contains("R1"))
+    }
+
+    @Test
+    fun `should handle null route gracefully when filtering school services`() = runTest {
+        val stopId = "stop-123"
+        val timeZone = TimeZone.UTC
+        val currentTime = Instant.parse("2024-01-01T01:00:00Z")
+
+        val timetable = listOf(
+            DefaultStopTimetableTime.copy(
+                routeId = "route-with-null",
+                routeCode = "N1",
+                serviceId = "service-1",
+                tripId = "trip-1",
+                arrivalTime = Time.parse("PT13H"),
+                departureTime = Time.parse("PT13H5M"),
+                heading = "City",
+                route = null // null route
+            )
+        )
+
+        val services = listOf(service)
+
+        every { service.active(any(), any(), any()) } returns true
+        coEvery { metadataRepository.timeZone() } returns timeZone
+        coEvery { servicesAndTimesForStopUseCase.invoke(stopId) } returns Cachable.live(
+            ServicesAndTimes(
+                services = services,
+                times = timetable
+            )
+        )
+        coEvery { clock.now() } returns currentTime
+
+        // Mock ShowSchoolServices preference as false
+        every { preferencesRepository.preference(Preference.ShowSchoolServices) } returns mockk<PreferencesUnit<Boolean>>().apply {
+            every { flow } returns flowOf(false)
+        }
+
+        val result = useCase(stopId, number = 10, live = false).take(1).first()
+
+        // Should exclude the null route service
+        assertEquals(0, result.item.size)
+    }
+
+    @Test
+    fun `should return empty list when only school services available and ShowSchoolServices is false`() = runTest {
+        val stopId = "stop-123"
+        val timeZone = TimeZone.UTC
+        val currentTime = Instant.parse("2024-01-01T01:00:00Z")
+
+        val schoolRoute = mockk<cl.emilym.sinatra.data.models.Route>()
+        every { schoolRoute.schoolServiceOnly } returns true
+
+        val timetable = listOf(
+            DefaultStopTimetableTime.copy(
+                routeId = "school-route-1",
+                routeCode = "S1",
+                serviceId = "service-1",
+                tripId = "trip-1",
+                arrivalTime = Time.parse("PT13H"),
+                departureTime = Time.parse("PT13H5M"),
+                heading = "School",
+                route = schoolRoute
+            ),
+            DefaultStopTimetableTime.copy(
+                routeId = "school-route-2",
+                routeCode = "S2",
+                serviceId = "service-1",
+                tripId = "trip-2",
+                arrivalTime = Time.parse("PT14H"),
+                departureTime = Time.parse("PT14H5M"),
+                heading = "School East",
+                route = schoolRoute
+            )
+        )
+
+        val services = listOf(service)
+
+        every { service.active(any(), any(), any()) } returns true
+        coEvery { metadataRepository.timeZone() } returns timeZone
+        coEvery { servicesAndTimesForStopUseCase.invoke(stopId) } returns Cachable.live(
+            ServicesAndTimes(
+                services = services,
+                times = timetable
+            )
+        )
+        coEvery { clock.now() } returns currentTime
+
+        // Mock ShowSchoolServices preference as false
+        every { preferencesRepository.preference(Preference.ShowSchoolServices) } returns mockk<PreferencesUnit<Boolean>>().apply {
+            every { flow } returns flowOf(false)
+        }
+
+        val result = useCase(stopId, number = 10, live = false).take(1).first()
+
+        assertEquals(0, result.item.size)
+    }
+
+    @Test
+    fun `should respect number limit when filtering school services`() = runTest {
+        val stopId = "stop-123"
+        val timeZone = TimeZone.UTC
+        val currentTime = Instant.parse("2024-01-01T01:00:00Z")
+
+        val schoolRoute = mockk<cl.emilym.sinatra.data.models.Route>()
+        val regularRoute = mockk<cl.emilym.sinatra.data.models.Route>()
+
+        every { schoolRoute.schoolServiceOnly } returns true
+        every { regularRoute.schoolServiceOnly } returns false
+
+        val timetable = listOf(
+            DefaultStopTimetableTime.copy(
+                routeId = "regular-route-1",
+                routeCode = "R1",
+                serviceId = "service-1",
+                tripId = "trip-1",
+                arrivalTime = Time.parse("PT13H"),
+                departureTime = Time.parse("PT13H5M"),
+                heading = "City",
+                route = regularRoute
+            ),
+            DefaultStopTimetableTime.copy(
+                routeId = "school-route-1",
+                routeCode = "S1",
+                serviceId = "service-1",
+                tripId = "trip-2",
+                arrivalTime = Time.parse("PT14H"),
+                departureTime = Time.parse("PT14H5M"),
+                heading = "School",
+                route = schoolRoute
+            ),
+            DefaultStopTimetableTime.copy(
+                routeId = "regular-route-2",
+                routeCode = "R2",
+                serviceId = "service-1",
+                tripId = "trip-3",
+                arrivalTime = Time.parse("PT15H"),
+                departureTime = Time.parse("PT15H5M"),
+                heading = "Airport",
+                route = regularRoute
+            )
+        )
+
+        val services = listOf(service)
+
+        every { service.active(any(), any(), any()) } returns true
+        coEvery { metadataRepository.timeZone() } returns timeZone
+        coEvery { servicesAndTimesForStopUseCase.invoke(stopId) } returns Cachable.live(
+            ServicesAndTimes(
+                services = services,
+                times = timetable
+            )
+        )
+        coEvery { clock.now() } returns currentTime
+
+        // Mock ShowSchoolServices preference as false
+        every { preferencesRepository.preference(Preference.ShowSchoolServices) } returns mockk<PreferencesUnit<Boolean>>().apply {
+            every { flow } returns flowOf(false)
+        }
+
+        val result = useCase(stopId, number = 1, live = false).take(1).first()
+
+        // Should return only 1 result (first regular service), school service should be filtered out
+        assertEquals(1, result.item.size)
+        assertEquals("R1", result.item.first().routeCode)
+    }
+
 }
