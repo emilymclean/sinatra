@@ -42,7 +42,7 @@ class RoutingPreferencesScreen: PreferencesScreen() {
     @Composable
     override fun ColumnScope.Preferences() {
         val showAccessibilitySettings = !FeatureFlag.GLOBAL_HIDE_TRANSPORT_ACCESSIBILITY.value()
-        val showSchoolServiceSettings = !FeatureFlag.GLOBAL_ENABLE_SCHOOL_SERVICES.value()
+        val showSchoolServiceSettings = FeatureFlag.GLOBAL_ENABLE_SCHOOL_SERVICES.value()
 
         if (showAccessibilitySettings) {
             HorizontalLockup(
