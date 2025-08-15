@@ -3,6 +3,7 @@ package cl.emilym.sinatra.data.repository
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
+import cl.emilym.sinatra.FeatureFlag
 import cl.emilym.sinatra.data.models.Time24HSetting
 import cl.emilym.sinatra.data.persistence.PreferencesPersistence
 import org.koin.core.annotation.Factory
@@ -19,7 +20,8 @@ sealed interface Preference<T> {
 
 @Factory
 class PreferencesRepository(
-    preferencesPersistence: PreferencesPersistence
+    preferencesPersistence: PreferencesPersistence,
+    remoteConfigRepository: RemoteConfigRepository,
 ) {
 
     companion object {
@@ -50,10 +52,14 @@ class PreferencesRepository(
         preferencesPersistence
     )
 
-    private val showSchoolServices: PreferencesUnit<Boolean> = SimplePreferencesUnit(
-        SHOW_SCHOOL_SERVICES_KEY,
-        false,
-        preferencesPersistence
+    private val showSchoolServices: PreferencesUnit<Boolean> = FeatureFlaggedPreferencesUnit(
+        SimplePreferencesUnit(
+            SHOW_SCHOOL_SERVICES_KEY,
+            false,
+            preferencesPersistence
+        ),
+        remoteConfigRepository,
+        FeatureFlag.GLOBAL_ENABLE_SCHOOL_SERVICES
     )
 
     private val showAccessibilityIconsNavigation: PreferencesUnit<Boolean> = SimplePreferencesUnit(
