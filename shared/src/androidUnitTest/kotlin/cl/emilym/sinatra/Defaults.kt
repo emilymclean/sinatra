@@ -1,10 +1,15 @@
 package cl.emilym.sinatra
 
+import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.data.models.Route
 import cl.emilym.sinatra.data.models.RouteType
 import cl.emilym.sinatra.data.models.RouteVisibility
 import cl.emilym.sinatra.data.models.Service
+import cl.emilym.sinatra.data.models.Stop
+import cl.emilym.sinatra.data.models.StopAccessibility
 import cl.emilym.sinatra.data.models.StopTimetableTime
+import cl.emilym.sinatra.data.models.StopVisibility
+import cl.emilym.sinatra.data.models.StopWheelchairAccessibility
 import cl.emilym.sinatra.data.models.TimetableServiceRegular
 import cl.emilym.sinatra.data.models.toTime
 import kotlinx.datetime.Clock
@@ -27,7 +32,8 @@ val DefaultRoute get() = Route(
         true
     ),
     false,
-    null
+    null,
+    false,
 )
 
 val DefaultTimetableServiceRegular get() = TimetableServiceRegular(
@@ -61,4 +67,27 @@ val DefaultStopTimetableTime get() = StopTimetableTime(
     false,
     DefaultRoute,
     null,
+)
+
+val DefaultStopAccessibility = StopAccessibility(
+    wheelchair = StopWheelchairAccessibility.FULL
+)
+
+val DefaultStopVisibility = StopVisibility(
+    visibleZoomedOut = false,
+    visibleZoomedIn = true,
+    showChildren = false,
+    searchWeight = null
+)
+
+val DefaultStop get() = Stop(
+    id = "default-stop",
+    parentStation = null,
+    name = "Default Stop",
+    _simpleName = "Default Stop",
+    location = MapLocation(100.0, 100.0),
+    accessibility = DefaultStopAccessibility,
+    visibility = DefaultStopVisibility,
+    hasRealtime = true,
+    schoolServiceOnly = false
 )

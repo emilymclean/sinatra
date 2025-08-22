@@ -130,8 +130,8 @@ class StopDetailViewModel(
         upcoming.map { it.filter { routeId.isEmpty() || routeId.contains(it.routeId) } }
     }.state()
 
-    private val _routes = stopId.filterNotNull().requestStateFlow { stopId ->
-        routesForStopUseCase(stopId).item
+    private val _routes = stopId.filterNotNull().flatRequestStateFlow { stopId ->
+        routesForStopUseCase(stopId)
     }
     private val routesState = _routes.state()
 

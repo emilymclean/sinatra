@@ -27,6 +27,8 @@ import sinatra.ui.generated.resources.preferences_setting_max_walking
 import sinatra.ui.generated.resources.preferences_setting_wheelchair
 import sinatra.ui.generated.resources.preferences_setting_wheelchair_subtitle
 import sinatra.ui.generated.resources.preferences_routing_title
+import sinatra.ui.generated.resources.preferences_setting_school_service
+import sinatra.ui.generated.resources.preferences_setting_school_service_subtitle
 import sinatra.ui.generated.resources.preferences_setting_show_accessibility_icons_navigation
 import sinatra.ui.generated.resources.preferences_setting_show_accessibility_icons_navigation_subtitle
 import kotlin.time.Duration.Companion.minutes
@@ -40,6 +42,8 @@ class RoutingPreferencesScreen: PreferencesScreen() {
     @Composable
     override fun ColumnScope.Preferences() {
         val showAccessibilitySettings = !FeatureFlag.GLOBAL_HIDE_TRANSPORT_ACCESSIBILITY.value()
+        val showSchoolServiceSettings = FeatureFlag.GLOBAL_ENABLE_SCHOOL_SERVICES.value()
+
         if (showAccessibilitySettings) {
             HorizontalLockup(
                 stringResource(Res.string.preferences_setting_wheelchair),
@@ -56,7 +60,19 @@ class RoutingPreferencesScreen: PreferencesScreen() {
             ) {
                 PreferencesCheckbox(Preference.RequiresBikes)
             }
+        }
 
+        if (showSchoolServiceSettings) {
+            HorizontalLockup(
+                stringResource(Res.string.preferences_setting_school_service),
+                stringResource(Res.string.preferences_setting_school_service_subtitle),
+                Modifier.fillMaxWidth()
+            ) {
+                PreferencesCheckbox(Preference.RequiresWheelchair)
+            }
+        }
+
+        if (showAccessibilitySettings) {
             HorizontalLockup(
                 stringResource(Res.string.preferences_setting_show_accessibility_icons_navigation),
                 stringResource(Res.string.preferences_setting_show_accessibility_icons_navigation_subtitle),
@@ -65,6 +81,7 @@ class RoutingPreferencesScreen: PreferencesScreen() {
                 PreferencesCheckbox(Preference.ShowAccessibilityIconsNavigation)
             }
         }
+
 
         VerticalLockup(
             stringResource(Res.string.preferences_setting_max_walking),

@@ -92,6 +92,7 @@ message Stop {
   required StopAccessibility accessibility = 4;
   optional StopVisibility visibility = 6;
   optional bool hasRealtime = 8;
+  optional bool schoolServiceOnly = 9;
 }
 
 message StopAccessibility {
@@ -128,6 +129,7 @@ message Route {
   optional string description = 13;
   optional string moreLink = 14;
   optional RouteVisibility routeVisibility = 9;
+  optional bool schoolServiceOnly = 15;
 }
 
 message RouteVisibility {

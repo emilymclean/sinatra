@@ -21,4 +21,8 @@ class RoutingPreferencesRepository(
         return preferencesRepository.preference(Preference.RequiresBikes).current()
     }
 
+    suspend fun schoolServiceAllowed(): Boolean {
+        return preferencesRepository.preference(Preference.ShowSchoolServices).current()
+    }
+
 }
