@@ -68,7 +68,7 @@ abstract class FavouriteDao {
     abstract fun getPlace(placeId: String): Flow<FavouriteEntity?>
 
     @Query("SELECT `order` FROM favouriteEntity WHERE id = :id")
-    protected abstract fun currentOrder(id: Long): Int
+    protected abstract suspend fun currentOrder(id: Long): Int
 
     @Query("UPDATE favouriteEntity SET `order` = `order` - 1 WHERE `order` > :oldOrder AND `order` <= :newOrder AND `order` >= 0")
     protected abstract suspend fun moveOrderDown(newOrder: Int, oldOrder: Int)
