@@ -1,6 +1,7 @@
 package cl.emilym.sinatra.data.persistence
 
 import cl.emilym.sinatra.data.models.Favourite
+import cl.emilym.sinatra.data.models.FavouriteId
 import cl.emilym.sinatra.data.models.Heading
 import cl.emilym.sinatra.data.models.PlaceId
 import cl.emilym.sinatra.data.models.RouteId
@@ -13,6 +14,7 @@ import cl.emilym.sinatra.data.models.specialType
 import cl.emilym.sinatra.data.models.stopId
 import cl.emilym.sinatra.room.dao.FavouriteDao
 import cl.emilym.sinatra.room.entities.FavouriteEntity
+import io.github.aakira.napier.Napier
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import org.koin.core.annotation.Factory
@@ -64,7 +66,6 @@ class FavouritePersistence(
         placeId: PlaceId? = null,
         heading: Heading? = null,
         extra: String? = null,
-        order: Int = 0
     ) {
         validate(type, routeId, stopId, placeId, heading, extra)
         remove(type, routeId, stopId, placeId)
@@ -81,7 +82,7 @@ class FavouritePersistence(
             placeId,
             heading,
             extra,
-            order
+            if (extra != null) -1 else 0
         )
         favouriteDao.insert(entity)
     }
@@ -110,9 +111,7 @@ class FavouritePersistence(
 
     fun all(): Flow<List<Favourite>> {
         return favouriteDao.get().map {
-            it.sortedWith(
-                compareBy({ it.favourite.order }, { -it.favourite.id })
-            ).mapNotNull {
+            it.mapNotNull {
                 val type = FavouriteType.valueOf(it.favourite.type)
                 val special = it.favourite.extra?.let {
                     try {
@@ -123,10 +122,12 @@ class FavouritePersistence(
                 }
 
                 when (type) {
-                    FavouriteType.ROUTE -> it.route?.let { Favourite.Route(
-                        it.toModel()
+                    FavouriteType.ROUTE -> it.route?.let { route -> Favourite.Route(
+                        it.favourite.id,
+                        route.toModel()
                     ) }
                     FavouriteType.STOP -> it.stop?.let { stop -> Favourite.Stop(
+                        it.favourite.id,
                         stop.toModel(),
                         special
                     ) }
@@ -134,21 +135,27 @@ class FavouritePersistence(
                         it.stop?.let { stop ->
                             it.route?.let { route ->
                                 Favourite.StopOnRoute(
+                                    it.favourite.id,
                                     stop.toModel(),
                                     route.toModel(),
                                     it.favourite.heading
                                 )
                             }
                         }
-                    FavouriteType.PLACE -> it.place?.let {
+                    FavouriteType.PLACE -> it.place?.let { place ->
                         Favourite.Place(
-                            it.toModel(),
+                            it.favourite.id,
+                            place.toModel(),
                             special
                         )
                     }
                 }
             }
         }
+    }
+
+    suspend fun updateOrder(id: FavouriteId, order: Int) {
+        favouriteDao.reorder(id, order)
     }
 
     fun exists(

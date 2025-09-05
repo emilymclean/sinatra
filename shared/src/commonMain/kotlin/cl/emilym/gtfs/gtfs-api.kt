@@ -802,6 +802,7 @@ public data class Stop(
     val accessibility: cl.emilym.gtfs.StopAccessibility,
     val visibility: cl.emilym.gtfs.StopVisibility? = null,
     val hasRealtime: Boolean? = null,
+    val schoolServiceOnly: Boolean? = null,
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
 ) : pbandk.Message {
     override operator fun plus(other: pbandk.Message?): cl.emilym.gtfs.Stop = protoMergeImpl(other)
@@ -814,7 +815,7 @@ public data class Stop(
             fullName = "proto.Stop",
             messageClass = cl.emilym.gtfs.Stop::class,
             messageCompanion = this,
-            fields = buildList(8) {
+            fields = buildList(9) {
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
@@ -893,6 +894,16 @@ public data class Stop(
                         type = pbandk.FieldDescriptor.Type.Primitive.Bool(hasPresence = true),
                         jsonName = "hasRealtime",
                         value = cl.emilym.gtfs.Stop::hasRealtime
+                    )
+                )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "schoolServiceOnly",
+                        number = 9,
+                        type = pbandk.FieldDescriptor.Type.Primitive.Bool(hasPresence = true),
+                        jsonName = "schoolServiceOnly",
+                        value = cl.emilym.gtfs.Stop::schoolServiceOnly
                     )
                 )
             }
@@ -1012,6 +1023,7 @@ public data class Route(
     val description: String? = null,
     val moreLink: String? = null,
     val routeVisibility: cl.emilym.gtfs.RouteVisibility? = null,
+    val schoolServiceOnly: Boolean? = null,
     override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
 ) : pbandk.Message {
     override operator fun plus(other: pbandk.Message?): cl.emilym.gtfs.Route = protoMergeImpl(other)
@@ -1024,7 +1036,7 @@ public data class Route(
             fullName = "proto.Route",
             messageClass = cl.emilym.gtfs.Route::class,
             messageCompanion = this,
-            fields = buildList(14) {
+            fields = buildList(15) {
                 add(
                     pbandk.FieldDescriptor(
                         messageDescriptor = this@Companion::descriptor,
@@ -1163,6 +1175,16 @@ public data class Route(
                         type = pbandk.FieldDescriptor.Type.Primitive.String(hasPresence = true),
                         jsonName = "moreLink",
                         value = cl.emilym.gtfs.Route::moreLink
+                    )
+                )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "schoolServiceOnly",
+                        number = 15,
+                        type = pbandk.FieldDescriptor.Type.Primitive.Bool(hasPresence = true),
+                        jsonName = "schoolServiceOnly",
+                        value = cl.emilym.gtfs.Route::schoolServiceOnly
                     )
                 )
             }
@@ -2487,6 +2509,7 @@ private fun Stop.protoMergeImpl(plus: pbandk.Message?): Stop = (plus as? Stop)?.
         accessibility = accessibility.plus(plus.accessibility),
         visibility = visibility?.plus(plus.visibility) ?: plus.visibility,
         hasRealtime = plus.hasRealtime ?: hasRealtime,
+        schoolServiceOnly = plus.schoolServiceOnly ?: schoolServiceOnly,
         unknownFields = unknownFields + plus.unknownFields
     )
 } ?: this
@@ -2501,6 +2524,7 @@ private fun Stop.Companion.decodeWithImpl(u: pbandk.MessageDecoder): Stop {
     var accessibility: cl.emilym.gtfs.StopAccessibility? = null
     var visibility: cl.emilym.gtfs.StopVisibility? = null
     var hasRealtime: Boolean? = null
+    var schoolServiceOnly: Boolean? = null
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
@@ -2512,6 +2536,7 @@ private fun Stop.Companion.decodeWithImpl(u: pbandk.MessageDecoder): Stop {
             6 -> visibility = _fieldValue as cl.emilym.gtfs.StopVisibility
             7 -> simpleName = _fieldValue as String
             8 -> hasRealtime = _fieldValue as Boolean
+            9 -> schoolServiceOnly = _fieldValue as Boolean
         }
     }
 
@@ -2528,7 +2553,8 @@ private fun Stop.Companion.decodeWithImpl(u: pbandk.MessageDecoder): Stop {
         throw pbandk.InvalidProtocolBufferException.missingRequiredField("accessibility")
     }
     return Stop(id!!, parentStation, name!!, simpleName,
-        location!!, accessibility!!, visibility, hasRealtime, unknownFields)
+        location!!, accessibility!!, visibility, hasRealtime,
+        schoolServiceOnly, unknownFields)
 }
 
 private fun StopAccessibility.protoMergeImpl(plus: pbandk.Message?): StopAccessibility = (plus as? StopAccessibility)?.let {
@@ -2598,6 +2624,7 @@ private fun Route.protoMergeImpl(plus: pbandk.Message?): Route = (plus as? Route
         description = plus.description ?: description,
         moreLink = plus.moreLink ?: moreLink,
         routeVisibility = routeVisibility?.plus(plus.routeVisibility) ?: plus.routeVisibility,
+        schoolServiceOnly = plus.schoolServiceOnly ?: schoolServiceOnly,
         unknownFields = unknownFields + plus.unknownFields
     )
 } ?: this
@@ -2618,6 +2645,7 @@ private fun Route.Companion.decodeWithImpl(u: pbandk.MessageDecoder): Route {
     var description: String? = null
     var moreLink: String? = null
     var routeVisibility: cl.emilym.gtfs.RouteVisibility? = null
+    var schoolServiceOnly: Boolean? = null
 
     val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
         when (_fieldNumber) {
@@ -2635,6 +2663,7 @@ private fun Route.Companion.decodeWithImpl(u: pbandk.MessageDecoder): Route {
             12 -> eventRoute = _fieldValue as Boolean
             13 -> description = _fieldValue as String
             14 -> moreLink = _fieldValue as String
+            15 -> schoolServiceOnly = _fieldValue as Boolean
         }
     }
 
@@ -2653,7 +2682,7 @@ private fun Route.Companion.decodeWithImpl(u: pbandk.MessageDecoder): Route {
     return Route(id!!, code!!, displayCode, colors,
         name!!, designation, type!!, realTimeUrl,
         hasRealtime, approximateTimings, eventRoute, description,
-        moreLink, routeVisibility, unknownFields)
+        moreLink, routeVisibility, schoolServiceOnly, unknownFields)
 }
 
 @pbandk.Export

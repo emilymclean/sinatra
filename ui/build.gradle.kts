@@ -94,6 +94,9 @@ kotlin {
             // https://github.com/adrielcafe/voyager/issues/515
 //            implementation(libs.voyager.koin)
             implementation(libs.voyager.screenmodel)
+
+            // Misc
+            implementation(libs.reorderable)
         }
         iosMain.dependencies {}
         iosMain {

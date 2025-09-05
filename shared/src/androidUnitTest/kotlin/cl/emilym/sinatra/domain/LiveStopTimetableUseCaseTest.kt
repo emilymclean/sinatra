@@ -94,6 +94,7 @@ class LiveStopTimetableUseCaseTest {
                     ),
                     false,
                     null,
+                    false,
                 ),
                 null
             )
@@ -110,7 +111,7 @@ class LiveStopTimetableUseCaseTest {
         )
         coEvery { liveServiceRepository.getStopRealtimeUpdates(any()) } returns flowOf(updates)
         coEvery { stopRepository.stop(sId) } returns Cachable.live(Stop("stop1", null, "Stop 1", "Stop 1",
-            MapLocation(0.0,0.0,), StopAccessibility(StopWheelchairAccessibility.FULL), StopVisibility(false, false, false, null), true
+            MapLocation(0.0,0.0,), StopAccessibility(StopWheelchairAccessibility.FULL), StopVisibility(false, false, false, null), true, false
         ))
 
         val result = useCase(sId, scheduled).toList()
@@ -155,7 +156,8 @@ class LiveStopTimetableUseCaseTest {
                         false
                     ),
                     false,
-                    null
+                    null,
+                    false,
                 ),
                 null
             )
@@ -172,7 +174,7 @@ class LiveStopTimetableUseCaseTest {
         )
         coEvery { liveServiceRepository.getStopRealtimeUpdates(any()) } returns flowOf(updates)
         coEvery { stopRepository.stop(stopId) } returns Cachable.live(Stop("stop1", null, "Stop 1", "Stop 1",
-            MapLocation(0.0,0.0,), StopAccessibility(StopWheelchairAccessibility.FULL), StopVisibility(false, false, false, null), true
+            MapLocation(0.0,0.0,), StopAccessibility(StopWheelchairAccessibility.FULL), StopVisibility(false, false, false, null), true, false
         ))
 
         val result = useCase(stopId, scheduled).toList()
@@ -213,7 +215,8 @@ class LiveStopTimetableUseCaseTest {
                         false
                     ),
                     false,
-                    null
+                    null,
+                    false
                 ),
                 null
             )
@@ -230,7 +233,7 @@ class LiveStopTimetableUseCaseTest {
         )
         coEvery { liveServiceRepository.getStopRealtimeUpdates(any()) } returns flowOf(updates)
         coEvery { stopRepository.stop(stopId) } returns Cachable.live(Stop("stop1", null, "Stop 1", "Stop 1",
-            MapLocation(0.0,0.0,), StopAccessibility(StopWheelchairAccessibility.FULL), StopVisibility(false, false, false, null), true
+            MapLocation(0.0,0.0,), StopAccessibility(StopWheelchairAccessibility.FULL), StopVisibility(false, false, false, null), true, false
         ))
 
         val result = useCase(stopId, scheduled).toList()
@@ -271,14 +274,15 @@ class LiveStopTimetableUseCaseTest {
                         false
                     ),
                     false,
-                    null
+                    null,
+                    false,
                 ),
                 null
             )
         )
 
         coEvery { stopRepository.stop(stopId) } returns Cachable.live(Stop("stop1", null, "Stop 1", "Stop 1",
-            MapLocation(0.0,0.0,), StopAccessibility(StopWheelchairAccessibility.FULL), StopVisibility(false, false, false, null), false
+            MapLocation(0.0,0.0,), StopAccessibility(StopWheelchairAccessibility.FULL), StopVisibility(false, false, false, null), false, false
         ))
 
         val result = useCase(stopId, scheduled).toList()
@@ -320,14 +324,15 @@ class LiveStopTimetableUseCaseTest {
                         false
                     ),
                     false,
-                    null
+                    null,
+                    false,
                 ),
                 null
             )
         )
         coEvery { liveServiceRepository.getStopRealtimeUpdates(any()) } throws Exception("Network error")
         coEvery { stopRepository.stop(stopId) } returns Cachable.live(Stop("stop1", null, "Stop 1", "Stop 1",
-            MapLocation(0.0,0.0,), StopAccessibility(StopWheelchairAccessibility.FULL), StopVisibility(false, false, false, null), true
+            MapLocation(0.0,0.0,), StopAccessibility(StopWheelchairAccessibility.FULL), StopVisibility(false, false, false, null), true, false
         ))
 
         val result = useCase(stopId, scheduled).toList()

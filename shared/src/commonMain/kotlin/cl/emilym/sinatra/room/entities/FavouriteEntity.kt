@@ -17,6 +17,7 @@ data class FavouriteEntity(
     val heading: String?,
     @ColumnInfo(defaultValue = "null")
     val extra: String?,
+    // TODO: Make Long
     @ColumnInfo(defaultValue = "0")
     val order: Int
 )

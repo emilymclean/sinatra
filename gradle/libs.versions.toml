@@ -36,6 +36,7 @@ google-services = "4.4.2"
 firebase-crashlytics = "3.0.3"
 coroutines-test = "1.10.1"
 datastore = "1.1.4"
+reorderable = "2.5.1"
 
 [libraries]
 
@@ -52,6 +53,7 @@ compose-material3 = { module = "androidx.compose.material3:material3", version.r
 compose-adaptive = { group = "org.jetbrains.compose.material3.adaptive", name = "adaptive", version.ref = "compose-adaptive" }
 compose-adaptive-navigation = { group = "org.jetbrains.compose.material3.adaptive", name = "adaptive-navigation", version.ref = "compose-adaptive" }
 androidx-lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycleRuntimeCompose" }
+reorderable = { module = "sh.calvin.reorderable:reorderable", version.ref = "reorderable" }
 
 # Coil
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil-compose" }

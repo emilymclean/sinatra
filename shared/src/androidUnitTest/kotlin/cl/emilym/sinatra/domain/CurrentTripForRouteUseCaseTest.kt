@@ -67,7 +67,8 @@ class CurrentTripForRouteUseCaseTest {
             false
         ),
         false,
-        null
+        null,
+        false,
     )
     val tripInformation = RouteTripInformation(
         Time.parse("PT12H"),

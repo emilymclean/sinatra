@@ -24,6 +24,8 @@
     <string name="preferences_setting_wheelchair_subtitle">Default to calculating routes with wheelchair accessibility when navigating.</string>
     <string name="preferences_setting_bikes">Bike Rack Required</string>
     <string name="preferences_setting_bikes_subtitle">Require routes to have bike racks available.</string>
+    <string name="preferences_setting_school_service">Show School Services</string>
+    <string name="preferences_setting_school_service_subtitle">Show school transportation options and include school buses when routing.</string>
     <string name="preferences_setting_show_accessibility_icons_navigation">Highlight Accessibility</string>
     <string name="preferences_setting_show_accessibility_icons_navigation_subtitle">Show whether a journey is bike or wheelchair accessible.</string>
     <string name="preferences_setting_max_walking">Maximum walking time</string>
@@ -308,4 +310,6 @@
     <string name="semantics_app_icon">The app icon; an image of a bus</string>
     <string name="semantics_zoom_current_location">Zoom to current location</string>
     <string name="semantics_open_search_screen">Open search screen</string>
+    <string name="semantics_move_up">Move up</string>
+    <string name="semantics_move_down">Move down</string>
 </resources>

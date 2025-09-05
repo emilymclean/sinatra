@@ -38,6 +38,7 @@ enum class FeatureFlag(
     SERVICE_ALERT_BUTTON_TAB_BAR(false),
     PLACE_DETAIL_ENABLED(true),
     FAVOURITE_NEARBY_STOP_HOME_SCREEN(true),
+    FAVOURITE_REORDER_ENABLED(true),
     NEW_SERVICE_HOME_SCREEN(true),
     QUICK_NAVIGATION_HOME_SCREEN(true),
     QUICK_ADD_FAVOURITE_HOME_SCREEN(true),
@@ -46,7 +47,8 @@ enum class FeatureFlag(
     HOLD_MAP_POINT_DETAIL(true),
     GLOBAL_HIDE_TRANSPORT_ACCESSIBILITY(false),
     UPCOMING_ROUTES_INCLUDE_NEXT_DAY(true),
-    REALTIME_USE_GLOBAL(true);
+    REALTIME_USE_GLOBAL(true),
+    GLOBAL_ENABLE_SCHOOL_SERVICES(false);
 
     val immediate by EnumFeatureFlagDelegate(this)
 }

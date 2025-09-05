@@ -7,19 +7,25 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.CustomAccessibilityAction
+import androidx.compose.ui.semantics.customActions
+import androidx.compose.ui.semantics.semantics
 import cafe.adriel.voyager.core.model.screenModelScope
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.core.screen.ScreenKey
@@ -33,7 +39,9 @@ import cl.emilym.compose.requeststate.flatRequestStateFlow
 import cl.emilym.compose.requeststate.map
 import cl.emilym.compose.requeststate.unwrap
 import cl.emilym.compose.units.rdp
+import cl.emilym.sinatra.FeatureFlag
 import cl.emilym.sinatra.data.models.Favourite
+import cl.emilym.sinatra.data.models.FavouriteId
 import cl.emilym.sinatra.data.models.NavigationObject
 import cl.emilym.sinatra.data.models.Place
 import cl.emilym.sinatra.data.models.SpecialFavouriteType
@@ -47,21 +55,30 @@ import cl.emilym.sinatra.ui.presentation.screens.maps.route.RouteDetailScreen
 import cl.emilym.sinatra.ui.presentation.screens.maps.stop.StopDetailScreen
 import cl.emilym.sinatra.ui.retryIfNeeded
 import cl.emilym.sinatra.ui.widgets.ClearIcon
+import cl.emilym.sinatra.ui.widgets.DragIndicatorIcon
+import cl.emilym.sinatra.ui.widgets.EditingIcon
 import cl.emilym.sinatra.ui.widgets.FavouriteCard
 import cl.emilym.sinatra.ui.widgets.HomeIcon
 import cl.emilym.sinatra.ui.widgets.ListCard
 import cl.emilym.sinatra.ui.widgets.ListHint
+import cl.emilym.sinatra.ui.widgets.Mutator
 import cl.emilym.sinatra.ui.widgets.QuickSelectCard
 import cl.emilym.sinatra.ui.widgets.SearchWidget
+import cl.emilym.sinatra.ui.widgets.SinatraHapticFeedbackType
 import cl.emilym.sinatra.ui.widgets.SinatraScreenModel
 import cl.emilym.sinatra.ui.widgets.StarOutlineIcon
 import cl.emilym.sinatra.ui.widgets.WorkIcon
+import cl.emilym.sinatra.ui.widgets.collectAsMutatorStateWithLifecycle
 import cl.emilym.sinatra.ui.widgets.collectAsStateWithLifecycle
 import cl.emilym.sinatra.ui.widgets.defaultConfig
+import cl.emilym.sinatra.ui.widgets.rememberHapticFeedback
+import cl.emilym.sinatra.ui.widgets.value
+import io.github.aakira.napier.Napier
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.mapLatest
@@ -69,12 +86,16 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.jetbrains.compose.resources.stringResource
 import org.koin.core.annotation.Factory
+import sh.calvin.reorderable.ReorderableItem
+import sh.calvin.reorderable.rememberReorderableLazyListState
 import sinatra.ui.generated.resources.Res
+import sinatra.ui.generated.resources.favourites_clear_favourite
 import sinatra.ui.generated.resources.favourites_no_home
 import sinatra.ui.generated.resources.favourites_no_work
 import sinatra.ui.generated.resources.favourites_nothing_favourited
 import sinatra.ui.generated.resources.navigation_bar_favourites
-import sinatra.ui.generated.resources.favourites_clear_favourite
+import sinatra.ui.generated.resources.semantics_move_down
+import sinatra.ui.generated.resources.semantics_move_up
 
 sealed interface FavouriteState {
     data object Favourite: FavouriteState
@@ -87,6 +108,11 @@ sealed interface FavouriteState {
 data class SpecialFavourite(
     val type: SpecialFavouriteType,
     val favourite: Favourite?
+)
+
+data class SwapMutation(
+    val from: FavouriteId,
+    val to: Int
 )
 
 @Factory
@@ -132,6 +158,9 @@ class FavouriteViewModel(
         }
     }.state(FavouriteState.Favourite)
 
+    private val _isEditing = MutableStateFlow(false)
+    val isEditing = _isEditing.asStateFlow()
+
     fun retry() {
         screenModelScope.launch { allFavourites.retryIfNeeded(favourites.value) }
     }
@@ -142,6 +171,10 @@ class FavouriteViewModel(
 
     fun closeSearch() {
         searchType.value = null
+    }
+
+    fun setEditing(editing: Boolean) {
+        _isEditing.value = editing
     }
 
     fun selectSpecialFavourite(favourite: NavigationObject?) {
@@ -157,6 +190,10 @@ class FavouriteViewModel(
                 }
             }
         }
+    }
+
+    suspend fun move(id: FavouriteId, order: Int) {
+        favouriteRepository.updateOrder(id, order)
     }
 
 }
@@ -209,12 +246,60 @@ class FavouriteScreen: Screen {
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text(stringResource(Res.string.navigation_bar_favourites)) }
+                    title = { Text(stringResource(Res.string.navigation_bar_favourites)) },
+                    actions = {
+                        val isEditing by viewModel.isEditing.collectAsStateWithLifecycle()
+                        if (FeatureFlag.FAVOURITE_REORDER_ENABLED.value()) {
+                            IconButton(
+                                onClick = {
+                                    viewModel.setEditing(!isEditing)
+                                }
+                            ) {
+                                EditingIcon(
+                                    isEditing
+                                )
+                            }
+                        }
+                    }
                 )
             }
         ) { innerPadding ->
-            val favourites by viewModel.favourites.collectAsStateWithLifecycle()
+            val favouritesMutator = viewModel.favourites.collectAsMutatorStateWithLifecycle(
+                mutator = remember { object: Mutator<RequestState<List<Favourite>>, SwapMutation> {
+                    override fun apply(
+                        current: RequestState<List<Favourite>>,
+                        mutation: SwapMutation
+                    ): RequestState<List<Favourite>> {
+                        return current.map {
+                            it.toMutableList().apply {
+                                add(mutation.to, removeAt(indexOfFirst { it.id == mutation.from }))
+                            }
+                        }
+                    }
+
+                    override suspend fun commit(
+                        mutation: SwapMutation
+                    ) {
+                        viewModel.move(mutation.from, mutation.to)
+                    }
+                } }
+            )
+            val favourites by favouritesMutator
             val anyFavourites by viewModel.anyFavourites.collectAsStateWithLifecycle()
+
+            val isEditing by viewModel.isEditing.collectAsStateWithLifecycle()
+            val haptics = rememberHapticFeedback()
+            val lazyListState = rememberLazyListState()
+            val reorderableLazyListState = rememberReorderableLazyListState(lazyListState) { from, to ->
+                favouritesMutator.mutate(SwapMutation(
+                    (from.key as String).drop("favourite-".length).toLong(),
+                    to.index - 2
+                ))
+                haptics.perform(SinatraHapticFeedbackType.FREQUENT_TICK)
+            }
+            val semanticsMoveUp = stringResource(Res.string.semantics_move_up)
+            val semanticsMoveDown = stringResource(Res.string.semantics_move_down)
+
             Box(
                 Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
@@ -225,7 +310,8 @@ class FavouriteScreen: Screen {
                 ) { favourites ->
                     LazyColumn(
                         Modifier.fillMaxSize(),
-                        contentPadding = innerPadding
+                        contentPadding = innerPadding,
+                        state = lazyListState
                     ) {
                         item {
                             val specials by viewModel.special.collectAsStateWithLifecycle()
@@ -259,12 +345,57 @@ class FavouriteScreen: Screen {
                             Spacer(Modifier.height(1.rdp))
                         }
                         if (anyFavourites) {
-                            items(favourites) {
-                                FavouriteCard(
-                                    it,
-                                    onClick = { it.navigate(navigator) },
-                                    modifier = Modifier.fillMaxWidth()
-                                )
+                            itemsIndexed(favourites, key = { i, f -> "favourite-${f.id}" }) { index, favourite ->
+                                ReorderableItem(reorderableLazyListState, key = "favourite-${favourite.id}") {
+                                    FavouriteCard(
+                                        favourite,
+                                        onClick = { favourite.navigate(navigator) },
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .semantics {
+                                                customActions = listOfNotNull(
+                                                    if (index > 0) CustomAccessibilityAction(
+                                                        label = semanticsMoveUp,
+                                                        action = {
+                                                            favouritesMutator.mutate(SwapMutation(
+                                                                favourite.id,
+                                                                index - 1
+                                                            ))
+                                                            true
+                                                        }
+                                                    ) else null,
+                                                    if (index < favourites.lastIndex) CustomAccessibilityAction(
+                                                        label = semanticsMoveDown,
+                                                        action = {
+                                                            SwapMutation(
+                                                                favourite.id,
+                                                                index + 1
+                                                            )
+                                                            true
+                                                        }
+                                                    ) else null
+                                                )
+                                            },
+                                        endIcon = when (isEditing) {
+                                            true -> { {
+                                                IconButton(
+                                                    onClick = {},
+                                                    modifier = Modifier.draggableHandle(
+                                                        onDragStarted = {
+                                                            haptics.perform(SinatraHapticFeedbackType.GESTURE_START)
+                                                        },
+                                                        onDragStopped = {
+                                                            haptics.perform(SinatraHapticFeedbackType.GESTURE_END)
+                                                        }
+                                                    )
+                                                ) {
+                                                    DragIndicatorIcon()
+                                                }
+                                            } }
+                                            else -> null
+                                        }
+                                    )
+                                }
                             }
                         } else {
                             item {

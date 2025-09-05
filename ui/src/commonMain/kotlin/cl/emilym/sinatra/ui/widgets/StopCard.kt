@@ -104,6 +104,7 @@ fun IconStopCard(
     stopStationTime: StopStationTime? = null,
     onClick: () -> Unit,
     subtitle: String? = null,
+    endIcon: (@Composable () -> Unit)? = null,
     icon: (@Composable () -> Unit)?
 ) {
     val stopListingSemantics = stringResource(Res.string.semantics_stop_listing, stop.name)
@@ -111,6 +112,7 @@ fun IconStopCard(
         icon?.let {
             { RandleScaffold { it() } }
         },
+        endIcon = endIcon ?: onClick?.let { { DefaultListCardEndIcon() } },
         Modifier
             .semantics {
                 contentDescription = stopListingSemantics
@@ -177,7 +179,7 @@ fun StopCard(
         stopStationTime,
         onClick,
         subtitle,
-        when (showStopIcon) {
+        icon = when (showStopIcon) {
             true -> { { DefaultStopCardIcon(stop) } }
             else -> null
         }

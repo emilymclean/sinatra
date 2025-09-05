@@ -75,11 +75,12 @@ class CalculateJourneyUseCaseTest {
         coEvery { graph.metadata.assumedWalkingSecondsPerKilometer } returns 25U * 60U
         every { clock.now() } returns Instant.fromEpochMilliseconds(1745809143)
         coEvery { directWalkingJourneyUseCase.invoke(any(), any(), any(), any()) } returns null
+        coEvery { routingPreferencesRepository.schoolServiceAllowed() } returns false
     }
 
     @Test
     fun `invoke returns journeys when successful`() = runTest {
-        val stop = Stop("stop1", null, "Stop 1", "Stop 1", location, StopAccessibility(StopWheelchairAccessibility.FULL), StopVisibility(false, false, false, null), false)
+        val stop = Stop("stop1", null, "Stop 1", "Stop 1", location, StopAccessibility(StopWheelchairAccessibility.FULL), StopVisibility(false, false, false, null), false, false)
         val stops = listOf(stop)
 
         coEvery { stopRepository.stops() } returns Cachable.live(stops)
@@ -119,7 +120,7 @@ class CalculateJourneyUseCaseTest {
 
     @Test
     fun `invoke throws RouterException when no journeys found`() = runTest {
-        val stop = Stop("stop1", null, "Stop 1", "Stop 1", location, StopAccessibility(StopWheelchairAccessibility.FULL), StopVisibility(false, false, false, null), false)
+        val stop = Stop("stop1", null, "Stop 1", "Stop 1", location, StopAccessibility(StopWheelchairAccessibility.FULL), StopVisibility(false, false, false, null), false, false)
         val stops = listOf(stop)
 
         coEvery { stopRepository.stops() } returns Cachable.live(stops)
@@ -147,8 +148,8 @@ class CalculateJourneyUseCaseTest {
 
     @Test
     fun `nearbyStops returns correct stop when exact`() = runTest {
-        val stop1 = Stop("stop1", null, "Stop 1", "Stop 1", location, StopAccessibility(StopWheelchairAccessibility.FULL), StopVisibility(false, false, false, null), false)
-        val stop2 = Stop("stop2", null, "Stop 2", "Stop 2", MapLocation(1.0, 1.0), StopAccessibility(StopWheelchairAccessibility.FULL), StopVisibility(false, false, false, null), false)
+        val stop1 = Stop("stop1", null, "Stop 1", "Stop 1", location, StopAccessibility(StopWheelchairAccessibility.FULL), StopVisibility(false, false, false, null), false, false)
+        val stop2 = Stop("stop2", null, "Stop 2", "Stop 2", MapLocation(1.0, 1.0), StopAccessibility(StopWheelchairAccessibility.FULL), StopVisibility(false, false, false, null), false, false)
         val stops = listOf(stop1, stop2)
 
         coEvery { networkGraphRepository.networkGraph(any()) } returns Cachable.live(graph)

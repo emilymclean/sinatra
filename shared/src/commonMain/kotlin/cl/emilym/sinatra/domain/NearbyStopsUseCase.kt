@@ -6,6 +6,7 @@ import cl.emilym.sinatra.data.models.StopWithDistance
 import cl.emilym.sinatra.data.models.distance
 import cl.emilym.sinatra.data.repository.StopRepository
 import cl.emilym.sinatra.nullIfEmpty
+import kotlinx.coroutines.flow.first
 import org.koin.core.annotation.Factory
 
 const val NEAREST_STOP_RADIUS = 1.0
@@ -13,7 +14,7 @@ const val NEARBY_STOPS_LIMIT = 5
 
 @Factory
 class NearbyStopsUseCase(
-    private val stopRepository: StopRepository
+    private val getFilteredStopsUseCase: GetFilteredStopsUseCase
 ) {
 
     suspend operator fun invoke(
@@ -21,7 +22,7 @@ class NearbyStopsUseCase(
         radius: Double = NEAREST_STOP_RADIUS,
         limit: Int = NEARBY_STOPS_LIMIT
     ): List<StopWithDistance> {
-        val stops = stopRepository.stops().item
+        val stops = getFilteredStopsUseCase().first().item
         return stops.filter(location, radius, limit)
     }
 

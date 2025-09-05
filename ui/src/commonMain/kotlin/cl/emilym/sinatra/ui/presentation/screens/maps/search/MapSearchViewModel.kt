@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import cafe.adriel.voyager.core.model.screenModelScope
 import cl.emilym.compose.requeststate.RequestState
+import cl.emilym.compose.requeststate.flatRequestStateFlow
 import cl.emilym.compose.requeststate.handle
 import cl.emilym.sinatra.data.models.Alert
 import cl.emilym.sinatra.data.models.MapLocation
@@ -17,6 +18,7 @@ import cl.emilym.sinatra.data.repository.AlertRepository
 import cl.emilym.sinatra.data.repository.ContentRepository
 import cl.emilym.sinatra.data.repository.RecentVisitRepository
 import cl.emilym.sinatra.data.repository.StopRepository
+import cl.emilym.sinatra.domain.GetFilteredStopsUseCase
 import cl.emilym.sinatra.domain.NEARBY_STOPS_LIMIT
 import cl.emilym.sinatra.domain.NEAREST_STOP_RADIUS
 import cl.emilym.sinatra.domain.NearbyStopsUseCase
@@ -28,6 +30,7 @@ import cl.emilym.sinatra.ui.presentation.screens.search.SearchScreenViewModel
 import cl.emilym.sinatra.ui.presentation.screens.search.searchHandler
 import cl.emilym.sinatra.ui.widgets.SinatraScreenModel
 import cl.emilym.sinatra.ui.widgets.createRequestStateFlowFlow
+import cl.emilym.sinatra.ui.widgets.defaultConfig
 import cl.emilym.sinatra.ui.widgets.handleFlowProperly
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -49,7 +52,7 @@ sealed interface MapSearchState {
 
 @Factory
 class MapSearchViewModel(
-    private val stopRepository: StopRepository,
+    private val getFilteredStopsUseCase: GetFilteredStopsUseCase,
     private val routeStopSearchUseCase: RouteStopSearchUseCase,
     private val recentVisitRepository: RecentVisitRepository,
     private val alertRepository: AlertRepository,
@@ -75,13 +78,15 @@ class MapSearchViewModel(
         }
     }.state(RequestState.Initial())
 
+    private val _stops = flatRequestStateFlow(defaultConfig) { getFilteredStopsUseCase().mapLatest { it.item } }
+    val stops = _stops.state()
+
     private val lastLocation = MutableStateFlow<MapLocation?>(null)
-    val stops = MutableStateFlow<RequestState<List<Stop>>>(RequestState.Initial())
     val showCurrentLocation = MutableStateFlow(false)
     val zoomToLocation = MutableSharedFlow<Unit>()
     private var hasZoomedToLocation = false
 
-    override val nearbyStops = stops.combine(lastLocation) { stops, lastLocation ->
+    override val nearbyStops = _stops.combine(lastLocation) { stops, lastLocation ->
         if (stops !is RequestState.Success || lastLocation == null) return@combine null
         val stops = stops.value.nullIfEmpty() ?: return@combine null
         with(nearbyStopsUseCase) { stops.filter(lastLocation).nullIfEmpty() }
@@ -101,9 +106,7 @@ class MapSearchViewModel(
 
     fun retry() {
         screenModelScope.launch {
-            stops.handle {
-                stopRepository.stops().item
-            }
+            _stops.retry()
         }
     }
 

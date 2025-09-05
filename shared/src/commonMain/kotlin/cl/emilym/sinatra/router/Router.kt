@@ -29,12 +29,14 @@ data class RaptorConfig(
 
 data class RouterPrefs(
     val wheelchairAccessible: Boolean,
-    val bikesAllowed: Boolean
+    val bikesAllowed: Boolean,
+    val schoolAllowed: Boolean
 )
 
 internal val DEFAULT_ROUTER_PREFS = RouterPrefs(
     wheelchairAccessible = false,
-    bikesAllowed = false
+    bikesAllowed = false,
+    schoolAllowed = false,
 )
 
 abstract class Router {
@@ -264,6 +266,7 @@ abstract class Router {
         val edges = node.edges
 
         return edges.flatMap {
+            if (it.schoolOnly && !prefs.schoolAllowed) return@flatMap emptyList()
             when (it.type) {
                 EdgeType.TO_ROUTE_NODE -> listOf(
                     NodeCost(it.connectedNodeIndex.toInt(), 0L, 0L, it, null)
