@@ -34,6 +34,8 @@
 
   <string name="preferences_setting_clear_recent_history">清除查看历史记录</string>
 
+  <string name="preferences_setting_clear_cache">清除缓存</string>
+
   <string name="preferences_setting_wheelchair">需要轮椅</string>
 
   <string name="preferences_setting_wheelchair_subtitle">导航时默认规划适合轮椅通行的路线。</string>
