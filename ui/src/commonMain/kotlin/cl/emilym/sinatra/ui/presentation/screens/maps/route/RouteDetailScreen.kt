@@ -230,8 +230,8 @@ class RouteDetailScreen(
         LaunchedEffect(info?.stops) {
             if (FeatureFlag.ROUTE_DETAIL_PREVENT_ZOOM_WHEN_HAVE_SOURCE_STOP.immediate && stopId != null)
                 return@LaunchedEffect
-            info?.stops?.let {
-                mapControl.zoomToArea(info.stops.mapNotNull { it.stop?.location }.bounds(), zoomPadding)
+            info?.stops?.mapNotNull { it.stop?.location }?.nullIfEmpty()?.let {
+                mapControl.zoomToArea(it.bounds(), zoomPadding)
             }
         }
 
