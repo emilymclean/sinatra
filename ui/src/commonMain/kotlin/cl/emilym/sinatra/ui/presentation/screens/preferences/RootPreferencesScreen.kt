@@ -12,6 +12,7 @@ import cafe.adriel.voyager.core.model.screenModelScope
 import cafe.adriel.voyager.core.screen.ScreenKey
 import cafe.adriel.voyager.koin.koinScreenModel
 import cl.emilym.compose.units.rdp
+import cl.emilym.sinatra.FeatureFlag
 import cl.emilym.sinatra.data.models.ContentLink
 import cl.emilym.sinatra.data.models.DisclosureType
 import cl.emilym.sinatra.data.repository.ContentRepository
@@ -22,6 +23,7 @@ import cl.emilym.sinatra.ui.widgets.ContentLinkColumn
 import cl.emilym.sinatra.ui.widgets.ContentLinkWidget
 import cl.emilym.sinatra.ui.widgets.SinatraScreenModel
 import cl.emilym.sinatra.ui.widgets.platformContext
+import cl.emilym.sinatra.ui.widgets.value
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.koin.core.annotation.Factory
@@ -92,7 +94,7 @@ class RootPreferencesScreen: PreferencesScreen() {
             Spacer(Modifier.height(1.rdp))
 
             ContentLinkColumn(
-                listOf(
+                listOfNotNull(
                     ContentLink.Custom(
                         stringResource(Res.string.preferences_setting_clear_recent_history),
                         DisclosureType.NONE,
@@ -100,12 +102,16 @@ class RootPreferencesScreen: PreferencesScreen() {
                     ) {
                         viewModel.clearVisitHistory()
                     },
-                    ContentLink.Custom(
-                        stringResource(Res.string.preferences_setting_clear_cache),
-                        DisclosureType.NONE,
-                        0,
-                    ) {
-                        viewModel.clearCache()
+                    if (FeatureFlag.SETTINGS_CLEAR_CACHE.value()) {
+                        ContentLink.Custom(
+                            stringResource(Res.string.preferences_setting_clear_cache),
+                            DisclosureType.NONE,
+                            0,
+                        ) {
+                            viewModel.clearCache()
+                        }
+                    } else {
+                        null
                     }
                 )
             )
