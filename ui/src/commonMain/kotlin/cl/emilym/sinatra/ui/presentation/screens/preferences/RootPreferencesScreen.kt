@@ -1,10 +1,8 @@
 package cl.emilym.sinatra.ui.presentation.screens.preferences
 
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -18,9 +16,8 @@ import cl.emilym.sinatra.data.models.DisclosureType
 import cl.emilym.sinatra.data.repository.ContentRepository
 import cl.emilym.sinatra.data.repository.PlatformContext
 import cl.emilym.sinatra.data.repository.RecentVisitRepository
-import cl.emilym.sinatra.domain.CacheInvalidationUseCase
+import cl.emilym.sinatra.data.repository.ShaRepository
 import cl.emilym.sinatra.ui.widgets.ContentLinkColumn
-import cl.emilym.sinatra.ui.widgets.ContentLinkWidget
 import cl.emilym.sinatra.ui.widgets.SinatraScreenModel
 import cl.emilym.sinatra.ui.widgets.platformContext
 import cl.emilym.sinatra.ui.widgets.value
@@ -32,13 +29,13 @@ import sinatra.ui.generated.resources.preferences_location_title
 import sinatra.ui.generated.resources.preferences_root_title
 import sinatra.ui.generated.resources.preferences_routing_title
 import sinatra.ui.generated.resources.preferences_setting_clear_cache
-import sinatra.ui.generated.resources.preferences_units_title
 import sinatra.ui.generated.resources.preferences_setting_clear_recent_history
+import sinatra.ui.generated.resources.preferences_units_title
 
 @Factory
 class RootPreferencesViewModel(
     private val recentVisitRepository: RecentVisitRepository,
-    private val cacheInvalidationUseCase: CacheInvalidationUseCase
+    private val shaRepository: ShaRepository
 ): SinatraScreenModel {
 
     fun clearVisitHistory() {
@@ -49,7 +46,7 @@ class RootPreferencesViewModel(
 
     fun clearCache() {
         screenModelScope.launch {
-            cacheInvalidationUseCase()
+            shaRepository.invalidateAll()
         }
     }
 
