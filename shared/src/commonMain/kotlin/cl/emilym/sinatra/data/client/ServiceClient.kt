@@ -4,6 +4,7 @@ import cl.emilym.sinatra.data.models.Service
 import cl.emilym.sinatra.data.models.ShaDigest
 import cl.emilym.sinatra.data.repository.TransportMetadataRepository
 import cl.emilym.sinatra.network.GtfsApi
+import cl.emilym.sinatra.network.validated
 import io.github.aakira.napier.Napier
 import org.koin.core.annotation.Factory
 
@@ -13,14 +14,13 @@ class ServiceClient(
     private val transportMetadataRepository: TransportMetadataRepository
 ) {
 
-    val servicesEndpointPair = object : EndpointDigestPair<List<Service>>() {
+    val servicesEndpointPair = object : ValidatedEndpointDigestPair<List<Service>>() {
         override val endpoint = ::services
         override val digest = ::servicesDigest
     }
 
-    suspend fun services(): List<Service> {
-        val servicesPB = gtfsApi.services()
-        Napier.d("Got services")
+    suspend fun services(digest: ShaDigest): List<Service> {
+        val servicesPB = gtfsApi.services().validated(digest)
         return servicesPB.service.map { Service.fromPB(it, transportMetadataRepository.timeZone()) }
     }
 

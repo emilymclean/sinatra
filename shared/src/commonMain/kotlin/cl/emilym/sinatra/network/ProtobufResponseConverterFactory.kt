@@ -14,7 +14,7 @@ typealias ProtobufFactory<T> = (arr: ByteArray) -> T
 
 class ProtobufResponseConverterFactory(
     val types: Map<KClass<*>, ProtobufFactory<*>>
-) : Converter.Factory {
+): Converter.Factory {
 
     class ProtobufSuspendResponseConverter(
         val factory: ProtobufFactory<*>

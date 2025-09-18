@@ -37,6 +37,7 @@ firebase-crashlytics = "3.0.3"
 coroutines-test = "1.10.1"
 datastore = "1.1.4"
 reorderable = "2.5.1"
+kotlincrypto = "0.6.0"
 
 [libraries]
 
@@ -110,6 +111,7 @@ play-services-location = { group = "com.google.android.gms", name = "play-servic
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 aakira-napier = { module = "io.github.aakira:napier", version.ref = "aakira-napier" }
 kotlin-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlin-datetime" }
+kotlin-crypto-sha256 = { module = "org.kotlincrypto.hash:sha2", version.ref = "kotlincrypto" }
 
 # Classpath
 secrets-gradle-plugin = { module = "com.google.android.libraries.mapsplatform.secrets-gradle-plugin:secrets-gradle-plugin", version.ref = "secretsGradlePlugin" }
