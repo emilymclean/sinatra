@@ -10,7 +10,6 @@ import io.github.aakira.napier.Napier
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsChannel
 import io.ktor.utils.io.toByteArray
-import okio.internal.commonToUtf8String
 import org.kotlincrypto.hash.sha2.SHA256
 import kotlin.reflect.KClass
 
@@ -28,7 +27,7 @@ class DigestedResponseConverterFactory(
     val types: Map<KClass<*>, ProtobufFactory<*>>
 ): Converter.Factory {
 
-    class DigestedResponseConverter(
+    class ProtobufDigestedResponseConverter(
         private val factory: ProtobufFactory<*>
     ): Converter.SuspendResponseConverter<HttpResponse, Any?> {
         @OptIn(ExperimentalStdlibApi::class)
@@ -46,6 +45,22 @@ class DigestedResponseConverterFactory(
         }
     }
 
+    class ByteArrayDigestedResponseConverter: Converter.SuspendResponseConverter<HttpResponse, DigestedResponse<ByteArray>> {
+        @OptIn(ExperimentalStdlibApi::class)
+        override suspend fun convert(result: KtorfitResult): DigestedResponse<ByteArray> {
+            return when (result) {
+                is KtorfitResult.Failure -> throw result.throwable
+                is KtorfitResult.Success -> {
+                    val response = result.response.bodyAsChannel().toByteArray()
+                    DigestedResponse(
+                        response,
+                        SHA256().digest(response).toHexString()
+                    )
+                }
+            }
+        }
+    }
+
     override fun suspendResponseConverter(
         typeData: TypeData,
         ktorfit: Ktorfit
@@ -54,10 +69,13 @@ class DigestedResponseConverterFactory(
         if (typeData.typeArgs.isEmpty()) return null
 
         val type = typeData.typeArgs[0].typeInfo.type
-        return when {
-            type in types -> {
+        return when (type) {
+            ByteArray::class -> {
+                ByteArrayDigestedResponseConverter()
+            }
+            in types -> {
                 Napier.d("Creating type converter for ${type.qualifiedName}")
-                DigestedResponseConverter(
+                ProtobufDigestedResponseConverter(
                     types[type]!!
                 )
             }
