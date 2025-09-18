@@ -1,6 +1,8 @@
 package cl.emilym.sinatra.data.repository
 
+import cl.emilym.sinatra.data.client.BaseEndpointDigestPair
 import cl.emilym.sinatra.data.client.EndpointDigestPair
+import cl.emilym.sinatra.data.client.ValidatedEndpointDigestPair
 import cl.emilym.sinatra.data.models.Cachable
 import cl.emilym.sinatra.data.models.CacheCategory
 import cl.emilym.sinatra.data.models.CacheState
@@ -53,7 +55,7 @@ abstract class BaseCacheWorker<T, E> {
     abstract suspend fun getFromPersistence(resource: ResourceKey, extras: E): T?
     open suspend fun existsInPersistence(resource: ResourceKey): Boolean { return true }
 
-    protected suspend fun run(pair: EndpointDigestPair<T>, resource: ResourceKey, extras: E): Cachable<T> {
+    protected suspend fun run(pair: BaseEndpointDigestPair<T>, resource: ResourceKey, extras: E): Cachable<T> {
         val info = shaRepository.cached(cacheCategory, resource)
 
         if (!info.shouldCheckForUpdate(resource))
@@ -94,12 +96,21 @@ abstract class BaseCacheWorker<T, E> {
     private suspend fun fetch(
         digest: ShaDigest,
         info: CacheInformation,
-        pair: EndpointDigestPair<T>,
+        pair: BaseEndpointDigestPair<T>,
         resource: ResourceKey,
         extras: E
     ): Cachable<T> {
         val data = try {
-            pair.endpoint()
+            when (pair) {
+                is EndpointDigestPair -> pair.endpoint()
+                is ValidatedEndpointDigestPair -> pair.endpoint(digest)
+                else -> return failure(
+                    info,
+                    Exception("No valid EndpointDigestPair found"),
+                    resource,
+                    extras
+                )
+            }
         } catch (e: Throwable) {
             return failure(info, e, resource, extras)
         }
@@ -137,7 +148,7 @@ abstract class CacheWorker<T>: BaseCacheWorker<T, Unit>() {
         return getFromPersistence(resource)
     }
 
-    protected suspend fun run(pair: EndpointDigestPair<T>, resource: ResourceKey): Cachable<T> {
+    protected suspend fun run(pair: BaseEndpointDigestPair<T>, resource: ResourceKey): Cachable<T> {
         return run(pair, resource, Unit)
     }
 }

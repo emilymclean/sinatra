@@ -5,6 +5,7 @@ import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.data.models.StopId
 import cl.emilym.sinatra.data.models.StopTimetable
 import cl.emilym.sinatra.network.GtfsApi
+import cl.emilym.sinatra.network.validated
 import org.koin.core.annotation.Factory
 
 @Factory
@@ -13,7 +14,7 @@ class StopClient(
 ) {
 
     val stopsEndpointPair by lazy {
-        object : EndpointDigestPair<List<Stop>>() {
+        object : ValidatedEndpointDigestPair<List<Stop>>() {
             override val endpoint = ::stops
             override val digest = ::stopsDigest
         }
@@ -24,8 +25,8 @@ class StopClient(
         override val digest = suspend { timetableDigest(stopId) }
     }
 
-    suspend fun stops(): List<Stop> {
-        val pbStops = gtfsApi.stops()
+    suspend fun stops(digest: ShaDigest): List<Stop> {
+        val pbStops = gtfsApi.stops().validated(digest)
         return pbStops.stop.map { Stop.fromPB(it) }
     }
 

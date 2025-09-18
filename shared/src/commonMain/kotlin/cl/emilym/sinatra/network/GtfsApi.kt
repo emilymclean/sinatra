@@ -27,7 +27,7 @@ interface GtfsApi {
     suspend fun cacheInvalidationKey(): String
 
     @GET("v1/stops.pb")
-    suspend fun stops(): StopEndpoint
+    suspend fun stops(): DigestedResponse<StopEndpoint>
 
     @GET("v1/stops.pb.sha")
     suspend fun stopsDigest(): String
