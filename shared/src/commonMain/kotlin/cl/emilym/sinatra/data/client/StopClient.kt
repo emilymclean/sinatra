@@ -20,8 +20,8 @@ class StopClient(
         }
     }
 
-    fun timetableEndpointPair(stopId: StopId) = object : EndpointDigestPair<StopTimetable>() {
-        override val endpoint = suspend { timetable(stopId) }
+    fun timetableEndpointPair(stopId: StopId) = object : ValidatedEndpointDigestPair<StopTimetable>() {
+        override val endpoint: suspend (ShaDigest) -> StopTimetable = { digest -> timetable(digest, stopId) }
         override val digest = suspend { timetableDigest(stopId) }
     }
 
@@ -34,8 +34,8 @@ class StopClient(
         return gtfsApi.stopsDigest()
     }
 
-    suspend fun timetable(stopId: StopId): StopTimetable {
-        val pbTimetable = gtfsApi.stopTimetable(stopId)
+    suspend fun timetable(digest: ShaDigest, stopId: StopId): StopTimetable {
+        val pbTimetable = gtfsApi.stopTimetable(stopId).validated(digest)
         return StopTimetable.fromPB(pbTimetable)
     }
 
