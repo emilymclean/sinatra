@@ -7,6 +7,10 @@ import cl.emilym.sinatra.nullIfEmpty
 import cl.emilym.sinatra.router.data.EdgeType
 import cl.emilym.sinatra.router.data.NetworkGraph
 import cl.emilym.sinatra.router.data.NetworkGraphEdge
+import cl.emilym.sinatra.router.data.NetworkGraphNode
+import cl.emilym.sinatra.router.data.RouteNetworkGraphNode
+import cl.emilym.sinatra.router.data.headingIndexCompat
+import cl.emilym.sinatra.router.data.routeIndexCompat
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 
@@ -25,12 +29,14 @@ data class RaptorConfig(
 
 data class RouterPrefs(
     val wheelchairAccessible: Boolean,
-    val bikesAllowed: Boolean
+    val bikesAllowed: Boolean,
+    val schoolAllowed: Boolean
 )
 
 internal val DEFAULT_ROUTER_PREFS = RouterPrefs(
     wheelchairAccessible = false,
-    bikesAllowed = false
+    bikesAllowed = false,
+    schoolAllowed = false,
 )
 
 abstract class Router {
@@ -131,20 +137,6 @@ abstract class Router {
                     Q.add(v, altP)
                     checked.remove(v)
                 }
-                if (neighbour.edge.type == EdgeType.TRAVEL) {
-                    val tV = getNode(neighbour.edge.connectedNodeIndex.toInt()).stopIndex.toInt()
-                    val addedPenalty = config.changeOverPenalty
-                    val addedTime = config.changeOverTime
-                    if ((altP + addedPenalty) < distP[tV]) {
-                        prev[tV] = u
-                        prevEdge[tV] = neighbour.edge
-                        distP[tV] = altP + addedPenalty
-                        dist[tV] = alt + addedTime
-                        dayIndex[v] = neighbour.dayIndex
-                        Q.add(tV, altP)
-                        checked.remove(v)
-                    }
-                }
             }
             currentCoroutineContext().ensureActive()
         }
@@ -208,7 +200,7 @@ abstract class Router {
                     edges.toList(),
                     dayIndicies.toList()
                 )
-                EdgeType.TRANSFER, EdgeType.TRANSFER_NON_ADJUSTABLE ->
+                EdgeType.TRANSFER ->
                     GroupedGraphEdges.Transfer(
                         stops.toList(),
                         edges.toList()
@@ -274,13 +266,23 @@ abstract class Router {
         val edges = node.edges
 
         return edges.flatMap {
+            if (it.schoolOnly && !prefs.schoolAllowed) return@flatMap emptyList()
             when (it.type) {
-                EdgeType.UNWEIGHTED -> listOf(
+                EdgeType.TO_ROUTE_NODE -> listOf(
                     NodeCost(it.connectedNodeIndex.toInt(), 0L, 0L, it, null)
                 )
-                EdgeType.TRANSFER, EdgeType.TRANSFER_NON_ADJUSTABLE -> {
+                EdgeType.TO_STOP_NODE -> listOf(
+                    NodeCost(
+                        it.connectedNodeIndex.toInt(),
+                        config.changeOverTime,
+                        config.changeOverPenalty.toLong(),
+                        it,
+                        null
+                    )
+                )
+                EdgeType.TRANSFER -> {
                     if (ignoreTransfer) return@flatMap emptyList()
-                    if (it.cost.toLong() > (config.maximumWalkingTime)) return@flatMap emptyList()
+                    if (it.cost.toLong() > config.maximumWalkingTime) return@flatMap emptyList()
                     listOf(NodeCost(
                         it.connectedNodeIndex.toInt(),
                         it.cost.toLong() + config.transferTime,
@@ -338,11 +340,11 @@ abstract class Router {
 
         val fencepostDepartureCost = if (departureEdgeIndex == 0) departureEdge.cost.toLong() else 0
         val fencepostArrivalCost = if (arrivalEdgeIndex == 0) arrivalEdge.cost.toLong() else 0
-
         return RaptorJourneyConnection.Travel(
             stops,
-            graph.mappings.routeIds[firstNode.routeIndex.toInt()],
-            graph.mappings.headings[firstNode.headingIndex.toInt()],
+            graph.mappings.routeIds[firstNode.routeIndexCompat.toInt()],
+            graph.mappings.headings[firstNode.headingIndexCompat.toInt()],
+            graph.mappings.tripIds[departureEdge.tripIndex.toInt()],
             departure - fencepostDepartureCost,
             arrival + fencepostArrivalCost,
             dayIndicies[departureEdgeIndex] ?: 0,

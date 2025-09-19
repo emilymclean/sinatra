@@ -1,26 +1,21 @@
 package cl.emilym.sinatra.ui.widgets.form
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import cl.emilym.sinatra.data.repository.StatefulPreferencesUnit
-import cl.emilym.sinatra.ui.widgets.collectAsStateWithLifecycle
-import kotlinx.coroutines.launch
+import cl.emilym.sinatra.data.repository.Preference
+import cl.emilym.sinatra.ui.widgets.rememberPreferenceState
 
 @Composable
 fun <T> PreferencesDropdown(
-    unit: StatefulPreferencesUnit<T>,
+    preference: Preference<T>,
     options: List<DropdownOption<T>>,
     modifier: Modifier = Modifier
 ) {
-    val scope = rememberCoroutineScope()
-    val value by unit.flow.collectAsStateWithLifecycle()
-
+    var value by rememberPreferenceState(preference)
     SinatraDropdown(
         value,
         options,
-        { scope.launch { unit.save(it) } },
+        { value = it },
         modifier = Modifier.then(modifier)
     )
 }

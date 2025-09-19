@@ -11,6 +11,7 @@ typealias ServiceId = String
 typealias Heading = String
 typealias TripId = String
 typealias ServiceAlertId = String
+typealias FavouriteId = Long
 
 typealias Latitude = Double
 typealias Longitude = Double

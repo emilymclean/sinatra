@@ -3,12 +3,20 @@ package cl.emilym.sinatra.router.data
 import cl.emilym.sinatra.data.models.RouteId
 import cl.emilym.sinatra.data.models.ServiceId
 import cl.emilym.sinatra.data.models.StopId
+import cl.emilym.sinatra.data.models.TripId
 import kotlin.experimental.and
 
-// The number of bytes used to represent an edge, excluding available services
-const val METADATA_BYTE_SIZE = 5 + 1 + 1 + 4 + 4 + 4 + 4 + 4
-const val EDGE_BYTE_SIZE = 4 + 4 + 4 + 1
-const val NODE_BYTE_SIZE = 4 + 4 + 4 + 1 + 4 + 4
+const val METADATA_BYTE_SIZE =
+    5 + // Magic Number
+    1 + // Version
+    1 + // Available Services Length
+    4 + // Nodes Start
+    4 + // Edges Start
+    4 + // Penalty Multiplier
+    4 + // assumedWalkingSecondsPerKilometer
+    4 + // Node count
+    1 + // Node Length
+    1   // Edge Length
 
 class ByteNetworkGraph(
     private val data: RandomByteReader
@@ -22,14 +30,29 @@ class ByteNetworkGraph(
         )
     }
 
+    init {
+        if (MagicNumberByteNetworkGraphEntry(data).magicNumber != "emily")
+            throw IllegalStateException("Invalid network graph format")
+        if (metadata.version != 2u)
+            throw IllegalStateException("Invalid network graph version")
+    }
+
     override fun node(index: Int): ByteNetworkGraphNode {
-        val start = metadata.nodesStart.toInt() + (NODE_BYTE_SIZE * index)
-        return ByteNetworkGraphNode(
-            start,
-            data,
-            metadata.availableServicesLength.toInt(),
-            metadata.edgesStart.toInt()
-        )
+        val start = metadata.nodesStart.toInt() + (metadata.alignment.nodeLength * index)
+        val type = data.read(start + 0x0C) and 0b1
+
+        return when (type) {
+            0b0.toByte() -> ByteStopNetworkGraphNode(
+                start,
+                data,
+                metadata.alignment
+            )
+            else -> ByteRouteNetworkGraphNode(
+                start,
+                data,
+                metadata.alignment
+            )
+        }
     }
 
     override fun toString(): String {
@@ -85,6 +108,14 @@ abstract class ByteNetworkGraphEntry(
 
 }
 
+private class MagicNumberByteNetworkGraphEntry(
+    data: RandomByteReader
+): ByteNetworkGraphEntry(0, data) {
+
+    val magicNumber by lazy { readBytes(0x00, 5).decodeToString() }
+
+}
+
 class ByteNetworkGraphMappings(
     position: Int,
     data: RandomByteReader
@@ -93,6 +124,7 @@ class ByteNetworkGraphMappings(
     override val stopIdToIndex: Map<StopId, Int>
     override val routeIds: List<RouteId>
     override val headings: List<String>
+    override val tripIds: List<TripId>
     override val serviceIds: List<ServiceId>
 
     init {
@@ -100,21 +132,24 @@ class ByteNetworkGraphMappings(
         val stopIdToIndex = mutableMapOf<StopId, Int>()
         val routeIds = mutableListOf<RouteId>()
         val headings = mutableListOf<String>()
+        val tripIds = mutableListOf<String>()
         val serviceIds = mutableListOf<ServiceId>()
 
         val stopsCount = readUInt(0x00)
         val routesCount = readUInt(0x04)
         val headingCount = readUInt(0x08)
-        val servicesCount = readUInt(0x0C)
+        val tripsCount = readUInt(0x0C)
+        val servicesCount = readUInt(0x10)
 
         val paired = listOf(
             stopsCount to stopIds,
             routesCount to routeIds,
             headingCount to headings,
+            tripsCount to tripIds,
             servicesCount to serviceIds,
         )
 
-        var cursor = 0x10
+        var cursor = 0x14
         for (pi in paired.indices) {
             val p = paired[pi]
             val out = p.second
@@ -130,11 +165,12 @@ class ByteNetworkGraphMappings(
             }
         }
 
-        this.stopIds = stopIds
-        this.stopIdToIndex = stopIdToIndex
-        this.routeIds = routeIds
-        this.headings = headings
-        this.serviceIds = serviceIds
+        this.stopIds = stopIds.toList()
+        this.stopIdToIndex = stopIdToIndex.toMap()
+        this.routeIds = routeIds.toList()
+        this.headings = headings.toList()
+        this.tripIds = tripIds.toList()
+        this.serviceIds = serviceIds.toList()
     }
 
     override fun toString(): String {
@@ -147,32 +183,47 @@ class ByteNetworkGraphMetadata(
     data: RandomByteReader,
 ): ByteNetworkGraphEntry(5, data), NetworkGraphMetadata {
 
-    override val version by lazy { readUInt(0x00, 1) }
-    override val availableServicesLength by lazy { readUInt(0x01, 1) }
-    override val nodesStart by lazy { readUInt(0x02) }
-    override val edgesStart by lazy { readUInt(0x06) }
-    override val penaltyMultiplier by lazy { readFloat(0x0A) }
-    override val assumedWalkingSecondsPerKilometer by lazy { readUInt(0x0E) }
-    override val nodeCount: UInt by lazy { readUInt(0x12) }
+    override val version = readUInt(0x00, 1)
+    override val availableServicesLength = readUInt(0x01, 1)
+    override val nodesStart = readUInt(0x02)
+    override val edgesStart = readUInt(0x06)
+    override val penaltyMultiplier = readFloat(0x0A)
+    override val assumedWalkingSecondsPerKilometer = readUInt(0x0E)
+    override val nodeCount: UInt = readUInt(0x12)
+    override val nodeLength: UInt = readUInt(0x16, 1)
+    override val edgeLength: UInt = readUInt(0x17, 1)
+
+    val alignment: ByteNetworkGraphAlignment by lazy {
+        ByteNetworkGraphAlignment(
+            nodeLength.toInt(),
+            edgeLength.toInt(),
+            edgesStart.toInt(),
+            availableServicesLength.toInt()
+        )
+    }
 
     override fun toString(): String {
-        return "ByteNetworkGraphMetadata(version=$version, availableServicesLength=$availableServicesLength, nodesStart=$nodesStart, edgesStart=$edgesStart, penaltyMultiplier=$penaltyMultiplier, assumedWalkingSecondsPerKilometer=$assumedWalkingSecondsPerKilometer, nodeCount=$nodeCount)"
+        return "ByteNetworkGraphMetadata(version=$version, availableServicesLength=$availableServicesLength, nodesStart=$nodesStart, edgesStart=$edgesStart, penaltyMultiplier=$penaltyMultiplier, assumedWalkingSecondsPerKilometer=$assumedWalkingSecondsPerKilometer, nodeCount=$nodeCount, nodeLength=$nodeLength, edgeLength=$edgeLength)"
     }
 
 }
 
-class ByteNetworkGraphNode(
+data class ByteNetworkGraphAlignment(
+    val nodeLength: Int,
+    val edgeLength: Int,
+    val edgesStartPosition: Int,
+    val availableServicesLength: Int
+)
+
+abstract class ByteNetworkGraphNode(
     position: Int,
     data: RandomByteReader,
-    private val availableServicesLength: Int,
-    private val edgesStartPosition: Int,
+    private val alignment: ByteNetworkGraphAlignment,
 ): ByteNetworkGraphEntry(position, data), NetworkGraphNode {
 
     override val stopIndex by lazy { readUInt(0x00) }
-    override val routeIndex by lazy { readUInt(0x04) }
-    override val headingIndex by lazy { readUInt(0x08) }
 
-    private val flags by lazy { readByte(0x0C) }
+    protected val flags by lazy { readByte(0x0C) }
     private val edgePointer by lazy { readUInt(0x0D).toInt() }
     private val edgeCount by lazy { readUInt(0x11).toInt() }
 
@@ -182,36 +233,64 @@ class ByteNetworkGraphNode(
         else -> NodeType.STOP_ROUTE
     }
 
-    override val wheelchairAccessible: Boolean get() = (flags and 0b10) == 0b10.toByte()
-
     override val edges: List<ByteNetworkGraphEdge> by lazy {
         List(edgeCount) { i ->
             ByteNetworkGraphEdge(
-                edgesStartPosition + edgePointer + ((EDGE_BYTE_SIZE + availableServicesLength) * i),
+                alignment.edgesStartPosition + edgePointer + (alignment.edgeLength * i),
                 data,
-                availableServicesLength
+                alignment
             )
         }
     }
+}
+
+class ByteStopNetworkGraphNode(
+    position: Int,
+    data: RandomByteReader,
+    alignment: ByteNetworkGraphAlignment,
+): ByteNetworkGraphNode(
+    position, data, alignment
+), StopNetworkGraphNode {
+
+    override val lat by lazy { readFloat(0x04) }
+    override val lng by lazy { readFloat(0x08) }
+
+    override val wheelchairAccessible: Boolean get() = (flags and 0b10) == 0b10.toByte()
 
     override fun toString(): String {
-        return "NetworkGraphNode(stopIndex=$stopIndex, routeIndex=$routeIndex, headingIndex=$headingIndex, type=$type, wheelchairAccessible=$wheelchairAccessible, edges=$edges)"
+        return "StopNetworkGraphNode(stopIndex=$stopIndex, lat=$lat, lng=$lng, type=$type, wheelchairAccessible=$wheelchairAccessible, edges=$edges)"
     }
+}
 
+class ByteRouteNetworkGraphNode(
+    position: Int,
+    data: RandomByteReader,
+    alignment: ByteNetworkGraphAlignment,
+): ByteNetworkGraphNode(
+    position, data, alignment
+), RouteNetworkGraphNode {
+
+    override val routeIndex by lazy { readUInt(0x04) }
+    override val headingIndex by lazy { readUInt(0x08) }
+
+    override fun toString(): String {
+        return "RouteNetworkGraphNode(stopIndex=$stopIndex, routeIndex=$routeIndex, headingIndex=$headingIndex, type=$type, edges=$edges)"
+    }
 }
 
 class ByteNetworkGraphEdge(
     position: Int,
     data: RandomByteReader,
-    private val availableServicesLength: Int
+    private val alignment: ByteNetworkGraphAlignment
 ): ByteNetworkGraphEntry(position, data), NetworkGraphEdge {
     override val connectedNodeIndex by lazy { readUInt(0x00) }
     override val cost by lazy { readUInt(0x04) }
     override val departureTime by lazy { readUInt(0x08) }
-    private val flags by lazy { readByte(0x0C + availableServicesLength) }
+    override val tripIndex by lazy { readUInt(0x0C) }
+    private val flags by lazy { readByte(0x10 + alignment.availableServicesLength) }
 
     override val availableServices: List<UInt> by lazy {
-        val bytes = readBytes(0x0C, availableServicesLength)
+        val bytes = readBytes(0x10, alignment.availableServicesLength)
         val active = mutableListOf<UInt>()
         for (byteIndex in bytes.indices) {
             for (bitIndex in 0.until(8)) {
@@ -225,13 +304,14 @@ class ByteNetworkGraphEdge(
     override val type: EdgeType
         get() = when (flags and 0b11) {
         0b00.toByte() -> EdgeType.TRAVEL
-        0b10.toByte() -> EdgeType.UNWEIGHTED
-        0b01.toByte() -> EdgeType.TRANSFER_NON_ADJUSTABLE
-        else -> EdgeType.TRANSFER
+        0b10.toByte() -> EdgeType.TRANSFER
+        0b01.toByte() -> EdgeType.TO_STOP_NODE
+        else -> EdgeType.TO_ROUTE_NODE
     }
 
     override val wheelchairAccessible: Boolean get() = (flags and 0b100) == 0b100.toByte()
     override val bikesAllowed: Boolean get() = (flags and 0b1000) == 0b1000.toByte()
+    override val schoolOnly: Boolean get() = (flags and 0b10000) == 0b10000.toByte()
 
     override fun toString(): String {
         return "NetworkGraphEdge(connectedNodeIndex=$connectedNodeIndex, cost=$cost, departureTime=$departureTime, availableServices=$availableServices, type=$type, wheelchairAccessible=$wheelchairAccessible, bikesAllowed=$bikesAllowed)"

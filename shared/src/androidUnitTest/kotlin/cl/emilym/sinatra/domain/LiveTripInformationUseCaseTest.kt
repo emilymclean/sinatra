@@ -94,7 +94,8 @@ class LiveTripInformationUseCaseTest {
             updates = listOf(
                 RouteRealtimeUpdate(
                     tripId,
-                    DelayInformation.Fixed(10.seconds)
+                    DelayInformation.Fixed(10.seconds),
+                    emptyList()
                 )
             ),
             expire = Instant.DISTANT_FUTURE
@@ -121,7 +122,6 @@ class LiveTripInformationUseCaseTest {
         val instant = Instant.parse("2024-01-05T12:00:00Z")
 
         // Arrange
-        val liveInformationUrl = "http://realtime.url"
         val routeId = "route-1"
         val serviceId = "service-1"
         val tripId = "trip-1"
@@ -152,7 +152,8 @@ class LiveTripInformationUseCaseTest {
             updates = listOf(
                 RouteRealtimeUpdate(
                     tripId,
-                    DelayInformation.Unknown
+                    DelayInformation.Unknown,
+                    emptyList()
                 )
             ),
             expire = Instant.DISTANT_FUTURE
@@ -254,7 +255,8 @@ class LiveTripInformationUseCaseTest {
             updates = listOf(
                 RouteRealtimeUpdate(
                     tripId,
-                    DelayInformation.Fixed(10.seconds)
+                    DelayInformation.Fixed(10.seconds),
+                    emptyList()
                 )
             ),
             expire = Instant.fromEpochMilliseconds(0)

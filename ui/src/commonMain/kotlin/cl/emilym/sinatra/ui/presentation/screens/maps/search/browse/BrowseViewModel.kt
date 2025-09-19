@@ -77,7 +77,7 @@ class BrowseViewModel(
     private val serviceAlertRepository: ServiceAlertRepository
 ): SinatraScreenModel {
 
-    private val _routes = requestStateFlow(defaultConfig) { displayRoutesUseCase().item }
+    private val _routes = flatRequestStateFlow(defaultConfig) { displayRoutesUseCase().mapLatest { it.item } }
     val routes = _routes.state(RequestState.Initial())
 
     private val lastLocation = MutableStateFlow<MapLocation?>(null)

@@ -63,6 +63,7 @@ class CalculateJourneyUseCase(
     private lateinit var arrivalLocation: JourneyLocation
     private var onlyWheelchair: Boolean = false
     private var onlyBikes: Boolean = false
+    private var allowSchoolService: Boolean = false
 
     suspend operator fun invoke(
         departureLocation: JourneyLocation,
@@ -78,6 +79,7 @@ class CalculateJourneyUseCase(
                 this@CalculateJourneyUseCase.arrivalLocation = arrivalLocation
                 this@CalculateJourneyUseCase.onlyBikes = onlyBikes
                 this@CalculateJourneyUseCase.onlyWheelchair = onlyWheelchair
+                this@CalculateJourneyUseCase.allowSchoolService = routingPreferencesRepository.schoolServiceAllowed()
 
                 val now = anchorTime.time
                 stops = stopRepository.stops()
@@ -166,7 +168,8 @@ class CalculateJourneyUseCase(
     ): Journey? {
         val prefs = RouterPrefs(
             wheelchairAccessible = onlyWheelchair,
-            bikesAllowed = onlyBikes
+            bikesAllowed = onlyBikes,
+            schoolAllowed = allowSchoolService
         )
 
         val raptor = routerFactory(

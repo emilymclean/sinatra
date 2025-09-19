@@ -43,7 +43,7 @@ class RootPreferencesScreen: PreferencesScreen() {
         get() = stringResource(Res.string.preferences_root_title)
 
     @Composable
-    override fun ColumnScope.Preferences(preferencesCollection: PreferencesCollection) {}
+    override fun ColumnScope.Preferences() {}
 
     @Composable
     override fun options(): List<ContentLink> {

@@ -5,19 +5,24 @@ import cl.emilym.sinatra.data.models.Route
 import cl.emilym.sinatra.data.models.StopId
 import cl.emilym.sinatra.data.models.map
 import cl.emilym.sinatra.data.repository.StopRepository
+import kotlinx.coroutines.flow.Flow
 import org.koin.core.annotation.Factory
 
 @Factory
 class RoutesVisitingStopUseCase(
     private val stopRepository: StopRepository,
+    private val getFilteredRoutesUseCase: GetFilteredRoutesUseCase
 ) {
 
     suspend operator fun invoke(
         stopId: StopId
-    ): Cachable<List<Route>> {
-        return stopRepository.timetable(stopId).map {
-            it.times.mapNotNull { it.route }.distinctBy { it.id }.filterAndSort()
-        }
+    ): Flow<List<Route>> {
+        val timetable = stopRepository.timetable(stopId).item
+        return getFilteredRoutesUseCase.filterRoutes(
+            timetable.times
+                .mapNotNull { it.route }
+                .distinctBy { it.id }
+        )
     }
 
 }

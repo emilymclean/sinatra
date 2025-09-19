@@ -42,6 +42,10 @@
 
   <string name="preferences_setting_bikes_subtitle">配备自行车架的路线。</string>
 
+  <string name="preferences_setting_school_service">显示校车服务</string>
+
+  <string name="preferences_setting_school_service_subtitle">显示学校交通选项，并在路线规划中包含校车。</string>
+
   <string name="preferences_setting_show_accessibility_icons_navigation">显示无障碍信息</string>
 
   <string name="preferences_setting_show_accessibility_icons_navigation_subtitle">显示路线是否适合骑行或轮椅通行。</string>

@@ -36,14 +36,16 @@ class QuickNavigateUseCaseTest {
         stop = mockk {
             coEvery { location } returns homeLocation
         },
-        specialType = SpecialFavouriteType.HOME
+        specialType = SpecialFavouriteType.HOME,
+        id = 0
     )
 
     private val workPlace = Favourite.Place(
         place = mockk {
             coEvery { location } returns workLocation
         },
-        specialType = SpecialFavouriteType.WORK
+        specialType = SpecialFavouriteType.WORK,
+        id = 0
     )
 
     @Test

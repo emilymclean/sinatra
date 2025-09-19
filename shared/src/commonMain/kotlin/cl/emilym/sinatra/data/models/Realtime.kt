@@ -22,15 +22,20 @@ sealed interface DelayInformation {
     ): DelayInformation
 }
 
-data class RouteRealtimeInformation(
-    override val updates: List<RouteRealtimeUpdate>,
+typealias RouteRealtimeInformation = RealtimeInformationImpl
+typealias RouteRealtimeUpdate = RealtimeUpdateImpl
+typealias StopRealtimeInformation = RealtimeInformationImpl
+typealias StopRealtimeUpdate = RealtimeUpdateImpl
+
+data class RealtimeInformationImpl(
+    override val updates: List<RealtimeUpdateImpl>,
     override val expire: Instant
-): RealtimeInformation<RouteRealtimeUpdate> {
+): RealtimeInformation<RealtimeUpdateImpl> {
 
     companion object {
-        fun fromPb(pb: cl.emilym.gtfs.RealtimeEndpoint): RouteRealtimeInformation {
-            return RouteRealtimeInformation(
-                pb.updates.map { RouteRealtimeUpdate.fromPb(it) },
+        fun fromPb(pb: cl.emilym.gtfs.RealtimeEndpoint): RealtimeInformationImpl {
+            return RealtimeInformationImpl(
+                pb.updates.map { RealtimeUpdateImpl.fromPb(it) },
                 pb.expireTimestamp?.let { Instant.parse(pb.expireTimestamp) }
                     ?: (kotlin.time.Clock.System.now() + 2.minutes)
             )
@@ -39,61 +44,30 @@ data class RouteRealtimeInformation(
 
 }
 
-data class RouteRealtimeUpdate(
+data class RealtimeUpdateImpl(
     val tripId: TripId,
-    override val delay: DelayInformation
+    override val delay: DelayInformation,
+    val stopDelayInformation: List<StopDelayInformation>
 ): RealtimeUpdate {
 
     companion object {
-        fun fromPb(pb: cl.emilym.gtfs.RealtimeUpdate): RouteRealtimeUpdate {
-            return RouteRealtimeUpdate(
+        fun fromPb(pb: cl.emilym.gtfs.RealtimeUpdate): RealtimeUpdateImpl {
+            return RealtimeUpdateImpl(
                 pb.tripId,
                 pb.delay.let {
                     when (it) {
                         null -> DelayInformation.Unknown
                         else -> DelayInformation.Fixed(it.seconds)
                     }
-                }
+                },
+                emptyList()
             )
         }
     }
 
 }
 
-data class StopRealtimeInformation(
-    override val updates: List<StopRealtimeUpdate>,
-    override val expire: Instant
-): RealtimeInformation<StopRealtimeUpdate> {
-
-    companion object {
-        fun fromPb(pb: cl.emilym.gtfs.RealtimeEndpoint): StopRealtimeInformation {
-            return StopRealtimeInformation(
-                pb.updates.map { StopRealtimeUpdate.fromPb(it) },
-                pb.expireTimestamp?.let { Instant.parse(pb.expireTimestamp) }
-                    ?: (kotlin.time.Clock.System.now() + 2.minutes)
-            )
-        }
-    }
-
-}
-
-data class StopRealtimeUpdate(
-    val tripId: TripId,
-    override val delay: DelayInformation
-): RealtimeUpdate {
-
-    companion object {
-        fun fromPb(pb: cl.emilym.gtfs.RealtimeUpdate): StopRealtimeUpdate {
-            return StopRealtimeUpdate(
-                pb.tripId,
-                pb.delay.let {
-                    when (it) {
-                        null -> DelayInformation.Unknown
-                        else -> DelayInformation.Fixed(it.seconds)
-                    }
-                }
-            )
-        }
-    }
-
-}
+data class StopDelayInformation(
+    val stopId: StopId,
+    val delay: DelayInformation
+)

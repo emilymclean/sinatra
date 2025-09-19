@@ -37,6 +37,8 @@ google-services = "4.4.3"
 firebase-crashlytics = "3.0.4"
 coroutines-test = "1.10.2"
 datastore = "1.1.7"
+reorderable = "2.5.1"
+kotlincrypto = "0.6.0"
 
 [libraries]
 
@@ -53,6 +55,7 @@ compose-material3 = { module = "androidx.compose.material3:material3", version.r
 compose-adaptive = { group = "org.jetbrains.compose.material3.adaptive", name = "adaptive", version.ref = "compose-adaptive" }
 compose-adaptive-navigation = { group = "org.jetbrains.compose.material3.adaptive", name = "adaptive-navigation", version.ref = "compose-adaptive" }
 androidx-lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycleRuntimeCompose" }
+reorderable = { module = "sh.calvin.reorderable:reorderable", version.ref = "reorderable" }
 
 # Coil
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil-compose" }
@@ -110,6 +113,7 @@ play-services-location = { group = "com.google.android.gms", name = "play-servic
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 aakira-napier = { module = "io.github.aakira:napier", version.ref = "aakira-napier" }
 kotlin-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlin-datetime" }
+kotlin-crypto-sha256 = { module = "org.kotlincrypto.hash:sha2", version.ref = "kotlincrypto" }
 
 # Classpath
 secrets-gradle-plugin = { module = "com.google.android.libraries.mapsplatform.secrets-gradle-plugin:secrets-gradle-plugin", version.ref = "secretsGradlePlugin" }

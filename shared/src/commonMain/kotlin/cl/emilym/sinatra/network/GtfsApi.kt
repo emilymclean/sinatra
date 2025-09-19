@@ -18,7 +18,6 @@ import cl.emilym.sinatra.data.models.StopId
 import cl.emilym.sinatra.data.models.TripId
 import com.google.transit.realtime.FeedMessage
 import de.jensklingenberg.ktorfit.http.GET
-import de.jensklingenberg.ktorfit.http.Headers
 import de.jensklingenberg.ktorfit.http.Path
 import de.jensklingenberg.ktorfit.http.Url
 
@@ -28,7 +27,7 @@ interface GtfsApi {
     suspend fun cacheInvalidationKey(): String
 
     @GET("v1/stops.pb")
-    suspend fun stops(): StopEndpoint
+    suspend fun stops(): DigestedResponse<StopEndpoint>
 
     @GET("v1/stops.pb.sha")
     suspend fun stopsDigest(): String
@@ -36,7 +35,7 @@ interface GtfsApi {
     @GET("v1/stop/{stopId}/timetable.pb")
     suspend fun stopTimetable(
         @Path("stopId") stopId: StopId
-    ): StopTimetable
+    ): DigestedResponse<StopTimetable>
 
     @GET("v1/stop/{stopId}/timetable.pb.sha")
     suspend fun stopTimetableDigest(
@@ -44,7 +43,7 @@ interface GtfsApi {
     ): String
 
     @GET("v1/routes.pb")
-    suspend fun routes(): RouteEndpoint
+    suspend fun routes(): DigestedResponse<RouteEndpoint>
 
     @GET("v1/routes.pb.sha")
     suspend fun routesDigest(): String
@@ -52,7 +51,7 @@ interface GtfsApi {
     @GET("v1/route/{routeId}/services.pb")
     suspend fun routeServices(
         @Path("routeId") routeId: RouteId
-    ): RouteServicesEndpoint
+    ): DigestedResponse<RouteServicesEndpoint>
 
     @GET("v1/route/{routeId}/services.pb.sha")
     suspend fun routeServicesDigest(
@@ -63,7 +62,7 @@ interface GtfsApi {
     suspend fun routeServiceTimetable(
         @Path("routeId") routeId: RouteId,
         @Path("serviceId") serviceId: ServiceId
-    ): RouteTimetableEndpoint
+    ): DigestedResponse<RouteTimetableEndpoint>
 
     @GET("v1/route/{routeId}/service/{serviceId}/timetable.pb.sha")
     suspend fun routeServiceTimetableDigest(
@@ -75,7 +74,7 @@ interface GtfsApi {
     suspend fun routeServiceCanonicalTimetable(
         @Path("routeId") routeId: RouteId,
         @Path("serviceId") serviceId: ServiceId
-    ): RouteCanonicalTimetableEndpoint
+    ): DigestedResponse<RouteCanonicalTimetableEndpoint>
 
     @GET("v1/route/{routeId}/service/{serviceId}/canonical.pb.sha")
     suspend fun routeServiceCanonicalTimetableDigest(
@@ -87,7 +86,7 @@ interface GtfsApi {
     suspend fun routeServiceCanonicalTimetableV2(
         @Path("routeId") routeId: RouteId,
         @Path("serviceId") serviceId: ServiceId
-    ): RouteCanonicalTimetableEndpointV2
+    ): DigestedResponse<RouteCanonicalTimetableEndpointV2>
 
     @GET("v2/route/{routeId}/service/{serviceId}/canonical.pb.sha")
     suspend fun routeServiceCanonicalTimetableV2Digest(
@@ -100,7 +99,7 @@ interface GtfsApi {
         @Path("routeId") routeId: RouteId,
         @Path("serviceId") serviceId: ServiceId,
         @Path("tripId") tripId: TripId
-    ): RouteTripTimetableEndpoint
+    ): DigestedResponse<RouteTripTimetableEndpoint>
 
     @GET("v1/route/{routeId}/service/{serviceId}/trip/{tripId}/timetable.pb.sha")
     suspend fun routeTripTimetableDigest(
@@ -116,7 +115,7 @@ interface GtfsApi {
     suspend fun stopRealtime(@Path("stopId") stopId: StopId): RealtimeEndpoint
 
     @GET("v1/services.pb")
-    suspend fun services(): ServiceEndpoint
+    suspend fun services(): DigestedResponse<ServiceEndpoint>
 
     @GET("v1/services.pb.sha")
     suspend fun servicesDigest(): String
@@ -145,32 +144,31 @@ interface GtfsApi {
     @GET("v1/content-0.11.0.ios.pb.sha")
     suspend fun contentIosDigest(): String
 
-    @GET("v1/network-graph.eng")
-    suspend fun networkGraph(): ByteArray
+    @GET("v2/network-graph.eng")
+    suspend fun networkGraph(): DigestedResponse<ByteArray>
 
-    @GET("v1/network-graph.eng.sha")
+    @GET("v2/network-graph.eng.sha")
     suspend fun networkGraphDigest(): String
 
-    @GET("v1/network-graph-reverse.eng")
-    suspend fun reverseNetworkGraph(): ByteArray
+    @GET("v2/network-graph-reverse.eng")
+    suspend fun reverseNetworkGraph(): DigestedResponse<ByteArray>
 
-    @GET("v1/network-graph-reverse.eng.sha")
+    @GET("v2/network-graph-reverse.eng.sha")
     suspend fun reverseNetworkGraphDigest(): String
 
     @GET("v1/journey-config.pb")
-    suspend fun journeyConfig(): ByteArray
+    suspend fun journeyConfig(): DigestedResponse<ByteArray>
 
     @GET("v1/journey-config.pb.sha")
     suspend fun journeyConfigDigest(): String
 
-    @GET
-    @Headers("Accept: */*")
-    suspend fun getLiveUpdates(@Url url: String): FeedMessage
-
     @GET("v1/service-alert.pb")
-    suspend fun serviceAlerts(): ServiceAlertEndpoint
+    suspend fun serviceAlerts(): DigestedResponse<ServiceAlertEndpoint>
 
     @GET("v1/service-alert.pb.sha")
     suspend fun serviceAlertsDigest(): String
+
+    @GET("v1/live.pb")
+    suspend fun tripUpdates(): FeedMessage
 
 }

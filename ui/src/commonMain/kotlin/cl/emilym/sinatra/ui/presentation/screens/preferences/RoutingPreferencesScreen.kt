@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.ScreenKey
 import cl.emilym.sinatra.FeatureFlag
+import cl.emilym.sinatra.data.repository.Preference
 import cl.emilym.sinatra.lib.FloatRange
 import cl.emilym.sinatra.ui.text
 import cl.emilym.sinatra.ui.widgets.form.HorizontalLockup
@@ -26,6 +27,8 @@ import sinatra.ui.generated.resources.preferences_setting_max_walking
 import sinatra.ui.generated.resources.preferences_setting_wheelchair
 import sinatra.ui.generated.resources.preferences_setting_wheelchair_subtitle
 import sinatra.ui.generated.resources.preferences_routing_title
+import sinatra.ui.generated.resources.preferences_setting_school_service
+import sinatra.ui.generated.resources.preferences_setting_school_service_subtitle
 import sinatra.ui.generated.resources.preferences_setting_show_accessibility_icons_navigation
 import sinatra.ui.generated.resources.preferences_setting_show_accessibility_icons_navigation_subtitle
 import kotlin.time.Duration.Companion.minutes
@@ -37,15 +40,17 @@ class RoutingPreferencesScreen: PreferencesScreen() {
         get() = stringResource(Res.string.preferences_routing_title)
 
     @Composable
-    override fun ColumnScope.Preferences(preferencesCollection: PreferencesCollection) {
+    override fun ColumnScope.Preferences() {
         val showAccessibilitySettings = !FeatureFlag.GLOBAL_HIDE_TRANSPORT_ACCESSIBILITY.value()
+        val showSchoolServiceSettings = FeatureFlag.GLOBAL_ENABLE_SCHOOL_SERVICES.value()
+
         if (showAccessibilitySettings) {
             HorizontalLockup(
                 stringResource(Res.string.preferences_setting_wheelchair),
                 stringResource(Res.string.preferences_setting_wheelchair_subtitle),
                 Modifier.fillMaxWidth()
             ) {
-                PreferencesCheckbox(preferencesCollection.requiresWheelchair)
+                PreferencesCheckbox(Preference.RequiresWheelchair)
             }
 
             HorizontalLockup(
@@ -53,17 +58,30 @@ class RoutingPreferencesScreen: PreferencesScreen() {
                 stringResource(Res.string.preferences_setting_bikes_subtitle),
                 Modifier.fillMaxWidth()
             ) {
-                PreferencesCheckbox(preferencesCollection.requiresBikes)
+                PreferencesCheckbox(Preference.RequiresBikes)
             }
+        }
 
+        if (showSchoolServiceSettings) {
+            HorizontalLockup(
+                stringResource(Res.string.preferences_setting_school_service),
+                stringResource(Res.string.preferences_setting_school_service_subtitle),
+                Modifier.fillMaxWidth()
+            ) {
+                PreferencesCheckbox(Preference.RequiresWheelchair)
+            }
+        }
+
+        if (showAccessibilitySettings) {
             HorizontalLockup(
                 stringResource(Res.string.preferences_setting_show_accessibility_icons_navigation),
                 stringResource(Res.string.preferences_setting_show_accessibility_icons_navigation_subtitle),
                 Modifier.fillMaxWidth()
             ) {
-                PreferencesCheckbox(preferencesCollection.showAccessibilityIconsNavigation)
+                PreferencesCheckbox(Preference.ShowAccessibilityIconsNavigation)
             }
         }
+
 
         VerticalLockup(
             stringResource(Res.string.preferences_setting_max_walking),
@@ -71,7 +89,7 @@ class RoutingPreferencesScreen: PreferencesScreen() {
             Modifier.fillMaxWidth()
         ) {
             PreferencesFloatSlider(
-                preferencesCollection.maximumWalkingTime,
+                Preference.MaximumWalkingTime,
                 FloatRange(10f, 60f),
                 Modifier.fillMaxWidth(1f)
             ) {

@@ -33,6 +33,7 @@ import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 import org.koin.core.annotation.Factory
 import pbandk.decodeFromByteArray
+import kotlin.reflect.KClass
 
 expect val engine: HttpClientEngine
 
@@ -67,36 +68,49 @@ fun ktorDependency(
     plugin(HttpSend).intercept(loggingInterceptor())
 }
 
+private val protobufFactories: Map<KClass<*>, ProtobufFactory<*>> = mapOf(
+    RouteEndpoint::class to RouteEndpoint::decodeFromByteArray,
+    StopEndpoint::class to StopEndpoint::decodeFromByteArray,
+    StopDetailEndpoint::class to StopDetailEndpoint::decodeFromByteArray,
+    RouteDetailEndpoint::class to RouteDetailEndpoint::decodeFromByteArray,
+    ServiceEndpoint::class to ServiceEndpoint::decodeFromByteArray,
+    RouteTimetableEndpoint::class to RouteTimetableEndpoint::decodeFromByteArray,
+    RouteServicesEndpoint::class to RouteServicesEndpoint::decodeFromByteArray,
+    StopTimetable::class to StopTimetable::decodeFromByteArray,
+    RouteCanonicalTimetableEndpoint::class to RouteCanonicalTimetableEndpoint::decodeFromByteArray,
+    RouteCanonicalTimetableEndpointV2::class to RouteCanonicalTimetableEndpointV2::decodeFromByteArray,
+    RouteTripTimetableEndpoint::class to RouteTripTimetableEndpoint::decodeFromByteArray,
+    Pages::class to Pages::decodeFromByteArray,
+    FeedMessage::class to FeedMessage::decodeFromByteArray,
+    ServiceAlertEndpoint::class to ServiceAlertEndpoint::decodeFromByteArray,
+    RealtimeEndpoint::class to RealtimeEndpoint::decodeFromByteArray
+)
+
 @Factory
 fun protobufResponseConverterFactory(): ProtobufResponseConverterFactory {
     return ProtobufResponseConverterFactory(
-        mapOf(
-            RouteEndpoint::class to RouteEndpoint::decodeFromByteArray,
-            StopEndpoint::class to StopEndpoint::decodeFromByteArray,
-            StopDetailEndpoint::class to StopDetailEndpoint::decodeFromByteArray,
-            RouteDetailEndpoint::class to RouteDetailEndpoint::decodeFromByteArray,
-            ServiceEndpoint::class to ServiceEndpoint::decodeFromByteArray,
-            RouteTimetableEndpoint::class to RouteTimetableEndpoint::decodeFromByteArray,
-            RouteServicesEndpoint::class to RouteServicesEndpoint::decodeFromByteArray,
-            StopTimetable::class to StopTimetable::decodeFromByteArray,
-            RouteCanonicalTimetableEndpoint::class to RouteCanonicalTimetableEndpoint::decodeFromByteArray,
-            RouteCanonicalTimetableEndpointV2::class to RouteCanonicalTimetableEndpointV2::decodeFromByteArray,
-            RouteTripTimetableEndpoint::class to RouteTripTimetableEndpoint::decodeFromByteArray,
-            Pages::class to Pages::decodeFromByteArray,
-            FeedMessage::class to FeedMessage::decodeFromByteArray,
-            ServiceAlertEndpoint::class to ServiceAlertEndpoint::decodeFromByteArray,
-            RealtimeEndpoint::class to RealtimeEndpoint::decodeFromByteArray
-        )
+        protobufFactories
+    )
+}
+
+@Factory
+fun digestedResponseConverterFactory(): DigestedResponseConverterFactory {
+    return DigestedResponseConverterFactory(
+        protobufFactories
     )
 }
 
 @Factory
 fun ktorfitBuilderDependency(
     httpClient: HttpClient,
-    protobufResponseConverterFactory: ProtobufResponseConverterFactory
+    protobufResponseConverterFactory: ProtobufResponseConverterFactory,
+    digestedResponseConverterFactory: DigestedResponseConverterFactory,
 ) = ktorfitBuilder {
     httpClient(httpClient)
-    converterFactories(protobufResponseConverterFactory)
+    converterFactories(
+        protobufResponseConverterFactory,
+        digestedResponseConverterFactory
+    )
 }
 
 val apiUrl: String get() = BuildKonfig.apiUrl

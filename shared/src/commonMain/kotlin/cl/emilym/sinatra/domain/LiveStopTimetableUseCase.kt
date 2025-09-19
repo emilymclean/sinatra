@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
@@ -40,7 +41,7 @@ class LiveStopTimetableUseCase(
     ): Flow<List<IStopTimetableTime>> {
         return flow {
             if (stopRepository.stop(stopId).item?.hasRealtime != true) return@flow emit(scheduled)
-            val realtime = liveServiceRepository.getStopRealtimeUpdates(stopId)
+            val realtime = liveServiceRepository.getStopRealtimeUpdates(stopId).first()
             if (realtime.expire + EXPIRE_LEEWAY < clock.now()) return@flow emit(scheduled)
 
             emit(
