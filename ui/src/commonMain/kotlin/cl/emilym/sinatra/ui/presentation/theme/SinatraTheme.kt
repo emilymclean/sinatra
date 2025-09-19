@@ -3,6 +3,7 @@ package cl.emilym.sinatra.ui.presentation.theme
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SingleChoiceSegmentedButtonRowScope
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
@@ -34,6 +35,10 @@ val LightColorScheme = lightColorScheme(
 val Container
     @Composable
     get() = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f).compositeOver(MaterialTheme.colorScheme.background)
+
+val SingleChoiceSegmentedButtonShape
+    @Composable
+    get() = MaterialTheme.shapes.large
 
 @Composable
 expect fun pickColorScheme(dynamicColor: Boolean = true, darkTheme: Boolean = isSystemInDarkTheme()): ColorScheme

@@ -77,6 +77,7 @@ import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
 import cl.emilym.sinatra.ui.navigation.MapScreen
 import cl.emilym.sinatra.ui.past
 import cl.emilym.sinatra.ui.presentation.screens.maps.stop.StopDetailScreen
+import cl.emilym.sinatra.ui.presentation.theme.SingleChoiceSegmentedButtonShape
 import cl.emilym.sinatra.ui.text
 import cl.emilym.sinatra.ui.widgets.AccessibilityIconLockup
 import cl.emilym.sinatra.ui.widgets.AlertScaffold
@@ -420,7 +421,8 @@ class RouteDetailScreen(
                                             },
                                             shape = SegmentedButtonDefaults.itemShape(
                                                 index = i,
-                                                count = headings.size
+                                                count = headings.size,
+                                                baseShape = SingleChoiceSegmentedButtonShape
                                             ),
                                             icon = {},
                                             label = {
