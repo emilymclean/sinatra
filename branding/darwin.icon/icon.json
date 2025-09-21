@@ -9,9 +9,12 @@
     {
       "layers" : [
         {
-          "glass" : false,
+          "blend-mode" : "normal",
+          "fill" : "automatic",
+          "glass" : true,
           "image-name" : "directions_bus_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg",
           "name" : "directions_bus_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24",
+          "opacity" : 0.8,
           "position" : {
             "scale" : 37.25,
             "translation-in-points" : [
