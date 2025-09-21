@@ -10,11 +10,32 @@
       "layers" : [
         {
           "blend-mode" : "normal",
-          "fill" : "automatic",
+          "fill-specializations" : [
+            {
+              "value" : "automatic"
+            },
+            {
+              "appearance" : "dark",
+              "value" : {
+                "linear-gradient" : [
+                  "display-p3:0.73682,0.17017,0.20178,1.00000",
+                  "display-p3:0.13416,0.32788,0.69287,1.00000"
+                ]
+              }
+            }
+          ],
           "glass" : true,
           "image-name" : "directions_bus_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg",
           "name" : "directions_bus_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24",
-          "opacity" : 0.8,
+          "opacity-specializations" : [
+            {
+              "value" : 0.8
+            },
+            {
+              "appearance" : "dark",
+              "value" : 1
+            }
+          ],
           "position" : {
             "scale" : 37.25,
             "translation-in-points" : [
