@@ -62,7 +62,8 @@ fun RouteRandle(
             route.displayCode,
             fontWeight = FontWeight.Bold,
             color = route.colors?.onColor() ?: LocalContentColor.current,
-            style = localTextStyleFixIos
+            style = localTextStyleFixIos,
+            maxLines = 1
         )
     }
 }
