@@ -62,6 +62,7 @@ import cl.emilym.sinatra.ui.navigation.MapScreen
 import cl.emilym.sinatra.ui.onColor
 import cl.emilym.sinatra.ui.presentation.screens.maps.route.RouteDetailScreen
 import cl.emilym.sinatra.ui.presentation.screens.maps.search.zoomThreshold
+import cl.emilym.sinatra.ui.presentation.theme.SingleChoiceSegmentedButtonShape
 import cl.emilym.sinatra.ui.stopJourneyNavigation
 import cl.emilym.sinatra.ui.widgets.AlertScaffold
 import cl.emilym.sinatra.ui.widgets.Chip
@@ -233,7 +234,8 @@ class StopDetailScreen(
                                                         },
                                                         shape = SegmentedButtonDefaults.itemShape(
                                                             index = i,
-                                                            count = pages.size
+                                                            count = pages.size,
+                                                            baseShape = SingleChoiceSegmentedButtonShape
                                                         ),
                                                         icon = {},
                                                         label = {

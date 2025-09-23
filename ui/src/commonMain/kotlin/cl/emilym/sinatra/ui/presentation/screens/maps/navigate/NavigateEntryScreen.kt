@@ -51,6 +51,7 @@ import cl.emilym.sinatra.data.models.ServiceBikesAllowed
 import cl.emilym.sinatra.data.models.ServiceWheelchairAccessible
 import cl.emilym.sinatra.data.models.Time
 import cl.emilym.sinatra.data.models.startOfDay
+import cl.emilym.sinatra.nullIfEmpty
 import cl.emilym.sinatra.ui.color
 import cl.emilym.sinatra.ui.localization.LocalClock
 import cl.emilym.sinatra.ui.localization.LocalLocalTimeZone
@@ -326,7 +327,7 @@ class NavigateEntryScreen(
                         Box(Modifier.height(1.rdp))
                     }
                 }
-                favourites.unwrap()?.let { favourites ->
+                favourites.unwrap()?.nullIfEmpty()?.let { favourites ->
                     if (!FeatureFlag.NAVIGATE_ENTRY_SCREEN_FAVOURITE_SEARCH.immediate) return@let
                     item {
                         Subheading(stringResource(Res.string.map_search_favourites))

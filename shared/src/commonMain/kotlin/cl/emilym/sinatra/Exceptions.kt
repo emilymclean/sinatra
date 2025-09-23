@@ -1,5 +1,7 @@
 package cl.emilym.sinatra
 
+import cl.emilym.sinatra.data.models.ShaDigest
+
 class RemoteConfigNotLoadedException: Exception {
     constructor() : super()
     constructor(message: String?) : super(message)
@@ -37,6 +39,21 @@ class RouterException: Exception {
         }
         fun noJourneyFound(): RouterException {
             return RouterException("No valid journey could be found")
+        }
+    }
+
+}
+
+class InvalidDigestException: Exception {
+
+    constructor() : super()
+    constructor(message: String?) : super(message)
+    constructor(message: String?, cause: Throwable?) : super(message, cause)
+    constructor(cause: Throwable?) : super(cause)
+
+    companion object {
+        fun mismatch(expected: ShaDigest, actual: ShaDigest): InvalidDigestException {
+            return InvalidDigestException("Mismatched content digest (expected = ${expected}, actual = ${actual})")
         }
     }
 

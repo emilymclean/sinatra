@@ -88,6 +88,10 @@ kotlin {
             implementation(libs.room.driver)
             implementation(libs.datastore.preferences)
             implementation(libs.datastore)
+
+            // Misc
+            implementation(libs.kotlin.crypto.sha256)
+
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
