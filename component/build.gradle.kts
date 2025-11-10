@@ -47,6 +47,8 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
+                implementation(project(":shared"))
+
                 // Decompose
                 implementation(libs.decompose)
 

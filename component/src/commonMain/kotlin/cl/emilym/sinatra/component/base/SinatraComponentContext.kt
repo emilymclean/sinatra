@@ -1,4 +1,4 @@
-package cl.emilym.sinatra.component
+package cl.emilym.sinatra.component.base
 
 import com.arkivanov.decompose.ComponentContext
 import org.koin.core.Koin

@@ -57,6 +57,7 @@ kotlin {
         }
         commonMain.dependencies {
             implementation(project(":shared"))
+            implementation(project(":component"))
 
             // Compose
             implementation(compose.runtime)
