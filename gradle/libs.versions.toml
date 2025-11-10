@@ -1,5 +1,5 @@
 [versions]
-agp = "8.7.3"
+agp = "8.13.0"
 buildkonfigGradlePlugin = "0.17.0"
 kotlin = "2.1.10"
 compose = "1.7.8"
@@ -38,6 +38,11 @@ coroutines-test = "1.10.1"
 datastore = "1.1.4"
 reorderable = "2.5.1"
 kotlincrypto = "0.6.0"
+decompose = "3.4.0"
+kotlinStdlib = "2.1.10"
+runner = "1.5.2"
+core = "1.5.0"
+junit = "1.1.5"
 
 [libraries]
 
@@ -96,6 +101,9 @@ voyager-navigator = { module = "cafe.adriel.voyager:voyager-navigator", version.
 voyager-koin = { module = "cafe.adriel.voyager:voyager-koin", version.ref = "voyager" }
 voyager-screenmodel = { module = "cafe.adriel.voyager:voyager-screenmodel", version.ref = "voyager" }
 
+# Decompose
+decompose = { module = "com.arkivanov.decompose:decompose", version.ref = "decompose" }
+
 # Room
 room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
 room-driver = { module = "androidx.sqlite:sqlite-bundled", version.ref = "sqlite" }
@@ -116,6 +124,10 @@ kotlin-crypto-sha256 = { module = "org.kotlincrypto.hash:sha2", version.ref = "k
 # Classpath
 secrets-gradle-plugin = { module = "com.google.android.libraries.mapsplatform.secrets-gradle-plugin:secrets-gradle-plugin", version.ref = "secretsGradlePlugin" }
 buildkonfig-gradle-plugin = { module = "com.codingfeline.buildkonfig:buildkonfig-gradle-plugin", version.ref = "buildkonfigGradlePlugin" }
+kotlin-stdlib = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib", version.ref = "kotlinStdlib" }
+androidx-runner = { group = "androidx.test", name = "runner", version.ref = "runner" }
+androidx-core = { group = "androidx.test", name = "core", version.ref = "core" }
+androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junit" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

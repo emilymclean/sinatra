@@ -18,3 +18,4 @@ rootProject.name = "Sinatra"
 include(":androidApp")
 include(":shared")
 include(":ui")
+include(":component")
