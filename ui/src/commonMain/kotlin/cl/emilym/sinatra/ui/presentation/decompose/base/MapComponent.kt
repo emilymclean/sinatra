@@ -5,6 +5,6 @@ import kotlinx.coroutines.flow.StateFlow
 
 interface MapComponent: SinatraComponent {
 
-    val mapItems: StateFlow<MapItem>
+    val mapItems: StateFlow<List<MapItem>>
 
 }
