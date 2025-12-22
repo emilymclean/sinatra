@@ -131,7 +131,7 @@ actual fun Map(
                     else -> {}
                 }
             }
-            
+
 //            nativeMapScope.currentDrawNativeMap()
         }
     }

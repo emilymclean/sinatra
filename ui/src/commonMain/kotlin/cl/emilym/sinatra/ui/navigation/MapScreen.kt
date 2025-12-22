@@ -48,7 +48,7 @@ fun bottomSheetHalfHeight(): Float {
 //        else -> 0f
 //    }
     // TODO
-    return 0f
+    return DEFAULT_HALF_HEIGHT
 }
 
 @Composable

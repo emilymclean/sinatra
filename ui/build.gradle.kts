@@ -72,6 +72,8 @@ kotlin {
 
             // Decompose
             implementation(libs.decompose)
+            // Bumps to compose version that breaks bottom sheet, TODO fix later
+//            implementation(libs.decompose.extensions.compose)
             implementation(libs.essenty.lifecycle.coroutines)
 
             // Koin
