@@ -123,9 +123,9 @@
 				7555FF77242A565900829871 /* Sources */,
 				7555FF79242A565900829871 /* Resources */,
 				F8776C6237F0DAB0F9E14335 /* Frameworks */,
-				2A174906683A2D4FF04FCB57 /* [CP] Copy Pods Resources */,
 				D8C0013CD90BBDAF4FF00390 /* [CP] Embed Pods Frameworks */,
 				5144DD9D2D0C2395002C42B2 /* Firebase Crashlytics */,
+				01913BB2690EC8A9FE766EAE /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -185,7 +185,7 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		2A174906683A2D4FF04FCB57 /* [CP] Copy Pods Resources */ = {
+		01913BB2690EC8A9FE766EAE /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (

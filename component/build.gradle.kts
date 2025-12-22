@@ -49,8 +49,7 @@ kotlin {
             dependencies {
                 implementation(project(":shared"))
 
-                // Decompose
-                implementation(libs.decompose)
+
 
                 // Koin
                 implementation(libs.koin.core)

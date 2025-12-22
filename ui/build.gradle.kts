@@ -70,6 +70,10 @@ kotlin {
             implementation(libs.compose.adaptive.navigation)
             implementation(libs.markdown)
 
+            // Decompose
+            implementation(libs.decompose)
+            implementation(libs.decompose.extensions.compose)
+
             // Koin
             implementation(libs.koin.core)
             implementation(libs.koin.compose)

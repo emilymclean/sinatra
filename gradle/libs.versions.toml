@@ -103,6 +103,7 @@ voyager-screenmodel = { module = "cafe.adriel.voyager:voyager-screenmodel", vers
 
 # Decompose
 decompose = { module = "com.arkivanov.decompose:decompose", version.ref = "decompose" }
+decompose-extensions-compose = { module = "com.arkivanov.decompose:extensions-compose", version.ref = "decompose" }
 
 # Room
 room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
