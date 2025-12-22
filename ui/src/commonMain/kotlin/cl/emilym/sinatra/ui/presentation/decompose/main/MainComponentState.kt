@@ -5,6 +5,6 @@ enum class TabBarItem {
 }
 
 data class MainComponentState(
-    val tabBarItems: List<TabBarItem>,
-    val showTabBar: Boolean
+    val availableTabBarItems: List<TabBarItem>,
+    val selectedTabBarItem: TabBarItem
 )

@@ -28,5 +28,4 @@ class DefaultSinatraComponentContext(
         ComponentContextFactory { lifecycle, stateKeeper, instanceKeeper, backHandler ->
             val ctx = componentContext.componentContextFactory(lifecycle, stateKeeper, instanceKeeper, backHandler)
             DefaultSinatraComponentContext(ctx, koin)
-        }
 }
