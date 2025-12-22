@@ -40,13 +40,15 @@ interface NativeMapScreen {
 
 @Composable
 fun bottomSheetHalfHeight(): Float {
-    val navigator = LocalNavigator.currentOrThrow
-    val currentScreen = navigator.lastItem
-    val adaptiveWindowInfo = currentWindowAdaptiveInfo()
-    return when (adaptiveWindowInfo.windowSizeClass.windowWidthSizeClass) {
-        WindowWidthSizeClass.COMPACT -> (currentScreen as? MapScreen)?.bottomSheetHalfHeight ?: DEFAULT_HALF_HEIGHT
-        else -> 0f
-    }
+//    val navigator = LocalNavigator.currentOrThrow
+//    val currentScreen = navigator.lastItem
+//    val adaptiveWindowInfo = currentWindowAdaptiveInfo()
+//    return when (adaptiveWindowInfo.windowSizeClass.windowWidthSizeClass) {
+//        WindowWidthSizeClass.COMPACT -> (currentScreen as? MapScreen)?.bottomSheetHalfHeight ?: DEFAULT_HALF_HEIGHT
+//        else -> 0f
+//    }
+    // TODO
+    return 0f
 }
 
 @Composable

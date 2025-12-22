@@ -52,6 +52,7 @@ import cafe.adriel.voyager.navigator.Navigator
 import cl.emilym.compose.units.px
 import cl.emilym.sinatra.FeatureFlag
 import cl.emilym.sinatra.ui.maps.MapControl
+import cl.emilym.sinatra.ui.maps.MapItem
 import cl.emilym.sinatra.ui.maps.rememberMapControl
 import cl.emilym.sinatra.ui.navigation.CurrentBottomSheetContent
 import cl.emilym.sinatra.ui.navigation.CurrentMapOverlayContent
@@ -90,6 +91,7 @@ import sinatra.ui.generated.resources.service_alert_title
 @Composable
 expect fun Map(
     mapControl: MapControl,
+    items: List<MapItem>,
     modifier: Modifier = Modifier
 )
 
@@ -132,10 +134,7 @@ class RootMapScreen: Screen {
                                 WindowWidthSizeClass.COMPACT -> {
                                     BottomSheet(scaffoldState) {
                                         ViewportSizeWidget {
-                                            Map(
-                                                mapControl,
-                                                mapModifier
-                                            )
+
                                             MapOverlay()
                                         }
                                     }
@@ -159,10 +158,7 @@ class RootMapScreen: Screen {
                                             }
                                         }
                                         ViewportSizeWidget {
-                                            Map(
-                                                mapControl,
-                                                mapModifier
-                                            )
+
                                             MapOverlay()
                                         }
                                     }
@@ -348,16 +344,18 @@ class RootMapScreen: Screen {
 val bottomSheetContentPadding: Dp
     @Composable
     get() {
-        val adaptiveWindowInfo = currentWindowAdaptiveInfo()
-        val bottomSheetHalfHeight = bottomSheetHalfHeight()
-        val sheetValue = LocalBottomSheetState.current?.bottomSheetState?.offset
-        return when (adaptiveWindowInfo.windowSizeClass.windowWidthSizeClass) {
-            WindowWidthSizeClass.COMPACT -> min(
-                viewportHeight() - (sheetValue?.px ?: 0.dp),
-                viewportHeight() * bottomSheetHalfHeight
-            )
-            else -> 0.dp
-        }
+//        val adaptiveWindowInfo = currentWindowAdaptiveInfo()
+//        val bottomSheetHalfHeight = bottomSheetHalfHeight()
+//        val sheetValue = LocalBottomSheetState.current?.bottomSheetState?.offset
+//        return when (adaptiveWindowInfo.windowSizeClass.windowWidthSizeClass) {
+//            WindowWidthSizeClass.COMPACT -> min(
+//                viewportHeight() - (sheetValue?.px ?: 0.dp),
+//                viewportHeight() * bottomSheetHalfHeight
+//            )
+//            else -> 0.dp
+//        }
+        // TODO
+        return 0.dp
     }
 
 val mapInsets: PaddingValues

@@ -38,7 +38,7 @@ fun MainComponentContent(component: MainComponent) {
                     )
                     .weight(1f)
             ) {
-
+                MainComponentContentPage(component)
             }
             Slot(component.tabBarContent.collectAsStateWithLifecycle().value) {
                 when (val child = it.instance) {
@@ -68,7 +68,7 @@ fun MainComponentContent(component: MainComponent) {
                     )
                     .weight(1f)
             ) {
-
+                MainComponentContentPage(component)
             }
         }
     }

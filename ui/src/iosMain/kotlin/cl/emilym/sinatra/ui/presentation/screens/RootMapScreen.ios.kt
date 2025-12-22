@@ -17,6 +17,7 @@ import androidx.compose.ui.viewinterop.UIKitView
 import cl.emilym.sinatra.FeatureFlag
 import cl.emilym.sinatra.ui.maps.AppleMapControl
 import cl.emilym.sinatra.ui.maps.MapControl
+import cl.emilym.sinatra.ui.maps.MapItem
 import cl.emilym.sinatra.ui.maps.MarkerItem
 import cl.emilym.sinatra.ui.maps.SafeMapControl
 import cl.emilym.sinatra.ui.maps.calculateVisibleMapSize
@@ -44,6 +45,7 @@ val globalPointOfInterestFilter = MKPointOfInterestFilter(excludingCategories = 
 @Composable
 actual fun Map(
     mapControl: MapControl,
+    items: List<MapItem>,
     modifier: Modifier
 ) {
 

@@ -22,6 +22,7 @@ import cl.emilym.sinatra.ui.maps.AndroidMapControl
 import cl.emilym.sinatra.ui.maps.LineItem
 import cl.emilym.sinatra.ui.maps.MapCallbackItem
 import cl.emilym.sinatra.ui.maps.MapControl
+import cl.emilym.sinatra.ui.maps.MapItem
 import cl.emilym.sinatra.ui.maps.MarkerItem
 import cl.emilym.sinatra.ui.maps.NativeMapScope
 import cl.emilym.sinatra.ui.maps.SafeMapControl
@@ -54,7 +55,8 @@ import com.google.maps.android.compose.rememberMarkerState
 @Composable
 actual fun Map(
     mapControl: MapControl,
-    modifier: Modifier
+    items: List<MapItem>,
+    modifier: Modifier,
 ) {
     val context = LocalContext.current
 
@@ -116,23 +118,21 @@ actual fun Map(
         ) {
             currentLocation?.let { DrawMarker(MarkerItem(it, currentLocationIcon)) }
 
-            currentMapItems { items ->
-                clickCallback = null
-                longClickCallback = null
-                for (item in items) {
-                    when (item) {
-                        is MarkerItem -> DrawMarker(item)
-                        is LineItem -> DrawLine(item)
-                        is MapCallbackItem -> {
-                            clickCallback = item.onClick
-                            longClickCallback = item.onLongClick
-                        }
-                        else -> {}
+            clickCallback = null
+            longClickCallback = null
+            for (item in items) {
+                when (item) {
+                    is MarkerItem -> DrawMarker(item)
+                    is LineItem -> DrawLine(item)
+                    is MapCallbackItem -> {
+                        clickCallback = item.onClick
+                        longClickCallback = item.onLongClick
                     }
+                    else -> {}
                 }
             }
-
-            nativeMapScope.currentDrawNativeMap()
+            
+//            nativeMapScope.currentDrawNativeMap()
         }
     }
 }
