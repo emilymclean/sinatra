@@ -17,9 +17,9 @@ import com.arkivanov.decompose.router.slot.SlotNavigation
 import com.arkivanov.decompose.router.stack.ChildStack
 import com.arkivanov.decompose.router.stack.StackNavigation
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.mapLatest
 import kotlinx.serialization.Serializable
 
 interface MainComponent: SinatraComponent {
@@ -35,12 +35,12 @@ interface MainComponent: SinatraComponent {
             override val bottomSheetComponent: BrowseBottomSheetComponent
         ): MapChild<BrowseMapComponent, BrowseBottomSheetComponent>
 
-        interface MapChild<M: MapComponent, B: SinatraComponent>: Child {
+        interface MapChild<M: SinatraComponent, B: SinatraComponent>: Child {
             val mapComponent: M
             val bottomSheetComponent: B
         }
 
-        interface MainChild<T: SinatraComponent>: Child {
+        interface PageChild<T: SinatraComponent>: Child {
             val component: T
         }
     }
@@ -92,8 +92,14 @@ class DefaultMainComponent(
     )
 
     override val mapItems: StateFlow<List<MapItem>> = content.flatMapLatest {
-        (it.active.instance as? MainComponent.Child.MapChild<*,*>)?.mapComponent?.mapItems
-            ?: flowOf(emptyList())
+        when (val child = it.active.instance) {
+            is MainComponent.Child.PageChild<*> ->
+                (child.component as? MapComponent)?.mapItems ?: flowOf(emptyList())
+            is MainComponent.Child.MapChild<*,*> -> combine(
+                (child.bottomSheetComponent as? MapComponent)?.mapItems ?: flowOf(emptyList()),
+                (child.mapComponent as? MapComponent)?.mapItems ?: flowOf(emptyList()),
+            ) { all -> all.flatMap { it } }
+        }
     }.state(emptyList())
 
     private fun createChild(config: Config, componentContext: SinatraComponentContext): MainComponent.Child =

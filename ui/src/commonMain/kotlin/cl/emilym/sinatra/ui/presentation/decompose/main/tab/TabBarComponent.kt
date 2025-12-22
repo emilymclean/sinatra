@@ -15,6 +15,8 @@ interface TabBarComponent: SinatraComponent {
 
     val state: StateFlow<TabBarComponentState>
 
+    fun navigate(item: TabBarItem)
+
 }
 
 class DefaultTabBarComponent(
@@ -53,5 +55,9 @@ class DefaultTabBarComponent(
         ALL_TAB_BAR_ITEMS,
         TabBarItem.MAP
     ))
+
+    override fun navigate(item: TabBarItem) {
+
+    }
 
 }
