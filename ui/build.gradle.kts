@@ -72,7 +72,7 @@ kotlin {
 
             // Decompose
             implementation(libs.decompose)
-            implementation(libs.decompose.extensions.compose)
+            implementation(libs.essenty.lifecycle.coroutines)
 
             // Koin
             implementation(libs.koin.core)

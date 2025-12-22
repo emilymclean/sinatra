@@ -70,7 +70,6 @@ fun ContentLinkWidget(
     modifier: Modifier = Modifier
 ) {
     val uriHandler = LocalUriHandler.current
-    val navigator = LocalNavigator.currentOrThrow
 
     Row(
         modifier = Modifier
@@ -85,11 +84,11 @@ fun ContentLinkWidget(
                         uriHandler.openUri(link.url)
                     }
                     is ContentLink.Content -> {
-                        navigator.push(contentRoute(link.id))
+//                        navigator.push(contentRoute(link.id))
                     }
                     is ContentLink.Native -> {
                         nativeRoute(link.nativeReference)?.let {
-                            navigator.push(it)
+//                            navigator.push(it)
                         }
                     }
                     is ContentLink.Custom -> {

@@ -39,6 +39,7 @@ datastore = "1.1.4"
 reorderable = "2.5.1"
 kotlincrypto = "0.6.0"
 decompose = "3.4.0"
+essenty = "2.5.0"
 kotlinStdlib = "2.1.10"
 runner = "1.5.2"
 core = "1.5.0"
@@ -104,6 +105,7 @@ voyager-screenmodel = { module = "cafe.adriel.voyager:voyager-screenmodel", vers
 # Decompose
 decompose = { module = "com.arkivanov.decompose:decompose", version.ref = "decompose" }
 decompose-extensions-compose = { module = "com.arkivanov.decompose:extensions-compose", version.ref = "decompose" }
+essenty-lifecycle-coroutines = { module = "com.arkivanov.essenty:lifecycle-coroutines", version.ref = "essenty" }
 
 # Room
 room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }

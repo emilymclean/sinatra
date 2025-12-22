@@ -1,6 +1,12 @@
 package cl.emilym.sinatra.ui.presentation.decompose.root
 
+import androidx.compose.ui.text.intl.Locale
+import cl.emilym.sinatra.data.repository.LocaleRepository
+import cl.emilym.sinatra.data.repository.RemoteConfigRepository
+import cl.emilym.sinatra.data.repository.TransportMetadataRepository
+import cl.emilym.sinatra.domain.CacheInvalidationUseCase
 import cl.emilym.sinatra.domain.IsAboveMinimumVersionUseCase
+import cl.emilym.sinatra.domain.migration.CompleteAppMigrationUseCase
 import cl.emilym.sinatra.ui.presentation.decompose.base.SinatraComponent
 import cl.emilym.sinatra.ui.presentation.decompose.base.SinatraComponentContext
 import cl.emilym.sinatra.ui.presentation.decompose.base.childSlotFlow
@@ -12,13 +18,22 @@ import com.arkivanov.decompose.router.slot.ChildSlot
 import com.arkivanov.decompose.router.slot.SlotNavigation
 import com.arkivanov.decompose.router.slot.navigate
 import com.arkivanov.essenty.lifecycle.doOnCreate
+import com.arkivanov.essenty.lifecycle.doOnResume
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
+import kotlinx.datetime.TimeZone
 import kotlinx.serialization.Serializable
+
+data class LocalParameters(
+    val scheduleTimeZone: TimeZone
+)
 
 interface RootComponent: SinatraComponent {
 
     val content: StateFlow<ChildSlot<*, Child>>
+    val localParameters: StateFlow<LocalParameters>
 
     sealed interface Child {
         class AppOutOfDateChild(val component: AppOutOfDateComponent): Child
@@ -39,7 +54,12 @@ class DefaultRootComponent(
         data object Main : Config
     }
 
+    private val completeAppMigrationUseCase = sinatraComponentContext.koin.get<CompleteAppMigrationUseCase>()
+    private val remoteConfigRepository = sinatraComponentContext.koin.get<RemoteConfigRepository>()
     private val isAboveMinimumVersionUseCase = sinatraComponentContext.koin.get<IsAboveMinimumVersionUseCase>()
+    private val localeRepository = sinatraComponentContext.koin.get<LocaleRepository>()
+    private val cacheInvalidationUseCase = sinatraComponentContext.koin.get<CacheInvalidationUseCase>()
+    private val transportMetadataRepository = sinatraComponentContext.koin.get<TransportMetadataRepository>()
 
     private val navigation = SlotNavigation<Config>()
 
@@ -51,6 +71,16 @@ class DefaultRootComponent(
             handleBackButton = true,
             childFactory = ::createChild,
         )
+
+    override val localParameters: StateFlow<LocalParameters> = flow {
+        emit(transportMetadataRepository.timeZone())
+    }.mapLatest { scheduleTimeZone ->
+        LocalParameters(
+            scheduleTimeZone
+        )
+    }.state(LocalParameters(
+        TimeZone.currentSystemDefault()
+    ))
 
     private fun createChild(config: Config, componentContext: SinatraComponentContext): RootComponent.Child =
         when (config) {
@@ -69,9 +99,20 @@ class DefaultRootComponent(
     init {
         lifecycle.doOnCreate {
             componentScope.launch {
+                completeAppMigrationUseCase()
+                remoteConfigRepository.load()
+
                 if (isAboveMinimumVersionUseCase()) return@launch
                 navigation.navigate { Config.AppOutOfDate }
             }
+
+            componentScope.launch {
+                cacheInvalidationUseCase()
+            }
+        }
+
+        lifecycle.doOnResume {
+            localeRepository.languageCode = Locale.current.toLanguageTag()
         }
     }
 

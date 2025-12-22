@@ -86,6 +86,9 @@ dependencies {
     implementation(libs.voyager.navigator)
     implementation(libs.voyager.koin)
     implementation(libs.voyager.screenmodel)
+
+    // Decompose
+    implementation(libs.decompose)
 }
 
 ksp {
