@@ -34,7 +34,13 @@ class NewServiceUpdateUseCase(
             }
 
             emitAll(
-                serviceAlertRepository.alertsLive()
+                serviceAlertRepository.alertsLive().mapLatest {
+                    it.filter { serviceAlert ->
+                        serviceAlert.date?.let {
+                            now - it < (serviceAlert.highlightDuration ?: NEW_ALERT_CUTOFF)
+                        } ?: false && !serviceAlert.viewed
+                    }
+                }
             )
         }
     }
