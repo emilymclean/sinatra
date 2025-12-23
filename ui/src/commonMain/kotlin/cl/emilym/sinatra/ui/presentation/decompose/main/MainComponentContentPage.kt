@@ -29,6 +29,7 @@ import cl.emilym.sinatra.FeatureFlag
 import cl.emilym.sinatra.ui.maps.rememberMapControl
 import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
 import cl.emilym.sinatra.ui.navigation.bottomSheetHalfHeight
+import cl.emilym.sinatra.ui.presentation.decompose.browse.BrowseBottomSheetComponentContent
 import cl.emilym.sinatra.ui.presentation.decompose.main.MainComponent.Child
 import cl.emilym.sinatra.ui.presentation.screens.Map
 import cl.emilym.sinatra.ui.presentation.screens.bottomSheetContentPadding
@@ -114,7 +115,14 @@ private fun BottomSheet(
                 }
             }
             CompositionLocalProvider(LocalBottomSheetState provides scaffoldState) {
-
+                Children(stack) {
+                    when (val child = it.instance) {
+                        is Child.Browse -> BrowseBottomSheetComponentContent(
+                            child.bottomSheetComponent
+                        )
+                        else -> {}
+                    }
+                }
             }
         },
         sheetHalfHeight = bottomSheetHalfHeight(),

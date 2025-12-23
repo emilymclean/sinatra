@@ -113,7 +113,7 @@ class DefaultMainComponent(
             )
         }
 
-    fun navigate(instruction: Navigation) {
+    fun navigate(instruction: NavigationInstruction) {
 
     }
 

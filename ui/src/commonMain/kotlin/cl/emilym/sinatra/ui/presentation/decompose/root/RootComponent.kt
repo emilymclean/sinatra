@@ -68,7 +68,7 @@ class DefaultRootComponent(
             source = navigation,
             serializer = Config.serializer(),
             initialConfiguration = { Config.Main },
-            handleBackButton = true,
+            handleBackButton = false,
             childFactory = ::createChild,
         )
 
