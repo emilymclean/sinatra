@@ -19,58 +19,6 @@ data class MarkerIconOffset(
     val y: Float
 )
 
-interface MarkerIconDescriptor {
-    @Composable
-    fun toMarkerIcon(): MarkerIcon
-}
-
-data object StopMarkerDescriptor: MarkerIconDescriptor {
-
-    @Composable
-    override fun toMarkerIcon(): MarkerIcon {
-        return stopMarkerIcon()
-    }
-
-}
-
-data object PlaceMarkerDescriptor: MarkerIconDescriptor {
-
-    @Composable
-    override fun toMarkerIcon(): MarkerIcon {
-        return placeMarkerIcon()
-    }
-
-}
-
-data object WalkingMarkerDescriptor: MarkerIconDescriptor {
-
-    @Composable
-    override fun toMarkerIcon(): MarkerIcon {
-        return walkingMarkerIcon()
-    }
-
-}
-
-data class RouteStopMarkerDescriptor(
-    val route: Route
-): MarkerIconDescriptor {
-
-    @Composable
-    override fun toMarkerIcon(): MarkerIcon {
-        return routeStopMarkerIcon(route)
-    }
-
-}
-
-data object CurrentLocationMarkerDescriptor: MarkerIconDescriptor {
-
-    @Composable
-    override fun toMarkerIcon(): MarkerIcon {
-        return currentLocationIcon()
-    }
-
-}
-
 expect interface MarkerIcon
 
 @Composable

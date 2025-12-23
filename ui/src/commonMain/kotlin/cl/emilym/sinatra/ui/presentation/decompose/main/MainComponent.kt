@@ -1,7 +1,5 @@
 package cl.emilym.sinatra.ui.presentation.decompose.main
 
-import cl.emilym.sinatra.ui.maps.MapItem
-import cl.emilym.sinatra.ui.presentation.decompose.base.MapComponent
 import cl.emilym.sinatra.ui.presentation.decompose.base.SinatraComponent
 import cl.emilym.sinatra.ui.presentation.decompose.base.SinatraComponentContext
 import cl.emilym.sinatra.ui.presentation.decompose.base.childSlotFlow
@@ -16,20 +14,13 @@ import com.arkivanov.decompose.router.slot.ChildSlot
 import com.arkivanov.decompose.router.slot.SlotNavigation
 import com.arkivanov.decompose.router.stack.ChildStack
 import com.arkivanov.decompose.router.stack.StackNavigation
-import io.github.aakira.napier.Napier
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.mapLatest
 import kotlinx.serialization.Serializable
 
 interface MainComponent: SinatraComponent {
 
     val content: StateFlow<ChildStack<*, Child>>
     val tabBarContent: StateFlow<ChildSlot<*, TabBarChild>>
-
-    val mapItems: StateFlow<List<MapItem>>
 
     sealed interface Child {
         data class Browse(
@@ -92,17 +83,6 @@ class DefaultMainComponent(
         handleBackButton = true,
         childFactory = ::createChild
     )
-
-    override val mapItems: StateFlow<List<MapItem>> = content.flatMapLatest {
-        when (val child = it.active.instance) {
-            is MainComponent.Child.PageChild<*> ->
-                (child.component as? MapComponent)?.mapItems ?: flowOf(emptyList())
-            is MainComponent.Child.MapChild<*,*> -> combine(
-                (child.bottomSheetComponent as? MapComponent)?.mapItems ?: flowOf(emptyList()),
-                (child.mapComponent as? MapComponent)?.mapItems ?: flowOf(emptyList()),
-            ) { all -> all.flatMap { it } }
-        }
-    }.state(emptyList())
 
     private fun createChild(config: Config, componentContext: SinatraComponentContext): MainComponent.Child =
         when (config) {

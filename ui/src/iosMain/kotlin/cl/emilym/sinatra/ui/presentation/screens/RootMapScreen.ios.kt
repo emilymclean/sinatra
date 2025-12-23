@@ -19,6 +19,7 @@ import cl.emilym.sinatra.ui.maps.AppleMapControl
 import cl.emilym.sinatra.ui.maps.MapControl
 import cl.emilym.sinatra.ui.maps.MapItem
 import cl.emilym.sinatra.ui.maps.MarkerItem
+import cl.emilym.sinatra.ui.maps.NativeMapScope
 import cl.emilym.sinatra.ui.maps.SafeMapControl
 import cl.emilym.sinatra.ui.maps.calculateVisibleMapSize
 import cl.emilym.sinatra.ui.maps.currentLocationIcon
@@ -46,7 +47,8 @@ val globalPointOfInterestFilter = MKPointOfInterestFilter(excludingCategories = 
 actual fun Map(
     mapControl: MapControl,
     items: List<MapItem>,
-    modifier: Modifier
+    modifier: Modifier,
+    nativeContent: @Composable NativeMapScope.() -> Unit
 ) {
 
     val state = rememberMapKitState {}

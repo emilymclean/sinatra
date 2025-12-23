@@ -17,8 +17,10 @@ import com.google.maps.android.compose.rememberMarkerState
 
 @Composable
 @GoogleMapComposable
-actual fun NativeMapScope.DrawMapSearchScreenMapNative(stops: List<Stop>) {
-    val navigator = LocalNavigator.currentOrThrow
+actual fun NativeMapScope.DrawMapSearchScreenMapNative(
+    stops: List<Stop>,
+    onStopClick: (Stop) -> Unit
+) {
     val icon = stopMarkerIcon()!!
     val bitmapDescriptor = remember { icon.bitmapDescriptor }
     val anchor = remember { icon.anchor.toNative() }
@@ -32,7 +34,7 @@ actual fun NativeMapScope.DrawMapSearchScreenMapNative(stops: List<Stop>) {
             icon = bitmapDescriptor,
             anchor = anchor,
             onClick = {
-                navigator.push(StopDetailScreen(stop.id))
+                onStopClick(stop)
                 true
             },
             visible = (visible && stop.visibility.visibleZoomedIn) || (!visible && stop.visibility.visibleZoomedOut),
@@ -42,4 +44,7 @@ actual fun NativeMapScope.DrawMapSearchScreenMapNative(stops: List<Stop>) {
 }
 
 @Composable
-actual fun mapSearchScreenMapItems(stops: List<Stop>): List<MarkerItem> = listOf()
+actual fun mapSearchScreenMapItems(
+    stops: List<Stop>,
+    onStopClick: (Stop) -> Unit
+): List<MarkerItem> = listOf()

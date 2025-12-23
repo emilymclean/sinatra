@@ -1,14 +1,11 @@
 package cl.emilym.sinatra.ui.presentation.decompose.browse
 
 import cl.emilym.compose.requeststate.flatRequestStateFlow
-import cl.emilym.compose.requeststate.requestStateFlow
 import cl.emilym.compose.requeststate.unwrap
-import cl.emilym.sinatra.data.repository.StopRepository
+import cl.emilym.sinatra.data.models.Cachable
+import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.domain.GetFilteredStopsUseCase
-import cl.emilym.sinatra.ui.maps.MapItem
-import cl.emilym.sinatra.ui.maps.MarkerItemDescriptor
-import cl.emilym.sinatra.ui.maps.StopMarkerDescriptor
-import cl.emilym.sinatra.ui.presentation.decompose.base.MapComponent
+import cl.emilym.sinatra.ui.presentation.decompose.base.SinatraComponent
 import cl.emilym.sinatra.ui.presentation.decompose.base.SinatraComponentContext
 import cl.emilym.sinatra.ui.presentation.decompose.base.asStateFlow
 import cl.emilym.sinatra.ui.presentation.decompose.browse.BrowseBottomSheetComponent.Item
@@ -28,12 +25,13 @@ import com.arkivanov.decompose.router.items.Items
 import com.arkivanov.decompose.router.items.ItemsNavigation
 import com.arkivanov.decompose.router.items.childItems
 import com.arkivanov.essenty.lifecycle.doOnCreate
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.serialization.Serializable
 
-interface BrowseBottomSheetComponent: MapComponent {
+interface BrowseBottomSheetComponent: SinatraComponent {
+
+    val stops: StateFlow<List<Stop>>
 
     @OptIn(ExperimentalDecomposeApi::class)
     val items: StateFlow<ChildItems<*, Item>>
@@ -63,23 +61,14 @@ class DefaultBrowseBottomSheetComponent(
 
     private val getFilteredStopsUseCase: GetFilteredStopsUseCase = koin.get()
 
-    override val mapItems: Flow<List<MapItem>> =
+    // TODO handle errors
+    override val stops: StateFlow<List<Stop>> =
         flatRequestStateFlow(defaultConfig) {
             getFilteredStopsUseCase()
         }
-        .unwrap()
-        .mapLatest {
-            it?.item?.map { stop ->
-                MarkerItemDescriptor(
-                    stop.location,
-                    icon = StopMarkerDescriptor,
-                    id = "browse-${stop.id}",
-                    onClick = {
-                        onNavigate(NavigationInstruction.StopDetail(stop.id))
-                    }
-                ) as MapItem
-            } ?: emptyList()
-        }
+        .unwrap(Cachable.live(emptyList<Stop>()))
+        .mapLatest { it.item }
+        .state(emptyList())
 
     @OptIn(ExperimentalDecomposeApi::class)
     private val navigation = ItemsNavigation<Config>()
@@ -107,9 +96,7 @@ class DefaultBrowseBottomSheetComponent(
             navigation.navigate(
                 transformer = {
                     it.copy(
-                        activeItems = it.items.associate {
-                            it to Items.ActiveLifecycleState.CREATED
-                        }
+                        activeItems = it.items.associateWith { Items.ActiveLifecycleState.CREATED }
                     )
                 },
                 onComplete = { before, after -> }

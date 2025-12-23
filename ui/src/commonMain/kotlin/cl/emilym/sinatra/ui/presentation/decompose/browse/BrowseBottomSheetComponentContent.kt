@@ -6,9 +6,13 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import cl.emilym.compose.requeststate.RequestState
+import cl.emilym.sinatra.ui.maps.MapItem
+import cl.emilym.sinatra.ui.maps.NativeMapScope
 import cl.emilym.sinatra.ui.presentation.decompose.browse.items.NearbyDepartureItemComponentContent
 import cl.emilym.sinatra.ui.presentation.decompose.browse.items.QuickFavouriteItemComponentContent
 import cl.emilym.sinatra.ui.presentation.decompose.browse.items.RouteItemComponentContent
+import cl.emilym.sinatra.ui.presentation.screens.maps.search.DrawMapSearchScreenMapNative
+import cl.emilym.sinatra.ui.presentation.screens.maps.search.mapSearchScreenMapItems
 import cl.emilym.sinatra.ui.widgets.FullscreenRequestStateWidget
 import cl.emilym.sinatra.ui.widgets.collectAsStateWithLifecycle
 import com.arkivanov.decompose.ExperimentalDecomposeApi
@@ -54,5 +58,22 @@ fun BrowseBottomSheetComponentContent(
                 }
             }
         }
+    }
+}
+
+@Composable
+fun browseBottomSheetComponentMapItems(component: BrowseBottomSheetComponent): List<MapItem> {
+    val stops = component.stops.collectAsStateWithLifecycle().value
+    return mapSearchScreenMapItems(stops) {
+
+    }
+}
+
+@Composable
+fun NativeMapScope.BrowseBottomSheetComponentNativeMapItems(component: BrowseBottomSheetComponent) {
+    val stops = component.stops.collectAsStateWithLifecycle().value
+
+    DrawMapSearchScreenMapNative(stops) {
+
     }
 }

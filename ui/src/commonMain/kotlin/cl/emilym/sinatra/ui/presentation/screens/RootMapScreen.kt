@@ -53,6 +53,7 @@ import cl.emilym.compose.units.px
 import cl.emilym.sinatra.FeatureFlag
 import cl.emilym.sinatra.ui.maps.MapControl
 import cl.emilym.sinatra.ui.maps.MapItem
+import cl.emilym.sinatra.ui.maps.NativeMapScope
 import cl.emilym.sinatra.ui.maps.rememberMapControl
 import cl.emilym.sinatra.ui.navigation.CurrentBottomSheetContent
 import cl.emilym.sinatra.ui.navigation.CurrentMapOverlayContent
@@ -92,7 +93,8 @@ import sinatra.ui.generated.resources.service_alert_title
 expect fun Map(
     mapControl: MapControl,
     items: List<MapItem>,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    nativeContent: @Composable NativeMapScope.() -> Unit
 )
 
 @get:Composable

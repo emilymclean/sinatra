@@ -175,7 +175,7 @@ class MapSearchScreen: MapScreen, NativeMapScreen {
         val stopsRS by viewModel.stops.collectAsStateWithLifecycle()
         val stops = (stopsRS as? RequestState.Success)?.value ?: return
 
-        DrawMapSearchScreenMapNative(stops)
+        DrawMapSearchScreenMapNative(stops, {})
     }
 
     @Composable
@@ -185,7 +185,7 @@ class MapSearchScreen: MapScreen, NativeMapScreen {
         val stops = (stopsRS as? RequestState.Success)?.value ?: return listOf()
         val navigator = LocalNavigator.currentOrThrow
 
-        return mapSearchScreenMapItems(stops) + listOfNotNull(
+        return mapSearchScreenMapItems(stops, {}) + listOfNotNull(
             if (FeatureFlag.HOLD_MAP_POINT_DETAIL.value()) MapCallbackItem(onLongClick = { pos, zoom ->
                 if (!canberraRegion.contains(pos)) return@MapCallbackItem
                 navigator.push(PointDetailScreen(pos, zoom + 2))
@@ -197,7 +197,13 @@ class MapSearchScreen: MapScreen, NativeMapScreen {
 }
 
 @Composable
-expect fun NativeMapScope.DrawMapSearchScreenMapNative(stops: List<Stop>)
+expect fun NativeMapScope.DrawMapSearchScreenMapNative(
+    stops: List<Stop>,
+    onStopClick: (Stop) -> Unit
+)
 
 @Composable
-expect fun mapSearchScreenMapItems(stops: List<Stop>): List<MarkerItem>
+expect fun mapSearchScreenMapItems(
+    stops: List<Stop>,
+    onStopClick: (Stop) -> Unit
+): List<MarkerItem>

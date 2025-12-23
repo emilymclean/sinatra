@@ -30,6 +30,8 @@ import cl.emilym.sinatra.ui.maps.rememberMapControl
 import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
 import cl.emilym.sinatra.ui.navigation.bottomSheetHalfHeight
 import cl.emilym.sinatra.ui.presentation.decompose.browse.BrowseBottomSheetComponentContent
+import cl.emilym.sinatra.ui.presentation.decompose.browse.BrowseBottomSheetComponentNativeMapItems
+import cl.emilym.sinatra.ui.presentation.decompose.browse.browseBottomSheetComponentMapItems
 import cl.emilym.sinatra.ui.presentation.decompose.main.MainComponent.Child
 import cl.emilym.sinatra.ui.presentation.screens.Map
 import cl.emilym.sinatra.ui.presentation.screens.bottomSheetContentPadding
@@ -73,7 +75,12 @@ fun MainComponentContentPage(
                     Box(Modifier.fillMaxSize()) {
                         Map(
                             mapControl,
-                            component.mapItems.collectAsStateWithLifecycle().value,
+                            when (child) {
+                                is Child.Browse -> browseBottomSheetComponentMapItems(
+                                    child.bottomSheetComponent
+                                )
+                                else -> emptyList()
+                            },
                             Modifier
                                 .fillMaxSize()
                                 .then(
@@ -83,7 +90,13 @@ fun MainComponentContentPage(
                                         }
                                     else Modifier
                                 )
-                        )
+                        ) {
+                            when (child) {
+                                is Child.Browse -> BrowseBottomSheetComponentNativeMapItems(
+                                    child.bottomSheetComponent
+                                )
+                            }
+                        }
 
                         CompositionLocalProvider(
                             LocalMapControl provides mapControl

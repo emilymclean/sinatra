@@ -24,7 +24,6 @@ import cl.emilym.sinatra.ui.maps.MapCallbackItem
 import cl.emilym.sinatra.ui.maps.MapControl
 import cl.emilym.sinatra.ui.maps.MapItem
 import cl.emilym.sinatra.ui.maps.MarkerItem
-import cl.emilym.sinatra.ui.maps.MarkerItemDescriptor
 import cl.emilym.sinatra.ui.maps.NativeMapScope
 import cl.emilym.sinatra.ui.maps.SafeMapControl
 import cl.emilym.sinatra.ui.maps.currentLocationIcon
@@ -32,8 +31,6 @@ import cl.emilym.sinatra.ui.maps.defaultMarkerOffset
 import cl.emilym.sinatra.ui.maps.precompute
 import cl.emilym.sinatra.ui.maps.toNative
 import cl.emilym.sinatra.ui.navigation.bottomSheetHalfHeight
-import cl.emilym.sinatra.ui.navigation.currentDrawNativeMap
-import cl.emilym.sinatra.ui.navigation.currentMapItems
 import cl.emilym.sinatra.ui.plus
 import cl.emilym.sinatra.ui.presentation.theme.defaultLineColor
 import cl.emilym.sinatra.ui.toNative
@@ -58,6 +55,7 @@ actual fun Map(
     mapControl: MapControl,
     items: List<MapItem>,
     modifier: Modifier,
+    nativeContent: @Composable NativeMapScope.() -> Unit
 ) {
     val context = LocalContext.current
 
@@ -124,7 +122,6 @@ actual fun Map(
             for (item in items) {
                 when (item) {
                     is MarkerItem -> DrawMarker(item)
-                    is MarkerItemDescriptor -> DrawMarker(item.toMarkerItem())
                     is LineItem -> DrawLine(item)
                     is MapCallbackItem -> {
                         clickCallback = item.onClick
@@ -134,7 +131,7 @@ actual fun Map(
                 }
             }
 
-//            nativeMapScope.currentDrawNativeMap()
+            nativeMapScope.nativeContent()
         }
     }
 }

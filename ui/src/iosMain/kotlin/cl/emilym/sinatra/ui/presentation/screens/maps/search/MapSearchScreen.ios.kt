@@ -14,11 +14,17 @@ import cl.emilym.sinatra.ui.maps.stopMarkerIcon
 import cl.emilym.sinatra.ui.presentation.screens.maps.stop.StopDetailScreen
 
 @Composable
-actual fun NativeMapScope.DrawMapSearchScreenMapNative(stops: List<Stop>) {
+actual fun NativeMapScope.DrawMapSearchScreenMapNative(
+    stops: List<Stop>,
+    onStopClick: (Stop) -> Unit
+) {
 }
 
 @Composable
-actual fun mapSearchScreenMapItems(stops: List<Stop>): List<MarkerItem> {
+actual fun mapSearchScreenMapItems(
+    stops: List<Stop>,
+    onStopClick: (Stop) -> Unit
+): List<MarkerItem> {
     val navigator = LocalNavigator.currentOrThrow
     val icon = stopMarkerIcon() ?: return listOf()
 
