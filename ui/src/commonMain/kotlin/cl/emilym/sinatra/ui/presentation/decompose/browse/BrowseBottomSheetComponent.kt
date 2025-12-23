@@ -1,8 +1,10 @@
 package cl.emilym.sinatra.ui.presentation.decompose.browse
 
+import cl.emilym.compose.requeststate.flatRequestStateFlow
 import cl.emilym.compose.requeststate.requestStateFlow
 import cl.emilym.compose.requeststate.unwrap
 import cl.emilym.sinatra.data.repository.StopRepository
+import cl.emilym.sinatra.domain.GetFilteredStopsUseCase
 import cl.emilym.sinatra.ui.maps.MapItem
 import cl.emilym.sinatra.ui.maps.MarkerItemDescriptor
 import cl.emilym.sinatra.ui.maps.StopMarkerDescriptor
@@ -59,19 +61,22 @@ class DefaultBrowseBottomSheetComponent(
     sinatraComponentContext: SinatraComponentContext
 ): BrowseBottomSheetComponent, SinatraComponentContext by sinatraComponentContext {
 
-    private val stopRepository: StopRepository = koin.get()
+    private val getFilteredStopsUseCase: GetFilteredStopsUseCase = koin.get()
 
     override val mapItems: Flow<List<MapItem>> =
-        requestStateFlow(defaultConfig) {
-            stopRepository.stops().item
+        flatRequestStateFlow(defaultConfig) {
+            getFilteredStopsUseCase()
         }
         .unwrap()
         .mapLatest {
-            it?.map { stop ->
+            it?.item?.map { stop ->
                 MarkerItemDescriptor(
                     stop.location,
                     icon = StopMarkerDescriptor,
-                    id = "browse-${stop.id}"
+                    id = "browse-${stop.id}",
+                    onClick = {
+                        onNavigate(NavigationInstruction.StopDetail(stop.id))
+                    }
                 ) as MapItem
             } ?: emptyList()
         }
