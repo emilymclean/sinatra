@@ -24,6 +24,7 @@ import cl.emilym.sinatra.ui.maps.MapCallbackItem
 import cl.emilym.sinatra.ui.maps.MapControl
 import cl.emilym.sinatra.ui.maps.MapItem
 import cl.emilym.sinatra.ui.maps.MarkerItem
+import cl.emilym.sinatra.ui.maps.MarkerItemDescriptor
 import cl.emilym.sinatra.ui.maps.NativeMapScope
 import cl.emilym.sinatra.ui.maps.SafeMapControl
 import cl.emilym.sinatra.ui.maps.currentLocationIcon
@@ -123,6 +124,7 @@ actual fun Map(
             for (item in items) {
                 when (item) {
                     is MarkerItem -> DrawMarker(item)
+                    is MarkerItemDescriptor -> DrawMarker(item.toMarkerItem())
                     is LineItem -> DrawLine(item)
                     is MapCallbackItem -> {
                         clickCallback = item.onClick

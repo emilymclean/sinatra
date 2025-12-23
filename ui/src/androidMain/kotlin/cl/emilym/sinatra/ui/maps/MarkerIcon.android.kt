@@ -66,7 +66,7 @@ actual fun spotMarkerIcon(
     tint: Color,
     borderColor: Color,
     size: Dp
-): MarkerIcon? {
+): MarkerIcon {
     val sizePx = (size * platformSizeAdjustment()).toIntPx()
     val borderSize = (4.dp * platformSizeAdjustment()).toIntPx()
     val overDrawable = DrawableCompat.wrap(

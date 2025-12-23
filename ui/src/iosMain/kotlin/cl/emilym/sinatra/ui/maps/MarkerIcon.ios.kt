@@ -110,7 +110,7 @@ actual fun spotMarkerIcon(
     tint: Color,
     borderColor: Color,
     size: Dp
-): MarkerIcon? {
+): MarkerIcon {
     val sizePx = (size * platformSizeAdjustment()).toFloatPx()
     val borderSize = (4.dp * platformSizeAdjustment()).toFloatPx()
 

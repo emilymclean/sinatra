@@ -19,6 +19,58 @@ data class MarkerIconOffset(
     val y: Float
 )
 
+interface MarkerIconDescriptor {
+    @Composable
+    fun toMarkerIcon(): MarkerIcon
+}
+
+data object StopMarkerDescriptor: MarkerIconDescriptor {
+
+    @Composable
+    override fun toMarkerIcon(): MarkerIcon {
+        return stopMarkerIcon()
+    }
+
+}
+
+data object PlaceMarkerDescriptor: MarkerIconDescriptor {
+
+    @Composable
+    override fun toMarkerIcon(): MarkerIcon {
+        return placeMarkerIcon()
+    }
+
+}
+
+data object WalkingMarkerDescriptor: MarkerIconDescriptor {
+
+    @Composable
+    override fun toMarkerIcon(): MarkerIcon {
+        return walkingMarkerIcon()
+    }
+
+}
+
+data class RouteStopMarkerDescriptor(
+    val route: Route
+): MarkerIconDescriptor {
+
+    @Composable
+    override fun toMarkerIcon(): MarkerIcon {
+        return routeStopMarkerIcon(route)
+    }
+
+}
+
+data object CurrentLocationMarkerDescriptor: MarkerIconDescriptor {
+
+    @Composable
+    override fun toMarkerIcon(): MarkerIcon {
+        return currentLocationIcon()
+    }
+
+}
+
 expect interface MarkerIcon
 
 @Composable
@@ -26,7 +78,7 @@ expect fun spotMarkerIcon(
     tint: Color,
     borderColor: Color = Color.White,
     size: Dp = 30.dp
-): MarkerIcon?
+): MarkerIcon
 
 @Composable
 expect fun circularIcon(
@@ -37,17 +89,17 @@ expect fun circularIcon(
 ): MarkerIcon
 
 @Composable
-fun stopMarkerIcon(stop: Stop? = null): MarkerIcon? {
+fun stopMarkerIcon(stop: Stop? = null): MarkerIcon {
     return spotMarkerIcon(MaterialTheme.colorScheme.primary)
 }
 
 @Composable
-fun placeMarkerIcon(place: Place? = null): MarkerIcon? {
+fun placeMarkerIcon(place: Place? = null): MarkerIcon {
     return spotMarkerIcon(MaterialTheme.colorScheme.primary)
 }
 
 @Composable
-fun highlightedRouteStopMarkerIcon(route: Route, stop: Stop? = null): MarkerIcon? {
+fun highlightedRouteStopMarkerIcon(route: Route, stop: Stop? = null): MarkerIcon {
     return spotMarkerIcon(route.color())
 }
 

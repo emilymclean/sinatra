@@ -1,9 +1,14 @@
 package cl.emilym.sinatra.ui.presentation.decompose.browse
 
-import cl.emilym.sinatra.ui.presentation.decompose.base.SinatraComponent
+import cl.emilym.compose.requeststate.requestStateFlow
+import cl.emilym.compose.requeststate.unwrap
+import cl.emilym.sinatra.data.repository.StopRepository
+import cl.emilym.sinatra.ui.maps.MapItem
+import cl.emilym.sinatra.ui.maps.MarkerItemDescriptor
+import cl.emilym.sinatra.ui.maps.StopMarkerDescriptor
+import cl.emilym.sinatra.ui.presentation.decompose.base.MapComponent
 import cl.emilym.sinatra.ui.presentation.decompose.base.SinatraComponentContext
 import cl.emilym.sinatra.ui.presentation.decompose.base.asStateFlow
-import cl.emilym.sinatra.ui.presentation.decompose.base.childItemsFlow
 import cl.emilym.sinatra.ui.presentation.decompose.browse.BrowseBottomSheetComponent.Item
 import cl.emilym.sinatra.ui.presentation.decompose.browse.items.DefaultNearbyDepartureItemComponent
 import cl.emilym.sinatra.ui.presentation.decompose.browse.items.DefaultQuickFavouriteItemComponent
@@ -14,17 +19,19 @@ import cl.emilym.sinatra.ui.presentation.decompose.browse.items.QuickFavouriteIt
 import cl.emilym.sinatra.ui.presentation.decompose.browse.items.RouteItemComponent
 import cl.emilym.sinatra.ui.presentation.decompose.browse.items.ServiceUpdateItemComponent
 import cl.emilym.sinatra.ui.presentation.decompose.main.NavigationInstruction
+import cl.emilym.sinatra.ui.widgets.defaultConfig
 import com.arkivanov.decompose.ExperimentalDecomposeApi
 import com.arkivanov.decompose.router.items.ChildItems
 import com.arkivanov.decompose.router.items.Items
 import com.arkivanov.decompose.router.items.ItemsNavigation
 import com.arkivanov.decompose.router.items.childItems
-import com.arkivanov.decompose.router.items.setActiveItems
 import com.arkivanov.essenty.lifecycle.doOnCreate
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.serialization.Serializable
 
-interface BrowseBottomSheetComponent: SinatraComponent {
+interface BrowseBottomSheetComponent: MapComponent {
 
     @OptIn(ExperimentalDecomposeApi::class)
     val items: StateFlow<ChildItems<*, Item>>
@@ -51,6 +58,23 @@ class DefaultBrowseBottomSheetComponent(
     private val onNavigate: (NavigationInstruction) -> Unit,
     sinatraComponentContext: SinatraComponentContext
 ): BrowseBottomSheetComponent, SinatraComponentContext by sinatraComponentContext {
+
+    private val stopRepository: StopRepository = koin.get()
+
+    override val mapItems: Flow<List<MapItem>> =
+        requestStateFlow(defaultConfig) {
+            stopRepository.stops().item
+        }
+        .unwrap()
+        .mapLatest {
+            it?.map { stop ->
+                MarkerItemDescriptor(
+                    stop.location,
+                    icon = StopMarkerDescriptor,
+                    id = "browse-${stop.id}"
+                ) as MapItem
+            } ?: emptyList()
+        }
 
     @OptIn(ExperimentalDecomposeApi::class)
     private val navigation = ItemsNavigation<Config>()
