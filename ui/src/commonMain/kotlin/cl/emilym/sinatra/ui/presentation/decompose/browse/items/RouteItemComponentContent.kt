@@ -6,10 +6,10 @@ import cl.emilym.sinatra.data.models.Route
 import cl.emilym.sinatra.ui.widgets.RouteCard
 
 fun LazyListScope.RouteItemComponentContent(
-    routes: List<Route>,
+    content: List<Route>,
     component: RouteItemComponent,
 ) {
-    items(routes) { route ->
+    items(content) { route ->
         RouteCard(
             route,
             onClick = {

@@ -20,9 +20,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.withContext
 
-interface QuickFavouriteItemComponent: SinatraComponent {
-
-    val items: StateFlow<List<QuickNavigationItem>>
+interface QuickFavouriteItemComponent: BrowseItemPlugin<List<QuickNavigationItem>> {
 
     fun onClick(item: QuickNavigationItem)
     fun updateLocation(location: MapLocation)
@@ -39,7 +37,7 @@ class DefaultQuickFavouriteItemComponent(
 
     private val currentLocation = MutableStateFlow<MapLocation?>(null)
 
-    override val items: StateFlow<List<QuickNavigationItem>> =
+    override val state =
         combine(
             currentLocation.flatRequestStateFlow(showLoading = false) {
                 withContext(Dispatchers.IO) {
@@ -61,7 +59,14 @@ class DefaultQuickFavouriteItemComponent(
             }
         ) { quickNavigation, specialAdd ->
             (quickNavigation.unwrap().nullIfEmpty() ?: listOf()) + (specialAdd.unwrap().nullIfEmpty() ?: listOf())
-        }.state(emptyList())
+        }
+            .mapLatest {
+                when (it.isEmpty()) {
+                    true -> BrowseItemContent.None()
+                    else -> BrowseItemContent.Content(it)
+                }
+            }
+            .state(BrowseItemContent.None())
 
     override fun onClick(item: QuickNavigationItem) {
         onNavigate(

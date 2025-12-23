@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -14,6 +15,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import cl.emilym.compose.units.px
 import cl.emilym.compose.units.rdp
+import cl.emilym.sinatra.data.models.ServiceAlert
 import cl.emilym.sinatra.ui.presentation.screens.ServiceAlertScreen
 import cl.emilym.sinatra.ui.widgets.ListCard
 import cl.emilym.sinatra.ui.widgets.ServiceAlertCard
@@ -22,37 +24,36 @@ import org.jetbrains.compose.resources.stringResource
 import sinatra.ui.generated.resources.Res
 import sinatra.ui.generated.resources.browse_option_see_all_service_alerts
 
-@Composable
-fun ServiceUpdateItemComponentContent(
+fun LazyListScope.ServiceUpdateItemComponentContent(
+    content: ServiceAlert,
     component: ServiceUpdateItemComponent
 ) {
-    val alert by component.alert.collectAsStateWithLifecycle()
-    Box(Modifier.height(1.px))
-    if (alert == null) return
-
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 1.rdp)
-            .clickable { component.onViewAllServicesClick() },
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-            contentColor = MaterialTheme.colorScheme.onSurface,
-        )
-    ) {
-        ServiceAlertCard(
-            alert ?: return@Card,
+    item {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 1.rdp)
+                .animateItem()
+                .clickable { component.onViewAllServicesClick() },
             colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
                 contentColor = MaterialTheme.colorScheme.onSurface,
-            ),
-            onClick = { component.onAlertClick() }
-        )
-        ListCard(
-            icon = null,
-            onClick = { component.onViewAllServicesClick() }
+            )
         ) {
-            Text(stringResource(Res.string.browse_option_see_all_service_alerts))
+            ServiceAlertCard(
+                content,
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                    contentColor = MaterialTheme.colorScheme.onSurface,
+                ),
+                onClick = { component.onAlertClick() }
+            )
+            ListCard(
+                icon = null,
+                onClick = { component.onViewAllServicesClick() }
+            ) {
+                Text(stringResource(Res.string.browse_option_see_all_service_alerts))
+            }
         }
     }
 }

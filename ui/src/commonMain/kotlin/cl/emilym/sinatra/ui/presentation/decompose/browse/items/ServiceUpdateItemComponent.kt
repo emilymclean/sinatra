@@ -13,9 +13,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 
-interface ServiceUpdateItemComponent: SinatraComponent {
-
-    val alert: StateFlow<ServiceAlert?>
+interface ServiceUpdateItemComponent: BrowseItemPlugin<ServiceAlert> {
 
     fun onAlertClick()
     fun onViewAllServicesClick()
@@ -30,17 +28,22 @@ class DefaultServiceUpdateItemComponent(
     private val serviceAlertRepository: ServiceAlertRepository = koin.get()
     private val newServiceUpdateUseCase: NewServiceUpdateUseCase = koin.get()
 
-    override val alert: StateFlow<ServiceAlert?> = flatRequestStateFlow {
+    override val state = flatRequestStateFlow {
         newServiceUpdateUseCase()
     }.mapLatest {
         Napier.d("TTTT $it")
-        it.unwrap(emptyList()).firstOrNull()
-    }.state(null)
+        it.unwrap(emptyList()).firstOrNull().let {
+            when (it) {
+                null -> BrowseItemContent.None()
+                else -> BrowseItemContent.Content(it)
+            }
+        }
+    }.state(BrowseItemContent.None())
 
     override fun onAlertClick() {
         componentScope.launch {
             serviceAlertRepository.markViewed(
-                alert.value?.id ?: return@launch
+                (state.value as? BrowseItemContent.Content)?.content?.id ?: return@launch
             )
         }
     }

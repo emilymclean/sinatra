@@ -8,15 +8,11 @@ import cl.emilym.sinatra.domain.GetFilteredStopsUseCase
 import cl.emilym.sinatra.ui.presentation.decompose.base.SinatraComponent
 import cl.emilym.sinatra.ui.presentation.decompose.base.SinatraComponentContext
 import cl.emilym.sinatra.ui.presentation.decompose.base.asStateFlow
-import cl.emilym.sinatra.ui.presentation.decompose.browse.BrowseBottomSheetComponent.Item
+import cl.emilym.sinatra.ui.presentation.decompose.browse.items.BrowseItemPlugin
 import cl.emilym.sinatra.ui.presentation.decompose.browse.items.DefaultNearbyDepartureItemComponent
 import cl.emilym.sinatra.ui.presentation.decompose.browse.items.DefaultQuickFavouriteItemComponent
 import cl.emilym.sinatra.ui.presentation.decompose.browse.items.DefaultRouteItemComponent
 import cl.emilym.sinatra.ui.presentation.decompose.browse.items.DefaultServiceUpdateItemComponent
-import cl.emilym.sinatra.ui.presentation.decompose.browse.items.NearbyDepartureItemComponent
-import cl.emilym.sinatra.ui.presentation.decompose.browse.items.QuickFavouriteItemComponent
-import cl.emilym.sinatra.ui.presentation.decompose.browse.items.RouteItemComponent
-import cl.emilym.sinatra.ui.presentation.decompose.browse.items.ServiceUpdateItemComponent
 import cl.emilym.sinatra.ui.presentation.decompose.main.NavigationInstruction
 import cl.emilym.sinatra.ui.widgets.defaultConfig
 import com.arkivanov.decompose.ExperimentalDecomposeApi
@@ -34,22 +30,7 @@ interface BrowseBottomSheetComponent: SinatraComponent {
     val stops: StateFlow<List<Stop>>
 
     @OptIn(ExperimentalDecomposeApi::class)
-    val items: StateFlow<ChildItems<*, Item>>
-
-    sealed interface Item {
-        data class Routes(
-            val component: RouteItemComponent
-        ): Item
-        data class QuickFavourite(
-            val component: QuickFavouriteItemComponent
-        ): Item
-        data class NearbyDeparture(
-            val component: NearbyDepartureItemComponent
-        ): Item
-        data class ServiceUpdate(
-            val component: ServiceUpdateItemComponent
-        ): Item
-    }
+    val items: StateFlow<ChildItems<*, BrowseItemPlugin<*>>>
 
 }
 
@@ -89,7 +70,7 @@ class DefaultBrowseBottomSheetComponent(
         childFactory = ::createItem
     )
     @OptIn(ExperimentalDecomposeApi::class)
-    override val items: StateFlow<ChildItems<*, Item>> = _items.asStateFlow()
+    override val items: StateFlow<ChildItems<*, BrowseItemPlugin<*>>> = _items.asStateFlow()
 
     init {
         lifecycle.doOnCreate {
@@ -104,31 +85,23 @@ class DefaultBrowseBottomSheetComponent(
         }
     }
 
-    private fun createItem(config: Config, context: SinatraComponentContext): Item =
+    private fun createItem(config: Config, context: SinatraComponentContext): BrowseItemPlugin<*> =
         when (config) {
-            is Config.Routes -> Item.Routes(
-                DefaultRouteItemComponent(
-                    onNavigate,
-                    context
-                )
+            is Config.Routes -> DefaultRouteItemComponent(
+                onNavigate,
+                context
             )
-            is Config.QuickFavourite -> Item.QuickFavourite(
-                DefaultQuickFavouriteItemComponent(
-                    onNavigate,
-                    context
-                )
+            is Config.QuickFavourite -> DefaultQuickFavouriteItemComponent(
+                onNavigate,
+                context
             )
-            is Config.NearbyDeparture -> Item.NearbyDeparture(
-                DefaultNearbyDepartureItemComponent(
-                    onNavigate,
-                    context
-                )
+            is Config.NearbyDeparture -> DefaultNearbyDepartureItemComponent(
+                onNavigate,
+                context
             )
-            is Config.ServiceUpdate -> Item.ServiceUpdate(
-                DefaultServiceUpdateItemComponent(
-                    onNavigate,
-                    context
-                )
+            is Config.ServiceUpdate -> DefaultServiceUpdateItemComponent(
+                onNavigate,
+                context
             )
         }
 

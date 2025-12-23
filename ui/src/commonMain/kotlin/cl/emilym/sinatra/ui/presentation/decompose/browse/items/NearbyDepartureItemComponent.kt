@@ -16,11 +16,10 @@ import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.withContext
 
-interface NearbyDepartureItemComponent: SinatraComponent {
-
-    val departures: StateFlow<StopDepartures?>
+interface NearbyDepartureItemComponent: BrowseItemPlugin<StopDepartures> {
 
     fun onStopClick()
     fun onDepartureClick(time: IStopTimetableTime)
@@ -38,22 +37,31 @@ class DefaultNearbyDepartureItemComponent(
 
     private val currentLocation = MutableStateFlow<MapLocation?>(null)
 
-    override val departures: StateFlow<StopDepartures?> = currentLocation.flatRequestStateFlow(showLoading = false) {
-        it ?: return@flatRequestStateFlow flowOf(null)
-        withContext(Dispatchers.IO) {
-            favouriteNearbyStopDeparturesUseCase(it)
+    override val state =
+        currentLocation.flatRequestStateFlow(showLoading = false) {
+            it ?: return@flatRequestStateFlow flowOf(null)
+            withContext(Dispatchers.IO) {
+                favouriteNearbyStopDeparturesUseCase(it)
+            }
         }
-    }.unwrap().state(null)
+            .unwrap()
+            .mapLatest {
+                when (it) {
+                    null -> BrowseItemContent.None()
+                    else -> BrowseItemContent.Content(it)
+                }
+            }
+            .state(BrowseItemContent.None())
 
     override fun onStopClick() {
-        val stopId = departures.value?.stop?.id ?: return
+        val stopId = (state.value as? BrowseItemContent.Content)?.content?.stop?.id ?: return
         onNavigate(
             NavigationInstruction.StopDetail(stopId)
         )
     }
 
     override fun onDepartureClick(time: IStopTimetableTime) {
-        val stopId = departures.value?.stop?.id ?: return
+        val stopId = (state.value as? BrowseItemContent.Content)?.content?.stop?.id ?: return
         onNavigate(
             NavigationInstruction.RouteDetail(
                 time.routeId,
