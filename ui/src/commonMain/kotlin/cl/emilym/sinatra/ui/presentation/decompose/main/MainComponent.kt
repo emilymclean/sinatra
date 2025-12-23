@@ -24,18 +24,11 @@ interface MainComponent: SinatraComponent {
 
     sealed interface Child {
         data class Browse(
-            override val mapComponent: BrowseMapComponent,
-            override val bottomSheetComponent: BrowseBottomSheetComponent
-        ): MapChild<BrowseMapComponent, BrowseBottomSheetComponent>
+            val mapComponent: BrowseMapComponent,
+            val bottomSheetComponent: BrowseBottomSheetComponent
+        ): MapChild
 
-        interface MapChild<M: SinatraComponent, B: SinatraComponent>: Child {
-            val mapComponent: M
-            val bottomSheetComponent: B
-        }
-
-        interface PageChild<T: SinatraComponent>: Child {
-            val component: T
-        }
+        interface MapChild: Child
     }
 
     sealed interface TabBarChild {

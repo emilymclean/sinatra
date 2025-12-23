@@ -59,15 +59,7 @@ fun MainComponentContentPage(
 
     ViewportSizeWidget {
         when (val child = content.active.instance) {
-            is Child.PageChild<*> -> {
-                Children(
-                    content,
-                    modifier = Modifier.fillMaxSize()
-                ) {
-
-                }
-            }
-            is Child.MapChild<*,*> -> {
+            is Child.MapChild -> {
                 BottomSheet(
                     scaffoldState,
                     content,
@@ -105,6 +97,12 @@ fun MainComponentContentPage(
                         }
                     }
                 }
+            }
+            else -> Children(
+                content,
+                modifier = Modifier.fillMaxSize()
+            ) {
+
             }
         }
     }
@@ -148,7 +146,7 @@ private fun BottomSheet(
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun MapOverlayContent(
-    child: Child.MapChild<*,*>
+    child: Child.MapChild
 ) {
     val cwi = ScaffoldDefaults.contentWindowInsets
     val insets = remember(cwi) {

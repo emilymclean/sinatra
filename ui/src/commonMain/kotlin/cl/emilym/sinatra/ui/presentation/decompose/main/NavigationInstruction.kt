@@ -30,4 +30,7 @@ interface NavigationInstruction {
     data class SetSpecialFavourite(
         val type: SpecialFavouriteType
     ): NavigationInstruction
+
+    data object ServiceAlerts: NavigationInstruction
+
 }
