@@ -27,7 +27,7 @@ import org.jetbrains.compose.resources.painterResource
 fun QuickNavigateGroupBrowseOption(option: BrowsePrompt.QuickNavigateGroup) {
     when (option.items.size) {
         1 -> Box(Modifier.padding(horizontal = 1.rdp)) {
-            QuickNavigationCard(option.items.first(), Modifier.fillMaxWidth())
+            QuickNavigationCard(option.items.first(), {}, Modifier.fillMaxWidth())
         }
         else -> LazyRow(
             Modifier.fillMaxWidth(),
@@ -41,6 +41,7 @@ fun QuickNavigateGroupBrowseOption(option: BrowsePrompt.QuickNavigateGroup) {
             ) {
                 QuickNavigationCard(
                     it,
+                    {},
                     modifier = Modifier.animateItem()
                 )
             }
@@ -49,17 +50,14 @@ fun QuickNavigateGroupBrowseOption(option: BrowsePrompt.QuickNavigateGroup) {
 }
 
 @Composable
-private fun QuickNavigationCard(
+fun QuickNavigationCard(
     item: QuickNavigationItem,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val navigator = LocalNavigator.currentOrThrow
     QuickSelectCard(
         {
-            when (item) {
-                is QuickNavigationItem.Item -> navigator.push(NavigateEntryScreen(item.location))
-                is QuickNavigationItem.ToAdd -> navigator.push(AddSpecialFavouriteScreen(item.special))
-            }
+            onClick()
         },
         null,
         backgroundColor = MaterialTheme.colorScheme.surfaceContainerHighest,
