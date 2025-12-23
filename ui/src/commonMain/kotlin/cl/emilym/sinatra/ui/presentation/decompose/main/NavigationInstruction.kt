@@ -9,6 +9,11 @@ import cl.emilym.sinatra.ui.presentation.screens.maps.navigate.NavigationLocatio
 import kotlinx.datetime.Instant
 
 interface NavigationInstruction {
+
+    data class StopDetail(
+        val stopId: StopId
+    ): NavigationInstruction
+
     data class RouteDetail(
         val routeId: RouteId,
         val serviceId: ServiceId? = null,

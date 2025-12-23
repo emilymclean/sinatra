@@ -6,6 +6,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import cl.emilym.compose.requeststate.RequestState
+import cl.emilym.sinatra.ui.presentation.decompose.browse.items.NearbyDepartureItemComponentContent
 import cl.emilym.sinatra.ui.presentation.decompose.browse.items.QuickFavouriteItemComponentContent
 import cl.emilym.sinatra.ui.presentation.decompose.browse.items.RouteItemComponentContent
 import cl.emilym.sinatra.ui.widgets.FullscreenRequestStateWidget
@@ -42,6 +43,8 @@ fun BrowseBottomSheetComponentContent(
                                     when (it) {
                                         is BrowseBottomSheetComponent.Item.QuickFavourite ->
                                             QuickFavouriteItemComponentContent(it.component)
+                                        is BrowseBottomSheetComponent.Item.NearbyDeparture ->
+                                            NearbyDepartureItemComponentContent(it.component)
                                         else -> {}
                                     }
                                 }
