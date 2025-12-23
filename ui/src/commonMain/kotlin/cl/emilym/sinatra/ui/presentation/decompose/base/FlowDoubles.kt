@@ -1,7 +1,13 @@
 package cl.emilym.sinatra.ui.presentation.decompose.base
 
+import com.arkivanov.decompose.ExperimentalDecomposeApi
 import com.arkivanov.decompose.GenericComponentContext
 import com.arkivanov.decompose.router.children.NavigationSource
+import com.arkivanov.decompose.router.items.ChildItems
+import com.arkivanov.decompose.router.items.Items
+import com.arkivanov.decompose.router.items.ItemsNavigation.Event
+import com.arkivanov.decompose.router.items.LazyChildItems
+import com.arkivanov.decompose.router.items.childItems
 import com.arkivanov.decompose.router.slot.ChildSlot
 import com.arkivanov.decompose.router.slot.SlotNavigation
 import com.arkivanov.decompose.router.slot.childSlot
@@ -40,5 +46,20 @@ fun <Ctx : GenericComponentContext<Ctx>, C : Any, T : Any> Ctx.childSlotFlow(
     initialConfiguration,
     key,
     handleBackButton,
+    childFactory
+).asStateFlow()
+
+@OptIn(ExperimentalDecomposeApi::class)
+fun <Ctx : GenericComponentContext<Ctx>, C : Any, T : Any> Ctx.childItemsFlow(
+    source: NavigationSource<Event<C>>,
+    serializer: KSerializer<C>?,
+    initialItems: () -> Items<C>,
+    key: String = "DefaultChildItems",
+    childFactory: (configuration: C, Ctx) -> T,
+): StateFlow<ChildItems<C, T>> = childItems(
+    source,
+    serializer,
+    initialItems,
+    key,
     childFactory
 ).asStateFlow()

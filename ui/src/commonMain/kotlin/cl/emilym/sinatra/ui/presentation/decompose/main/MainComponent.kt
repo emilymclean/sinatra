@@ -106,8 +106,15 @@ class DefaultMainComponent(
         when (config) {
             is Config.Main -> MainComponent.Child.Browse(
                 DefaultBrowseMapComponent(componentContext),
-                DefaultBrowseBottomSheetComponent(componentContext)
+                DefaultBrowseBottomSheetComponent(
+                    ::navigate,
+                    componentContext
+                )
             )
         }
+
+    fun navigate(instruction: Navigation) {
+
+    }
 
 }
