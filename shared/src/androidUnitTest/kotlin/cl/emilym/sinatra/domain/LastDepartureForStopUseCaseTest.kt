@@ -696,6 +696,52 @@ class LastDepartureForStopUseCaseTest {
     }
 
     @Test
+    fun `invoke prioritizes next day departure before 3am from over current day future departure`() = runTest {
+        // Given
+        val todayService = mockk<Service>()
+        val tomorrowService = mockk<Service>()
+
+        val todayFutureDeparture = DefaultStopTimetableTime.copy(
+            serviceId = "today-service",
+            routeId = "route1",
+            heading = "City",
+            departureTime = Time.create(23.hours) // Future departure today
+        )
+
+        val tomorrowEarlyDeparture = DefaultStopTimetableTime.copy(
+            serviceId = "tomorrow-service",
+            routeId = "route1",
+            heading = "City",
+            departureTime = Time.create(1.hours) // Future departure tomorrow (before 3am)
+        )
+
+        val servicesAndTimes = createServicesAndTimes(
+            services = listOf(todayService, tomorrowService),
+            times = listOf(todayFutureDeparture, tomorrowEarlyDeparture)
+        )
+
+        every { todayService.id } returns "today-service"
+        every { todayService.active(yesterday, testTimeZone) } returns false
+        every { todayService.active(today, testTimeZone) } returns true
+        every { todayService.active(tomorrow, testTimeZone) } returns false
+
+        every { tomorrowService.id } returns "tomorrow-service"
+        every { tomorrowService.active(yesterday, testTimeZone) } returns false
+        every { tomorrowService.active(today, testTimeZone) } returns false
+        every { tomorrowService.active(tomorrow, testTimeZone) } returns true
+
+        coEvery { servicesAndTimesForStopUseCase(testStopId) } returns servicesAndTimes
+
+        // When
+        val result = useCase(testStopId).first()
+
+        // Then
+        assertEquals(1, result.size)
+        assertEquals("tomorrow-service", result.first().serviceId)
+        assertEquals(1.hours, result.first().departureTime.durationThroughDay)
+    }
+
+    @Test
     fun `invoke filters out school services when ShowSchoolServices is false`() = runTest {
         // Given
         val activeService = mockk<Service>()

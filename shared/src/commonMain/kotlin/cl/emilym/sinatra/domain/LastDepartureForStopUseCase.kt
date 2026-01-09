@@ -7,6 +7,7 @@ import cl.emilym.sinatra.data.models.RouteId
 import cl.emilym.sinatra.data.models.StopId
 import cl.emilym.sinatra.data.models.StopTimetableTime
 import cl.emilym.sinatra.data.models.startOfDay
+import cl.emilym.sinatra.data.models.toTodayTime
 import cl.emilym.sinatra.data.repository.Preference
 import cl.emilym.sinatra.data.repository.PreferencesRepository
 import cl.emilym.sinatra.data.repository.RemoteConfigRepository
@@ -33,41 +34,47 @@ class LastDepartureForStopUseCase(
     private val preferencesRepository: PreferencesRepository
 ) {
 
+    companion object {
+        private val CUTOFF_TIME = 3.hours // 3am
+    }
+
     operator fun invoke(
         stopId: StopId,
         routeId: RouteId? = null
     ): Flow<List<IStopTimetableTime>> = flow {
         val scheduleTimeZone = metadataRepository.timeZone()
         val now = clock.now()
-        val days = listOf(now - 1.days, now + 1.days, now)
+        val days = listOf(now - 1.days, now, now + 1.days)
 
         val timesAndServices = servicesAndTimesForStopUseCase(stopId)
-        val activeServices = days.map { now ->
+        val activeServicesByDay = days.map { day ->
             timesAndServices.item.services.filter { it.active(
-                now,
+                day,
                 scheduleTimeZone
             ) }
         }
 
-        if (activeServices.all { it.isEmpty() }) return@flow emit(emptyList())
+        if (activeServicesByDay.all { it.isEmpty() }) return@flow emit(emptyList())
 
         val lasts = mutableMapOf<RouteAndHeading, Array<StopTimetableTime?>>()
 
-        activeServices.forEachIndexed { i, activeServices ->
-            val startOfDay = days[i].startOfDay(scheduleTimeZone)
+        activeServicesByDay.forEachIndexed { dayIndex, activeServices ->
+            val startOfDay = days[dayIndex].startOfDay(scheduleTimeZone)
             activeServices.forEach { activeService ->
                 val relevant = timesAndServices.item.times
                     .filter { it.serviceId == activeService.id }
                     .filterNot { it.last }
                     .run {
+                        // Filter for specific routes when provided
                         when (routeId) {
                             null -> this
                             else -> filter { it.routeId == routeId }
                         }
                     }
                     .run {
-                        when (i) {
-                            1 -> filter { it.departureTime.durationThroughDay < 3.hours }
+                        // Only look for departures before 3am on next day
+                        when (dayIndex) {
+                            2 -> filter { it.departureTime.durationThroughDay < CUTOFF_TIME }
                             else -> this
                         }
                     }
@@ -77,8 +84,8 @@ class LastDepartureForStopUseCase(
                     val referenced = stopTime.withTimeReference(startOfDay)
                     val current = lasts.getOrPut(key){ Array(3) { null } }
 
-                    if (current[i] == null || current[i]!!.departureTime < referenced.departureTime)
-                        current[i] = referenced
+                    if (current[dayIndex] == null || current[dayIndex]!!.departureTime < referenced.departureTime)
+                        current[dayIndex] = referenced
                 }
             }
         }
@@ -87,7 +94,14 @@ class LastDepartureForStopUseCase(
             lasts
                 .values
                 .mapNotNull {
-                    it.filterNotNull().firstOrNull { it.departureTime >= now } ?: it[2]
+                    val yesterday = it[0]
+                    val today = it[1]
+                    val tomorrow = it[2]
+                    when {
+                        yesterday != null && yesterday.departureTime >= now -> yesterday
+                        tomorrow != null -> tomorrow
+                        else -> today
+                    }
                 }
                 .map {
                     when {
