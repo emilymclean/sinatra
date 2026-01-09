@@ -24,6 +24,8 @@ class ContentRepository(
         const val SERVICE_ALERT_ID = "service-alerts"
         const val INFORMATION_FOR_DEVELOPERS_ID = "information-for-developers"
         const val HOME_BANNER_ID = "home"
+        const val ROUTE_BANNER_ID = "route-%s"
+        const val STOP_BANNER_ID = "stop-%s"
 
         const val NATIVE_PREFERENCES_ID = "preferences"
         const val NATIVE_PREFERENCES_ROUTING_ID = "preferences-routing"
