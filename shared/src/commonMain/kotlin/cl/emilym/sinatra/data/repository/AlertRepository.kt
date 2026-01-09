@@ -63,7 +63,7 @@ class AlertRepository(
             is AlertDisplayContext.Stop -> {
                 flow {
                     emit(listOfNotNull(contentRepository.banner(
-                        ContentRepository.ROUTE_BANNER_ID.replace("%s", context.stopId)
+                        ContentRepository.STOP_BANNER_ID.replace("%s", context.stopId)
                     )))
                 }
             }
