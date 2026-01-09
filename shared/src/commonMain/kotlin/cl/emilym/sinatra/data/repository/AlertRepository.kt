@@ -53,6 +53,20 @@ class AlertRepository(
                     )))
                 }
             }
+            is AlertDisplayContext.Route -> {
+                flow {
+                    emit(listOfNotNull(contentRepository.banner(
+                        ContentRepository.ROUTE_BANNER_ID.replace("%s", context.routeId)
+                    )))
+                }
+            }
+            is AlertDisplayContext.Stop -> {
+                flow {
+                    emit(listOfNotNull(contentRepository.banner(
+                        ContentRepository.ROUTE_BANNER_ID.replace("%s", context.stopId)
+                    )))
+                }
+            }
             else -> flowOf(emptyList())
         }
     }
