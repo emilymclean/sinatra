@@ -1,5 +1,5 @@
-extends "package://components.emilym.cl/actions/actions@0.1.16#/common/build-app-support.pkl"
-import "package://components.emilym.cl/actions/actions@0.1.16#/common/common.pkl" as common
+extends "package://components.emilym.cl/actions/actions@0.1.21#/common/build-app-support.pkl"
+import "package://components.emilym.cl/actions/actions@0.1.21#/common/common.pkl" as common
 
 hidden modules: List<String>(length == 0) = List()
 hidden extraBuildSteps: Listing<Step>
@@ -9,6 +9,8 @@ hidden versionNumberOffset = 100
 hidden instantVersionNumberOffset = 0
 hidden gradleVersionNameName = "version"
 hidden gradleVersionCodeName = "versionCode"
+
+hidden javaVersion = "21"
 
 local releaseFileName = "sinatra-${{ matrix.build.name }}-v${{ needs.version.outputs.version }}"
 local iosReleaseFileName = "sinatra-iosApp-release-v${{ needs.version.outputs.version }}"
@@ -62,7 +64,7 @@ function buildJob(
   }
   steps = new Listing {
     common.checkout
-    common.setupJdk
+    common.setupJdk(javaVersion)
     ...extraBuildSteps
     new CommandStep {
       run = """
@@ -428,7 +430,7 @@ jobs = new Mapping {
     `runs-on` = "macos-latest"
     steps = new Listing {
       common.checkout
-      common.setupJdk
+      common.setupJdk(javaVersion)
       new ActionStep {
         uses = "ruby/setup-ruby@v1"
         with {

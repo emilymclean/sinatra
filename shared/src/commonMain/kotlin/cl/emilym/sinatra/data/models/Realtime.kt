@@ -37,7 +37,7 @@ data class RealtimeInformationImpl(
             return RealtimeInformationImpl(
                 pb.updates.map { RealtimeUpdateImpl.fromPb(it) },
                 pb.expireTimestamp?.let { Instant.parse(pb.expireTimestamp) }
-                    ?: (Clock.System.now() + 2.minutes)
+                    ?: (kotlin.time.Clock.System.now() + 2.minutes)
             )
         }
     }
