@@ -68,7 +68,7 @@ class RoutingPreferencesScreen: PreferencesScreen() {
                 stringResource(Res.string.preferences_setting_school_service_subtitle),
                 Modifier.fillMaxWidth()
             ) {
-                PreferencesCheckbox(Preference.RequiresWheelchair)
+                PreferencesCheckbox(Preference.ShowSchoolServices)
             }
         }
 

@@ -1,17 +1,26 @@
 package cl.emilym.sinatra.ui.presentation.screens.preferences
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import cafe.adriel.voyager.core.model.screenModelScope
 import cafe.adriel.voyager.core.screen.ScreenKey
 import cafe.adriel.voyager.koin.koinScreenModel
+import cl.emilym.compose.units.rdp
+import cl.emilym.sinatra.FeatureFlag
 import cl.emilym.sinatra.data.models.ContentLink
 import cl.emilym.sinatra.data.models.DisclosureType
 import cl.emilym.sinatra.data.repository.ContentRepository
 import cl.emilym.sinatra.data.repository.PlatformContext
 import cl.emilym.sinatra.data.repository.RecentVisitRepository
+import cl.emilym.sinatra.data.repository.ShaRepository
+import cl.emilym.sinatra.ui.widgets.ContentLinkColumn
 import cl.emilym.sinatra.ui.widgets.SinatraScreenModel
 import cl.emilym.sinatra.ui.widgets.platformContext
+import cl.emilym.sinatra.ui.widgets.value
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.koin.core.annotation.Factory
@@ -19,17 +28,25 @@ import sinatra.ui.generated.resources.Res
 import sinatra.ui.generated.resources.preferences_location_title
 import sinatra.ui.generated.resources.preferences_root_title
 import sinatra.ui.generated.resources.preferences_routing_title
-import sinatra.ui.generated.resources.preferences_units_title
+import sinatra.ui.generated.resources.preferences_setting_clear_cache
 import sinatra.ui.generated.resources.preferences_setting_clear_recent_history
+import sinatra.ui.generated.resources.preferences_units_title
 
 @Factory
 class RootPreferencesViewModel(
-    private val recentVisitRepository: RecentVisitRepository
+    private val recentVisitRepository: RecentVisitRepository,
+    private val shaRepository: ShaRepository
 ): SinatraScreenModel {
 
     fun clearVisitHistory() {
         screenModelScope.launch {
             recentVisitRepository.clear()
+        }
+    }
+
+    fun clearCache() {
+        screenModelScope.launch {
+            shaRepository.invalidateAll()
         }
     }
 
@@ -46,34 +63,56 @@ class RootPreferencesScreen: PreferencesScreen() {
     override fun ColumnScope.Preferences() {}
 
     @Composable
-    override fun options(): List<ContentLink> {
+    override fun ColumnScope.BottomContent() {
         val context = platformContext()
         val viewModel = koinScreenModel<RootPreferencesViewModel>()
 
-        return listOf(
-            ContentLink.native(
-                stringResource(Res.string.preferences_routing_title),
-                ContentRepository.NATIVE_PREFERENCES_ROUTING_ID
-            ),
-            ContentLink.native(
-                stringResource(Res.string.preferences_units_title),
-                ContentRepository.NATIVE_PREFERENCES_UNITS_ID
-            ),
-            ContentLink.Custom(
-                stringResource(Res.string.preferences_location_title),
-                DisclosureType.EXTERNAL,
-                0,
-            ) {
-                openLocationSettings(context)
-            },
-            ContentLink.Custom(
-                stringResource(Res.string.preferences_setting_clear_recent_history),
-                DisclosureType.NONE,
-                0,
-            ) {
-                viewModel.clearVisitHistory()
-            }
-        )
+        Column {
+            ContentLinkColumn(
+                listOf(
+                    ContentLink.native(
+                        stringResource(Res.string.preferences_routing_title),
+                        ContentRepository.NATIVE_PREFERENCES_ROUTING_ID
+                    ),
+                    ContentLink.native(
+                        stringResource(Res.string.preferences_units_title),
+                        ContentRepository.NATIVE_PREFERENCES_UNITS_ID
+                    ),
+                    ContentLink.Custom(
+                        stringResource(Res.string.preferences_location_title),
+                        DisclosureType.EXTERNAL,
+                        0,
+                    ) {
+                        openLocationSettings(context)
+                    }
+                )
+            )
+
+            Spacer(Modifier.height(1.rdp))
+
+            ContentLinkColumn(
+                listOfNotNull(
+                    ContentLink.Custom(
+                        stringResource(Res.string.preferences_setting_clear_recent_history),
+                        DisclosureType.NONE,
+                        0,
+                    ) {
+                        viewModel.clearVisitHistory()
+                    },
+                    if (FeatureFlag.SETTINGS_CLEAR_CACHE.value()) {
+                        ContentLink.Custom(
+                            stringResource(Res.string.preferences_setting_clear_cache),
+                            DisclosureType.NONE,
+                            0,
+                        ) {
+                            viewModel.clearCache()
+                        }
+                    } else {
+                        null
+                    }
+                )
+            )
+        }
     }
 
 }

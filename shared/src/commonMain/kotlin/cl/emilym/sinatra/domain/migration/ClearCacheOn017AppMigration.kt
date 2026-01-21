@@ -9,7 +9,7 @@ class ClearCacheOn017AppMigration(
 ): AppMigration {
 
     override suspend fun apply(previous: Int, current: Int, name: String) {
-        if (name != "0.17.0") return
+        if (previous <= 704) return // Version number for 0.16.1
         shaRepository.invalidateAll()
     }
 }

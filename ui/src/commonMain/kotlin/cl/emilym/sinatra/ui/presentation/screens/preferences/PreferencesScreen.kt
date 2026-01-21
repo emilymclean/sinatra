@@ -26,6 +26,7 @@ import cl.emilym.sinatra.nullIfEmpty
 import cl.emilym.sinatra.ui.widgets.ContentLinkWidget
 import cl.emilym.sinatra.ui.widgets.NavigatorBackButton
 import org.koin.compose.koinInject
+import kotlin.text.iterator
 
 abstract class PreferencesScreen: Screen {
     @get:Composable
@@ -52,9 +53,6 @@ abstract class PreferencesScreen: Screen {
                         .verticalScroll(rememberScrollState())
                         .padding(innerPadding),
                 ) {
-                    val preferencesRepository = koinInject<PreferencesRepository>()
-                    val scope = rememberCoroutineScope()
-
                     Column(
                         Modifier
                             .fillMaxWidth()
@@ -63,16 +61,7 @@ abstract class PreferencesScreen: Screen {
                     ) {
                         Preferences()
                     }
-                    options().nullIfEmpty()?.let {
-                        Column(
-                            Modifier.fillMaxWidth(),
-                            verticalArrangement = Arrangement.spacedBy(2.dp)
-                        ) {
-                            for (link in it) {
-                                ContentLinkWidget(link, Modifier.fillMaxWidth())
-                            }
-                        }
-                    }
+                    BottomContent()
                 }
             }
         }
@@ -82,6 +71,5 @@ abstract class PreferencesScreen: Screen {
     abstract fun ColumnScope.Preferences()
 
     @Composable
-    open fun options(): List<ContentLink> { return emptyList() }
-
+    open fun ColumnScope.BottomContent() {}
 }
