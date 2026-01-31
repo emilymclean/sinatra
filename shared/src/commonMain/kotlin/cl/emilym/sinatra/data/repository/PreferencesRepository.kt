@@ -16,6 +16,7 @@ sealed interface Preference<T> {
     data object ShowAccessibilityIconsNavigation: Preference<Boolean>
     data object MetricUnits: Preference<Boolean>
     data object Use24HourUnits: Preference<Time24HSetting>
+    data object CountdownUntilArrival: Preference<Boolean>
 }
 
 @Factory
@@ -32,6 +33,7 @@ class PreferencesRepository(
         internal val ROUTER_SHOW_ACCESSIBILITY_ICONS = booleanPreferencesKey("ROUTER_SHOW_ACCESSIBILITY_ICONS")
         internal val DISPLAY_METRIC_UNITS_KEY = booleanPreferencesKey("DISPLAY_METRIC_UNITS")
         internal val TIME_24H_KEY = stringPreferencesKey("TIME_24H")
+        internal val COUNTDOWN_UNTIL_ARRIVAL = booleanPreferencesKey("COUNTDOWN_UNTIL_ARRIVAL")
     }
 
     private val requiresWheelchair: PreferencesUnit<Boolean> = SimplePreferencesUnit(
@@ -82,6 +84,12 @@ class PreferencesRepository(
         { it.name }
     )
 
+    private val countdownUntilArrival: PreferencesUnit<Boolean> = SimplePreferencesUnit(
+        COUNTDOWN_UNTIL_ARRIVAL,
+        false,
+        preferencesPersistence
+    )
+
     fun <T> preference(preference: Preference<T>): PreferencesUnit<T> = when (preference) {
         is Preference.MaximumWalkingTime -> maximumWalkingTime
         is Preference.MetricUnits -> metric
@@ -90,6 +98,7 @@ class PreferencesRepository(
         is Preference.RequiresWheelchair -> requiresWheelchair
         is Preference.ShowAccessibilityIconsNavigation -> showAccessibilityIconsNavigation
         is Preference.Use24HourUnits -> use24Hour
+        is Preference.CountdownUntilArrival -> countdownUntilArrival
     } as PreferencesUnit<T>
 
 }
