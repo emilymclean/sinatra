@@ -30,6 +30,8 @@
     <string name="preferences_setting_show_accessibility_icons_navigation">Highlight Accessibility</string>
     <string name="preferences_setting_show_accessibility_icons_navigation_subtitle">Show whether a journey is bike or wheelchair accessible.</string>
     <string name="preferences_setting_max_walking">Maximum walking time</string>
+    <string name="preferences_setting_countdown">Relative arrival times</string>
+    <string name="preferences_setting_countdown_subtitle">Show vehicle arrival and departure times relative to current time.</string>
     <string name="preferences_setting_metric">Distance Units</string>
     <string name="preferences_setting_metric_subtitle">Display distances in metric (km, m) or imperial (mi, ft) units.</string>
     <string name="preferences_setting_metric_metric">Metric</string>
