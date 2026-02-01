@@ -210,6 +210,7 @@
     <string name="generic_departure_early_day">Departing on %1$s (%2$s early)</string>
     <string name="generic_departure_past">Departed at %1$s</string>
     <string name="generic_departure_past_countdown">Departed %1$s ago</string>
+    <string name="generic_departure_past_countdown_now">Departed now</string>
     <string name="generic_departure_past_day">Departed on %1$s</string>
     <string name="generic_departure_past_late">Departed at %1$s (%2$s late)</string>
     <string name="generic_departure_past_late_day">Departed on %1$s (%2$s late)</string>

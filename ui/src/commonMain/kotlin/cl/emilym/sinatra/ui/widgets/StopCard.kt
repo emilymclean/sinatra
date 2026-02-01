@@ -64,6 +64,7 @@ import sinatra.ui.generated.resources.generic_departure_countdown_now
 import sinatra.ui.generated.resources.generic_departure_day
 import sinatra.ui.generated.resources.generic_departure_past
 import sinatra.ui.generated.resources.generic_departure_past_countdown
+import sinatra.ui.generated.resources.generic_departure_past_countdown_now
 import sinatra.ui.generated.resources.generic_departure_past_day
 import sinatra.ui.generated.resources.past_departure
 import sinatra.ui.generated.resources.past_departure_approximate
@@ -227,7 +228,10 @@ val StopStationTime.text: String
                     true -> stringResource(
                         when (this) {
                             is StopStationTime.Arrival -> Res.string.generic_arrival_countdown_now
-                            is StopStationTime.Departure -> Res.string.generic_departure_countdown_now
+                            is StopStationTime.Departure -> when(isInPast) {
+                                true -> Res.string.generic_departure_past_countdown_now
+                                else -> Res.string.generic_departure_countdown_now
+                            }
                         }
                     )
                     else -> stringResource(
