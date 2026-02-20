@@ -217,6 +217,10 @@
   <string name="stops_timing_approximate">本服务无固定时刻表，车辆到达时间可能会有所变化。</string>
       
   <string name="accessibility_title">无障碍设施</string>
+
+  <string name="scheduled_delay_late">%1$s（晚点%2$s）</string>
+
+  <string name="scheduled_delay_early">%1$s（早%2$s）</string>
       
   <string name="scheduled_arrival">计划到达%1$s</string>
 
@@ -230,14 +234,6 @@
 
   <string name="approximate_arrival_day">约%1$s到达</string>
 
-  <string name="estimated_arrival_late">预计到达时间为%1$s（晚点%2$s）</string>
-
-  <string name="estimated_arrival_late_day">预计到达时间为%1$s（晚点%2$s）</string>
-
-  <string name="estimated_arrival_early">预计到达时间为%1$s（早%2$s）</string>
-
-  <string name="estimated_arrival_early_day">预计到达时间为%1$s（早%2$s）</string>
-
   <string name="past_departure">于 %1$s 出发</string>
 
   <string name="past_departure_day">于 %1$s 出发</string>
@@ -245,14 +241,6 @@
   <string name="past_departure_approximate">大约在 %1$s 出发</string>
 
   <string name="past_departure_approximate_day">大约在 %1$s 出发</string>
-
-  <string name="past_departure_late">于%1$s出发（晚点 %2$s）</string>
-
-  <string name="past_departure_late_day">于%1$s出发（晚点 %2$s）</string>
-
-  <string name="past_departure_early">于%1$s出发（早于%2$s）</string>
-
-  <string name="past_departure_early_day">于%1$s出发（早于%2$s）</string>
 
   <string name="future_scheduled_departure">预计于%1$s出发</string>
 
@@ -266,14 +254,6 @@
 
   <string name="future_approximate_departure_day">预计于%1$s出发</string>
 
-  <string name="future_estimated_departure_late">预计于%1$s出发（晚点%2$s）</string>
-
-  <string name="future_estimated_departure_late_day">预计于%1$s出发（晚点%2$s）</string>
-
-  <string name="future_estimated_departure_early">预计于%1$s出发（提前%2$s）</string>
-
-  <string name="future_estimated_departure_early_day">预计于%1$s出发（提前%2$s）</string>
-
   <string name="generic_arrival">将于%1$s抵达</string>
 
   <string name="generic_arrival_countdown">将于%1$s后到达</string>
@@ -281,14 +261,6 @@
   <string name="generic_arrival_countdown_now">即将到达</string>
 
   <string name="generic_arrival_day">将于%1$s抵达</string>
-
-  <string name="generic_arrival_late">将于%1$s抵达（延迟%2$s）</string>
-
-  <string name="generic_arrival_late_day">将于%1$s抵达（延迟%2$s）</string>
-
-  <string name="generic_arrival_early">将于%1$s抵达（提前%2$s）</string>
-
-  <string name="generic_arrival_early_day">将于%1$s抵达（提前%2$s）</string>
 
   <string name="generic_departure">将于%1$s出发</string>
 
@@ -298,14 +270,6 @@
 
   <string name="generic_departure_day">将于%1$s出发</string>
 
-  <string name="generic_departure_late">将于%1$s出发（延迟%2$s）</string>
-
-  <string name="generic_departure_late_day">将于%1$s出发（延迟%2$s）</string>
-
-  <string name="generic_departure_early">将于%1$s出发（提前%2$s）</string>
-
-  <string name="generic_departure_early_day">将于%1$s出发（提前%2$s）</string>
-
   <string name="generic_departure_past">已于%1$s出发</string>
 
   <string name="generic_departure_past_countdown">已于%1$s前出发</string>
@@ -313,14 +277,6 @@
   <string name="generic_departure_past_countdown_now">已出发</string>
 
   <string name="generic_departure_past_day">已于%1$s出发</string>
-
-  <string name="generic_departure_past_late">已于%1$s出发（延迟%2$s）</string>
-
-  <string name="generic_departure_past_late_day">已于%1$s出发（延迟%2$s）</string>
-
-  <string name="generic_departure_past_early">已于%1$s出发（提前%2$s）</string>
-
-  <string name="generic_departure_past_early_day">已于%1$s出发（提前%2$s）</string>
 
   <string name="route_with_heading">%1$s 至 %2$s</string>
       
