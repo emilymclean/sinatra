@@ -276,6 +276,10 @@
 
   <string name="generic_arrival">将于%1$s抵达</string>
 
+  <string name="generic_arrival_countdown">将于%1$s后到达</string>
+
+  <string name="generic_arrival_countdown_now">即将到达</string>
+
   <string name="generic_arrival_day">将于%1$s抵达</string>
 
   <string name="generic_arrival_late">将于%1$s抵达（延迟%2$s）</string>
@@ -288,6 +292,10 @@
 
   <string name="generic_departure">将于%1$s出发</string>
 
+  <string name="generic_departure_countdown">将于%1$s后出发</string>
+
+  <string name="generic_departure_countdown_now">即将出发</string>
+
   <string name="generic_departure_day">将于%1$s出发</string>
 
   <string name="generic_departure_late">将于%1$s出发（延迟%2$s）</string>
@@ -299,6 +307,10 @@
   <string name="generic_departure_early_day">将于%1$s出发（提前%2$s）</string>
 
   <string name="generic_departure_past">已于%1$s出发</string>
+
+  <string name="generic_departure_past_countdown">已于%1$s前出发</string>
+
+  <string name="generic_departure_past_countdown_now">已出发</string>
 
   <string name="generic_departure_past_day">已于%1$s出发</string>
 
