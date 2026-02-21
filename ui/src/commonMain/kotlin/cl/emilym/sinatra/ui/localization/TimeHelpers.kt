@@ -151,10 +151,12 @@ fun Time.format(): String {
 fun countdown(time: kotlin.time.Instant, negative: Boolean = false): String {
     val remaining = rememberCountdown(time)
 
-    val display by derivedStateOf {
-        when (negative) {
-            true -> -remaining
-            else -> remaining
+    val display by remember(remaining, negative) {
+        derivedStateOf {
+            when (negative) {
+                true -> -remaining
+                else -> remaining
+            }
         }
     }
 
