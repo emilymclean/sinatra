@@ -188,8 +188,6 @@
     <string name="generic_arrival_countdown">Arriving in %1$s</string>
     <string name="generic_arrival_countdown_now">Arriving now</string>
     <string name="generic_arrival_day">Arriving on %1$s</string>
-    <string name="generic_arrival_countdown_late">Arriving in %1$s</string>
-    <string name="generic_arrival_countdown_late_now">Arriving now</string>
     <string name="generic_departure">Departing at %1$s</string>
     <string name="generic_departure_countdown">Departing in %1$s</string>
     <string name="generic_departure_countdown_now">Departing now</string>
