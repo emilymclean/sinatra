@@ -317,6 +317,7 @@ val StopStationTime.text: String
         }
 
         return when {
+            FeatureFlag.STOP_DETAIL_CONCEAL_LIVENESS_STRING.value() -> timeString
             late -> stringResource(
                 Res.string.scheduled_delay_late,
                 timeString,
