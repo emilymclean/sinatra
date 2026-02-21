@@ -21,7 +21,7 @@ enum class LocationAccuracy {
 internal expect fun platformCurrentLocation(accuracy: LocationAccuracy): Flow<MapLocation?>
 
 @Composable
-fun currentLocation(accuracy: LocationAccuracy = LocationAccuracy.MEDIUM): MapLocation? {
+fun currentLocation(accuracy: LocationAccuracy = LocationAccuracy.HIGH): MapLocation? {
     var hasPermission by remember { mutableStateOf(false) }
     val permissionRequestQueue = LocalPermissionRequestQueue.current
 
