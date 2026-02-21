@@ -14,23 +14,22 @@ import cl.emilym.sinatra.FeatureFlag
 import cl.emilym.sinatra.data.repository.Preference
 import cl.emilym.sinatra.lib.FloatRange
 import cl.emilym.sinatra.ui.text
-import cl.emilym.sinatra.ui.widgets.form.HorizontalLockup
-import cl.emilym.sinatra.ui.widgets.form.PreferencesCheckbox
+import cl.emilym.sinatra.ui.widgets.form.HorizontalPreferencesCheckboxLockup
 import cl.emilym.sinatra.ui.widgets.form.PreferencesFloatSlider
 import cl.emilym.sinatra.ui.widgets.form.VerticalLockup
 import cl.emilym.sinatra.ui.widgets.value
 import org.jetbrains.compose.resources.stringResource
 import sinatra.ui.generated.resources.Res
+import sinatra.ui.generated.resources.preferences_routing_title
 import sinatra.ui.generated.resources.preferences_setting_bikes
 import sinatra.ui.generated.resources.preferences_setting_bikes_subtitle
 import sinatra.ui.generated.resources.preferences_setting_max_walking
-import sinatra.ui.generated.resources.preferences_setting_wheelchair
-import sinatra.ui.generated.resources.preferences_setting_wheelchair_subtitle
-import sinatra.ui.generated.resources.preferences_routing_title
 import sinatra.ui.generated.resources.preferences_setting_school_service
 import sinatra.ui.generated.resources.preferences_setting_school_service_subtitle
 import sinatra.ui.generated.resources.preferences_setting_show_accessibility_icons_navigation
 import sinatra.ui.generated.resources.preferences_setting_show_accessibility_icons_navigation_subtitle
+import sinatra.ui.generated.resources.preferences_setting_wheelchair
+import sinatra.ui.generated.resources.preferences_setting_wheelchair_subtitle
 import kotlin.time.Duration.Companion.minutes
 
 class RoutingPreferencesScreen: PreferencesScreen() {
@@ -45,41 +44,37 @@ class RoutingPreferencesScreen: PreferencesScreen() {
         val showSchoolServiceSettings = FeatureFlag.GLOBAL_ENABLE_SCHOOL_SERVICES.value()
 
         if (showAccessibilitySettings) {
-            HorizontalLockup(
+            HorizontalPreferencesCheckboxLockup(
+                Preference.RequiresWheelchair,
                 stringResource(Res.string.preferences_setting_wheelchair),
                 stringResource(Res.string.preferences_setting_wheelchair_subtitle),
                 Modifier.fillMaxWidth()
-            ) {
-                PreferencesCheckbox(Preference.RequiresWheelchair)
-            }
+            )
 
-            HorizontalLockup(
+            HorizontalPreferencesCheckboxLockup(
+                Preference.RequiresBikes,
                 stringResource(Res.string.preferences_setting_bikes),
                 stringResource(Res.string.preferences_setting_bikes_subtitle),
                 Modifier.fillMaxWidth()
-            ) {
-                PreferencesCheckbox(Preference.RequiresBikes)
-            }
+            )
         }
 
         if (showSchoolServiceSettings) {
-            HorizontalLockup(
+            HorizontalPreferencesCheckboxLockup(
+                Preference.ShowSchoolServices,
                 stringResource(Res.string.preferences_setting_school_service),
                 stringResource(Res.string.preferences_setting_school_service_subtitle),
                 Modifier.fillMaxWidth()
-            ) {
-                PreferencesCheckbox(Preference.ShowSchoolServices)
-            }
+            )
         }
 
         if (showAccessibilitySettings) {
-            HorizontalLockup(
+            HorizontalPreferencesCheckboxLockup(
+                Preference.ShowAccessibilityIconsNavigation,
                 stringResource(Res.string.preferences_setting_show_accessibility_icons_navigation),
                 stringResource(Res.string.preferences_setting_show_accessibility_icons_navigation_subtitle),
                 Modifier.fillMaxWidth()
-            ) {
-                PreferencesCheckbox(Preference.ShowAccessibilityIconsNavigation)
-            }
+            )
         }
 
 

@@ -8,8 +8,7 @@ import cafe.adriel.voyager.core.screen.ScreenKey
 import cl.emilym.sinatra.data.models.Time24HSetting
 import cl.emilym.sinatra.data.repository.Preference
 import cl.emilym.sinatra.ui.widgets.form.DropdownOption
-import cl.emilym.sinatra.ui.widgets.form.HorizontalLockup
-import cl.emilym.sinatra.ui.widgets.form.PreferencesCheckbox
+import cl.emilym.sinatra.ui.widgets.form.HorizontalPreferencesCheckboxLockup
 import cl.emilym.sinatra.ui.widgets.form.PreferencesDropdown
 import cl.emilym.sinatra.ui.widgets.form.VerticalLockup
 import org.jetbrains.compose.resources.stringResource
@@ -35,13 +34,12 @@ class UnitsPreferencesScreen: PreferencesScreen() {
 
     @Composable
     override fun ColumnScope.Preferences() {
-        HorizontalLockup(
+        HorizontalPreferencesCheckboxLockup(
+            Preference.CountdownUntilArrival,
             stringResource(Res.string.preferences_setting_countdown),
             stringResource(Res.string.preferences_setting_countdown_subtitle),
             Modifier.fillMaxWidth()
-        ) {
-            PreferencesCheckbox(Preference.CountdownUntilArrival)
-        }
+        )
 
         VerticalLockup(
             stringResource(Res.string.preferences_setting_metric),
