@@ -30,9 +30,9 @@ fun HorizontalPreferencesCheckboxLockup(
     HorizontalLockup(
         title,
         subtitle,
-        Modifier.noRippleClickable({
+        Modifier.then(modifier).noRippleClickable({
             value = !value
-        }).then(modifier)
+        })
     ) {
         SinatraCheckbox(
             value,
