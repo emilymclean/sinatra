@@ -34,7 +34,7 @@ internal actual fun platformCurrentLocation(accuracy: LocationAccuracy): Flow<Ma
             ) {
                 launch {
                     send(didUpdateToLocation.coordinate.toShared())
-                    delay(10000)
+                    delay(5000)
                 }
             }
         }
