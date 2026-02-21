@@ -1,6 +1,7 @@
 package cl.emilym.sinatra.ui.localization
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.text.intl.Locale
 import cl.emilym.sinatra.data.models.Time24HSetting
 import cl.emilym.sinatra.data.repository.Preference
@@ -59,18 +60,21 @@ val timeFormat: DateTimeFormat<LocalTime>
     get() {
         val amMarker = stringResource(Res.string.time_am)
         val pmMarker = stringResource(Res.string.time_pm)
-        return when (is24HourTimeFormat()) {
-            true -> LocalTime.Format {
-                hour()
-                char(':')
-                minute()
-            }
-            false -> when {
-                else -> LocalTime.Format {
-                    amPmHour(Padding.NONE)
+        val is24 = is24HourTimeFormat()
+        return remember(is24, amMarker, pmMarker) {
+            when (is24) {
+                true -> LocalTime.Format {
+                    hour()
                     char(':')
                     minute()
-                    amPmMarker(amMarker, pmMarker)
+                }
+                false -> when {
+                    else -> LocalTime.Format {
+                        amPmHour(Padding.NONE)
+                        char(':')
+                        minute()
+                        amPmMarker(amMarker, pmMarker)
+                    }
                 }
             }
         }
@@ -81,15 +85,18 @@ val dayOfWeekDateTimeFormat: DateTimeFormat<LocalDateTime>
     get() {
         val dayOfWeekNames = dayOfWeekNames
         val timeFormat = timeFormat
-        return when(Locale.current.toLanguageTag()) {
-            LanguageConsts.MAINLAND_CHINESE_BCP -> LocalDateTime.Format {
-                dayOfWeek(dayOfWeekNames)
-                time(timeFormat)
-            }
-            else -> LocalDateTime.Format {
-                dayOfWeek(dayOfWeekNames)
-                chars(", ")
-                time(timeFormat)
+        val locale = Locale.current
+        return remember(locale, timeFormat, dayOfWeekNames) {
+            when(locale.toLanguageTag()) {
+                LanguageConsts.MAINLAND_CHINESE_BCP -> LocalDateTime.Format {
+                    dayOfWeek(dayOfWeekNames)
+                    time(timeFormat)
+                }
+                else -> LocalDateTime.Format {
+                    dayOfWeek(dayOfWeekNames)
+                    chars(", ")
+                    time(timeFormat)
+                }
             }
         }
     }
@@ -98,28 +105,30 @@ val dateFormat: DateTimeFormat<LocalDate>
     @Composable
     get() {
         val locale = Locale.current
-        return when(locale.toLanguageTag()) {
-            LanguageConsts.MAINLAND_CHINESE_BCP -> LocalDate.Format {
-                year()
-                char('年')
-                monthNumber()
-                char('月')
-                dayOfMonth()
-                char('日')
-            }
-            LanguageConsts.US_BCP -> LocalDate.Format {
-                monthNumber()
-                char('/')
-                dayOfMonth()
-                char('/')
-                year()
-            }
-            else -> LocalDate.Format {
-                dayOfMonth()
-                char('/')
-                monthNumber()
-                char('/')
-                year()
+        return remember(locale) {
+            when(locale.toLanguageTag()) {
+                LanguageConsts.MAINLAND_CHINESE_BCP -> LocalDate.Format {
+                    year()
+                    char('年')
+                    monthNumber()
+                    char('月')
+                    dayOfMonth()
+                    char('日')
+                }
+                LanguageConsts.US_BCP -> LocalDate.Format {
+                    monthNumber()
+                    char('/')
+                    dayOfMonth()
+                    char('/')
+                    year()
+                }
+                else -> LocalDate.Format {
+                    dayOfMonth()
+                    char('/')
+                    monthNumber()
+                    char('/')
+                    year()
+                }
             }
         }
     }
