@@ -1,8 +1,9 @@
-amends "package://components.emilym.cl/actions/actions@0.1.16#/common/simple-gradle.pkl"
+amends "package://components.emilym.cl/actions/actions@0.1.21#/common/simple-gradle.pkl"
 
 jobName = "lint"
 gradleTask = "lintVitalRelease"
 name = "Lint"
+javaVersion = "21"
 
 extraBuildSteps {
   new CommandStep {

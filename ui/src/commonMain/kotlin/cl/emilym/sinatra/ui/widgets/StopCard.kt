@@ -25,10 +25,14 @@ import cl.emilym.sinatra.data.models.StopAccessibility
 import cl.emilym.sinatra.data.models.StopWheelchairAccessibility
 import cl.emilym.sinatra.data.models.TimetableStationTime
 import cl.emilym.sinatra.data.models.merge
+import cl.emilym.sinatra.data.repository.Preference
 import cl.emilym.sinatra.ui.localization.LocalScheduleTimeZone
+import cl.emilym.sinatra.ui.localization.countdown
 import cl.emilym.sinatra.ui.localization.format
 import cl.emilym.sinatra.ui.localization.isInPast
+import cl.emilym.sinatra.ui.localization.isNowish
 import cl.emilym.sinatra.ui.localization.isSameDay
+import cl.emilym.sinatra.ui.localization.toTodayInstant
 import cl.emilym.sinatra.ui.text
 import org.jetbrains.compose.resources.stringResource
 import sinatra.ui.generated.resources.Res
@@ -36,36 +40,32 @@ import sinatra.ui.generated.resources.approximate_arrival
 import sinatra.ui.generated.resources.approximate_arrival_day
 import sinatra.ui.generated.resources.estimated_arrival
 import sinatra.ui.generated.resources.estimated_arrival_day
-import sinatra.ui.generated.resources.estimated_arrival_early
-import sinatra.ui.generated.resources.estimated_arrival_early_day
-import sinatra.ui.generated.resources.estimated_arrival_late
-import sinatra.ui.generated.resources.estimated_arrival_late_day
 import sinatra.ui.generated.resources.future_approximate_departure
 import sinatra.ui.generated.resources.future_approximate_departure_day
 import sinatra.ui.generated.resources.future_estimated_departure
 import sinatra.ui.generated.resources.future_estimated_departure_day
-import sinatra.ui.generated.resources.future_estimated_departure_early
-import sinatra.ui.generated.resources.future_estimated_departure_early_day
-import sinatra.ui.generated.resources.future_estimated_departure_late
-import sinatra.ui.generated.resources.future_estimated_departure_late_day
 import sinatra.ui.generated.resources.future_scheduled_departure
 import sinatra.ui.generated.resources.future_scheduled_departure_day
 import sinatra.ui.generated.resources.generic_arrival
+import sinatra.ui.generated.resources.generic_arrival_countdown
+import sinatra.ui.generated.resources.generic_arrival_countdown_now
 import sinatra.ui.generated.resources.generic_arrival_day
 import sinatra.ui.generated.resources.generic_departure
+import sinatra.ui.generated.resources.generic_departure_countdown
+import sinatra.ui.generated.resources.generic_departure_countdown_now
 import sinatra.ui.generated.resources.generic_departure_day
 import sinatra.ui.generated.resources.generic_departure_past
+import sinatra.ui.generated.resources.generic_departure_past_countdown
+import sinatra.ui.generated.resources.generic_departure_past_countdown_now
 import sinatra.ui.generated.resources.generic_departure_past_day
 import sinatra.ui.generated.resources.past_departure
 import sinatra.ui.generated.resources.past_departure_approximate
 import sinatra.ui.generated.resources.past_departure_approximate_day
 import sinatra.ui.generated.resources.past_departure_day
-import sinatra.ui.generated.resources.past_departure_early
-import sinatra.ui.generated.resources.past_departure_early_day
-import sinatra.ui.generated.resources.past_departure_late
-import sinatra.ui.generated.resources.past_departure_late_day
 import sinatra.ui.generated.resources.scheduled_arrival
 import sinatra.ui.generated.resources.scheduled_arrival_day
+import sinatra.ui.generated.resources.scheduled_delay_early
+import sinatra.ui.generated.resources.scheduled_delay_late
 import sinatra.ui.generated.resources.semantics_stop_listing
 
 sealed interface StopStationTime {
@@ -209,101 +209,91 @@ val StopStationTime.text: String
         val time = stationTime.time.format()
         val stationTime = stationTime
         val isInPast = stationTime.time.isInPast()
+        val isNowish = stationTime.time.isNowish()
+        val late = stationTime is StationTime.Live && stationTime.delay.inWholeSeconds < -60L
+        val early = stationTime is StationTime.Live && stationTime.delay.inWholeSeconds > 60L
         val hasDay = !stationTime.time.isSameDay(LocalScheduleTimeZone.current)
-        return when (FeatureFlag.STOP_DETAIL_CONCEAL_LIVENESS_STRING.value()) {
-            true -> stringResource(when (this) {
-                is StopStationTime.Arrival -> when (hasDay) {
-                    true -> Res.string.generic_arrival_day
-                    else -> Res.string.generic_arrival
-                }
-                is StopStationTime.Departure -> when (isInPast) {
-                    true -> when (hasDay) {
-                        true -> Res.string.generic_departure_past_day
-                        else -> Res.string.generic_departure_past
-                    }
-                    else -> when (hasDay) {
-                        true -> Res.string.generic_departure_day
-                        else -> Res.string.generic_departure
-                    }
-                }
-            }, time)
-            else -> when (stationTime) {
-                is StationTime.Scheduled -> stringResource(when (this) {
-                    is StopStationTime.Arrival -> when (stationTime.approximate) {
-                        true -> when (hasDay) {
-                            true -> Res.string.approximate_arrival_day
-                            else -> Res.string.approximate_arrival
+        val showCountdown by rememberPreferenceState(Preference.CountdownUntilArrival)
+
+        val timeString = when (showCountdown) {
+            true -> when (isNowish) {
+                true -> stringResource(
+                    when (this) {
+                        is StopStationTime.Arrival -> Res.string.generic_arrival_countdown_now
+                        is StopStationTime.Departure -> when (isInPast) {
+                            true -> Res.string.generic_departure_past_countdown_now
+                            else -> Res.string.generic_departure_countdown_now
                         }
-                        else -> when (hasDay) {
-                            true -> Res.string.scheduled_arrival_day
-                            else -> Res.string.scheduled_arrival
+                    }
+                )
+
+                else -> stringResource(
+                    when (this) {
+                        is StopStationTime.Arrival -> Res.string.generic_arrival_countdown
+                        is StopStationTime.Departure -> when (isInPast) {
+                            true -> Res.string.generic_departure_past_countdown
+                            else -> Res.string.generic_departure_countdown
                         }
+                    },
+                    countdown(
+                        stationTime.time.toTodayInstant(),
+                        isInPast && this is StopStationTime.Departure
+                    )
+                )
+            }
+            else -> when (FeatureFlag.STOP_DETAIL_CONCEAL_LIVENESS_STRING.value()) {
+                true -> stringResource(when (this) {
+                    is StopStationTime.Arrival -> when (hasDay) {
+                        true -> Res.string.generic_arrival_day
+                        else -> Res.string.generic_arrival
                     }
                     is StopStationTime.Departure -> when (isInPast) {
-                        true -> when(stationTime.approximate) {
-                            true -> when (hasDay) {
-                                true -> Res.string.past_departure_approximate_day
-                                else -> Res.string.past_departure_approximate
-                            }
-                            else -> when (hasDay) {
-                                true -> Res.string.past_departure_day
-                                else -> Res.string.past_departure
-                            }
+                        true -> when (hasDay) {
+                            true -> Res.string.generic_departure_past_day
+                            else -> Res.string.generic_departure_past
                         }
-                        else -> when(stationTime.approximate) {
-                            true -> when (hasDay) {
-                                true -> Res.string.future_approximate_departure_day
-                                else -> Res.string.future_approximate_departure
-                            }
-                            else -> when (hasDay) {
-                                true -> Res.string.future_scheduled_departure_day
-                                else -> Res.string.future_scheduled_departure
-                            }
+                        else -> when (hasDay) {
+                            true -> Res.string.generic_departure_day
+                            else -> Res.string.generic_departure
                         }
                     }
                 }, time)
-                is StationTime.Live -> when {
-                    stationTime.delay.inWholeSeconds < -60L -> stringResource(
-                        when (this) {
-                            is StopStationTime.Arrival -> when (hasDay) {
-                                true -> Res.string.estimated_arrival_early_day
-                                else -> Res.string.estimated_arrival_early
+                else -> when (stationTime) {
+                    is StationTime.Scheduled -> stringResource(when (this) {
+                        is StopStationTime.Arrival -> when (stationTime.approximate) {
+                            true -> when (hasDay) {
+                                true -> Res.string.approximate_arrival_day
+                                else -> Res.string.approximate_arrival
                             }
-                            is StopStationTime.Departure -> when (isInPast) {
+                            else -> when (hasDay) {
+                                true -> Res.string.scheduled_arrival_day
+                                else -> Res.string.scheduled_arrival
+                            }
+                        }
+                        is StopStationTime.Departure -> when (isInPast) {
+                            true -> when(stationTime.approximate) {
                                 true -> when (hasDay) {
-                                    true -> Res.string.past_departure_early_day
-                                    else -> Res.string.past_departure_early
+                                    true -> Res.string.past_departure_approximate_day
+                                    else -> Res.string.past_departure_approximate
                                 }
                                 else -> when (hasDay) {
-                                    true -> Res.string.future_estimated_departure_early_day
-                                    else -> Res.string.future_estimated_departure_early
+                                    true -> Res.string.past_departure_day
+                                    else -> Res.string.past_departure
                                 }
                             }
-                        },
-                        time,
-                        (-stationTime.delay).text
-                    )
-                    stationTime.delay.inWholeSeconds > 60L -> stringResource(
-                        when (this) {
-                            is StopStationTime.Arrival -> when (hasDay) {
-                                true -> Res.string.estimated_arrival_late_day
-                                else -> Res.string.estimated_arrival_late
-                            }
-                            is StopStationTime.Departure -> when (isInPast) {
+                            else -> when(stationTime.approximate) {
                                 true -> when (hasDay) {
-                                    true -> Res.string.past_departure_late_day
-                                    else -> Res.string.past_departure_late
+                                    true -> Res.string.future_approximate_departure_day
+                                    else -> Res.string.future_approximate_departure
                                 }
                                 else -> when (hasDay) {
-                                    true -> Res.string.future_estimated_departure_late_day
-                                    else -> Res.string.future_estimated_departure_late
+                                    true -> Res.string.future_scheduled_departure_day
+                                    else -> Res.string.future_scheduled_departure
                                 }
                             }
-                        },
-                        time,
-                        stationTime.delay.text
-                    )
-                    else -> stringResource(
+                        }
+                    }, time)
+                    is StationTime.Live -> stringResource(
                         when (this) {
                             is StopStationTime.Arrival -> when (hasDay) {
                                 true -> Res.string.estimated_arrival_day
@@ -324,6 +314,21 @@ val StopStationTime.text: String
                     )
                 }
             }
+        }
+
+        return when {
+            FeatureFlag.STOP_DETAIL_CONCEAL_LIVENESS_STRING.value() -> timeString
+            late -> stringResource(
+                Res.string.scheduled_delay_late,
+                timeString,
+                (-stationTime.delay).text
+            )
+            early -> stringResource(
+                Res.string.scheduled_delay_early,
+                timeString,
+                stationTime.delay.text
+            )
+            else -> timeString
         }
     }
 

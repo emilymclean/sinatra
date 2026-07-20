@@ -98,3 +98,9 @@ secrets {
     ignoreList.add("keyToIgnore")
     ignoreList.add("sdk.*")
 }
+
+kotlin {
+    compilerOptions {
+        optIn.add("kotlin.time.ExperimentalTime")
+    }
+}

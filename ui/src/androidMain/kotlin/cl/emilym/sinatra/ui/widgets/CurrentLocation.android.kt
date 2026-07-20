@@ -36,7 +36,7 @@ internal actual fun platformCurrentLocation(accuracy: LocationAccuracy): Flow<Ma
             when (accuracy) {
                 LocationAccuracy.LOW -> TimeUnit.MINUTES.toMillis(10)
                 LocationAccuracy.MEDIUM -> TimeUnit.MINUTES.toMillis(1)
-                LocationAccuracy.HIGH -> TimeUnit.SECONDS.toMillis(30)
+                LocationAccuracy.HIGH -> TimeUnit.SECONDS.toMillis(5)
             }
         )
             .setMinUpdateDistanceMeters(when (accuracy) {
