@@ -6,6 +6,7 @@
     <string name="navigation_bar_more">More</string>
 
     <string name="browse_option_see_all_service_alerts">See all service updates</string>
+    <string name="browse_option_disclaimer">Sources and disclaimers</string>
     <string name="browse_option_upcoming_routes">Upcoming vehicles to %1$s</string>
 
     <string name="favourites_nothing_favourited">Any routes or stops you favourite can be found here</string>
