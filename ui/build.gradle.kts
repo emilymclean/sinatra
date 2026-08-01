@@ -146,7 +146,7 @@ ksp {
 
 android {
     namespace = "cl.emilym.sinatra.ui"
-    compileSdk = 35
+    compileSdk = 36
     defaultConfig {
         minSdk = 23
     }

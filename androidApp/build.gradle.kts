@@ -14,11 +14,11 @@ android {
     val appVersionName: String by project
 
     namespace = "cl.emilym.sinatra.android"
-    compileSdk = 35
+    compileSdk = 36
     defaultConfig {
         applicationId = "cl.emilym.sinatra"
         minSdk = 23
-        targetSdk = 35
+        targetSdk = 36
         versionCode = appVersionCode.toInt()
         versionName = appVersionName
     }
