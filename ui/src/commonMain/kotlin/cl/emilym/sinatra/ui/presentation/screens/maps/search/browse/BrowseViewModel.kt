@@ -10,6 +10,7 @@ import cl.emilym.sinatra.data.models.ServiceAlert
 import cl.emilym.sinatra.data.models.ServiceAlertId
 import cl.emilym.sinatra.data.models.SpecialFavouriteType
 import cl.emilym.sinatra.data.models.distance
+import cl.emilym.sinatra.data.repository.RemoteConfigRepository
 import cl.emilym.sinatra.data.repository.ServiceAlertRepository
 import cl.emilym.sinatra.domain.DisplayRoutesUseCase
 import cl.emilym.sinatra.domain.prompt.FavouriteNearbyStopDeparturesUseCase
@@ -63,7 +64,8 @@ sealed interface BrowsePrompt {
         val stop: StopDepartures
     ): BrowsePrompt
     data class NewServiceUpdate(
-        val serviceAlert: ServiceAlert
+        val serviceAlert: ServiceAlert,
+        val governmentSourcesUrl: String
     ): BrowsePrompt
 }
 
@@ -74,7 +76,8 @@ class BrowseViewModel(
     private val quickNavigateUseCase: QuickNavigateUseCase,
     private val specialAddUseCase: SpecialAddUseCase,
     private val favouriteNearbyStopDeparturesUseCase: FavouriteNearbyStopDeparturesUseCase,
-    private val serviceAlertRepository: ServiceAlertRepository
+    private val serviceAlertRepository: ServiceAlertRepository,
+    private val remoteConfigRepository: RemoteConfigRepository
 ): SinatraScreenModel {
 
     private val _routes = flatRequestStateFlow(defaultConfig) { displayRoutesUseCase().mapLatest { it.item } }
@@ -85,18 +88,22 @@ class BrowseViewModel(
     private val newServices = flatRequestStateFlow(defaultConfig) {
         withContext(Dispatchers.IO) { newServiceUpdateUseCase() }
     }
+
+    private val governmentSourcesUrl = requestStateFlow(defaultConfig) {
+        remoteConfigRepository.governmentSourcesUrl()
+    }
+
     @OptIn(ExperimentalCoroutinesApi::class)
     private val quickNavigation = lastLocation.flatRequestStateFlow(showLoading = false) {
         withContext(Dispatchers.IO) {
-            quickNavigateUseCase(it)
-                .mapLatest {
-                    it.mapNotNull {
-                        QuickNavigationItem.Item(
-                            it.navigation.toNavigationLocation() ?: return@mapNotNull null,
-                            it.specialType
-                        )
-                    }
+            quickNavigateUseCase(it).mapLatest {
+                it.mapNotNull {
+                    QuickNavigationItem.Item(
+                        it.navigation.toNavigationLocation() ?: return@mapNotNull null,
+                        it.specialType
+                    )
                 }
+            }
         }
     }
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -116,18 +123,32 @@ class BrowseViewModel(
         newServices,
         quickNavigation,
         specialAdd,
-        nearbyStopDepartures
-    ) { newServices, quickNavigation, specialAdd, nearbyStopDepartures ->
-        listOfNotNull(
-            ((quickNavigation.unwrap().nullIfEmpty() ?: listOf()) +
-            (specialAdd.unwrap().nullIfEmpty() ?: listOf())).nullIfEmpty()?.let {
-                BrowsePrompt.QuickNavigateGroup(it)
-            },
-            nearbyStopDepartures.unwrap()?.let { BrowsePrompt.LargeNearbyStopDepartures(it) },
-            newServices.unwrap().nullIfEmpty()?.let {
-                BrowsePrompt.NewServiceUpdate(it.first())
+        nearbyStopDepartures,
+        governmentSourcesUrl
+    ) { newServices, quickNavigation, specialAdd, nearbyStopDepartures, governmentSourcesUrl ->
+        buildList {
+            // Add quick navigation
+            buildList {
+                quickNavigation.unwrap()?.let { addAll(it) }
+                specialAdd.unwrap()?.let { addAll(it) }
+            }.nullIfEmpty()?.let {
+                add(BrowsePrompt.QuickNavigateGroup(it))
             }
-        )
+
+            // Add nearby stop information
+            nearbyStopDepartures.unwrap()?.let { add(BrowsePrompt.LargeNearbyStopDepartures(it)) }
+
+            // Add new service alerts
+            val newServices = newServices.unwrap().nullIfEmpty()
+            val governmentSourcesUrl = governmentSourcesUrl.unwrap().nullIfEmpty()
+
+            if (newServices != null && governmentSourcesUrl != null) {
+                add(BrowsePrompt.NewServiceUpdate(
+                    newServices.first(),
+                    governmentSourcesUrl
+                ))
+            }
+        }
     }.state(listOf())
 
     init {
@@ -140,6 +161,7 @@ class BrowseViewModel(
         screenModelScope.launch { specialAdd.retry() }
         screenModelScope.launch { quickNavigation.retry() }
         screenModelScope.launch { nearbyStopDepartures.retry() }
+        screenModelScope.launch { governmentSourcesUrl.retry() }
     }
 
     fun refreshNearby() {

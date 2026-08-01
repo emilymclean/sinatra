@@ -66,7 +66,7 @@ fun NewServiceUpdateBrowseOption(
             modifier = Modifier
                 .fillMaxWidth()
                 .noRippleClickable {
-                    uriHandler.openUri("https://sinatra-transport.com/government-sources")
+                    uriHandler.openUri(option.governmentSourcesUrl)
                 }
                 .padding(top = 0.5.rdp)
                 .padding(horizontal = 1.rdp),
