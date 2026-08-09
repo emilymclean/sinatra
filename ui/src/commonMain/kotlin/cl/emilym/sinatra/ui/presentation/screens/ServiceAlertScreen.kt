@@ -141,6 +141,11 @@ class ServiceAlertScreen: ContentScreen(ContentRepository.SERVICE_ALERT_ID) {
                             Modifier.fillMaxSize(),
                             contentPadding = innerPadding
                         ) {
+                            (content as? RequestState.Success)?.value?.let { content ->
+                                item {
+                                    RenderBodyContent(content)
+                                }
+                            }
                             items(alerts) {
                                 ServiceAlertCard(
                                     it,
