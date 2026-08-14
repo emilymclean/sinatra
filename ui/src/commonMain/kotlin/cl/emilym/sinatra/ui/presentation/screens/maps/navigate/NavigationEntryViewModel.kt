@@ -15,6 +15,7 @@ import cl.emilym.sinatra.data.models.RecentVisit
 import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.data.models.StopWithDistance
 import cl.emilym.sinatra.data.repository.NetworkGraphRepository
+import cl.emilym.sinatra.data.repository.PlaceRepository
 import cl.emilym.sinatra.data.repository.Preference
 import cl.emilym.sinatra.data.repository.PreferencesRepository
 import cl.emilym.sinatra.data.repository.RecentVisitRepository
@@ -116,24 +117,32 @@ class NavigationEntryViewModel(
     private val preferencesRepository: PreferencesRepository,
     private val navigableFavouritesUseCase: NavigableFavouritesUseCase,
     private val remoteConfigRepository: RemoteConfigRepository,
+    private val placeRepository: PlaceRepository,
     private val clock: Clock
 ): SinatraScreenModel, SearchScreenViewModel {
 
     val currentLocation = MutableStateFlow<MapLocation?>(null)
-    val destination = MutableStateFlow<NavigationLocation>(NavigationLocation.None)
-    val origin = MutableStateFlow<NavigationLocation>(NavigationLocation.None)
+    private val _destination = MutableStateFlow<NavigationLocation>(NavigationLocation.None)
+    private val _origin = MutableStateFlow<NavigationLocation>(NavigationLocation.None)
     val anchorTime = MutableStateFlow<NavigationAnchorTime>(NavigationAnchorTime.Now)
     val wheelchairAccessible = MutableStateFlow<Boolean?>(null)
     val bikesAllowed = MutableStateFlow<Boolean?>(null)
 
+    val destination = _destination.flatMapLatest {
+        it.inflate()
+    }.state(NavigationLocation.None)
+    val origin = _origin.flatMapLatest {
+        it.inflate()
+    }.state(NavigationLocation.None)
+
     @OptIn(ExperimentalCoroutinesApi::class)
-    val destinationLocation = destination.flatMapLatest {
-        it.toJourneyLocation()
-    }.state(null)
+    val destinationLocation = _destination.flatMapLatest {
+            it.toJourneyLocation()
+        }.state(null)
     @OptIn(ExperimentalCoroutinesApi::class)
-    val originLocation = origin.flatMapLatest {
-        it.toJourneyLocation()
-    }.state(null)
+    val originLocation = _origin.flatMapLatest {
+            it.toJourneyLocation()
+        }.state(null)
     private val _state = MutableStateFlow<State>(State.JourneySelection)
     private val retryGraphLoad = Channel<Unit>(Channel.CONFLATED)
 
@@ -220,7 +229,7 @@ class NavigationEntryViewModel(
     @OptIn(ExperimentalCoroutinesApi::class)
     val state = _state.flatMapLatest {
         when (it) {
-            is State.JourneySelection -> combine(origin, destination) { origin, destination ->
+            is State.JourneySelection -> combine(_origin, _destination) { origin, destination ->
                 origin to destination
             }.flatMapLatest {
                 when {
@@ -356,7 +365,7 @@ class NavigationEntryViewModel(
     }
 
     private fun setDestination(navigationLocation: NavigationLocation) {
-        destination.value = navigationLocation
+        _destination.value = navigationLocation
         navigationLocation.recentVisit?.let {
             screenModelScope.launch {
                 recentVisitRepository.add(it)
@@ -365,7 +374,7 @@ class NavigationEntryViewModel(
     }
 
     private fun setOrigin(navigationLocation: NavigationLocation) {
-        origin.value = navigationLocation
+        _origin.value = navigationLocation
         navigationLocation.recentVisit?.let {
             screenModelScope.launch {
                 recentVisitRepository.add(it)
@@ -375,8 +384,8 @@ class NavigationEntryViewModel(
 
     fun swapOriginAndDestination() {
         val currentOrigin = origin.value
-        origin.value = destination.value
-        destination.value = currentOrigin
+        _origin.value = destination.value
+        _destination.value = currentOrigin
         _state.value = State.JourneySelection
     }
 
@@ -454,6 +463,23 @@ class NavigationEntryViewModel(
     fun updateCurrentLocation(location: MapLocation) {
         if (currentLocation.value != null) return
         this.currentLocation.value = location
+    }
+
+    private fun NavigationLocation.inflate(): Flow<NavigationLocation> = flow {
+        val location = this@inflate
+        emit(location)
+        if (location is NavigationLocation.Point) {
+            try {
+                placeRepository.reverse(location.location, null)?.let {
+                    emit(location.copy(
+                        label = it.name ?: it.displayName
+                    ))
+                } ?: emit(location.copy(label = "No name lol"))
+            } catch (e: Exception) {
+                emit(location.copy(label = "No lookup lol"))
+                Napier.e("Failed to lookup point", e)
+            }
+        }
     }
 
 }

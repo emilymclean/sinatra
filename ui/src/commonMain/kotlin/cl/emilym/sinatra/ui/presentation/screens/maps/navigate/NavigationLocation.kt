@@ -37,11 +37,12 @@ sealed interface NavigationLocation: Serializable {
     }
 
     data class Point(
-        override val location: MapLocation
+        override val location: MapLocation,
+        private val label: String? = null
     ): LocatableNavigationLocation {
         override val name: String
             @Composable
-            get() = stringResource(
+            get() = label ?: stringResource(
                 Res.string.navigate_lat_lng,
                 location.lat.format(3),
                 location.lng.format(3)

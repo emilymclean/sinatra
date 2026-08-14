@@ -110,10 +110,7 @@ actual fun Map(
                 zoomControlsEnabled = false,
                 mapToolbarEnabled = false
             ),
-            onMapClick = {
-                Napier.d("Click called! Has callback = ${clickCallback}")
-                clickCallback?.invoke(it.toShared(), cameraPositionState.position.zoom)
-                         },
+            onMapClick = { clickCallback?.invoke(it.toShared(), cameraPositionState.position.zoom) },
             onMapLongClick = { longClickCallback?.invoke(it.toShared(), cameraPositionState.position.zoom) },
             contentPadding = insets,
             mapColorScheme = ComposeMapColorScheme.FOLLOW_SYSTEM
