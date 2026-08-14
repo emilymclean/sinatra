@@ -65,7 +65,8 @@ private sealed interface State {
         val journey: Journey
     ): State
     data class Search(
-        val targetIsOrigin: Boolean
+        val targetIsOrigin: Boolean,
+        val isPointSelect: Boolean,
     ): State
 }
 
@@ -83,6 +84,8 @@ sealed interface NavigationEntryState {
     data class Search(
         val results: RequestState<List<SearchResult>>
     ): NavigationEntryState
+
+    data object PointSelect: NavigationEntryState
 }
 
 sealed interface NavigationAnchorTime {
@@ -237,12 +240,15 @@ class NavigationEntryViewModel(
                 }
             }
             is State.JourneySelected -> flowOf(NavigationEntryState.JourneySelected(it.journey))
-            is State.Search -> searchHandler(routeStopSearchUseCase) { NavigationEntryState.Search(
-                when (it) {
-                    is RequestState.Success -> RequestState.Success(it.value.filter { it !is SearchResult.RouteResult })
-                    else -> it
-                }
-            ) }
+            is State.Search -> when (it.isPointSelect) {
+                true -> flowOf(NavigationEntryState.PointSelect)
+                else -> searchHandler(routeStopSearchUseCase) { NavigationEntryState.Search(
+                    when (it) {
+                        is RequestState.Success -> RequestState.Success(it.value.filter { it !is SearchResult.RouteResult })
+                        else -> it
+                    }
+                ) }
+            }
         }
     }.state(NavigationEntryState.JourneySelection(NavigationState.GraphLoading))
 
@@ -376,16 +382,29 @@ class NavigationEntryViewModel(
 
     fun onOriginClick() {
         onOpenSearch()
-        _state.value = State.Search(true)
+        _state.value = State.Search(
+            targetIsOrigin = true,
+            isPointSelect = false
+        )
     }
 
     fun onDestinationClick() {
         onOpenSearch()
-        _state.value = State.Search(false)
+        _state.value = State.Search(
+            targetIsOrigin = false,
+            isPointSelect = false
+        )
     }
 
     private fun onOpenSearch() {
         query = ""
+    }
+
+    fun openPointSelect() {
+        val state = _state.value as? State.Search ?: return
+        _state.value = state.copy(
+            isPointSelect = true
+        )
     }
 
     fun onSearchItemClicked(item: NavigationLocation) {
@@ -407,6 +426,18 @@ class NavigationEntryViewModel(
                 when {
                     ((navigationState.value as? NavigationState.JourneysFound)?.journeys?.size ?: 0) > 1 -> {
                         _state.value = State.JourneySelection
+                        false
+                    }
+                    else -> true
+                }
+            }
+            is State.Search -> {
+                val state = _state.value as? State.Search
+                when {
+                    state?.isPointSelect == true -> {
+                        _state.value = state.copy(
+                            targetIsOrigin = false
+                        )
                         false
                     }
                     else -> true

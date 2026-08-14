@@ -109,6 +109,7 @@
     <string name="time_minute_less_than_min_short">&lt;1 min</string>
 
     <string name="current_location">Current Location</string>
+    <string name="click_point_select">Select point on map</string>
 
     <string name="navigate_lat_lng">%1$d, %2$d</string>
     <string name="navigate_current_location">Current Location</string>

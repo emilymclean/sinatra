@@ -57,6 +57,7 @@ import cl.emilym.sinatra.ui.localization.LocalClock
 import cl.emilym.sinatra.ui.localization.LocalLocalTimeZone
 import cl.emilym.sinatra.ui.localization.format
 import cl.emilym.sinatra.ui.maps.LineItem
+import cl.emilym.sinatra.ui.maps.MapCallbackItem
 import cl.emilym.sinatra.ui.maps.MapItem
 import cl.emilym.sinatra.ui.maps.MarkerItem
 import cl.emilym.sinatra.ui.maps.routeStopMarkerIcon
@@ -76,6 +77,7 @@ import cl.emilym.sinatra.ui.widgets.AccessibleIcon
 import cl.emilym.sinatra.ui.widgets.BackButton
 import cl.emilym.sinatra.ui.widgets.BikeIcon
 import cl.emilym.sinatra.ui.widgets.Chip
+import cl.emilym.sinatra.ui.widgets.ClickPointCard
 import cl.emilym.sinatra.ui.widgets.ClockIcon
 import cl.emilym.sinatra.ui.widgets.CurrentLocationCard
 import cl.emilym.sinatra.ui.widgets.FavouriteCard
@@ -143,11 +145,30 @@ class NavigateEntryScreen(
 
     override val key: ScreenKey = "navigateEntryScreen-${destination?.screenKey}-${origin?.screenKey}"
 
+    override val bottomSheetVisible: Boolean
+        @Composable
+        get() {
+//            val viewModel = koinScreenModel<NavigationEntryViewModel>()
+//            return viewModel.state.collectAsStateWithLifecycle().value !is NavigationEntryState.PointSelect
+            return true
+        }
+
     @Composable
     override fun mapItems(): List<MapItem> {
         val viewModel = koinScreenModel<NavigationEntryViewModel>()
         val navigator = LocalNavigator.currentOrThrow
         val state by viewModel.state.collectAsStateWithLifecycle()
+
+        if (state is NavigationEntryState.PointSelect) {
+            return listOf(
+                MapCallbackItem(
+                    onClick = { location, _ ->
+                        viewModel.onSearchItemClicked(NavigationLocation.Point(location))
+                    }
+                )
+            )
+        }
+
         val journey = (state as? NavigationEntryState.JourneySelected)?.journey ?: return emptyList()
         val originLocation by viewModel.originLocation.collectAsStateWithLifecycle()
         val destinationLocation by viewModel.destinationLocation.collectAsStateWithLifecycle()
@@ -266,6 +287,7 @@ class NavigateEntryScreen(
             is NavigationEntryState.MissingWaypoints ->
                 JourneyState(viewModel, state)
             is NavigationEntryState.Search -> SearchState(viewModel)
+            is NavigationEntryState.PointSelect -> {}
         }
 
         val showBackButton by viewModel.showBackButton.collectAsStateWithLifecycle()
@@ -297,6 +319,7 @@ class NavigateEntryScreen(
                 is NavigationEntryState.Search,
                 is NavigationEntryState.JourneySelection,
                 is NavigationEntryState.MissingWaypoints -> bottomSheet?.bottomSheetState?.expand()
+                is NavigationEntryState.PointSelect -> {}
             }
         }
     }
@@ -323,9 +346,16 @@ class NavigateEntryScreen(
                             showCurrentLocationIcon = true
                         )
                     }
-                    item {
-                        Box(Modifier.height(1.rdp))
-                    }
+                }
+                item {
+                    ClickPointCard(
+                        onClick = {
+                            viewModel.openPointSelect()
+                        }
+                    )
+                }
+                item {
+                    Box(Modifier.height(1.rdp))
                 }
                 favourites.unwrap()?.nullIfEmpty()?.let { favourites ->
                     if (!FeatureFlag.NAVIGATE_ENTRY_SCREEN_FAVOURITE_SEARCH.immediate) return@let

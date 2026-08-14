@@ -50,6 +50,7 @@ import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.Polyline
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberMarkerState
+import io.github.aakira.napier.Napier
 
 @Composable
 actual fun Map(
@@ -109,7 +110,10 @@ actual fun Map(
                 zoomControlsEnabled = false,
                 mapToolbarEnabled = false
             ),
-            onMapClick = { clickCallback?.invoke(it.toShared(), cameraPositionState.position.zoom) },
+            onMapClick = {
+                Napier.d("Click called! Has callback = ${clickCallback}")
+                clickCallback?.invoke(it.toShared(), cameraPositionState.position.zoom)
+                         },
             onMapLongClick = { longClickCallback?.invoke(it.toShared(), cameraPositionState.position.zoom) },
             contentPadding = insets,
             mapColorScheme = ComposeMapColorScheme.FOLLOW_SYSTEM
@@ -117,8 +121,6 @@ actual fun Map(
             currentLocation?.let { DrawMarker(MarkerItem(it, currentLocationIcon)) }
 
             currentMapItems { items ->
-                clickCallback = null
-                longClickCallback = null
                 for (item in items) {
                     when (item) {
                         is MarkerItem -> DrawMarker(item)
@@ -129,6 +131,10 @@ actual fun Map(
                         }
                         else -> {}
                     }
+                }
+                if (!items.any { it is MapCallbackItem }) {
+                    clickCallback = null
+                    longClickCallback = null
                 }
             }
 

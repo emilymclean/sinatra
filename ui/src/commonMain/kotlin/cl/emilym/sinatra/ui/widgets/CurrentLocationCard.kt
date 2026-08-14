@@ -9,6 +9,7 @@ import androidx.compose.ui.Modifier
 import cl.emilym.compose.units.rdp
 import org.jetbrains.compose.resources.stringResource
 import sinatra.ui.generated.resources.Res
+import sinatra.ui.generated.resources.click_point_select
 import sinatra.ui.generated.resources.current_location
 
 @Composable
@@ -34,6 +35,32 @@ fun CurrentLocationCard(
         ) {
             Text(
                 stringResource(Res.string.current_location),
+                modifier = Modifier.weight(1f, fill = false),
+            )
+        }
+    }
+}
+
+@Composable
+fun ClickPointCard(
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit,
+) {
+    ListCard(
+        {
+            RandleScaffold {
+                JourneyStartIcon()
+            }
+        },
+        modifier,
+        onClick,
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(0.5.rdp)
+        ) {
+            Text(
+                stringResource(Res.string.click_point_select),
                 modifier = Modifier.weight(1f, fill = false),
             )
         }
