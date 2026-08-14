@@ -57,6 +57,7 @@ import cl.emilym.sinatra.ui.navigation.CurrentBottomSheetContent
 import cl.emilym.sinatra.ui.navigation.CurrentMapOverlayContent
 import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
 import cl.emilym.sinatra.ui.navigation.bottomSheetHalfHeight
+import cl.emilym.sinatra.ui.navigation.bottomSheetIsVisible
 import cl.emilym.sinatra.ui.navigation.isCurrentMapScreen
 import cl.emilym.sinatra.ui.plus
 import cl.emilym.sinatra.ui.presentation.screens.content.MoreScreen
@@ -297,6 +298,10 @@ class RootMapScreen: Screen {
         scaffoldState: SinatraBottomSheetScaffoldState,
         content: @Composable () -> Unit
     ) {
+        if (!bottomSheetIsVisible()) {
+            content()
+            return
+        }
         SinatraBottomSheetScaffold(
             scaffoldState = scaffoldState,
             sheetContent = {

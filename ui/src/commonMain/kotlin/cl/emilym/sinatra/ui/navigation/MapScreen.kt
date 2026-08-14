@@ -21,6 +21,10 @@ interface MapScreen: Screen {
     val bottomSheetHalfHeight: Float
         get() = DEFAULT_HALF_HEIGHT
 
+    val bottomSheetVisible: Boolean
+        @Composable
+        get() = true
+
     @Composable
     override fun Content() {}
 
@@ -46,6 +50,15 @@ fun bottomSheetHalfHeight(): Float {
     return when (adaptiveWindowInfo.windowSizeClass.windowWidthSizeClass) {
         WindowWidthSizeClass.COMPACT -> (currentScreen as? MapScreen)?.bottomSheetHalfHeight ?: DEFAULT_HALF_HEIGHT
         else -> 0f
+    }
+}
+
+@Composable
+fun bottomSheetIsVisible(): Boolean {
+    val navigator = LocalNavigator.currentOrThrow
+    return when (val currentScreen = navigator.lastItem) {
+        is MapScreen -> currentScreen.bottomSheetVisible
+        else -> false
     }
 }
 
