@@ -793,6 +793,38 @@ public data class RealtimeEndpoint(
 }
 
 @pbandk.Export
+public data class RouteLocationIndexEndpoint(
+    val indicies: List<cl.emilym.gtfs.RouteLocationIndex> = emptyList(),
+    override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
+) : pbandk.Message {
+    override operator fun plus(other: pbandk.Message?): cl.emilym.gtfs.RouteLocationIndexEndpoint = protoMergeImpl(other)
+    override val descriptor: pbandk.MessageDescriptor<cl.emilym.gtfs.RouteLocationIndexEndpoint> get() = Companion.descriptor
+    override val protoSize: Int by lazy { super.protoSize }
+    public companion object : pbandk.Message.Companion<cl.emilym.gtfs.RouteLocationIndexEndpoint> {
+        public val defaultInstance: cl.emilym.gtfs.RouteLocationIndexEndpoint by lazy { cl.emilym.gtfs.RouteLocationIndexEndpoint() }
+        override fun decodeWith(u: pbandk.MessageDecoder): cl.emilym.gtfs.RouteLocationIndexEndpoint = cl.emilym.gtfs.RouteLocationIndexEndpoint.decodeWithImpl(u)
+
+        override val descriptor: pbandk.MessageDescriptor<cl.emilym.gtfs.RouteLocationIndexEndpoint> = pbandk.MessageDescriptor(
+            fullName = "proto.RouteLocationIndexEndpoint",
+            messageClass = cl.emilym.gtfs.RouteLocationIndexEndpoint::class,
+            messageCompanion = this,
+            fields = buildList(1) {
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "indicies",
+                        number = 1,
+                        type = pbandk.FieldDescriptor.Type.Repeated<cl.emilym.gtfs.RouteLocationIndex>(valueType = pbandk.FieldDescriptor.Type.Message(messageCompanion = cl.emilym.gtfs.RouteLocationIndex.Companion)),
+                        jsonName = "indicies",
+                        value = cl.emilym.gtfs.RouteLocationIndexEndpoint::indicies
+                    )
+                )
+            }
+        )
+    }
+}
+
+@pbandk.Export
 public data class Stop(
     val id: String,
     val parentStation: String? = null,
@@ -2071,6 +2103,48 @@ public data class RealtimeUpdate(
 }
 
 @pbandk.Export
+public data class RouteLocationIndex(
+    val point: cl.emilym.gtfs.Location,
+    val routeId: List<String> = emptyList(),
+    override val unknownFields: Map<Int, pbandk.UnknownField> = emptyMap()
+) : pbandk.Message {
+    override operator fun plus(other: pbandk.Message?): cl.emilym.gtfs.RouteLocationIndex = protoMergeImpl(other)
+    override val descriptor: pbandk.MessageDescriptor<cl.emilym.gtfs.RouteLocationIndex> get() = Companion.descriptor
+    override val protoSize: Int by lazy { super.protoSize }
+    public companion object : pbandk.Message.Companion<cl.emilym.gtfs.RouteLocationIndex> {
+        override fun decodeWith(u: pbandk.MessageDecoder): cl.emilym.gtfs.RouteLocationIndex = cl.emilym.gtfs.RouteLocationIndex.decodeWithImpl(u)
+
+        override val descriptor: pbandk.MessageDescriptor<cl.emilym.gtfs.RouteLocationIndex> = pbandk.MessageDescriptor(
+            fullName = "proto.RouteLocationIndex",
+            messageClass = cl.emilym.gtfs.RouteLocationIndex::class,
+            messageCompanion = this,
+            fields = buildList(2) {
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "point",
+                        number = 1,
+                        type = pbandk.FieldDescriptor.Type.Message(messageCompanion = cl.emilym.gtfs.Location.Companion),
+                        jsonName = "point",
+                        value = cl.emilym.gtfs.RouteLocationIndex::point
+                    )
+                )
+                add(
+                    pbandk.FieldDescriptor(
+                        messageDescriptor = this@Companion::descriptor,
+                        name = "routeId",
+                        number = 2,
+                        type = pbandk.FieldDescriptor.Type.Repeated<String>(valueType = pbandk.FieldDescriptor.Type.Primitive.String()),
+                        jsonName = "routeId",
+                        value = cl.emilym.gtfs.RouteLocationIndex::routeId
+                    )
+                )
+            }
+        )
+    }
+}
+
+@pbandk.Export
 @pbandk.JsName("orDefaultForStopEndpoint")
 public fun StopEndpoint?.orDefault(): cl.emilym.gtfs.StopEndpoint = this ?: StopEndpoint.defaultInstance
 
@@ -2499,6 +2573,30 @@ private fun RealtimeEndpoint.Companion.decodeWithImpl(u: pbandk.MessageDecoder):
     }
 
     return RealtimeEndpoint(pbandk.ListWithSize.Builder.fixed(updates), expireTimestamp, unknownFields)
+}
+
+@pbandk.Export
+@pbandk.JsName("orDefaultForRouteLocationIndexEndpoint")
+public fun RouteLocationIndexEndpoint?.orDefault(): cl.emilym.gtfs.RouteLocationIndexEndpoint = this ?: RouteLocationIndexEndpoint.defaultInstance
+
+private fun RouteLocationIndexEndpoint.protoMergeImpl(plus: pbandk.Message?): RouteLocationIndexEndpoint = (plus as? RouteLocationIndexEndpoint)?.let {
+    it.copy(
+        indicies = indicies + plus.indicies,
+        unknownFields = unknownFields + plus.unknownFields
+    )
+} ?: this
+
+@Suppress("UNCHECKED_CAST")
+private fun RouteLocationIndexEndpoint.Companion.decodeWithImpl(u: pbandk.MessageDecoder): RouteLocationIndexEndpoint {
+    var indicies: pbandk.ListWithSize.Builder<cl.emilym.gtfs.RouteLocationIndex>? = null
+
+    val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
+        when (_fieldNumber) {
+            1 -> indicies = (indicies ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as kotlin.sequences.Sequence<cl.emilym.gtfs.RouteLocationIndex> }
+        }
+    }
+
+    return RouteLocationIndexEndpoint(pbandk.ListWithSize.Builder.fixed(indicies), unknownFields)
 }
 
 private fun Stop.protoMergeImpl(plus: pbandk.Message?): Stop = (plus as? Stop)?.let {
@@ -3154,4 +3252,30 @@ private fun RealtimeUpdate.Companion.decodeWithImpl(u: pbandk.MessageDecoder): R
         throw pbandk.InvalidProtocolBufferException.missingRequiredField("tripId")
     }
     return RealtimeUpdate(tripId!!, delay, unknownFields)
+}
+
+private fun RouteLocationIndex.protoMergeImpl(plus: pbandk.Message?): RouteLocationIndex = (plus as? RouteLocationIndex)?.let {
+    it.copy(
+        point = point.plus(plus.point),
+        routeId = routeId + plus.routeId,
+        unknownFields = unknownFields + plus.unknownFields
+    )
+} ?: this
+
+@Suppress("UNCHECKED_CAST")
+private fun RouteLocationIndex.Companion.decodeWithImpl(u: pbandk.MessageDecoder): RouteLocationIndex {
+    var point: cl.emilym.gtfs.Location? = null
+    var routeId: pbandk.ListWithSize.Builder<String>? = null
+
+    val unknownFields = u.readMessage(this) { _fieldNumber, _fieldValue ->
+        when (_fieldNumber) {
+            1 -> point = _fieldValue as cl.emilym.gtfs.Location
+            2 -> routeId = (routeId ?: pbandk.ListWithSize.Builder()).apply { this += _fieldValue as kotlin.sequences.Sequence<String> }
+        }
+    }
+
+    if (point == null) {
+        throw pbandk.InvalidProtocolBufferException.missingRequiredField("point")
+    }
+    return RouteLocationIndex(point!!, pbandk.ListWithSize.Builder.fixed(routeId), unknownFields)
 }

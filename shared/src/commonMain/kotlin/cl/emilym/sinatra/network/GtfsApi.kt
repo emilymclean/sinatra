@@ -4,6 +4,7 @@ import cl.emilym.gtfs.RealtimeEndpoint
 import cl.emilym.gtfs.RouteCanonicalTimetableEndpoint
 import cl.emilym.gtfs.RouteCanonicalTimetableEndpointV2
 import cl.emilym.gtfs.RouteEndpoint
+import cl.emilym.gtfs.RouteLocationIndexEndpoint
 import cl.emilym.gtfs.RouteServicesEndpoint
 import cl.emilym.gtfs.RouteTimetableEndpoint
 import cl.emilym.gtfs.RouteTripTimetableEndpoint
@@ -47,6 +48,12 @@ interface GtfsApi {
 
     @GET("v1/routes.pb.sha")
     suspend fun routesDigest(): String
+
+    @GET("v1/route/location-index.pb")
+    suspend fun routeLocationIndex(): DigestedResponse<RouteLocationIndexEndpoint>
+
+    @GET("v1/route/location-index.pb.sha")
+    suspend fun routeLocationIndexDigest(): String
 
     @GET("v1/route/{routeId}/services.pb")
     suspend fun routeServices(
