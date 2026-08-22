@@ -36,11 +36,13 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.koin.core.annotation.Factory
@@ -97,10 +99,24 @@ class BrowseViewModel(
 ): SinatraScreenModel {
 
     private val _mapArea = MutableStateFlow<MapRegionAndZoom?>(null)
+    private val _forceShowAllRoutes = MutableStateFlow(false)
+    val forceShowAllRoutes = _forceShowAllRoutes.asStateFlow()
 
     private val _routes = _mapArea
         .debounce(0.1.seconds)
-        .flatRequestStateFlow(defaultConfig) {
+        .onEach {
+            _forceShowAllRoutes.value = false
+        }.combine(
+            forceShowAllRoutes,
+        ) { _mapArea, forceShowAllRoutes ->
+            if (forceShowAllRoutes) {
+                _mapArea?.copy(
+                    zoom = 0f
+                )
+            } else {
+                _mapArea
+            }
+        }.flatRequestStateFlow(defaultConfig) {
             if (it == null || it.zoom < zoomThreshold) {
                 displayRoutesUseCase().mapLatest {
                     RoutesInArea(
@@ -218,6 +234,10 @@ class BrowseViewModel(
             region,
             zoom
         )
+    }
+
+    fun forceShowAllRoutes() {
+        _forceShowAllRoutes.value = true
     }
 
     fun markAlertViewed(id: ServiceAlertId) {
