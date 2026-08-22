@@ -147,7 +147,7 @@ class MapSearchScreen: MapScreen, NativeMapScreen {
         }
 
         LaunchedEffect(mapControl.cameraRegion) {
-            mapControl.cameraRegion?.let { browseViewModel.updateCameraRegion(it) }
+            mapControl.cameraRegion?.let { browseViewModel.updateCameraRegion(it, mapControl.zoom) }
         }
 
         LaunchedEffect(state) {

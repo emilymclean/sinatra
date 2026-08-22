@@ -23,17 +23,7 @@ class RoutesInAreaUseCase(
     private val getFilteredRoutesUseCase: GetFilteredRoutesUseCase
 ) {
 
-    operator fun invoke(area: MapRegion?): Flow<RoutesInArea> = flow {
-        if (area == null || area.diagonalDistance > MAX_DIAGONAL_DISTANCE) {
-            emitAll(getFilteredRoutesUseCase().map {
-                RoutesInArea(
-                    it.item,
-                    false
-                )
-            })
-            return@flow
-        }
-
+    operator fun invoke(area: MapRegion): Flow<RoutesInArea> = flow {
         emitAll(
             getFilteredRoutesUseCase.filterRoutes(routeRepository.routesInBox(area)).map {
                 RoutesInArea(
@@ -49,10 +39,6 @@ class RoutesInAreaUseCase(
                 })
             }
         )
-    }
-
-    companion object {
-        const val MAX_DIAGONAL_DISTANCE = 10.0
     }
 
 }

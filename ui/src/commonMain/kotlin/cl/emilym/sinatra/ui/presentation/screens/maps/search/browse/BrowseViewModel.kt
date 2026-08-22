@@ -10,11 +10,13 @@ import cl.emilym.sinatra.data.models.MapRegion
 import cl.emilym.sinatra.data.models.ServiceAlert
 import cl.emilym.sinatra.data.models.ServiceAlertId
 import cl.emilym.sinatra.data.models.SpecialFavouriteType
+import cl.emilym.sinatra.data.models.Zoom
 import cl.emilym.sinatra.data.models.distance
 import cl.emilym.sinatra.data.repository.RemoteConfigRepository
 import cl.emilym.sinatra.data.repository.ServiceAlertRepository
 import cl.emilym.sinatra.domain.DisplayRoutesUseCase
 import cl.emilym.sinatra.domain.RegionDistinctUseCase
+import cl.emilym.sinatra.domain.RoutesInArea
 import cl.emilym.sinatra.domain.RoutesInAreaUseCase
 import cl.emilym.sinatra.domain.prompt.FavouriteNearbyStopDeparturesUseCase
 import cl.emilym.sinatra.domain.prompt.NewServiceUpdateUseCase
@@ -23,6 +25,7 @@ import cl.emilym.sinatra.domain.prompt.SpecialAddUseCase
 import cl.emilym.sinatra.domain.prompt.StopDepartures
 import cl.emilym.sinatra.nullIfEmpty
 import cl.emilym.sinatra.ui.presentation.screens.maps.navigate.NavigationLocation
+import cl.emilym.sinatra.ui.presentation.screens.maps.search.zoomThreshold
 import cl.emilym.sinatra.ui.retryIfNeeded
 import cl.emilym.sinatra.ui.toNavigationLocation
 import cl.emilym.sinatra.ui.widgets.SinatraScreenModel
@@ -61,6 +64,11 @@ sealed interface QuickNavigationItem {
     }
 }
 
+private data class MapRegionAndZoom(
+    val mapRegion: MapRegion,
+    val zoom: Zoom
+)
+
 sealed interface BrowsePrompt {
     data class QuickNavigateGroup(
         val items: List<QuickNavigationItem>
@@ -76,6 +84,7 @@ sealed interface BrowsePrompt {
 
 @Factory
 class BrowseViewModel(
+    private val displayRoutesUseCase: DisplayRoutesUseCase,
     private val routesInAreaUseCase: RoutesInAreaUseCase,
     private val regionDistinctUseCase: RegionDistinctUseCase,
     private val newServiceUpdateUseCase: NewServiceUpdateUseCase,
@@ -86,11 +95,23 @@ class BrowseViewModel(
     private val remoteConfigRepository: RemoteConfigRepository
 ): SinatraScreenModel {
 
-    private val _mapArea = MutableStateFlow<MapRegion?>(null)
+    private val _mapArea = MutableStateFlow<MapRegionAndZoom?>(null)
 
     private val _routes = _mapArea
-        .flatRequestStateFlow(defaultConfig) {
-            routesInAreaUseCase(it)
+        .distinctUntilChanged { old, new ->
+            if (old == null || new == null) return@distinctUntilChanged true
+            regionDistinctUseCase(old.mapRegion, new.mapRegion)
+        }.flatRequestStateFlow(defaultConfig) {
+            if (it == null || it.zoom < zoomThreshold) {
+                displayRoutesUseCase().mapLatest {
+                    RoutesInArea(
+                        it.item,
+                        false
+                    )
+                }
+            } else {
+                routesInAreaUseCase(it.mapRegion)
+            }
         }
     val routes = _routes.state(RequestState.Initial())
 
@@ -193,9 +214,11 @@ class BrowseViewModel(
         lastLocation.value = location
     }
 
-    fun updateCameraRegion(region: MapRegion) {
-        Napier.d("MapRegion updated $region")
-        _mapArea.value = region
+    fun updateCameraRegion(region: MapRegion, zoom: Zoom) {
+        _mapArea.value = MapRegionAndZoom(
+            region,
+            zoom
+        )
     }
 
     fun markAlertViewed(id: ServiceAlertId) {
