@@ -22,6 +22,9 @@ interface MapProjectionProvider {
 }
 
 interface MapControl {
+
+    val cameraRegion: MapRegion?
+
     fun zoomToArea(bounds: MapRegion, padding: Dp)
     fun zoomToArea(topLeft: MapLocation, bottomRight: MapLocation, padding: Dp)
     fun zoomToPoint(location: MapLocation, zoom: Zoom = 16f)
@@ -32,6 +35,8 @@ interface MapControl {
 
 class SafeMapControl: MapControl {
     var wrapped: MapControl? = null
+
+    override val cameraRegion: MapRegion? = wrapped?.cameraRegion
 
     override fun zoomToArea(bounds: MapRegion, padding: Dp) {
         wrapped?.zoomToArea(bounds, padding)

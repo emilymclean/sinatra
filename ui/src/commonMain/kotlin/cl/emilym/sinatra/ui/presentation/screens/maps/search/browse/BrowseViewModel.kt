@@ -6,6 +6,7 @@ import cl.emilym.compose.requeststate.flatRequestStateFlow
 import cl.emilym.compose.requeststate.requestStateFlow
 import cl.emilym.compose.requeststate.unwrap
 import cl.emilym.sinatra.data.models.MapLocation
+import cl.emilym.sinatra.data.models.MapRegion
 import cl.emilym.sinatra.data.models.ServiceAlert
 import cl.emilym.sinatra.data.models.ServiceAlertId
 import cl.emilym.sinatra.data.models.SpecialFavouriteType
@@ -13,6 +14,8 @@ import cl.emilym.sinatra.data.models.distance
 import cl.emilym.sinatra.data.repository.RemoteConfigRepository
 import cl.emilym.sinatra.data.repository.ServiceAlertRepository
 import cl.emilym.sinatra.domain.DisplayRoutesUseCase
+import cl.emilym.sinatra.domain.RegionDistinctUseCase
+import cl.emilym.sinatra.domain.RoutesInAreaUseCase
 import cl.emilym.sinatra.domain.prompt.FavouriteNearbyStopDeparturesUseCase
 import cl.emilym.sinatra.domain.prompt.NewServiceUpdateUseCase
 import cl.emilym.sinatra.domain.prompt.QuickNavigateUseCase
@@ -31,11 +34,13 @@ import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.koin.core.annotation.Factory
+import kotlin.math.abs
 
 sealed interface QuickNavigationItem {
     val special: SpecialFavouriteType?
@@ -71,7 +76,8 @@ sealed interface BrowsePrompt {
 
 @Factory
 class BrowseViewModel(
-    private val displayRoutesUseCase: DisplayRoutesUseCase,
+    private val routesInAreaUseCase: RoutesInAreaUseCase,
+    private val regionDistinctUseCase: RegionDistinctUseCase,
     private val newServiceUpdateUseCase: NewServiceUpdateUseCase,
     private val quickNavigateUseCase: QuickNavigateUseCase,
     private val specialAddUseCase: SpecialAddUseCase,
@@ -80,7 +86,15 @@ class BrowseViewModel(
     private val remoteConfigRepository: RemoteConfigRepository
 ): SinatraScreenModel {
 
-    private val _routes = flatRequestStateFlow(defaultConfig) { displayRoutesUseCase().mapLatest { it.item } }
+    private val _mapArea = MutableStateFlow<MapRegion?>(null)
+
+    private val _routes = _mapArea
+        .distinctUntilChanged { old, new ->
+            if (old == null || new == null) return@distinctUntilChanged true
+            regionDistinctUseCase(old, new)
+        }.flatRequestStateFlow(defaultConfig) {
+            routesInAreaUseCase(it)
+        }
     val routes = _routes.state(RequestState.Initial())
 
     private val lastLocation = MutableStateFlow<MapLocation?>(null)
@@ -180,6 +194,10 @@ class BrowseViewModel(
 
         if (distance(ll, location) < 0.5) return
         lastLocation.value = location
+    }
+
+    fun updateCameraRegion(region: MapRegion) {
+        _mapArea.value = region
     }
 
     fun markAlertViewed(id: ServiceAlertId) {

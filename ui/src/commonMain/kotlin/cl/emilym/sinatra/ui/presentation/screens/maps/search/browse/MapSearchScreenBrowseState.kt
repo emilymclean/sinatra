@@ -99,13 +99,13 @@ fun Screen.MapSearchScreenBrowseState(
                         }
                         Spacer(Modifier.height(1.rdp))
                     }
-                    items(routes.size) {
+                    items(routes.routes.size) {
                         RouteCard(
-                            routes[it],
+                            routes.routes[it],
                             onClick = {
                                 navigator.push(
                                     RouteDetailScreen(
-                                        routes[it].id
+                                        routes.routes[it].id
                                     )
                                 )
                             }

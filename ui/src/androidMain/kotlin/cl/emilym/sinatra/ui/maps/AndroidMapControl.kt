@@ -1,6 +1,8 @@
 package cl.emilym.sinatra.ui.maps
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.unit.Density
 import cl.emilym.sinatra.data.models.MapLocation
@@ -39,6 +41,20 @@ class AndroidMapControl(
     }
 
     override val nativeZoom: Float get() = cameraPositionState.position.zoom
+
+    override val cameraRegion: MapRegion? by derivedStateOf {
+        val projection = cameraPositionState.projection ?: return@derivedStateOf null
+        MapRegion(
+            projection.fromScreenLocation(ScreenLocation(
+                contentViewportPadding.top,
+                contentViewportPadding.left,
+            ).toNative()).toShared(),
+            projection.fromScreenLocation(ScreenLocation(
+                contentViewportSize.height + contentViewportPadding.top,
+                contentViewportSize.width + contentViewportPadding.left
+            ).toNative()).toShared()
+        )
+    }
 
     override fun showBounds(bounds: MapRegion) {
         mainScope.launch {
