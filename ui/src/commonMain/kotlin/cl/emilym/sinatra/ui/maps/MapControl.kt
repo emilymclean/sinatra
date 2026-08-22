@@ -60,8 +60,9 @@ class SafeMapControl: MapControl {
         wrapped?.moveToPoint(location, minZoom)
     }
 
-    override val zoom: Float
-        get() = wrapped?.zoom ?: 0f
+    override val zoom: Float by derivedStateOf {
+        wrapped?.zoom ?: 0f
+    }
 }
 
 abstract class AbstractMapControl: MapControl, MapProjectionProvider {
@@ -109,8 +110,9 @@ abstract class AbstractMapControl: MapControl, MapProjectionProvider {
     abstract fun showBounds(bounds: MapRegion)
 
     abstract val nativeZoom: Float
-    override val zoom: Float
-        get() = calculateZoom(nativeZoom, visibleMapSize, density)
+    override val zoom: Float by derivedStateOf {
+        calculateZoom(nativeZoom, visibleMapSize, density)
+    }
 
 
     override fun zoomToArea(

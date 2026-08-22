@@ -40,7 +40,9 @@ class AndroidMapControl(
         return projection.fromScreenLocation(coordinate.toNative()).toShared()
     }
 
-    override val nativeZoom: Float get() = cameraPositionState.position.zoom
+    override val nativeZoom: Float by derivedStateOf {
+        cameraPositionState.position.zoom
+    }
 
     override val cameraRegion: MapRegion? by derivedStateOf {
         val projection = cameraPositionState.projection ?: return@derivedStateOf null
