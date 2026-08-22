@@ -89,10 +89,7 @@ class BrowseViewModel(
     private val _mapArea = MutableStateFlow<MapRegion?>(null)
 
     private val _routes = _mapArea
-        .distinctUntilChanged { old, new ->
-            if (old == null || new == null) return@distinctUntilChanged true
-            regionDistinctUseCase(old, new)
-        }.flatRequestStateFlow(defaultConfig) {
+        .flatRequestStateFlow(defaultConfig) {
             routesInAreaUseCase(it)
         }
     val routes = _routes.state(RequestState.Initial())
@@ -197,6 +194,7 @@ class BrowseViewModel(
     }
 
     fun updateCameraRegion(region: MapRegion) {
+        Napier.d("MapRegion updated $region")
         _mapArea.value = region
     }
 

@@ -5,6 +5,7 @@ import cl.emilym.sinatra.data.models.Route
 import cl.emilym.sinatra.data.repository.RouteRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
@@ -33,16 +34,21 @@ class RoutesInAreaUseCase(
             return@flow
         }
 
-        withContext(Dispatchers.Default) {
-            emitAll(
-                getFilteredRoutesUseCase.filterRoutes(routeRepository.routesInBox(area)).map {
+        emitAll(
+            getFilteredRoutesUseCase.filterRoutes(routeRepository.routesInBox(area)).map {
+                RoutesInArea(
+                    it,
+                    true
+                )
+            }.catch {
+                emitAll(getFilteredRoutesUseCase().map {
                     RoutesInArea(
-                        it,
-                        true
+                        it.item,
+                        false
                     )
-                }
-            )
-        }
+                })
+            }
+        )
     }
 
     companion object {

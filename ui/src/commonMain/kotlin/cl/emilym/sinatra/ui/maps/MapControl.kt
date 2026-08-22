@@ -1,6 +1,10 @@
 package cl.emilym.sinatra.ui.maps
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -34,9 +38,11 @@ interface MapControl {
 }
 
 class SafeMapControl: MapControl {
-    var wrapped: MapControl? = null
+    var wrapped: MapControl? by mutableStateOf(null)
 
-    override val cameraRegion: MapRegion? = wrapped?.cameraRegion
+    override val cameraRegion: MapRegion? by derivedStateOf {
+        wrapped?.cameraRegion
+    }
 
     override fun zoomToArea(bounds: MapRegion, padding: Dp) {
         wrapped?.zoomToArea(bounds, padding)

@@ -4,9 +4,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -26,6 +29,9 @@ import cl.emilym.sinatra.ui.widgets.AlertScaffold
 import cl.emilym.sinatra.ui.widgets.RouteCard
 import cl.emilym.sinatra.ui.widgets.collectAsStateWithLifecycle
 import cl.emilym.sinatra.ui.widgets.currentLocation
+import org.jetbrains.compose.resources.stringResource
+import sinatra.ui.generated.resources.Res
+import sinatra.ui.generated.resources.browse_routes_in_area
 
 @OptIn(ExperimentalVoyagerApi::class)
 @Composable
@@ -98,6 +104,16 @@ fun Screen.MapSearchScreenBrowseState(
                             else -> {}
                         }
                         Spacer(Modifier.height(1.rdp))
+                    }
+                    if (routes.isRelevantToRegion) {
+                        item {
+                            Text(
+                                stringResource(Res.string.browse_routes_in_area),
+                                style = MaterialTheme.typography.titleMedium,
+                                modifier = Modifier.padding(horizontal = 1.rdp)
+                            )
+                            Spacer(Modifier.height(0.25.rdp))
+                        }
                     }
                     items(routes.routes.size) {
                         RouteCard(
