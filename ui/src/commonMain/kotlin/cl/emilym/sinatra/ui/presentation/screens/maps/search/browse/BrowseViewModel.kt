@@ -37,6 +37,7 @@ import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.mapLatest
@@ -44,6 +45,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.koin.core.annotation.Factory
 import kotlin.math.abs
+import kotlin.time.Duration.Companion.seconds
 
 sealed interface QuickNavigationItem {
     val special: SpecialFavouriteType?
@@ -86,7 +88,6 @@ sealed interface BrowsePrompt {
 class BrowseViewModel(
     private val displayRoutesUseCase: DisplayRoutesUseCase,
     private val routesInAreaUseCase: RoutesInAreaUseCase,
-    private val regionDistinctUseCase: RegionDistinctUseCase,
     private val newServiceUpdateUseCase: NewServiceUpdateUseCase,
     private val quickNavigateUseCase: QuickNavigateUseCase,
     private val specialAddUseCase: SpecialAddUseCase,
@@ -98,10 +99,8 @@ class BrowseViewModel(
     private val _mapArea = MutableStateFlow<MapRegionAndZoom?>(null)
 
     private val _routes = _mapArea
-        .distinctUntilChanged { old, new ->
-            if (old == null || new == null) return@distinctUntilChanged true
-            regionDistinctUseCase(old.mapRegion, new.mapRegion)
-        }.flatRequestStateFlow(defaultConfig) {
+        .debounce(0.1.seconds)
+        .flatRequestStateFlow(defaultConfig) {
             if (it == null || it.zoom < zoomThreshold) {
                 displayRoutesUseCase().mapLatest {
                     RoutesInArea(

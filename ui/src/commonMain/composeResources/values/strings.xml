@@ -9,7 +9,7 @@
     <string name="browse_option_disclaimer">Sources and disclaimers</string>
     <string name="browse_option_upcoming_routes">Upcoming vehicles to %1$s</string>
 
-    <string name="browse_routes_in_area">"Routes in Area"</string>
+    <string name="browse_routes_in_area">Routes in Area</string>
 
     <string name="favourites_nothing_favourited">Any routes or stops you favourite can be found here</string>
     <string name="favourites_no_home">Add home</string>

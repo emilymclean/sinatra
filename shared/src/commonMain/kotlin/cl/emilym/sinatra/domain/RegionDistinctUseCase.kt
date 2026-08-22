@@ -6,7 +6,7 @@ import org.koin.core.annotation.Factory
 import kotlin.math.abs
 
 @Factory
-class RegionDistinctUseCase() {
+class RegionDistinctUseCase {
 
     operator fun invoke(old: MapRegion, new: MapRegion): Boolean {
         val centerDistance = distance(old.center, new.center)
@@ -40,8 +40,8 @@ class RegionDistinctUseCase() {
     companion object {
         const val MOVE_THRESHOLD_RATIO: Double = 0.15
         const val RESIZE_THRESHOLD_RATIO: Double = 0.20
-        const val MIN_DIAGONAL_SIZE_CHECK: Double = 50.0
-        const val MIN_ABSOLUTE_MOVE_DISTANCE: Double = 5.0
+        const val MIN_DIAGONAL_SIZE_CHECK: Double = 0.05
+        const val MIN_ABSOLUTE_MOVE_DISTANCE: Double = 0.05
     }
 
 }
