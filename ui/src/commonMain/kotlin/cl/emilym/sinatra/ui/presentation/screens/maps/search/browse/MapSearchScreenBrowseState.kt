@@ -147,7 +147,7 @@ fun Screen.MapSearchScreenBrowseState(
                             }
                         }
                     }
-                    items(routes.routes.size) {
+                    items(routes.routes.size, key = { "route-${routes.routes[it].id}" }) {
                         RouteCard(
                             routes.routes[it],
                             onClick = {
@@ -156,7 +156,8 @@ fun Screen.MapSearchScreenBrowseState(
                                         routes.routes[it].id
                                     )
                                 )
-                            }
+                            },
+                            modifier = Modifier.animateItem()
                         )
                     }
                     item {
