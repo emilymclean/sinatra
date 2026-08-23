@@ -26,16 +26,8 @@ class RoutesInAreaUseCase(
 ) {
 
     operator fun invoke(area: MapRegion): Flow<RoutesInArea> = flow {
-        try {
-            val routes = routeRepository.routesInBox(area)
-            emitAll(
-                getFilteredRoutesUseCase.filterRoutes(routes).map {
-                    RoutesInArea(
-                        it,
-                        true
-                    )
-                }
-            )
+        val routes = try {
+            routeRepository.routesInBox(area)
         } catch (e: Exception) {
             Napier.e(e)
             emitAll(getFilteredRoutesUseCase().map {
@@ -44,7 +36,16 @@ class RoutesInAreaUseCase(
                     false
                 )
             })
+            return@flow
         }
+        emitAll(
+            getFilteredRoutesUseCase.filterRoutes(routes).map {
+                RoutesInArea(
+                    it,
+                    true
+                )
+            }
+        )
     }
 
 }
