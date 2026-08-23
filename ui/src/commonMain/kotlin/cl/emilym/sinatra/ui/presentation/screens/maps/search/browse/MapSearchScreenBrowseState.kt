@@ -77,7 +77,8 @@ fun Screen.MapSearchScreenBrowseState(
 
             RequestStateWidget(routes, { viewModel.retry() }) { routes ->
                 LazyColumn(
-                    contentPadding = innerPadding
+                    contentPadding = innerPadding,
+                    modifier = Modifier.fillMaxSize()
                 ) {
                     item {
                         AlertScaffold((alerts as? RequestState.Success)?.value)
