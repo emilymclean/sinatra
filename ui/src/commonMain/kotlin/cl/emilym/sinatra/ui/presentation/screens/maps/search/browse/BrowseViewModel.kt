@@ -121,7 +121,7 @@ class BrowseViewModel(
             if (
                 it == null ||
                 it.zoom < zoomThreshold ||
-                canberraRegion.intersects(it.mapRegion)
+                !canberraRegion.intersects(it.mapRegion)
             ) {
                 displayRoutesUseCase().mapLatest {
                     RoutesInArea(
