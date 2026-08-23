@@ -24,6 +24,7 @@ import cl.emilym.sinatra.domain.prompt.QuickNavigateUseCase
 import cl.emilym.sinatra.domain.prompt.SpecialAddUseCase
 import cl.emilym.sinatra.domain.prompt.StopDepartures
 import cl.emilym.sinatra.nullIfEmpty
+import cl.emilym.sinatra.ui.canberraRegion
 import cl.emilym.sinatra.ui.presentation.screens.maps.navigate.NavigationLocation
 import cl.emilym.sinatra.ui.presentation.screens.maps.search.zoomThreshold
 import cl.emilym.sinatra.ui.retryIfNeeded
@@ -117,7 +118,11 @@ class BrowseViewModel(
                 _mapArea
             }
         }.flatRequestStateFlow(defaultConfig) {
-            if (it == null || it.zoom < zoomThreshold) {
+            if (
+                it == null ||
+                it.zoom < zoomThreshold ||
+                !canberraRegion.intersects(it.mapRegion)
+            ) {
                 displayRoutesUseCase().mapLatest {
                     RoutesInArea(
                         it.item,

@@ -92,6 +92,15 @@ data class MapRegion(
         bottomRight.lat, topLeft.lng
     )
 
+    fun intersects(other: MapRegion): Boolean {
+        return !(
+            bottomRight.lng < other.topLeft.lng ||
+            topLeft.lng > other.bottomRight.lng ||
+            bottomRight.lat < other.topLeft.lat ||
+            topLeft.lat > other.bottomRight.lat
+        )
+    }
+
 }
 
 const val EARTH_RADIUS = 6371.0
