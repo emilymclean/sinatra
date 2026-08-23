@@ -14,6 +14,12 @@
 
   <string name="browse_option_upcoming_routes">即将开通的航线: %1$s</string>
 
+  <string name="browse_routes_in_area">区域内路线</string>
+
+  <string name="browse_routes_in_area_show_all">显示全部</string>
+
+  <string name="browse_routes_in_area_no_routes">该区域内没有路线。</string>
+
   <string name="favourites_nothing_favourited">您收藏的任何路线或站点都可以在这里找到。</string>
 
   <string name="favourites_no_home">添加家</string>

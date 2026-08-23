@@ -5,6 +5,7 @@ import cl.emilym.compose.requeststate.RequestState
 import cl.emilym.compose.requeststate.flatRequestStateFlow
 import cl.emilym.compose.requeststate.requestStateFlow
 import cl.emilym.compose.requeststate.unwrap
+import cl.emilym.sinatra.FeatureFlag
 import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.data.models.MapRegion
 import cl.emilym.sinatra.data.models.ServiceAlert
@@ -117,7 +118,11 @@ class BrowseViewModel(
                 _mapArea
             }
         }.flatRequestStateFlow(defaultConfig) {
-            if (it == null || it.zoom < zoomThreshold) {
+            if (
+                it == null ||
+                it.zoom < zoomThreshold ||
+                !remoteConfigRepository.feature(FeatureFlag.BROWSE_ROUTES_IN_AREA)
+            ) {
                 displayRoutesUseCase().mapLatest {
                     RoutesInArea(
                         it.item,
