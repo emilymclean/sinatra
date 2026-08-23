@@ -48,12 +48,12 @@ class AndroidMapControl(
         val projection = cameraPositionState.projection ?: return@derivedStateOf null
         MapRegion(
             projection.fromScreenLocation(ScreenLocation(
-                contentViewportPadding.top,
                 contentViewportPadding.left,
+                contentViewportPadding.top,
             ).toNative()).toShared(),
             projection.fromScreenLocation(ScreenLocation(
+                contentViewportSize.width + contentViewportPadding.left,
                 contentViewportSize.height + contentViewportPadding.top,
-                contentViewportSize.width + contentViewportPadding.left
             ).toNative()).toShared()
         )
     }

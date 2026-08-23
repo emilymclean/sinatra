@@ -11,7 +11,7 @@ class RouteLocationIndexPersistence(
 ) {
 
     suspend fun save(routeLocationIndices: List<RouteLocationIndex>) {
-        routeLocationIndexDao.insert(*routeLocationIndices.map {
+        routeLocationIndexDao.clearAndInsert(*routeLocationIndices.map {
             RouteLocationIndexEntity.fromModel(it)
         }.toTypedArray())
     }
