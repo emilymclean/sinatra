@@ -3,6 +3,8 @@ package cl.emilym.sinatra.domain
 import cl.emilym.sinatra.data.models.MapRegion
 import cl.emilym.sinatra.data.models.Route
 import cl.emilym.sinatra.data.repository.RouteRepository
+import cl.emilym.sinatra.e
+import io.github.aakira.napier.Napier
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -24,19 +26,24 @@ class RoutesInAreaUseCase(
 ) {
 
     operator fun invoke(area: MapRegion): Flow<RoutesInArea> = flow {
+        val routes = try {
+            routeRepository.routesInBox(area)
+        } catch (e: Exception) {
+            Napier.e(e)
+            emitAll(getFilteredRoutesUseCase().map {
+                RoutesInArea(
+                    it.item,
+                    false
+                )
+            })
+            return@flow
+        }
         emitAll(
-            getFilteredRoutesUseCase.filterRoutes(routeRepository.routesInBox(area)).map {
+            getFilteredRoutesUseCase.filterRoutes(routes).map {
                 RoutesInArea(
                     it,
                     true
                 )
-            }.catch {
-                emitAll(getFilteredRoutesUseCase().map {
-                    RoutesInArea(
-                        it.item,
-                        false
-                    )
-                })
             }
         )
     }
