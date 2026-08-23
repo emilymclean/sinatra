@@ -1,6 +1,8 @@
 package cl.emilym.sinatra.ui.maps
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.unit.Density
 import cl.emilym.sinatra.data.models.MapLocation
@@ -26,8 +28,13 @@ class AppleMapControl(
     override val density: Density
 ): AbstractMapControl() {
 
-    override val zoom: Float
-        get() = calculateZoom(nativeZoom, visibleMapSize, density) + ZOOM_OFFSET
+    override val cameraRegion: MapRegion? by derivedStateOf {
+        state.cameraDescription.mapRegion
+    }
+
+    override val zoom: Float by derivedStateOf {
+        calculateZoom(nativeZoom, visibleMapSize, density) + ZOOM_OFFSET
+    }
 
     @OptIn(ExperimentalForeignApi::class)
     override fun toScreenSpace(location: MapLocation): ScreenLocation? {
@@ -41,7 +48,9 @@ class AppleMapControl(
         return map.convertPoint(coordinate.toNative(), toCoordinateFromView = map).toShared()
     }
 
-    override val nativeZoom: Float get() = state.cameraDescription.zoom(contentViewportSize.dp(density.density))
+    override val nativeZoom: Float by derivedStateOf {
+        state.cameraDescription.zoom(contentViewportSize.dp(density.density))
+    }
 
     override fun showBounds(bounds: MapRegion) {
         state.animate(CameraDescription(

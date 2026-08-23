@@ -1,12 +1,20 @@
 package cl.emilym.sinatra.ui.presentation.screens.maps.search.browse
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -23,9 +31,16 @@ import cl.emilym.sinatra.ui.navigation.LocalBottomSheetState
 import cl.emilym.sinatra.ui.presentation.screens.maps.route.RouteDetailScreen
 import cl.emilym.sinatra.ui.presentation.screens.maps.search.MapSearchViewModel
 import cl.emilym.sinatra.ui.widgets.AlertScaffold
+import cl.emilym.sinatra.ui.widgets.ListHint
+import cl.emilym.sinatra.ui.widgets.NoBusIcon
 import cl.emilym.sinatra.ui.widgets.RouteCard
 import cl.emilym.sinatra.ui.widgets.collectAsStateWithLifecycle
 import cl.emilym.sinatra.ui.widgets.currentLocation
+import org.jetbrains.compose.resources.stringResource
+import sinatra.ui.generated.resources.Res
+import sinatra.ui.generated.resources.browse_routes_in_area
+import sinatra.ui.generated.resources.browse_routes_in_area_no_routes
+import sinatra.ui.generated.resources.browse_routes_in_area_show_all
 
 @OptIn(ExperimentalVoyagerApi::class)
 @Composable
@@ -99,16 +114,50 @@ fun Screen.MapSearchScreenBrowseState(
                         }
                         Spacer(Modifier.height(1.rdp))
                     }
-                    items(routes.size) {
+                    if (routes.isRelevantToRegion) {
+                        item {
+                            val forceShowAllRoutes by viewModel.forceShowAllRoutes.collectAsStateWithLifecycle()
+                            Row(
+                                Modifier.fillMaxWidth()
+                                    .padding(horizontal = 1.rdp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(1.rdp)
+                            ) {
+                                Text(
+                                    stringResource(Res.string.browse_routes_in_area),
+                                    style = MaterialTheme.typography.titleMedium,
+                                    modifier = Modifier.weight(1f)
+                                )
+                                if (!forceShowAllRoutes) {
+                                    FilledTonalButton(
+                                        onClick = viewModel::forceShowAllRoutes
+                                    ) {
+                                        Text(stringResource(Res.string.browse_routes_in_area_show_all))
+                                    }
+                                }
+                            }
+                            Spacer(Modifier.height(0.25.rdp))
+                            if (routes.routes.isEmpty()) {
+                                ListHint(
+                                    stringResource(Res.string.browse_routes_in_area_no_routes),
+                                    modifier = Modifier.padding(horizontal = 1.rdp)
+                                ) {
+                                    NoBusIcon()
+                                }
+                            }
+                        }
+                    }
+                    items(routes.routes.size, key = { "route-${routes.routes[it].id}" }) {
                         RouteCard(
-                            routes[it],
+                            routes.routes[it],
                             onClick = {
                                 navigator.push(
                                     RouteDetailScreen(
-                                        routes[it].id
+                                        routes.routes[it].id
                                     )
                                 )
-                            }
+                            },
+                            modifier = Modifier.animateItem()
                         )
                     }
                     item {

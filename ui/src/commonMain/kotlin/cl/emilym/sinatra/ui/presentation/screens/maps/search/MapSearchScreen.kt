@@ -133,6 +133,7 @@ class MapSearchScreen: MapScreen, NativeMapScreen {
         val browseViewModel = koinScreenModel<BrowseViewModel>()
         val state by viewModel.state.collectAsStateWithLifecycle()
         val navigator = LocalNavigator.currentOrThrow
+        val mapControl = LocalMapControl.current
 
         val bottomSheetState = LocalBottomSheetState.current
         val keyboardController = LocalSoftwareKeyboardController.current
@@ -143,6 +144,10 @@ class MapSearchScreen: MapScreen, NativeMapScreen {
             )) {
                 keyboardController?.hide()
             }
+        }
+
+        LaunchedEffect(mapControl.cameraRegion) {
+            mapControl.cameraRegion?.let { browseViewModel.updateCameraRegion(it, mapControl.zoom) }
         }
 
         LaunchedEffect(state) {

@@ -12,6 +12,7 @@ import cl.emilym.sinatra.room.dao.FavouriteDao
 import cl.emilym.sinatra.room.dao.PlaceDao
 import cl.emilym.sinatra.room.dao.RecentVisitDao
 import cl.emilym.sinatra.room.dao.RouteDao
+import cl.emilym.sinatra.room.dao.RouteLocationIndexDao
 import cl.emilym.sinatra.room.dao.RouteServiceEntityDao
 import cl.emilym.sinatra.room.dao.RouteTripInformationEntityDao
 import cl.emilym.sinatra.room.dao.RouteTripStopEntityDao
@@ -27,6 +28,7 @@ import cl.emilym.sinatra.room.entities.FavouriteEntity
 import cl.emilym.sinatra.room.entities.PlaceEntity
 import cl.emilym.sinatra.room.entities.RecentVisitEntity
 import cl.emilym.sinatra.room.entities.RouteEntity
+import cl.emilym.sinatra.room.entities.RouteLocationIndexEntity
 import cl.emilym.sinatra.room.entities.RouteServiceEntity
 import cl.emilym.sinatra.room.entities.RouteTripInformationEntity
 import cl.emilym.sinatra.room.entities.RouteTripStopEntity
@@ -69,7 +71,8 @@ expect object AppDatabaseConstructor : RoomDatabaseConstructor<AppDatabase> {
         PlaceEntity::class,
         ServiceAlertEntity::class,
         ContentEntity::class,
-        ContentLinkEntity::class
+        ContentLinkEntity::class,
+        RouteLocationIndexEntity::class
     ],
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
@@ -89,9 +92,13 @@ expect object AppDatabaseConstructor : RoomDatabaseConstructor<AppDatabase> {
             to = 10,
             spec = Migration9to10::class
         ),
+        AutoMigration(
+            from = 10,
+            to = 11
+        )
     ],
     exportSchema = true,
-    version = 10
+    version = 11
 )
 @ConstructedBy(AppDatabaseConstructor::class)
 abstract class AppDatabase: RoomDatabase() {
@@ -110,6 +117,7 @@ abstract class AppDatabase: RoomDatabase() {
     abstract fun serviceAlertDao(): ServiceAlertDao
     abstract fun contentDao(): ContentDao
     abstract fun contentLinkDao(): ContentLinkDao
+    abstract fun routeLocationIndexDao(): RouteLocationIndexDao
 }
 
 @Single
@@ -193,4 +201,9 @@ fun contentDao(db: AppDatabase): ContentDao {
 @Factory
 fun contentLinkDao(db: AppDatabase): ContentLinkDao {
     return db.contentLinkDao()
+}
+
+@Factory
+fun routeLocationIndexDao(db: AppDatabase): RouteLocationIndexDao {
+    return db.routeLocationIndexDao()
 }

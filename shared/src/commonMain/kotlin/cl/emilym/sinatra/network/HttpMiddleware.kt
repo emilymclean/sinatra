@@ -5,6 +5,7 @@ import cl.emilym.gtfs.RouteCanonicalTimetableEndpoint
 import cl.emilym.gtfs.RouteCanonicalTimetableEndpointV2
 import cl.emilym.gtfs.RouteDetailEndpoint
 import cl.emilym.gtfs.RouteEndpoint
+import cl.emilym.gtfs.RouteLocationIndexEndpoint
 import cl.emilym.gtfs.RouteServicesEndpoint
 import cl.emilym.gtfs.RouteTimetableEndpoint
 import cl.emilym.gtfs.RouteTripTimetableEndpoint
@@ -83,7 +84,8 @@ private val protobufFactories: Map<KClass<*>, ProtobufFactory<*>> = mapOf(
     Pages::class to Pages::decodeFromByteArray,
     FeedMessage::class to FeedMessage::decodeFromByteArray,
     ServiceAlertEndpoint::class to ServiceAlertEndpoint::decodeFromByteArray,
-    RealtimeEndpoint::class to RealtimeEndpoint::decodeFromByteArray
+    RealtimeEndpoint::class to RealtimeEndpoint::decodeFromByteArray,
+    RouteLocationIndexEndpoint::class to RouteLocationIndexEndpoint::decodeFromByteArray,
 )
 
 @Factory
