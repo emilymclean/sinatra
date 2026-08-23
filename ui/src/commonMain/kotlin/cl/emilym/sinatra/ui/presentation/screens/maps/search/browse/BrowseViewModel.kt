@@ -121,7 +121,11 @@ class BrowseViewModel(
             if (
                 it == null ||
                 it.zoom < zoomThreshold ||
-                (!canberraRegion.contains(it.mapRegion.northEast) && !canberraRegion.contains(it.mapRegion.southWest))
+                (
+                    !canberraRegion.contains(it.mapRegion.northEast) &&
+                    !canberraRegion.contains(it.mapRegion.southWest) &&
+                    !canberraRegion.contains(it.mapRegion.center)
+                )
             ) {
                 displayRoutesUseCase().mapLatest {
                     RoutesInArea(
