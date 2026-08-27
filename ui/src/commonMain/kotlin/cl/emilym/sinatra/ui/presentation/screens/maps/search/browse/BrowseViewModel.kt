@@ -5,14 +5,20 @@ import cl.emilym.compose.requeststate.RequestState
 import cl.emilym.compose.requeststate.flatRequestStateFlow
 import cl.emilym.compose.requeststate.requestStateFlow
 import cl.emilym.compose.requeststate.unwrap
+import cl.emilym.sinatra.FeatureFlag
 import cl.emilym.sinatra.data.models.MapLocation
+import cl.emilym.sinatra.data.models.MapRegion
 import cl.emilym.sinatra.data.models.ServiceAlert
 import cl.emilym.sinatra.data.models.ServiceAlertId
 import cl.emilym.sinatra.data.models.SpecialFavouriteType
+import cl.emilym.sinatra.data.models.Zoom
 import cl.emilym.sinatra.data.models.distance
 import cl.emilym.sinatra.data.repository.RemoteConfigRepository
 import cl.emilym.sinatra.data.repository.ServiceAlertRepository
 import cl.emilym.sinatra.domain.DisplayRoutesUseCase
+import cl.emilym.sinatra.domain.RegionDistinctUseCase
+import cl.emilym.sinatra.domain.RoutesInArea
+import cl.emilym.sinatra.domain.RoutesInAreaUseCase
 import cl.emilym.sinatra.domain.prompt.FavouriteNearbyStopDeparturesUseCase
 import cl.emilym.sinatra.domain.prompt.NewServiceUpdateUseCase
 import cl.emilym.sinatra.domain.prompt.QuickNavigateUseCase
@@ -20,6 +26,7 @@ import cl.emilym.sinatra.domain.prompt.SpecialAddUseCase
 import cl.emilym.sinatra.domain.prompt.StopDepartures
 import cl.emilym.sinatra.nullIfEmpty
 import cl.emilym.sinatra.ui.presentation.screens.maps.navigate.NavigationLocation
+import cl.emilym.sinatra.ui.presentation.screens.maps.search.zoomThreshold
 import cl.emilym.sinatra.ui.retryIfNeeded
 import cl.emilym.sinatra.ui.toNavigationLocation
 import cl.emilym.sinatra.ui.widgets.SinatraScreenModel
@@ -30,12 +37,18 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.koin.core.annotation.Factory
+import kotlin.math.abs
+import kotlin.time.Duration.Companion.seconds
 
 sealed interface QuickNavigationItem {
     val special: SpecialFavouriteType?
@@ -56,6 +69,11 @@ sealed interface QuickNavigationItem {
     }
 }
 
+private data class MapRegionAndZoom(
+    val mapRegion: MapRegion,
+    val zoom: Zoom
+)
+
 sealed interface BrowsePrompt {
     data class QuickNavigateGroup(
         val items: List<QuickNavigationItem>
@@ -72,6 +90,7 @@ sealed interface BrowsePrompt {
 @Factory
 class BrowseViewModel(
     private val displayRoutesUseCase: DisplayRoutesUseCase,
+    private val routesInAreaUseCase: RoutesInAreaUseCase,
     private val newServiceUpdateUseCase: NewServiceUpdateUseCase,
     private val quickNavigateUseCase: QuickNavigateUseCase,
     private val specialAddUseCase: SpecialAddUseCase,
@@ -80,7 +99,40 @@ class BrowseViewModel(
     private val remoteConfigRepository: RemoteConfigRepository
 ): SinatraScreenModel {
 
-    private val _routes = flatRequestStateFlow(defaultConfig) { displayRoutesUseCase().mapLatest { it.item } }
+    private val _mapArea = MutableStateFlow<MapRegionAndZoom?>(null)
+    private val _forceShowAllRoutes = MutableStateFlow(false)
+    val forceShowAllRoutes = _forceShowAllRoutes.asStateFlow()
+
+    private val _routes = _mapArea
+        .debounce(0.1.seconds)
+        .onEach {
+            _forceShowAllRoutes.value = false
+        }.combine(
+            forceShowAllRoutes,
+        ) { _mapArea, forceShowAllRoutes ->
+            if (forceShowAllRoutes) {
+                _mapArea?.copy(
+                    zoom = 0f
+                )
+            } else {
+                _mapArea
+            }
+        }.flatRequestStateFlow(defaultConfig) {
+            if (
+                it == null ||
+                it.zoom < zoomThreshold ||
+                !remoteConfigRepository.feature(FeatureFlag.BROWSE_ROUTES_IN_AREA)
+            ) {
+                displayRoutesUseCase().mapLatest {
+                    RoutesInArea(
+                        it.item,
+                        false
+                    )
+                }
+            } else {
+                routesInAreaUseCase(it.mapRegion)
+            }
+        }
     val routes = _routes.state(RequestState.Initial())
 
     private val lastLocation = MutableStateFlow<MapLocation?>(null)
@@ -180,6 +232,17 @@ class BrowseViewModel(
 
         if (distance(ll, location) < 0.5) return
         lastLocation.value = location
+    }
+
+    fun updateCameraRegion(region: MapRegion, zoom: Zoom) {
+        _mapArea.value = MapRegionAndZoom(
+            region,
+            zoom
+        )
+    }
+
+    fun forceShowAllRoutes() {
+        _forceShowAllRoutes.value = true
     }
 
     fun markAlertViewed(id: ServiceAlertId) {

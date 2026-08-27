@@ -83,6 +83,10 @@ message RealtimeEndpoint {
     optional string expireTimestamp = 2;
 }
 
+message RouteLocationIndexEndpoint {
+  repeated RouteLocationIndex indicies = 1;
+}
+
 message Stop {
   required string id = 1;
   optional string parentStation = 5;
@@ -264,4 +268,9 @@ message ServiceAlert {
 message RealtimeUpdate {
     required string tripId = 1;
     optional int32 delay = 2;
+}
+
+message RouteLocationIndex {
+  required Location point = 1;
+  repeated string routeId = 2;
 }

@@ -178,3 +178,19 @@ data class RouteTripStop(
     }
 
 }
+
+data class RouteLocationIndex(
+    val point: MapLocation,
+    val routeIds: List<RouteId>
+) {
+
+    companion object {
+        fun fromPB(pb: cl.emilym.gtfs.RouteLocationIndex): RouteLocationIndex {
+            return RouteLocationIndex(
+                point = MapLocation.fromPB(pb.point),
+                routeIds = pb.routeId
+            )
+        }
+    }
+
+}

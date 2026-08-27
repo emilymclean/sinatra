@@ -2,6 +2,7 @@ package cl.emilym.sinatra.data.client
 
 import cl.emilym.sinatra.data.models.Route
 import cl.emilym.sinatra.data.models.RouteId
+import cl.emilym.sinatra.data.models.RouteLocationIndex
 import cl.emilym.sinatra.data.models.RouteServiceCanonicalTimetable
 import cl.emilym.sinatra.data.models.RouteServiceTimetable
 import cl.emilym.sinatra.data.models.RouteTripTimetable
@@ -22,6 +23,13 @@ class RouteClient(
         object : ValidatedEndpointDigestPair<List<Route>>() {
             override val endpoint = ::routes
             override val digest = ::routesDigest
+        }
+    }
+
+    val routeLocationIndexEndpointPair by lazy {
+        object : ValidatedEndpointDigestPair<List<RouteLocationIndex>>() {
+            override val endpoint = ::routeLocationIndex
+            override val digest = ::routeLocationIndexDigest
         }
     }
 
@@ -59,6 +67,15 @@ class RouteClient(
 
     suspend fun routesDigest(): ShaDigest {
         return gtfsApi.routesDigest()
+    }
+
+    suspend fun routeLocationIndex(digest: ShaDigest): List<RouteLocationIndex> {
+        val pbIndicies = gtfsApi.routeLocationIndex().validated(digest)
+        return pbIndicies.indicies.map { RouteLocationIndex.fromPB(it) }
+    }
+
+    suspend fun routeLocationIndexDigest(): ShaDigest {
+        return gtfsApi.routeLocationIndexDigest()
     }
 
     suspend fun routeServices(digest: ShaDigest, routeId: RouteId): List<ServiceId> {

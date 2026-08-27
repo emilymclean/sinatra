@@ -78,6 +78,8 @@ data class MapRegion(
     )
     val center: MapLocation get() = naiveCenter
 
+    val diagonalDistance: Kilometer get() = distance(northEast, southWest)
+
     fun contains(location: MapLocation): Boolean {
         return location.lat <= topLeft.lat && location.lat >= bottomRight.lat &&
                 location.lng >= topLeft.lng && location.lng <= bottomRight.lng

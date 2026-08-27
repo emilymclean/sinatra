@@ -3,9 +3,11 @@ package cl.emilym.sinatra.data.repository
 import cl.emilym.sinatra.data.client.RouteClient
 import cl.emilym.sinatra.data.models.Cachable
 import cl.emilym.sinatra.data.models.CacheCategory
+import cl.emilym.sinatra.data.models.MapRegion
 import cl.emilym.sinatra.data.models.ResourceKey
 import cl.emilym.sinatra.data.models.Route
 import cl.emilym.sinatra.data.models.RouteId
+import cl.emilym.sinatra.data.models.RouteLocationIndex
 import cl.emilym.sinatra.data.models.RouteServiceCanonicalTimetable
 import cl.emilym.sinatra.data.models.RouteServiceTimetable
 import cl.emilym.sinatra.data.models.RouteTripTimetable
@@ -13,6 +15,7 @@ import cl.emilym.sinatra.data.models.ServiceId
 import cl.emilym.sinatra.data.models.TripId
 import cl.emilym.sinatra.data.models.flatMap
 import cl.emilym.sinatra.data.models.map
+import cl.emilym.sinatra.data.persistence.RouteLocationIndexPersistence
 import cl.emilym.sinatra.data.persistence.RoutePersistence
 import cl.emilym.sinatra.data.persistence.RouteServiceCanonicalTimetablePersistence
 import cl.emilym.sinatra.data.persistence.RouteServicePersistence
@@ -137,6 +140,27 @@ class RouteTripTimetableCacheWorker(
 }
 
 @Factory
+class RouteLocationIndexCacheWorker(
+    private val routePersistence: RouteLocationIndexPersistence,
+    private val routeClient: RouteClient,
+    override val cacheWorkerDependencies: CacheWorkerDependencies,
+    override val clock: Clock,
+): CacheWorker<List<RouteLocationIndex>>() {
+
+    override val cacheCategory: CacheCategory = CacheCategory.ROUTE_LOCATION_INDEX
+
+    override suspend fun saveToPersistence(data: List<RouteLocationIndex>, resource: ResourceKey) =
+        routePersistence.save(data)
+    override suspend fun getFromPersistence(resource: ResourceKey): List<RouteLocationIndex> =
+        routePersistence.get()
+
+    suspend fun get(): Cachable<List<RouteLocationIndex>> {
+        return run(routeClient.routeLocationIndexEndpointPair, "routes")
+    }
+
+}
+
+@Factory
 class RouteCleanupWorker(
     private val routePersistence: RoutePersistence,
     override val shaRepository: ShaRepository,
@@ -200,6 +224,18 @@ class RouteTripTimetableCleanupWorker(
 }
 
 @Factory
+class RouteLocationIndexCleanupWorker(
+    private val routePersistence: RouteLocationIndexPersistence,
+    override val shaRepository: ShaRepository,
+    override val clock: Clock
+): CleanupWorker() {
+
+    override val cacheCategory: CacheCategory = CacheCategory.ROUTE_LOCATION_INDEX
+    override suspend fun delete(resource: ResourceKey) = routePersistence.clear()
+
+}
+
+@Factory
 class RouteRepository(
     private val routeCacheWorker: RoutesCacheWorker,
     private val routeServicesCacheWorker: RouteServicesCacheWorker,
@@ -212,7 +248,10 @@ class RouteRepository(
     private val routeServiceTimetableCleanupWorker: RouteServiceTimetableCleanupWorker,
     private val routeServiceCanonicalTimetableCleanupWorker: RouteServiceCanonicalTimetableCleanupWorker,
     private val routeTripTimetableCleanupWorker: RouteTripTimetableCleanupWorker,
+    private val routeLocationIndexCacheWorker: RouteLocationIndexCacheWorker,
+    private val routeLocationIndexCleanupWorker: RouteLocationIndexCleanupWorker,
     private val routePersistence: RoutePersistence,
+    private val routeLocationIndexPersistence: RouteLocationIndexPersistence,
     private val transportMetadataRepository: TransportMetadataRepository
 ) {
 
@@ -258,6 +297,19 @@ class RouteRepository(
         ) }
     }
 
+    suspend fun routesInBox(region: MapRegion): List<Route> {
+        val routes = routeCacheWorker.get()
+        routeLocationIndexCacheWorker.get()
+        val index = routeLocationIndexPersistence.getInBox(
+            region.southWest.lat,
+            region.southWest.lng,
+            region.northEast.lat,
+            region.northEast.lng
+        ).flatMap { it.routeIds }.associateWith { true }
+
+        return routes.item.filter { index[it.id] == true }
+    }
+
     suspend fun removedRoutes(): List<RouteId> {
         return listOf("NIS")
     }
@@ -268,6 +320,7 @@ class RouteRepository(
         routeServiceTimetableCleanupWorker()
         routeServiceCanonicalTimetableCleanupWorker()
         routeTripTimetableCleanupWorker()
+        routeLocationIndexCleanupWorker()
     }
 
 }
