@@ -14,6 +14,8 @@
 
   <string name="browse_option_upcoming_routes">即将开通的航线: %1$s</string>
 
+  <string name="browse_option_upcoming_routes_multiple">附近收藏的站点</string>
+
   <string name="browse_routes_in_area">区域内路线</string>
 
   <string name="browse_routes_in_area_show_all">显示全部</string>
