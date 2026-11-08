@@ -8,13 +8,13 @@ import cl.emilym.sinatra.data.repository.FavouriteRepository
 import cl.emilym.sinatra.data.repository.RemoteConfigRepository
 import cl.emilym.sinatra.domain.NearbyStopsUseCase
 import cl.emilym.sinatra.domain.UpcomingRoutesForStopUseCase
-import io.github.aakira.napier.Napier
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.transformLatest
 import org.koin.core.annotation.Factory
 
@@ -84,7 +84,7 @@ class FavouriteNearbyStopDeparturesUseCase(
                     )
                 }
                 .flatMapLatest { stops ->
-                    Napier.d("Stops: $stops")
+                    if (stops.isEmpty()) return@flatMapLatest flowOf(NearbyStopInformation.None)
                     combine(stops.map { upcomingRoutesForStopUseCase(it.id) }) {
                         val departures = it.mapIndexed { index, it ->
                             StopDepartures(stops[index], it.item)
