@@ -1,5 +1,6 @@
 package cl.emilym.sinatra.domain.prompt
 
+import cl.emilym.sinatra.FeatureFlag
 import cl.emilym.sinatra.data.models.Cachable
 import cl.emilym.sinatra.data.models.CacheState
 import cl.emilym.sinatra.data.models.IStopTimetableTime
@@ -22,7 +23,7 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertNull
+import kotlin.test.assertIs
 
 class FavouriteNearbyStopDeparturesUseCaseTest {
 
@@ -52,7 +53,7 @@ class FavouriteNearbyStopDeparturesUseCaseTest {
     private val stop2 = Stop(
         id = "stop2",
         parentStation = null,
-        name = "Test Stop",
+        name = "Test Stop 2",
         _simpleName = null,
         location = MapLocation(0.001, 0.001),
         accessibility = StopAccessibility(StopWheelchairAccessibility.UNKNOWN),
@@ -79,27 +80,28 @@ class FavouriteNearbyStopDeparturesUseCaseTest {
     private val cachableDepartures = Cachable(listOf(timetableTime as IStopTimetableTime), CacheState.LIVE)
 
     @Test
-    fun `should emit null if feature flag is disabled`() = runTest {
-        coEvery { remoteConfigRepository.feature(any()) } returns false
+    fun `should emit None if feature flag is disabled`() = runTest {
+        coEvery { remoteConfigRepository.feature(FeatureFlag.FAVOURITE_NEARBY_STOP_HOME_SCREEN) } returns false
+        coEvery { remoteConfigRepository.feature(FeatureFlag.FAVOURITE_NEARBY_STOP_HOME_SCREEN_MULTIPLE) } returns true
 
         val result = useCase(MapLocation(0.0, 0.0)).first()
 
-        assertNull(result)
+        assertEquals(NearbyStopInformation.None, result)
     }
 
     @Test
-    fun `should emit null if no favourite stop nearby`() = runTest {
+    fun `should emit None if no favourite stop nearby`() = runTest {
         coEvery { remoteConfigRepository.feature(any()) } returns true
         coEvery { nearbyStopsUseCase(any(), any(), any()) } returns listOf(StopWithDistance(stop, 0.0))
         coEvery { favouriteRepository.favouritedStops(listOf(stop.id)) } returns flowOf(emptyList())
 
         val result = useCase(MapLocation(0.0, 0.0)).first()
 
-        assertNull(result)
+        assertEquals(NearbyStopInformation.None, result)
     }
 
     @Test
-    fun `should emit null if upcoming departures are empty`() = runTest {
+    fun `should emit None if upcoming departures are empty`() = runTest {
         coEvery { remoteConfigRepository.feature(any()) } returns true
         coEvery { nearbyStopsUseCase(any(), any(), any()) } returns listOf(StopWithDistance(stop, 0.0))
         coEvery { favouriteRepository.favouritedStops(listOf(stop.id)) } returns flowOf(listOf(stop.id))
@@ -107,11 +109,11 @@ class FavouriteNearbyStopDeparturesUseCaseTest {
 
         val result = useCase(MapLocation(0.0, 0.0)).first()
 
-        assertNull(result)
+        assertEquals(NearbyStopInformation.None, result)
     }
 
     @Test
-    fun `should emit StopDepartures if favourite nearby stop and upcoming departures exist`() = runTest {
+    fun `should emit Single if favourite nearby stop and upcoming departures exist`() = runTest {
         coEvery { remoteConfigRepository.feature(any()) } returns true
         coEvery { nearbyStopsUseCase(any(), any(), any()) } returns listOf(StopWithDistance(stop, 0.0))
         coEvery { favouriteRepository.favouritedStops(listOf(stop.id)) } returns flowOf(listOf(stop.id))
@@ -119,13 +121,33 @@ class FavouriteNearbyStopDeparturesUseCaseTest {
 
         val result = useCase(MapLocation(0.0, 0.0)).first()
 
-        assertEquals(stop, result?.stop)
-        assertEquals(listOf(timetableTime), result?.departures)
+        assertIs<NearbyStopInformation.Single>(result)
+        assertEquals(stop, result.departures.stop)
+        assertEquals(listOf(timetableTime), result.departures.departures)
+    }
+
+    @Test
+    fun `should emit Multiple if multiple favourite nearby stops and multiple feature flag enabled`() = runTest {
+        coEvery { remoteConfigRepository.feature(any()) } returns true
+        coEvery { nearbyStopsUseCase(any(), any(), any()) } returns listOf(
+            StopWithDistance(stop, 0.0),
+            StopWithDistance(stop2, 0.1)
+        )
+        coEvery { favouriteRepository.favouritedStops(any()) } returns flowOf(listOf(stop.id, stop2.id))
+        coEvery { upcomingRoutesForStopUseCase(any()) } returns flowOf(cachableDepartures)
+
+        val result = useCase(MapLocation(0.0, 0.0)).first()
+
+        assertIs<NearbyStopInformation.Multiple>(result)
+        assertEquals(2, result.departures.size)
+        assertEquals(stop, result.departures[0].stop)
+        assertEquals(stop2, result.departures[1].stop)
     }
 
     @Test
     fun `should emit closest StopDepartures`() = runTest {
         coEvery { remoteConfigRepository.feature(any()) } returns true
+        coEvery { remoteConfigRepository.feature(FeatureFlag.FAVOURITE_NEARBY_STOP_HOME_SCREEN_MULTIPLE) } returns false
         coEvery { nearbyStopsUseCase(any(), any(), any()) } returns listOf(
             StopWithDistance(stop, 0.0),
             StopWithDistance(stop2, 1.0),
@@ -135,7 +157,8 @@ class FavouriteNearbyStopDeparturesUseCaseTest {
 
         val result = useCase(MapLocation(0.0, 0.0)).first()
 
-        assertEquals(stop, result?.stop)
-        assertEquals(listOf(timetableTime), result?.departures)
+        assertIs<NearbyStopInformation.Single>(result)
+        assertEquals(stop, result.departures.stop)
+        assertEquals(listOf(timetableTime), result.departures.departures)
     }
 }

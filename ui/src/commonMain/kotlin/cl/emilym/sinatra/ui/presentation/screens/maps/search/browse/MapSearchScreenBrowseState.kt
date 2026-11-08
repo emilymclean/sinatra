@@ -111,6 +111,11 @@ fun Screen.MapSearchScreenBrowseState(
                                     )
                                 }
                             }
+                            is BrowsePrompt.MultipleNearbyStopDepartures -> {
+                                Box(Modifier.animateItem()) {
+                                    MultipleNearbyStopDeparturesWidget(it)
+                                }
+                            }
                             else -> {}
                         }
                         Spacer(Modifier.height(1.rdp))
