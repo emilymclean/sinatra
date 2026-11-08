@@ -12,6 +12,7 @@ import androidx.compose.ui.text.toLowerCase
 import cl.emilym.compose.units.rdp
 import cl.emilym.sinatra.FeatureFlag
 import cl.emilym.sinatra.data.models.IStopTimetableTime
+import cl.emilym.sinatra.data.models.Stop
 import cl.emilym.sinatra.data.models.StopId
 import org.jetbrains.compose.resources.stringResource
 import sinatra.ui.generated.resources.Res
@@ -36,6 +37,62 @@ fun UpcomingRouteCard(
         modifier,
         onClick
     ) {
+        Text(
+            stringResource(
+                Res.string.route_with_heading,
+                when {
+                    short -> stringResource(
+                        Res.string.route_code_name,
+                        timetableTime.routeCode
+                    )
+                    else -> timetableTime.route?.name ?: stringResource(
+                        Res.string.route_code_name,
+                        timetableTime.routeCode
+                    )
+                }, timetableTime.heading
+            )
+        )
+        stopStationTime?.let {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(0.25.rdp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                LivenessIcon(it)
+                Text(
+                    when(timetableTime.childStop) {
+                        null -> it.text
+                        else -> stringResource(
+                            Res.string.stop_detail_from,
+                            it.text,
+                            timetableTime.childStop?.name?.platformName(
+                                timetableTime.childStopId ?: ""
+                            ) ?: "null"
+                        )
+                    },
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun UpcomingRouteToStationCard(
+    stop: Stop,
+    timetableTime: IStopTimetableTime,
+    stopStationTime: StopStationTime?,
+    modifier: Modifier = Modifier,
+    short: Boolean = false,
+    onClick: (() -> Unit)? = null
+) {
+    ListCard(
+        {
+            timetableTime.route?.let { RouteRandle(it) }
+        },
+        modifier,
+        onClick
+    ) {
+        Text(stop.name.platformName(stop.id))
         Text(
             stringResource(
                 Res.string.route_with_heading,

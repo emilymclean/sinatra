@@ -5,5 +5,7 @@
 
     <string name="favourites_nothing_favourited">Any routes or stops you favorite can be found here</string>
 
+    <string name="browse_option_upcoming_routes_multiple">Nearby favorite stops</string>
+
     <string name="map_search_favourites">Favorites</string>
 </resources>

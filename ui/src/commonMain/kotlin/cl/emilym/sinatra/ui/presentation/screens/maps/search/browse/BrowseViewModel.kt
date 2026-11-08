@@ -20,6 +20,7 @@ import cl.emilym.sinatra.domain.RegionDistinctUseCase
 import cl.emilym.sinatra.domain.RoutesInArea
 import cl.emilym.sinatra.domain.RoutesInAreaUseCase
 import cl.emilym.sinatra.domain.prompt.FavouriteNearbyStopDeparturesUseCase
+import cl.emilym.sinatra.domain.prompt.NearbyStopInformation
 import cl.emilym.sinatra.domain.prompt.NewServiceUpdateUseCase
 import cl.emilym.sinatra.domain.prompt.QuickNavigateUseCase
 import cl.emilym.sinatra.domain.prompt.SpecialAddUseCase
@@ -80,6 +81,9 @@ sealed interface BrowsePrompt {
     ): BrowsePrompt
     data class LargeNearbyStopDepartures(
         val stop: StopDepartures
+    ): BrowsePrompt
+    data class MultipleNearbyStopDepartures(
+        val stops: List<StopDepartures>
     ): BrowsePrompt
     data class NewServiceUpdate(
         val serviceAlert: ServiceAlert,
@@ -165,7 +169,7 @@ class BrowseViewModel(
         }
     }
     private val nearbyStopDepartures = lastLocation.flatRequestStateFlow(showLoading = false) {
-        it ?: return@flatRequestStateFlow flowOf(null)
+        it ?: return@flatRequestStateFlow flowOf(NearbyStopInformation.None)
         withContext(Dispatchers.IO) {
             favouriteNearbyStopDeparturesUseCase(it)
         }
@@ -188,7 +192,15 @@ class BrowseViewModel(
             }
 
             // Add nearby stop information
-            nearbyStopDepartures.unwrap()?.let { add(BrowsePrompt.LargeNearbyStopDepartures(it)) }
+            when (val nearbyStopDepartures = nearbyStopDepartures.unwrap()) {
+                is NearbyStopInformation.Single -> add(BrowsePrompt.LargeNearbyStopDepartures(
+                    nearbyStopDepartures.departures
+                ))
+                is NearbyStopInformation.Multiple -> add(BrowsePrompt.MultipleNearbyStopDepartures(
+                    nearbyStopDepartures.departures
+                ))
+                else -> {}
+            }
 
             // Add new service alerts
             val newServices = newServices.unwrap().nullIfEmpty()
