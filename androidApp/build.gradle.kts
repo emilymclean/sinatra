@@ -17,7 +17,7 @@ android {
     compileSdk = 36
     defaultConfig {
         applicationId = "cl.emilym.sinatra"
-        minSdk = 23
+        minSdk = 24
         targetSdk = 36
         versionCode = appVersionCode.toInt()
         versionName = appVersionName
