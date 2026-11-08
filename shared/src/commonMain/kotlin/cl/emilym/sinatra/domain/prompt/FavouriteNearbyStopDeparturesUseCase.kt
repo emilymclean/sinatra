@@ -104,7 +104,7 @@ class FavouriteNearbyStopDeparturesUseCase(
     }
 
     companion object {
-        const val INNER_RING_RADIUS = 0.2 // 200 meters
+        const val INNER_RING_RADIUS = 0.35 // 350 meters
         const val MAXIMUM_STOP_COUNT = 5
     }
 
