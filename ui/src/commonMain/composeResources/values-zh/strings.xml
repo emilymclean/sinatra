@@ -12,6 +12,8 @@
 
   <string name="browse_option_see_all_service_alerts">查看所有服务警报</string>
 
+  <string name="browse_option_disclaimer">数据来源与免责声明</string>
+
   <string name="browse_option_upcoming_routes">即将开通的航线: %1$s</string>
 
   <string name="browse_option_upcoming_routes_multiple">附近收藏的站点</string>
@@ -61,6 +63,10 @@
   <string name="preferences_setting_show_accessibility_icons_navigation_subtitle">显示路线是否适合骑行或轮椅通行。</string>
 
   <string name="preferences_setting_max_walking">最长步行时间</string>
+
+  <string name="preferences_setting_countdown">相对到达时间</string>
+
+  <string name="preferences_setting_countdown_subtitle">显示相对于当前时间的车辆到站的发车时间。</string>
 
   <string name="preferences_setting_metric">使用公制单位</string>
 
