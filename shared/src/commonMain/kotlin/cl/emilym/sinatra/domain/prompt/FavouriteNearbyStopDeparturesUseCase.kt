@@ -8,14 +8,27 @@ import cl.emilym.sinatra.data.repository.FavouriteRepository
 import cl.emilym.sinatra.data.repository.RemoteConfigRepository
 import cl.emilym.sinatra.domain.NearbyStopsUseCase
 import cl.emilym.sinatra.domain.UpcomingRoutesForStopUseCase
+import io.github.aakira.napier.Napier
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.transformLatest
 import org.koin.core.annotation.Factory
+
+sealed interface NearbyStopInformation {
+    data object None: NearbyStopInformation
+
+    data class Single(
+        val departures: StopDepartures
+    ): NearbyStopInformation
+
+    data class Multiple(
+        val departures: List<StopDepartures>
+    ): NearbyStopInformation
+}
 
 data class StopDepartures(
     val stop: Stop,
@@ -31,10 +44,10 @@ class FavouriteNearbyStopDeparturesUseCase(
 ) {
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    operator fun invoke(currentLocation: MapLocation): Flow<StopDepartures?> {
+    operator fun invoke(currentLocation: MapLocation): Flow<NearbyStopInformation> {
         return flow {
             if (!remoteConfigRepository.feature(FeatureFlag.FAVOURITE_NEARBY_STOP_HOME_SCREEN)) {
-                emit(null)
+                emit(NearbyStopInformation.None)
                 return@flow
             }
 
@@ -44,21 +57,55 @@ class FavouriteNearbyStopDeparturesUseCase(
             )
 
             emitAll(favouriteRepository.favouritedStops(nearby.map { it.stop.id })
-                .mapLatest { stopIds ->
-                    nearby.firstOrNull { stopIds.contains(it.stop.id) }?.stop
+                .transformLatest { stopIds ->
+                    val favourites = nearby.filter { it.stop.id in stopIds }
+                    val closest = favourites.firstOrNull()
+
+                    if (closest == null) {
+                        emit(emptyList())
+                        return@transformLatest
+                    }
+
+                    if (!remoteConfigRepository.feature(FeatureFlag.FAVOURITE_NEARBY_STOP_HOME_SCREEN_MULTIPLE)){
+                        emit(listOf(closest.stop))
+                        return@transformLatest
+                    }
+
+                    emit(
+                        buildList {
+                            add(closest.stop)
+                            addAll(
+                                favourites
+                                    .drop(1)
+                                    .filter { it.distance <= INNER_RING_RADIUS }
+                                    .map { it.stop }
+                            )
+                        }
+                    )
                 }
-                .flatMapLatest { stop ->
-                    stop ?: return@flatMapLatest flowOf(null)
-                    upcomingRoutesForStopUseCase(stop.id).mapLatest {
-                        if (it.item.isEmpty()) return@mapLatest null
-                        StopDepartures(
-                            stop,
-                            it.item
-                        )
+                .flatMapLatest { stops ->
+                    Napier.d("Stops: $stops")
+                    combine(stops.map { upcomingRoutesForStopUseCase(it.id) }) {
+                        val departures = it.mapIndexed { index, it ->
+                            StopDepartures(stops[index], it.item)
+                        }.filter {
+                            it.departures.isNotEmpty()
+                        }.take(MAXIMUM_STOP_COUNT)
+
+                        when (departures.size) {
+                            0 -> NearbyStopInformation.None
+                            1 -> NearbyStopInformation.Single(departures.first())
+                            else -> NearbyStopInformation.Multiple(departures)
+                        }
                     }
                 }
             )
         }
+    }
+
+    companion object {
+        const val INNER_RING_RADIUS = 0.2 // 200 meters
+        const val MAXIMUM_STOP_COUNT = 5
     }
 
 }
