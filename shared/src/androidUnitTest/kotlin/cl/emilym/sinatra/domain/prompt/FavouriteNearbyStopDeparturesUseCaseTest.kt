@@ -119,11 +119,14 @@ class FavouriteNearbyStopDeparturesUseCaseTest {
         coEvery { favouriteRepository.favouritedStops(listOf(stop.id)) } returns flowOf(listOf(stop.id))
         coEvery { upcomingRoutesForStopUseCase(stop.id) } returns flowOf(cachableDepartures)
 
-        val result = useCase(MapLocation(0.0, 0.0)).first()
+        val result = useCase(MapLocation(0.0, 0.0)).toList()
 
-        assertIs<NearbyStopInformation.Single>(result)
-        assertEquals(stop, result.departures.stop)
-        assertEquals(listOf(timetableTime), result.departures.departures)
+        assertIs<NearbyStopInformation.None>(result[0])
+        assertIs<NearbyStopInformation.Single>(result[1])
+
+        val finalResult = result[1] as NearbyStopInformation.Single
+        assertEquals(stop, finalResult.departures.stop)
+        assertEquals(listOf(timetableTime), finalResult.departures.departures)
     }
 
     @Test
@@ -136,12 +139,15 @@ class FavouriteNearbyStopDeparturesUseCaseTest {
         coEvery { favouriteRepository.favouritedStops(any()) } returns flowOf(listOf(stop.id, stop2.id))
         coEvery { upcomingRoutesForStopUseCase(any()) } returns flowOf(cachableDepartures)
 
-        val result = useCase(MapLocation(0.0, 0.0)).first()
+        val result = useCase(MapLocation(0.0, 0.0)).toList()
 
-        assertIs<NearbyStopInformation.Multiple>(result)
-        assertEquals(2, result.departures.size)
-        assertEquals(stop, result.departures[0].stop)
-        assertEquals(stop2, result.departures[1].stop)
+        assertIs<NearbyStopInformation.None>(result[0])
+        assertIs<NearbyStopInformation.Multiple>(result[1])
+
+        val finalResult = result[1] as NearbyStopInformation.Multiple
+        assertEquals(2, finalResult.departures.size)
+        assertEquals(stop, finalResult.departures[0].stop)
+        assertEquals(stop2, finalResult.departures[1].stop)
     }
 
     @Test
@@ -155,10 +161,13 @@ class FavouriteNearbyStopDeparturesUseCaseTest {
         coEvery { favouriteRepository.favouritedStops(any()) } returns flowOf(listOf(stop.id, stop2.id))
         coEvery { upcomingRoutesForStopUseCase(any()) } returns flowOf(cachableDepartures)
 
-        val result = useCase(MapLocation(0.0, 0.0)).first()
+        val result = useCase(MapLocation(0.0, 0.0)).toList()
 
-        assertIs<NearbyStopInformation.Single>(result)
-        assertEquals(stop, result.departures.stop)
-        assertEquals(listOf(timetableTime), result.departures.departures)
+        assertIs<NearbyStopInformation.None>(result[0])
+        assertIs<NearbyStopInformation.Single>(result[1])
+
+        val finalResult = result[1] as NearbyStopInformation.Single
+        assertEquals(stop, finalResult.departures.stop)
+        assertEquals(listOf(timetableTime), finalResult.departures.departures)
     }
 }
