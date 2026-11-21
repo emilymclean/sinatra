@@ -84,7 +84,7 @@ class FavouriteNearbyStopDeparturesUseCase(
                                     .filter { it.distance <= INNER_RING_RADIUS }
                                     .map { it.stop }
                             )
-                        }
+                        }.take(MAXIMUM_STOP_COUNT * 2)
                     )
                 }
                 .flatMapLatest { stops ->
