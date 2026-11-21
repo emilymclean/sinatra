@@ -1,6 +1,7 @@
 package cl.emilym.sinatra.domain.prompt
 
 import cl.emilym.sinatra.FeatureFlag
+import cl.emilym.sinatra.data.models.Cachable
 import cl.emilym.sinatra.data.models.IStopTimetableTime
 import cl.emilym.sinatra.data.models.MapLocation
 import cl.emilym.sinatra.data.models.Stop
@@ -10,11 +11,14 @@ import cl.emilym.sinatra.domain.NearbyStopsUseCase
 import cl.emilym.sinatra.domain.UpcomingRoutesForStopUseCase
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.transformLatest
 import org.koin.core.annotation.Factory
 
@@ -80,13 +84,21 @@ class FavouriteNearbyStopDeparturesUseCase(
                                     .filter { it.distance <= INNER_RING_RADIUS }
                                     .map { it.stop }
                             )
-                        }
+                        }.take(MAXIMUM_STOP_COUNT * 2)
                     )
                 }
                 .flatMapLatest { stops ->
                     if (stops.isEmpty()) return@flatMapLatest flowOf(NearbyStopInformation.None)
-                    combine(stops.map { upcomingRoutesForStopUseCase(it.id) }) {
-                        val departures = it.mapIndexed { index, it ->
+                    combine(
+                        stops.map {
+                            upcomingRoutesForStopUseCase(it.id)
+                                .map { it as Cachable<List<IStopTimetableTime>>? }
+                                .onStart { emit(null) }
+                                .catch { emit(null) }
+                        }
+                    ) {
+                        val departures = it.mapIndexedNotNull { index, it ->
+                            it ?: return@mapIndexedNotNull null
                             StopDepartures(stops[index], it.item)
                         }.filter {
                             it.departures.isNotEmpty()
